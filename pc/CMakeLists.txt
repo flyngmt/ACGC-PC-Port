@@ -280,6 +280,7 @@ set(PC_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/pc_stubs_cpp.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/pc_assets.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/pc_disc.c
+	 ${CMAKE_CURRENT_SOURCE_DIR}/src/time_hooks.c
 )
 
 # Rename game's main() to ac_entry() to avoid conflict with PC main() and game_main(GAME*)
