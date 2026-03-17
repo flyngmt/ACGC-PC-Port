@@ -1,3 +1,8 @@
+## AI GENERATED CODE DISCLOSURE
+
+AI tools such as Claude were used in this project (PC port code only).
+
+
 # Animal Crossing PC Port
 
 A native PC port of Animal Crossing (GameCube) built on top of the [ac-decomp](https://github.com/ACreTeam/ac-decomp) decompilation project.
@@ -100,7 +105,3 @@ Save files are stored in `pc/build32/bin/save/` using the standard GCI format, c
 ## Credits
 
 This project would not be possible without the work of the [ACreTeam](https://github.com/ACreTeam) decompilation team. Their complete C decompilation of Animal Crossing is the foundation this port is built on.
-
-## AI Notice
-
-AI tools such as Claude were used in this project (PC port code only).
