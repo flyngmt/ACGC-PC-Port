@@ -25,7 +25,7 @@ pacman -S mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-SDL2 git
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/flyngmt/ACGC-PC-Port.git
+   git clone https://github.com/flyngmt/ACGC-PC-Port.git ac-decomp
    cd ac-decomp
    ```
 
