@@ -15,10 +15,10 @@ Supported versions: GAFE01_00: Rev 0 (USA)
 
 ### MSYS2 Packages
 
-Open **MSYS2 MINGW32** from your Start menu and install:
+Open **MSYS2 MINGW32/64** from your Start menu and install:
 
 ```bash
-pacman -S mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-SDL2
+pacman -S mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-SDL2 git
 ```
 
 ## Building
@@ -29,7 +29,7 @@ pacman -S mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-SDL2
    cd ac-decomp
    ```
 
-2. Build (from **MSYS2 MINGW32** shell):
+2. Build (from **MSYS2 MINGW32/64** shell):
    ```bash
    ./build_pc.sh
    ```
