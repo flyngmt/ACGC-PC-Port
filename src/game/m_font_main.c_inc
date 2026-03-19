@@ -349,16 +349,16 @@ static void mFont_SetVertex_dol(Vtx* vtx, int x, int y, int s, int t) {
   vtx->v.ob[0] = x;
   vtx->v.ob[1] = y;
   vtx->v.ob[2] = 0;
-  
+
   vtx->v.flag = 1;
-  
+
   vtx->v.tc[0] = s;
   vtx->v.tc[1] = t;
 
   vtx->v.cn[0] = 0;
   vtx->v.cn[1] = 0;
   vtx->v.cn[2] = 0;
-  vtx->v.cn[3] = 0;
+  vtx->v.cn[3] = 255;
 }
 
 // TEMP
@@ -822,7 +822,7 @@ static void mFontChar_gppDrawRect(mFontChar* this, GRAPH* graph, Gfx** gfx_pp) {
   int dsdx, dtdy;
   f32 t;
   f32 width;
-
+  u8 c = *this->char_p;
   t = -this->ofs_y;
   uly = (int)((t * this->scaled_size.y - t + this->position.y) * 4.0f);
 
@@ -831,7 +831,7 @@ static void mFontChar_gppDrawRect(mFontChar* this, GRAPH* graph, Gfx** gfx_pp) {
 
   ulx = (int)(this->position.x * 4.0f);
 
-  width = (f32)mFont_GetCodeWidth(*this->char_p, this->flags & mFont_CHAR_FLAG_CUT) * this->scaled_size.x;
+  width = (f32)mFont_GetCodeWidth(c, this->flags & mFont_CHAR_FLAG_CUT) * this->scaled_size.x;
 
   lrx = (int)((width + this->position.x) * 4.0f);
 
@@ -840,7 +840,7 @@ static void mFontChar_gppDrawRect(mFontChar* this, GRAPH* graph, Gfx** gfx_pp) {
 
   this->width = width;
 
-  mFont_gppDrawCharRect(graph, gfx_pp, *this->char_p, ulx, uly, lrx, lry, dsdx, dtdy);
+  mFont_gppDrawCharRect(graph, gfx_pp, c, ulx, uly, lrx, lry, dsdx, dtdy);
 }
 
 static void mFontChar_gppDrawPoly(mFontChar* this, GRAPH* graph, Gfx** gfx_pp) {

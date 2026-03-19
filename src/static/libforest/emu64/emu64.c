@@ -5497,7 +5497,7 @@ void emu64::dl_G_TEXTURE() {
 #endif
 
     Gfx* t = (Gfx*)&this->texture_gfx;
-    if ((*(u64*)t) != (*(u64*)&this->gfx)) {
+    if ((*(u64*)t) != (*(u64*)texture)) {
         *(u64*)&this->texture_gfx = *(u64*)texture;
         this->dirty_flags[EMU64_DIRTY_FLAG_TEX] = true;
 
