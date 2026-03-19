@@ -438,6 +438,7 @@ static void mTRC_trainSet(GAME_PLAY* play) {
                 /* spawn train actor since it doesn't exist */
                 train_actor =
                     (ACTOR*)Common_Get(clip.structure_clip)->setup_actor_proc(&play->game, TRAIN0, -1, x, 740.0f);
+                fflush(stdout);
 
                 /* for whatever reason, train actor didn't spawn, so exit */
                 if (train_actor == NULL) {

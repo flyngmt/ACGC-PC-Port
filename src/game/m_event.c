@@ -88,6 +88,7 @@ extern void mEv_ClearEventInfo() {
     Common_Get(event_flags[1]) = event_save->flags;
     Common_Get(event_common).fieldday_event_id = -1;
     Common_Get(event_common).fieldday_event_over_status = -1;
+
 }
 
 extern void mEv_EventON(u32 event_kind) {
