@@ -22,8 +22,8 @@ extern "C" {
 
 typedef u64 Z_OSTime;
 
-#ifdef __APPLE__
-/* macOS provides bcmp/bcopy/bzero as builtins — don't redeclare */
+#if defined(__APPLE__) || defined(__linux__)
+/* macOS and Linux (glibc 2.41+ / GCC 15+) provide bcmp/bcopy/bzero — don't redeclare */
 #include <strings.h>
 #else
 int bcmp(void* v1, void* v2, u32 size);

@@ -1,4 +1,7 @@
 /* pc_main.c - PC entry point: SDL2/GL init, crash protection, boot sequence */
+#ifndef _WIN32
+#define _GNU_SOURCE  /* needed for dladdr */
+#endif
 #include "pc_platform.h"
 #include "pc_gx_internal.h"
 #include "pc_texture_pack.h"

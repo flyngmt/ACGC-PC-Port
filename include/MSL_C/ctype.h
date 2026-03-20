@@ -1,5 +1,5 @@
-#ifndef _CTYPE_H
-#define _CTYPE_H
+#ifndef _MSL_C_CTYPE_H
+#define _MSL_C_CTYPE_H
 
 #ifdef TARGET_PC
 #include_next <ctype.h>
@@ -49,4 +49,4 @@ inline int _toupper(int c) {
 #endif
 
 #endif /* !TARGET_PC */
-#endif /* _CTYPE_H */
+#endif /* _MSL_C_CTYPE_H */

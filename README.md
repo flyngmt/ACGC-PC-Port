@@ -78,6 +78,9 @@ Only needed if you want to modify the code. Otherwise, use the [pre-built releas
 
 1. Install dependencies:
    ```bash
+   # Arch/CachyOS/Manjaro
+   sudo pacman -S gcc cmake sdl2
+
    # Debian/Ubuntu
    sudo apt install gcc g++ cmake libsdl2-dev
 
