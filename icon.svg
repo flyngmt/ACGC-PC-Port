@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="16" fill="#4a8c3f"/>
+  <circle cx="64" cy="52" r="28" fill="#f5deb3"/>
+  <circle cx="54" cy="46" r="4" fill="#333"/>
+  <circle cx="74" cy="46" r="4" fill="#333"/>
+  <ellipse cx="64" cy="56" rx="6" ry="4" fill="#d4956a"/>
+  <path d="M48 60 Q64 72 80 60" stroke="#333" stroke-width="2" fill="none"/>
+  <path d="M44 32 Q40 18 50 24" stroke="#f5deb3" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M84 32 Q88 18 78 24" stroke="#f5deb3" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <text x="64" y="100" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="white">AC</text>
+  <text x="64" y="118" text-anchor="middle" font-family="Arial" font-size="10" fill="#ccc">Godot Port</text>
+</svg>

@@ -18,7 +18,7 @@ orig/*/*
 *.map
 *.MAP
 
-# Build files
+# Build files (legacy C build)
 build/
 build32/
 .ninja_*
@@ -47,3 +47,38 @@ temp/
 include/PR/
 include/gcc/
 include/compiler/gcc/stdlib.h
+
+# === Godot 4.x ===
+# Godot import cache
+.godot/
+
+# Mono/C# build output
+.mono/
+bin/
+obj/
+
+# Export artifacts
+export/
+*.pck
+*.zip
+
+# NuGet
+*.nupkg
+packages/
+
+# Disc images (user-provided, not checked in)
+rom/
+*.ciso
+*.iso
+*.gcm
+
+# Save data
+save/
+
+# Texture packs
+texture_pack/
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
