@@ -31,7 +31,7 @@ Only needed if you want to modify the code. Otherwise, use the [pre-built releas
 
 ### Build Steps
 
-### Windows (MSYS2)
+### Windows 32-bit (MSYS2)
 
 1. Install **MSYS2** (https://www.msys2.org/)
 
@@ -50,6 +50,29 @@ Only needed if you want to modify the code. Otherwise, use the [pre-built releas
 4. Place your disc image in `pc/build32/bin/rom/` and run:
    ```bash
    pc/build32/bin/AnimalCrossing.exe
+   ```
+
+### Windows 64-bit (MSYS2)
+
+1. Install **MSYS2** (https://www.msys2.org/)
+
+2. Open **MSYS2 MINGW64** and install dependencies:
+   ```bash
+   pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-SDL2 mingw-w64-x86_64-make
+   ```
+
+3. Clone and build:
+   ```bash
+   git clone https://github.com/flyngmt/ACGC-PC-Port.git
+   cd ACGC-PC-Port/pc
+   mkdir build64 && cd build64
+   cmake .. -G "MinGW Makefiles"
+   mingw32-make -j$(nproc)
+   ```
+
+4. Place your disc image in `pc/build64/bin/rom/` and run:
+   ```bash
+   pc/build64/bin/AnimalCrossing.exe
    ```
 
 ### macOS (Apple Silicon & Intel)
