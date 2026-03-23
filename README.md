@@ -8,6 +8,11 @@ This repository does not contain any game assets or assembly whatsoever. An exis
 
 Supported versions: GAFE01_00: Rev 0 (USA)
 
+If you want to ensure your ISO/GCM/CISO is the correct version, compare your md5sum to the one listed on [GameTDB](https://web.archive.org/web/20260310023548/https://www.gametdb.com/Wii/GAFE01). For example:
+```bash
+md5sum YourGame.ciso
+```
+
 ## Quick Start (Pre-built Release)
 
 Pre-built releases are available on the [Releases](https://github.com/flyngmt/ACGC-PC-Port/releases) page. No build tools required.
