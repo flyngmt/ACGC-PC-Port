@@ -825,29 +825,35 @@ static void mFontChar_set(
 }
 
 static void mFontChar_gppDrawRect(mFontChar* this, GRAPH* graph, Gfx** gfx_pp) {
-  u32 ulx, uly, lrx, lry;
+  int ulx_i, uly_i, lrx_i, lry_i;
   int dsdx, dtdy;
   f32 t;
   f32 width;
   u8 c = *this->char_p;
   t = -this->ofs_y;
-  uly = (int)((t * this->scaled_size.y - t + this->position.y) * 4.0f);
-
+  uly_i = (int)((t * this->scaled_size.y - t + this->position.y) * 4.0f);
+ 
   t = mFont_TEX_CHAR_HEIGHT_F32 - this->ofs_y;
-  lry = (int)((t * this->scaled_size.y - t + this->position.y + mFont_TEX_CHAR_HEIGHT_F32) * 4.0f);
-
-  ulx = (int)(this->position.x * 4.0f);
-
+  lry_i = (int)((t * this->scaled_size.y - t + this->position.y + mFont_TEX_CHAR_HEIGHT_F32) * 4.0f);
+ 
+  ulx_i = (int)(this->position.x * 4.0f);
+ 
   width = (f32)mFont_GetCodeWidth(c, this->flags & mFont_CHAR_FLAG_CUT) * this->scaled_size.x;
-
-  lrx = (int)((width + this->position.x) * 4.0f);
-
+ 
+  lrx_i = (int)((width + this->position.x) * 4.0f);
+ 
   dsdx = (1024.0f * this->inv_scaled_size.x); /* 1 << 10 for correct s5.10 format? */
   dtdy = (1024.0f * this->inv_scaled_size.y); /* 1 << 10 for correct s5.10 format? */
-
+ 
   this->width = width;
-
-  mFont_gppDrawCharRect(graph, gfx_pp, c, ulx, uly, lrx, lry, dsdx, dtdy);
+ 
+  /* Skip rendering if the rect is fully offscreen (negative coordinates
+     would wrap when stored in unsigned GBI bitfields, causing artifacts) */
+  if (lrx_i <= 0 || lry_i <= 0) return;
+  if (ulx_i < 0) ulx_i = 0;
+  if (uly_i < 0) uly_i = 0;
+ 
+  mFont_gppDrawCharRect(graph, gfx_pp, c, (u32)ulx_i, (u32)uly_i, (u32)lrx_i, (u32)lry_i, dsdx, dtdy);
 }
 
 static void mFontChar_gppDrawPoly(mFontChar* this, GRAPH* graph, Gfx** gfx_pp) {
