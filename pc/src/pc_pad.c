@@ -1,5 +1,6 @@
 /* pc_pad.c - GC controller input via SDL gamepad + keyboard */
 #include "pc_platform.h"
+#include "pc_typing.h"
 #include "pc_keybindings.h"
 #include <dolphin/pad.h>
 
@@ -27,38 +28,50 @@ u32 PADRead(PADStatus* status) {
     memset(status, 0, sizeof(PADStatus) * 4);
 
     const u8* keys = SDL_GetKeyboardState(NULL);
+    u32 mouse = SDL_GetMouseState(NULL, NULL);
     u16 buttons = 0;
     s8 stickX = 0, stickY = 0;
     s8 cstickX = 0, cstickY = 0;
 
-    /* buttons (from keybindings.ini) */
-    PCKeybindings* kb = &g_pc_keybindings;
-    if (keys[kb->a])     buttons |= PAD_BUTTON_A;
-    if (keys[kb->b])     buttons |= PAD_BUTTON_B;
-    if (keys[kb->x])     buttons |= PAD_BUTTON_X;
-    if (keys[kb->y])     buttons |= PAD_BUTTON_Y;
-    if (keys[kb->start]) buttons |= PAD_BUTTON_START;
-    if (keys[kb->z])     buttons |= PAD_TRIGGER_Z;
-    if (keys[kb->l])     buttons |= PAD_TRIGGER_L;
-    if (keys[kb->r])     buttons |= PAD_TRIGGER_R;
+    /* Suppress keyboard-to-button mapping when typing into the in-game text editor */
+    if (!(g_pc_typing_mode && g_pc_editor_active)) {
+        /* helper: check if a PCInputCode is currently pressed */
+        #define INPUT_PRESSED(code) \
+            (((code) & PC_INPUT_MOUSE_BIT) \
+                ? (mouse & SDL_BUTTON((code) & 0xFF)) \
+                : keys[(SDL_Scancode)(code)])
 
-    /* main stick */
-    if (keys[kb->stick_up])    stickY += STICK_MAGNITUDE;
-    if (keys[kb->stick_down])  stickY -= STICK_MAGNITUDE;
-    if (keys[kb->stick_left])  stickX -= STICK_MAGNITUDE;
-    if (keys[kb->stick_right]) stickX += STICK_MAGNITUDE;
+        /* buttons (from keybindings.ini) */
+        PCKeybindings* kb = &g_pc_keybindings;
+        if (INPUT_PRESSED(kb->a))     buttons |= PAD_BUTTON_A;
+        if (INPUT_PRESSED(kb->b))     buttons |= PAD_BUTTON_B;
+        if (INPUT_PRESSED(kb->x))     buttons |= PAD_BUTTON_X;
+        if (INPUT_PRESSED(kb->y))     buttons |= PAD_BUTTON_Y;
+        if (INPUT_PRESSED(kb->start)) buttons |= PAD_BUTTON_START;
+        if (INPUT_PRESSED(kb->z))     buttons |= PAD_TRIGGER_Z;
+        if (INPUT_PRESSED(kb->l))     buttons |= PAD_TRIGGER_L;
+        if (INPUT_PRESSED(kb->r))     buttons |= PAD_TRIGGER_R;
 
-    /* C-stick */
-    if (keys[kb->cstick_up])    cstickY += STICK_MAGNITUDE;
-    if (keys[kb->cstick_down])  cstickY -= STICK_MAGNITUDE;
-    if (keys[kb->cstick_left])  cstickX -= STICK_MAGNITUDE;
-    if (keys[kb->cstick_right]) cstickX += STICK_MAGNITUDE;
+        /* main stick */
+        if (INPUT_PRESSED(kb->stick_up))    stickY += STICK_MAGNITUDE;
+        if (INPUT_PRESSED(kb->stick_down))  stickY -= STICK_MAGNITUDE;
+        if (INPUT_PRESSED(kb->stick_left))  stickX -= STICK_MAGNITUDE;
+        if (INPUT_PRESSED(kb->stick_right)) stickX += STICK_MAGNITUDE;
 
-    /* D-pad */
-    if (keys[kb->dpad_up])    buttons |= PAD_BUTTON_UP;
-    if (keys[kb->dpad_down])  buttons |= PAD_BUTTON_DOWN;
-    if (keys[kb->dpad_left])  buttons |= PAD_BUTTON_LEFT;
-    if (keys[kb->dpad_right]) buttons |= PAD_BUTTON_RIGHT;
+        /* C-stick */
+        if (INPUT_PRESSED(kb->cstick_up))    cstickY += STICK_MAGNITUDE;
+        if (INPUT_PRESSED(kb->cstick_down))  cstickY -= STICK_MAGNITUDE;
+        if (INPUT_PRESSED(kb->cstick_left))  cstickX -= STICK_MAGNITUDE;
+        if (INPUT_PRESSED(kb->cstick_right)) cstickX += STICK_MAGNITUDE;
+
+        /* D-pad */
+        if (INPUT_PRESSED(kb->dpad_up))    buttons |= PAD_BUTTON_UP;
+        if (INPUT_PRESSED(kb->dpad_down))  buttons |= PAD_BUTTON_DOWN;
+        if (INPUT_PRESSED(kb->dpad_left))  buttons |= PAD_BUTTON_LEFT;
+        if (INPUT_PRESSED(kb->dpad_right)) buttons |= PAD_BUTTON_RIGHT;
+
+        #undef INPUT_PRESSED
+    }
 
     /* hotplug */
     if (!g_controller) {

@@ -1732,9 +1732,49 @@ static void mED_move_Play(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
             editor_ovl->cursol_opacity_step = 0;
         }
 
-        mED_set_stick_area(editor_ovl);
-        mED_move_keyboard_cursor(editor_ovl);
-        mED_set_command(editor_ovl);
+#if defined(TARGET_PC) && defined(KEYBOARD_TYPING)
+        {
+            extern int g_pc_editor_active;
+            extern int g_pc_typing_mode;
+            extern int pc_typing_queue_pop(int*);
+            int pc_typed_char = 0;
+            int typed;
+            g_pc_editor_active = 1;
+
+            if (g_pc_typing_mode && pc_typing_queue_pop(&typed)) {
+                pc_typed_char = 1;
+                if (typed == 256) {
+                    editor_ovl->command = mED_COMMAND_BACKSPACE;
+                } else if (typed == 257) {
+                    editor_ovl->command = mED_COMMAND_CURSOL_LEFT;
+                } else if (typed == 258) {
+                    editor_ovl->command = mED_COMMAND_CURSOL_RIGHT;
+                } else if (typed == 259) {
+                    editor_ovl->command = mED_COMMAND_CURSOL_UPPER;
+                } else if (typed == 260) {
+                    editor_ovl->command = mED_COMMAND_CURSOL_LOWER;
+                } else if (typed == 261) {
+                    if (editor_ovl->max_line_no <= 1) {
+                        editor_ovl->command = mED_COMMAND_END_EDIT;
+                    } else {
+                        editor_ovl->now_code = CHAR_NEW_LINE;
+                        editor_ovl->command = mED_COMMAND_OUTPUT_CODE;
+                    }
+                } else {
+                    editor_ovl->now_code = (u8)typed;
+                    editor_ovl->command = mED_COMMAND_OUTPUT_CODE;
+                }
+            }
+
+            if (!pc_typed_char) {
+#endif
+                mED_set_stick_area(editor_ovl);
+                mED_move_keyboard_cursor(editor_ovl);
+                mED_set_command(editor_ovl);
+#if defined(TARGET_PC) && defined(KEYBOARD_TYPING)
+            }
+        }
+#endif
         (*mED_edit_func[menu_info->data0])(submenu, menu_info);
 
         if (editor_ovl->command_processed) {
@@ -1761,6 +1801,9 @@ static void mED_move_Wait(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 }
 
 static void mED_move_End(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
+#if defined(TARGET_PC) && defined(KEYBOARD_TYPING)
+    { extern int g_pc_editor_active; g_pc_editor_active = 0; }
+#endif
     submenu->overlay->editor_ovl->_22 = 0;
     (*submenu->overlay->move_End_proc)(submenu, menu_info);
 }
@@ -2449,6 +2492,22 @@ static void mED_editor_ovl_draw(Submenu* submenu, GAME* game) {
 
         CLOSE_DISP(game->graph);
     }
+
+#if defined(TARGET_PC) && defined(KEYBOARD_TYPING)
+    {
+        extern int g_pc_typing_mode;
+        static u8 str_on[]  = { 'K','e','y','b','o','a','r','d',' ','T','y','p','i','n','g',' ','(','T','a','b',')',':',' ','O','n' };
+        static u8 str_off[] = { 'K','e','y','b','o','a','r','d',' ','T','y','p','i','n','g',' ','(','T','a','b',')',':',' ','O','f','f' };
+        u8* str = g_pc_typing_mode ? str_on : str_off;
+        int len = g_pc_typing_mode ? sizeof(str_on) : sizeof(str_off);
+        f32 scale = 0.6f;
+        f32 x = 80.0f;
+
+        (*overlay->set_char_matrix_proc)(game->graph);
+        mFont_SetLineStrings(game, str, len, x, 8.0f, 255, 255, 255, 180, FALSE, FALSE, scale, scale,
+                             mFont_MODE_POLY);
+    }
+#endif
 }
 
 extern void mED_editor_ovl_set_proc(Submenu* submenu) {
