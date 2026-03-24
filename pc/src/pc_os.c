@@ -8,6 +8,10 @@ static u8* arena_memory = NULL;
 static u8* arena_lo = NULL;
 static u8* arena_hi = NULL;
 
+/* Exported for seg2k0 collision avoidance */
+u8* pc_arena_base = NULL;
+u8* pc_arena_end  = NULL;
+
 void* OSGetArenaLo(void) { return arena_lo; }
 void* OSGetArenaHi(void) { return arena_hi; }
 void  OSSetArenaLo(void* lo) { arena_lo = (u8*)lo; }
@@ -265,6 +269,9 @@ void OSInit(void) {
         }
         memset(arena_memory, 0, PC_MAIN_MEMORY_SIZE);
 
+        pc_arena_base = arena_memory;
+        pc_arena_end  = arena_memory + PC_MAIN_MEMORY_SIZE;
+
         /* GC system info at phys addr 0; offset 0x28 = mem size for JKRHeap */
         *(u32*)(arena_memory + 0x28) = PC_MAIN_MEMORY_SIZE;
 
@@ -284,11 +291,14 @@ void OSInit(void) {
         s64 tz_offset_secs = (s64)difftime(unix_now, utc_as_local);
 
         if (g_pc_time_override >= 0) {
-            /* --time override */
+            /* --time H[:M[:S]] override */
             struct tm* lt = localtime(&unix_now);
             if (lt) {
-                int delta_hours = g_pc_time_override - lt->tm_hour;
-                unix_now += delta_hours * 3600;
+                unix_now += (g_pc_time_override - lt->tm_hour) * 3600;
+                if (g_pc_min_override >= 0)
+                    unix_now += (g_pc_min_override - lt->tm_min) * 60;
+                if (g_pc_sec_override >= 0)
+                    unix_now += (g_pc_sec_override - lt->tm_sec);
             }
         }
 

@@ -9,6 +9,10 @@
 extern "C" unsigned int pc_image_base;
 extern "C" unsigned int pc_image_end;
 
+/* Arena range from pc_os.c — heap pointers in arena also bypass segment resolution */
+extern "C" unsigned char* pc_arena_base;
+extern "C" unsigned char* pc_arena_end;
+
 /* Page-granularity cache for VirtualQuery results.
  * Avoids repeated syscalls for addresses in the same page. */
 #define SEG2K0_PAGE_CACHE_SIZE 32
@@ -47,6 +51,13 @@ u32 emu64::seg2k0(u32 segadr) {
         return segadr;
     }
 
+    /* Check if address falls within the main memory arena (JKRHeap, Object_Exchange
+       banks, cloth data, etc.).*/
+    if (pc_arena_base && segadr >= (u32)(uintptr_t)pc_arena_base &&
+        segadr < (u32)(uintptr_t)pc_arena_end) {
+        return segadr;
+    }
+
     u32 seg = (segadr >> 24) & 0xF;
     u32 offset = segadr & 0xFFFFFF;
 
@@ -58,9 +69,22 @@ u32 emu64::seg2k0(u32 segadr) {
        colliding with N64 segmented addresses (seg<<24|offset). On GC, all real
        pointers had bit 31 set (k0 space) so they bypassed segment resolution.
 
-       Strategy: try segment resolution first (this is what the game expects).
-       If the resolved address is NOT in committed memory, it's likely a
-       misidentification — the original address was a raw PC pointer. */
+       Real N64 segment addresses come from GBI macros like SEGMENT_ADDR(seg, offset)
+       and always have small offsets (textures, matrices that are never > 512KB).
+       PC heap pointers that collide with the segment range have large "offsets"
+       (the low 24 bits of an arbitrary address). Use this to discriminate:
+       large offset + committed raw address = heap pointer, not segment ref. 
+       
+       This might be the last memory fix needed.
+       */
+
+    /* Large offset (> 512KB) with committed raw address = definitely a heap pointer,
+       not a real segment reference. N64 segments never have offsets this large. */
+    if (offset > 0x80000 && seg2k0_is_committed(segadr)) {
+        return segadr;
+    }
+
+    /* Normal segment resolution path */
     u32 resolved = (u32)this->segments[seg] + offset;
 
     if (seg2k0_is_committed(resolved)) {
