@@ -295,7 +295,7 @@ static void swap_AnmHPMail(AnmHPMail_c* hp) {
     swap_lbRTC_time(&hp->receive_time);
 }
 
-static void swap_Animal(Animal_c* anm, pc_bswap_dir_t dir) {
+static void swap_Animal(Animal_c* anm, pc_bswap_dir_t dir, int is_island) {
     int i;
     swap_AnmPersonalID(&anm->id);
 
@@ -304,7 +304,11 @@ static void swap_Animal(Animal_c* anm, pc_bswap_dir_t dir) {
     }
 
     swap_mQst_contest(&anm->contest_quest, dir);
-    swap16_array(anm->anmuni.island_ftr, mNpc_ISLAND_FTR_SAVE_NUM);
+    /* anmuni is a union: island animal uses island_ftr (u16[4], needs swap),
+       regular villagers use previous_land_name (u8[8], must NOT swap) 
+       GBA messes with me even when the functionality is off. */
+    if (is_island)
+        swap16_array(anm->anmuni.island_ftr, mNpc_ISLAND_FTR_SAVE_NUM);
 
     swap16(&anm->previous_land_id);
     swap16(&anm->cloth);
@@ -740,7 +744,7 @@ static void swap_Island(Island_c* isl, pc_bswap_dir_t dir) {
     swap_mLd_land_info(&isl->landinfo);
     swap_mFM_fg_array(&isl->fgblock[0][0], mISL_FG_BLOCK_Z_NUM * mISL_FG_BLOCK_X_NUM);
     swap_mHm_cottage(&isl->cottage, dir);
-    swap_Animal(&isl->animal, dir);
+    swap_Animal(&isl->animal, dir, 1);
     swap16_array(&isl->deposit[0][0], mISL_FG_BLOCK_X_NUM * mISL_FG_BLOCK_Z_NUM * UT_Z_NUM);
     swap_lbRTC_time(&isl->renew_time);
 }
@@ -844,7 +848,7 @@ void pc_save_bswap(Save_t* save, pc_bswap_dir_t dir) {
     swap_combi_table(save->combi_table, dir);
 
     for (i = 0; i < ANIMAL_NUM_MAX; i++)
-        swap_Animal(&save->animals[i], dir);
+        swap_Animal(&save->animals[i], dir, 0);
 
     swap_AnmPersonalID(&save->last_removed_animal_id);
     swap_Shop(&save->shop, dir);
