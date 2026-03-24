@@ -50,10 +50,12 @@ uintptr_t emu64::seg2k0(uintptr_t segadr) {
     return segadr;
 }
 #else
-/* === 32-bit seg2k0 (Windows) ===
+/* === 32-bit seg2k0 ===
  * On 32-bit, PC pointers can collide with N64 segment addresses (both in
- * 0x03-0x0F range). Use VirtualQuery + page cache to disambiguate. */
+ * 0x03-0x0F range). On Windows, use VirtualQuery + page cache to
+ * disambiguate. On other platforms, rely on segment table and image range. */
 
+#ifdef _WIN32
 #define SEG2K0_PAGE_CACHE_SIZE 32
 static struct { u32 page; u8 committed; } seg2k0_page_cache[SEG2K0_PAGE_CACHE_SIZE];
 static int seg2k0_cache_next = 0;
@@ -75,6 +77,7 @@ static int seg2k0_is_committed(u32 addr) {
     seg2k0_cache_next = (seg2k0_cache_next + 1) % SEG2K0_PAGE_CACHE_SIZE;
     return committed;
 }
+#endif /* _WIN32 */
 
 uintptr_t emu64::seg2k0(uintptr_t segadr) {
     if ((segadr >> 28) != 0 || segadr < 0x03000000) {
@@ -94,6 +97,7 @@ uintptr_t emu64::seg2k0(uintptr_t segadr) {
 
     uintptr_t resolved = this->segments[seg] + offset;
 
+#ifdef _WIN32
     if (seg2k0_is_committed((u32)resolved)) {
         this->resolved_addresses++;
         return resolved;
@@ -102,6 +106,7 @@ uintptr_t emu64::seg2k0(uintptr_t segadr) {
     if (seg2k0_is_committed((u32)segadr)) {
         return segadr;
     }
+#endif /* _WIN32 */
 
     this->resolved_addresses++;
     return resolved;

@@ -23,6 +23,11 @@ extern int g_pc_model_viewer;
 #include "GBA/gba.h"
 #include "m_vibctl.h"
 
+/* On x86/x86_64, SDL2 pulls in <xmmintrin.h> → <mm_malloc.h> → <errno.h>,
+ * which defines errno as a function-like macro. This conflicts with the
+ * pad_t struct member named errno. Undefine it after all headers. */
+#undef errno
+
 GAME* gamePT = NULL;
 
 static u16 last_button[MAXCONTROLLERS];

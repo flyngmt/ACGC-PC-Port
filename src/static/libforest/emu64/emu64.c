@@ -5488,7 +5488,7 @@ void emu64::dl_G_BRANCH_Z() {
     EMU64_WARNF("gsSPBranchLessZraw(%s, %d, 0x%08x),", this->segchk(this->rdpHalf_1), (this->gfx.words.w0 / 2) & 0x7FF,
                 this->gfx.words.w1);
 
-    this->gfx_p = (Gfx*)((int)this->work_ptr - sizeof(Gfx));
+    this->gfx_p = (Gfx*)((uintptr_t)this->work_ptr - sizeof(Gfx));
     /* Translation: gsSPBranchLessZraw isn't implemented yet */
     this->Printf0("gsSPBranchLessZrawはまだインプリメントされていません\n");
 }
