@@ -21,7 +21,7 @@ static inline void pc_audio_ptr_init(void* any_audio_ptr) {
     pc_audio_ptr_base = (uintptr_t)any_audio_ptr & ~(uintptr_t)0xFFFFFFFF;
 }
 
-/* Recover full pointer from truncated u32 in audio command */
+/* Recover full pointer from truncated u32 in audio command (deprecated) */
 static inline void* pc_audio_recover_ptr(unsigned int truncated) {
     if (truncated == 0) return (void*)0;
     return (void*)(pc_audio_ptr_base | (uintptr_t)truncated);

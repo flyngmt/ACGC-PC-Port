@@ -162,11 +162,11 @@ extern void sAdo_FloorTrgStart(u8 id, const xyz_t* pos) {
     Na_FloorTrgStart(id, scalc, fcalc);
 }
 
-extern void sAdo_RhythmStart(u32 p, s8 type, s8 wait) {
+extern void sAdo_RhythmStart(uintptr_t p, s8 type, s8 wait) {
     Na_RhythmStart(p, type, wait);
 }
 
-extern void sAdo_RhythmStop(u32 p) {
+extern void sAdo_RhythmStop(uintptr_t p) {
     Na_RhythmStop(p);
 }
 
@@ -174,7 +174,7 @@ extern void sAdo_RhythmAllStop() {
     Na_RhythmAllStop();
 }
 
-extern void sAdo_FurnitureInst(u32 id, u8 inst, u8* melody, const xyz_t* pos) {
+extern void sAdo_FurnitureInst(uintptr_t id, u8 inst, u8* melody, const xyz_t* pos) {
     u16 scalc;
     f32 fcalc;
 
@@ -186,11 +186,11 @@ extern void sAdo_Pause(u8 mode) {
     Na_Pause(mode);
 }
 
-extern f32 sAdo_GetRhythmAnimCounter(u32 p) {
+extern f32 sAdo_GetRhythmAnimCounter(uintptr_t p) {
     return Na_GetRhythmAnimCounter(p);
 }
 
-extern s8 sAdo_GetRhythmDelay(u32 p) {
+extern s8 sAdo_GetRhythmDelay(uintptr_t p) {
     return Na_GetRhythmDelay(p);
 }
 
@@ -206,7 +206,7 @@ extern s8 sAdo_InstCountGet() {
     return Na_InstCountGet();
 }
 
-extern void sAdo_RhythmPos(u32 p, u8 haniwa_id, const xyz_t* pos) {
+extern void sAdo_RhythmPos(uintptr_t p, u8 haniwa_id, const xyz_t* pos) {
     u16 scalc;
     f32 fcalc;
 
@@ -218,7 +218,7 @@ extern void sAdo_SpecChange(int spec) {
     Na_SpecChange(spec);
 }
 
-extern void sAdo_MDPlayerPos(const xyz_t* pos, u16 s1, u16 s2, u32 p) {
+extern void sAdo_MDPlayerPos(const xyz_t* pos, u16 s1, u16 s2, uintptr_t p) {
     u16 scalc;
     f32 fcalc;
 
@@ -391,7 +391,7 @@ extern void sAdo_SceneMode(u8 mode) {
     Na_SceneMode(mode);
 }
 
-extern u8 sAdo_RoomIncectPos(u32 f, u8 u, const xyz_t* pos) {
+extern u8 sAdo_RoomIncectPos(uintptr_t f, u8 u, const xyz_t* pos) {
     u16 scalc;
     f32 fcalc;
 
@@ -399,7 +399,7 @@ extern u8 sAdo_RoomIncectPos(u32 f, u8 u, const xyz_t* pos) {
     return Na_RoomIncectPos(f, u, scalc, fcalc);
 }
 
-extern void sAdo_FurnitureInstPos(u32 id, const xyz_t* pos) {
+extern void sAdo_FurnitureInstPos(uintptr_t id, const xyz_t* pos) {
     u16 scalc;
     f32 fcalc;
 

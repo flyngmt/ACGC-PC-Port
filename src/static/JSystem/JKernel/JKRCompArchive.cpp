@@ -123,7 +123,7 @@ bool JKRCompArchive::open(s32 entryNum) {
                             break;
                         }
 
-                        JKRDvdToAram(entryNum, mAramPart->getAddress(), EXPAND_SWITCH_DECOMPRESS,
+                        JKRDvdToAram(entryNum, (uintptr_t)mAramPart->getAddress(), EXPAND_SWITCH_DECOMPRESS,
                                      arcHeader->header_length + arcHeader->file_data_offset + mSizeOfMemPart, 0);
                     }
 
@@ -182,7 +182,7 @@ bool JKRCompArchive::open(s32 entryNum) {
                                 } else {
                                     JKRMainRamToAram((u8*)mem + arcHeader->header_length + arcHeader->file_data_offset +
                                                          mSizeOfMemPart,
-                                                     mAramPart->getAddress(), mSizeOfAramPart, EXPAND_SWITCH_DEFAULT, 0,
+                                                     (uintptr_t)mAramPart->getAddress(), mSizeOfAramPart, EXPAND_SWITCH_DEFAULT, 0,
                                                      nullptr, -1, (u32)0);
                                 }
                             }

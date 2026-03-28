@@ -21,7 +21,7 @@ u8* pc_aram_get_base(void) { return aram_base; }
 u32 ARGetBaseAddress(void) { return 0; }
 u32 ARGetSize(void) { return PC_ARAM_SIZE; }
 
-u32 ARAlloc(u32 size) {
+uintptr_t ARAlloc(u32 size) {
     u32 aligned_size = (size + 31) & ~31; /* 32-byte align */
     if (aram_alloc_ptr + aligned_size > PC_ARAM_SIZE) {
         fprintf(stderr, "[PC/ARAM] Out of ARAM! Requested %lu, used %lu/%u\n",
@@ -38,16 +38,19 @@ void ARFree(u32* addr) {
 }
 
 /* type 0 = MRAM→ARAM, type 1 = ARAM→MRAM. params are always (type, mram, aram). */
-void ARStartDMA(u32 type, uintptr_t mram_addr, u32 aram_addr, u32 length) {
+void ARStartDMA(u32 type, uintptr_t mram_addr, uintptr_t aram_addr, u32 length) {
     if (!aram_base) return;
 
     /* some code passes (aram_base + offset) instead of just the offset */
     uintptr_t base = (uintptr_t)aram_base;
     if (aram_addr >= base && aram_addr < base + PC_ARAM_SIZE) {
-        aram_addr -= (u32)base;
+        aram_addr -= base;
     }
 
-    if (length > PC_ARAM_SIZE || aram_addr > PC_ARAM_SIZE - length) {
+    /* If it's still a pointer (not relative to aram_base), treat as offset 0 for safety check */
+    uintptr_t offset = (aram_addr >= base) ? 0 : aram_addr;
+
+    if (length > PC_ARAM_SIZE || offset > PC_ARAM_SIZE - length) {
         /* OOB read: zero-fill dest so caller doesn't get garbage (cap 1MB) */
         if (type == 1 && mram_addr != 0 && length > 0 && length <= 0x100000) {
             memset((void*)mram_addr, 0, length);
@@ -68,12 +71,12 @@ BOOL ARCheckInit(void) { return aram_base != NULL; }
 /* ARQ - synchronous wrapper around ARStartDMA.
  * ARQPostRequest's source/dest order differs from ARStartDMA's, so we remap. */
 void ARQInit(void) {}
-void ARQPostRequest(void* req, u32 owner, u32 type, u32 prio,
+void ARQPostRequest(void* req, uintptr_t owner, u32 type, u32 prio,
                     uintptr_t source, uintptr_t dest, u32 length, void* callback) {
     if (type == 0) {
-        ARStartDMA(type, source, (u32)dest, length); /* source=mram, dest=aram */
+        ARStartDMA(type, source, dest, length); /* source=mram, dest=aram */
     } else {
-        ARStartDMA(type, dest, (u32)source, length); /* source=aram, dest=mram — swapped */
+        ARStartDMA(type, dest, source, length); /* source=aram, dest=mram — swapped */
     }
     if (callback) ((void (*)(uintptr_t))callback)((uintptr_t)req);
 }

@@ -27,11 +27,7 @@ extern u32 GetNeosRomTop(void) {
 }
 
 extern u32 GetNeosRom_PreLoaded(void) {
-#ifdef TARGET_PC
     DVDT_DRAMtoARAM(0, (uintptr_t)init_load_addr, AUDIO_ARAM_TOP, init_load_size, nullptr, nullptr);
-#else
-    DVDT_DRAMtoARAM(0, (u32)init_load_addr, AUDIO_ARAM_TOP, init_load_size, nullptr, nullptr);
-#endif
     return init_load_size;
 }
 
@@ -45,21 +41,13 @@ extern void mesg_finishcall(u32 mq) {
     Z_osSendMesg((OSMesgQueue*)mq, NULL, OS_MESSAGE_NOBLOCK);
 }
 
-extern BOOL ARAMStartDMAmesg(u32 dir, u32 dramAddr, u32 aramAddr, u32 size, s32 unused, OSMesgQueue* mq) {
+extern BOOL ARAMStartDMAmesg(u32 dir, uintptr_t dramAddr, u32 aramAddr, u32 size, s32 unused, OSMesgQueue* mq) {
     aramAddr += AUDIO_ARAM_TOP;
 
     if (dir == DUMMYROM_ARAM_TO_DRAM) {
-#ifdef TARGET_PC
         DVDT_ARAMtoDRAM((uintptr_t)mq, dramAddr, aramAddr, size, nullptr, &mesg_finishcall);
-#else
-        DVDT_ARAMtoDRAM((u32)mq, dramAddr, aramAddr, size, nullptr, &mesg_finishcall);
-#endif
     } else {
-#ifdef TARGET_PC
         DVDT_DRAMtoARAM((uintptr_t)mq, dramAddr, aramAddr, size, nullptr, &mesg_finishcall);
-#else
-        DVDT_DRAMtoARAM((u32)mq, dramAddr, aramAddr, size, nullptr, &mesg_finishcall);
-#endif
     }
 
     return FALSE;
@@ -70,9 +58,11 @@ extern void Jac_SetAudioARAMSize(u32 size) {
 }
 
 extern void* ARAllocFull(u32* outSize) {
-    u32 freeSize = aram_hp.length - ((int)aram_hp.current - (int)aram_hp.base);
+    u32 freeSize = (u32)((uintptr_t)aram_hp.length - ((uintptr_t)aram_hp.current - (uintptr_t)aram_hp.base));
     void* alloc = Nas_HeapAlloc(&aram_hp, freeSize - 32);
-    *outSize = freeSize - 32;
+    if (outSize) {
+        *outSize = freeSize - 32;
+    }
     return alloc;
 }
 

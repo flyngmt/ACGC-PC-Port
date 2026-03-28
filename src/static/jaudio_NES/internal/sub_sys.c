@@ -361,7 +361,7 @@ extern void Nap_AudioPortProcess(u32 msg) {
 }
 
 extern s32 Nap_CheckSpecChange(void) {
-    s32 msg;
+    OSMesg msg;
     s32 res;
 
     /* Spec-change is not complete until reset pipeline fully settles. */
@@ -369,7 +369,7 @@ extern s32 Nap_CheckSpecChange(void) {
         return 0;
     }
 
-    res = Z_osRecvMesg(AG.spec_change_mq_p, (OSMesg*)&msg, OS_MESG_NOBLOCK);
+    res = Z_osRecvMesg(AG.spec_change_mq_p, &msg, OS_MESG_NOBLOCK);
 
     if (res == -1) {
         return 0;
@@ -381,11 +381,11 @@ extern s32 Nap_CheckSpecChange(void) {
 }
 
 static void __ClearSpecChangeQ(void) {
-    s32 msg;
+    OSMesg msg;
     s32 res;
 
     do {
-        res = Z_osRecvMesg(AG.spec_change_mq_p, (OSMesg*)&msg, OS_MESG_NOBLOCK);
+        res = Z_osRecvMesg(AG.spec_change_mq_p, &msg, OS_MESG_NOBLOCK);
     } while (res != -1);
 }
 
@@ -731,10 +731,10 @@ extern s32 CreateAudioTask(Acmd* cmds, s16* pSamples, u32 nSamples, s32 param_4)
 
         port_cmds = 0;
         if (AG.reset_status == 0) {
-            u32 msg;
+            OSMesg msg;
 
-            while (Z_osRecvMesg(AG.thread_cmd_proc_mq_p, (OSMesg*)&msg, OS_MESG_NOBLOCK) != -1) {
-                Nap_AudioPortProcess(msg);
+            while (Z_osRecvMesg(AG.thread_cmd_proc_mq_p, &msg, OS_MESG_NOBLOCK) != -1) {
+                Nap_AudioPortProcess((uintptr_t)msg);
                 port_cmds++;
             }
 

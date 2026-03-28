@@ -113,7 +113,11 @@ void JKRAramPiece::startDMA(JKRAMCommand* cmd) {
         DCStoreRange((u8*)cmd->mSource, cmd->mLength);
     }
 
+#ifdef TARGET_PC
     ARQPostRequest(cmd, 0, cmd->mDirection, 0, cmd->mSource, cmd->mDestination, cmd->mLength, JKRAramPiece::doneDMA);
+#else
+    ARQPostRequest(cmd, 0, cmd->mDirection, 0, (u32)cmd->mSource, (u32)cmd->mDestination, cmd->mLength, JKRAramPiece::doneDMA);
+#endif
 }
 
 #ifdef TARGET_PC

@@ -26,15 +26,6 @@ static u8 ext_mixmode = MixMode_Mono;
 
 extern void Jac_HeapSetup(void* pHeap, s32 size) {
     if (pHeap != nullptr) {
-#ifdef TARGET_PC
-#if UINTPTR_MAX > 0xFFFFFFFFu
-        /* Capture upper 32 bits of audio heap address for pointer recovery */
-        {
-            extern uintptr_t pc_audio_ptr_base;
-            pc_audio_ptr_base = (uintptr_t)pHeap & ~(uintptr_t)0xFFFFFFFF;
-        }
-#endif
-#endif
         Nas_HeapInit(&audio_hp, (u8*)pHeap, size);
         audio_hp_exist = TRUE;
     } else {
@@ -69,11 +60,7 @@ extern void Jac_Init(void) {
     }
 
     AIInit(nullptr);
-#ifdef TARGET_PC
     AIInitDMA((uintptr_t)dac[2], DAC_SIZE * 2);
-#else
-    AIInitDMA((u32)dac[2], DAC_SIZE * 2);
-#endif
 }
 
 static void MixMonoTrack(s16* track, s32 nSamples, MixCallback callback) {
@@ -295,11 +282,7 @@ extern void Jac_UpdateDAC(void) {
     }
 
     if (use_rsp_madep != nullptr) {
-#ifdef TARGET_PC
         AIInitDMA((uintptr_t)use_rsp_madep, DAC_SIZE * 2);
-#else
-        AIInitDMA((u32)use_rsp_madep, DAC_SIZE * 2);
-#endif
         use_rsp_madep = nullptr;
     } else {
         UNIVERSAL_DACCOUNTER++;

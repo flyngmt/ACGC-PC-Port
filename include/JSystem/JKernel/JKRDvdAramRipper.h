@@ -35,10 +35,20 @@ class JKRADCommand {
 
 class JKRDvdAramRipper {
   public:
+#ifdef TARGET_PC
+    static JKRAramBlock* loadToAram(char const*, uintptr_t, JKRExpandSwitch, u32, u32);
+    static JKRAramBlock* loadToAram(s32, uintptr_t, JKRExpandSwitch, u32, u32);
+    static JKRAramBlock* loadToAram(JKRDvdFile*, uintptr_t, JKRExpandSwitch, u32, u32);
+#else
     static JKRAramBlock* loadToAram(char const*, u32, JKRExpandSwitch, u32, u32);
     static JKRAramBlock* loadToAram(s32, u32, JKRExpandSwitch, u32, u32);
     static JKRAramBlock* loadToAram(JKRDvdFile*, u32, JKRExpandSwitch, u32, u32);
+#endif
+#ifdef TARGET_PC
+    static JKRADCommand* loadToAram_Async(JKRDvdFile*, uintptr_t, JKRExpandSwitch, JKRADCommand::LoadCallback, u32, u32);
+#else
     static JKRADCommand* loadToAram_Async(JKRDvdFile*, u32, JKRExpandSwitch, JKRADCommand::LoadCallback, u32, u32);
+#endif
     static JKRADCommand* callCommand_Async(JKRADCommand*);
     static bool syncAram(JKRADCommand*, int);
 
@@ -61,7 +71,11 @@ class JKRDvdAramRipper {
     static JSUList<JKRADCommand> sDvdAramAsyncList;
 };
 
+#ifdef TARGET_PC
+inline JKRAramBlock* JKRDvdToAram(s32 entrynum, uintptr_t p2, JKRExpandSwitch expSwitch, u32 p4, u32 p5) {
+#else
 inline JKRAramBlock* JKRDvdToAram(s32 entrynum, u32 p2, JKRExpandSwitch expSwitch, u32 p4, u32 p5) {
+#endif
     return JKRDvdAramRipper::loadToAram(entrynum, p2, expSwitch, p4, p5);
 }
 

@@ -237,7 +237,7 @@ bool JKRAramArchive::open(s32 entryNum) {
                 OSReport("[PC] RARC: loading %u bytes of file data to ARAM at %u\n",
                          aramSize, mBlock->getAddress());
 #endif
-                JKRDvdToAram(entryNum, mBlock->getAddress(), EXPAND_SWITCH_DECOMPRESS,
+                JKRDvdToAram(entryNum, (uintptr_t)mBlock->getAddress(), EXPAND_SWITCH_DECOMPRESS,
                              mem->header_length + mem->file_data_offset, 0);
             }
         }
@@ -299,7 +299,11 @@ void* JKRAramArchive::fetchResource(void* data, u32 compressedSize, SDIFileEntry
     return data;
 }
 
+#ifdef TARGET_PC
+uintptr_t JKRAramArchive::getAramAddress_Entry(SDIFileEntry* fileEntry) {
+#else
 u32 JKRAramArchive::getAramAddress_Entry(SDIFileEntry* fileEntry) {
+#endif
     JUT_ASSERT(isMounted());
 
     if (fileEntry == nullptr) {
@@ -308,12 +312,20 @@ u32 JKRAramArchive::getAramAddress_Entry(SDIFileEntry* fileEntry) {
     return fileEntry->mDataOffset + mBlock->getAddress();
 }
 
+#ifdef TARGET_PC
+uintptr_t JKRAramArchive::getAramAddress(u32 type, const char* file) {
+#else
 u32 JKRAramArchive::getAramAddress(u32 type, const char* file) {
+#endif
     SDIFileEntry* entry = findTypeResource(type, file);
     return getAramAddress_Entry(entry);
 }
 
+#ifdef TARGET_PC
+u32 JKRAramArchive::fetchResource_subroutine(uintptr_t srcAram, u32 size, u8* data, u32 expandSize, int compression) {
+#else
 u32 JKRAramArchive::fetchResource_subroutine(u32 srcAram, u32 size, u8* data, u32 expandSize, int compression) {
+#endif
     JUT_ASSERT((srcAram & 0x1f) == 0);
 
     u32 sizeRef;
@@ -338,7 +350,11 @@ u32 JKRAramArchive::fetchResource_subroutine(u32 srcAram, u32 size, u8* data, u3
     }
 }
 
+#ifdef TARGET_PC
+u32 JKRAramArchive::fetchResource_subroutine(uintptr_t srcAram, u32 size, JKRHeap* heap, int compression, u8** pBuf) {
+#else
 u32 JKRAramArchive::fetchResource_subroutine(u32 srcAram, u32 size, JKRHeap* heap, int compression, u8** pBuf) {
+#endif
     u32 resSize;
     u32 alignedSize = ALIGN_NEXT(size, 32);
 

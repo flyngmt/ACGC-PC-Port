@@ -21,7 +21,7 @@ static void PTconvert(void** pointer, uintptr_t base_address)
 		*pointer = NULL;
 		return;
 	}
-	if (offset >= (u32)base_address) {
+	if (offset >= (uintptr_t)base_address) {
 		*pointer = (void*)(uintptr_t)offset;
 		return;
 	}
@@ -45,11 +45,7 @@ static void PTconvert(void** pointer, u32 base_address)
 Bank_* Bank_Test(u8* ibnk_address)
 {
 	u32 i, j, k;
-#ifdef TARGET_PC
 	uintptr_t base_addr = (uintptr_t)ibnk_address;
-#else
-	u32 base_addr    = (u32)ibnk_address;
-#endif
 	Bank_* startBank = (Bank_*)(ibnk_address + 0x20);
 	if (startBank->mMagic != 'BANK') {
 		return NULL;

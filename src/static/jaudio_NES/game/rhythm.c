@@ -7,7 +7,7 @@ typedef struct NA_RHYTHM_BUFFER {
     /* 0x0 */ u8 state;
     /* 0x1 */ s8 current_subtrack;
     /* 0x2 */ u8 unk2[0x2];
-    /* 0x4 */ u32 current_buffer_id;
+    /* 0x4 */ uintptr_t current_buffer_id;
     /* 0x8 */ s8 unk8;
     /* 0x9 */ s8 unk9;
     /* 0xA */ u8 unkA[0x2];
@@ -60,7 +60,7 @@ static NA_RHYTHM_BUFFER* rhythm_buffer_alloc() {
     return nullptr;
 }
 
-static NA_RHYTHM_BUFFER* get_rhythm_buffer(u32 idx) {
+static NA_RHYTHM_BUFFER* get_rhythm_buffer(uintptr_t idx) {
     int i;
     NA_RHYTHM_BUFFER* buf;
 
@@ -75,7 +75,7 @@ static NA_RHYTHM_BUFFER* get_rhythm_buffer(u32 idx) {
     return nullptr;
 }
 
-extern s8 Na_GetRhythmSubTrack(u32 idx) {
+extern s8 Na_GetRhythmSubTrack(uintptr_t idx) {
     NA_RHYTHM_BUFFER* buf;
 
     buf = get_rhythm_buffer(idx);
@@ -104,7 +104,7 @@ static void rhythm_stop(NA_RHYTHM_BUFFER* buffer) {
     }
 }
 
-extern void Na_RhythmStart(u32 idx, s8 arg1, s8 arg2) {
+extern void Na_RhythmStart(uintptr_t idx, s8 arg1, s8 arg2) {
     NA_RHYTHM_BUFFER* buf;
 
     buf = get_rhythm_buffer(idx);
@@ -119,7 +119,7 @@ extern void Na_RhythmStart(u32 idx, s8 arg1, s8 arg2) {
     }
 }
 
-extern void Na_RhythmStop(u32 idx) {
+extern void Na_RhythmStop(uintptr_t idx) {
     NA_RHYTHM_BUFFER* buf;
 
     buf = get_rhythm_buffer(idx);
@@ -148,7 +148,7 @@ static s16 Na_GetRhythmBeatType(void) {
     return rhythm_beat_type;
 }
 
-extern f32 Na_GetRhythmAnimCounter(u32 idx) {
+extern f32 Na_GetRhythmAnimCounter(uintptr_t idx) {
     f32 f31 = 0.0f;
     NA_RHYTHM_BUFFER* buf = get_rhythm_buffer(idx);
     s16 r30;
@@ -191,7 +191,7 @@ extern f32 Na_GetRhythmAnimCounter(u32 idx) {
     return f31;
 }
 
-extern s8 Na_GetRhythmDelay(u32 idx) {
+extern s8 Na_GetRhythmDelay(uintptr_t idx) {
     NA_RHYTHM_BUFFER* buf;
     s8 delay = 0;
 

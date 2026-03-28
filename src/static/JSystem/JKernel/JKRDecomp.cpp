@@ -207,7 +207,7 @@ void JKRDecomp::decodeSZP(u8* src, u8* dst, u32 srcLength, u32 skipCount) {
 }
 
 void JKRDecomp::decodeSZS(u8* src_buffer, u8* dst_buffer, u32 srcSize, u32 skipCount) {
-    u8* decompEnd = dst_buffer + *(u32*)(src_buffer + 4) - skipCount;
+    u8* decompEnd = dst_buffer + JKRDECOMP_READU32BE(src_buffer, 4) - skipCount;
     u8* copyStart;
     s32 copyByteCount;
     s32 chunkBitsLeft = 0;
@@ -215,7 +215,7 @@ void JKRDecomp::decodeSZS(u8* src_buffer, u8* dst_buffer, u32 srcSize, u32 skipC
 
     if (srcSize == 0)
         return;
-    if (skipCount > *(u32*)src_buffer)
+    if (skipCount > JKRDECOMP_READU32BE(src_buffer, 4))
         return;
 
     u8* curSrcPos = src_buffer + 0x10;

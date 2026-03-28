@@ -27,7 +27,7 @@ static void PTconvert(void** pointer, uintptr_t base_address)
 		*pointer = NULL;
 		return;
 	}
-	if (offset >= (u32)base_address) {
+	if (offset >= (uintptr_t)base_address) {
 		/* Already an absolute address (or larger than base) — leave as-is
 		 * but widen to pointer */
 		*pointer = (void*)(uintptr_t)offset;
@@ -56,11 +56,7 @@ static void PTconvert(void** pointer, u32 base_address)
  */
 CtrlGroup_* Wave_Test(u8* data)
 {
-#ifdef TARGET_PC
     uintptr_t base_addr = (uintptr_t)data;
-#else
-    u32 base_addr = (u32)data;
-#endif
 	CtrlGroup_* group;
 	SCNE_* scene;
 	Ctrl_* cst;

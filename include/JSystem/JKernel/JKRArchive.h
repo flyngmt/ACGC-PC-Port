@@ -286,10 +286,17 @@ class JKRAramArchive : public JKRArchive {
     virtual void* fetchResource(void*, u32, SDIFileEntry*, u32*, JKRExpandSwitch expandSwitch); // _44
 
     bool open(s32);
+#ifdef TARGET_PC
+    uintptr_t getAramAddress_Entry(SDIFileEntry* fileEntry);
+    uintptr_t getAramAddress(u32, const char* file);
+    static u32 fetchResource_subroutine(uintptr_t, u32, u8*, u32, int);
+    static u32 fetchResource_subroutine(uintptr_t, u32, JKRHeap*, int, u8**);
+#else
     u32 getAramAddress_Entry(SDIFileEntry* fileEntry);
     u32 getAramAddress(u32, const char* file);
     static u32 fetchResource_subroutine(u32, u32, u8*, u32, int);
     static u32 fetchResource_subroutine(u32, u32, JKRHeap*, int, u8**);
+#endif
 
     void fixedInit(s32 entryNum, EMountDirection direction);
     bool mountFixed(s32 entryNum, EMountDirection direction);
