@@ -1,7 +1,9 @@
 #ifndef _DOLPHIN_CARDMOUNT_H_
 #define _DOLPHIN_CARDMOUNT_H_
 
+#ifndef TARGET_PC
 int CARDProbe(long chan);
+#endif
 s32 CARDProbeEx(s32 chan, s32 *memSize, s32 *sectorSize);
 s32 CARDMountAsync(s32 chan, void *workArea, CARDCallback detachCallback, CARDCallback attachCallback);
 s32 CARDMount(s32 chan, void *workArea, CARDCallback detachCallback);

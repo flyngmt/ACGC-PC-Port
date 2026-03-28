@@ -1974,7 +1974,7 @@ static void mSM_ovl_prog_seg(Submenu* submenu, mSM_Ovl_dlftbl_c* dlftbl) {
 
         dlftbl->seg_start = NULL;
         dlftbl->seg_end = NULL;
-        submenu->next_overlay_address = (char*)ALIGN_NEXT((u32)dlftbl->seg_end - (u32)dlftbl->seg_start, 64);
+        submenu->next_overlay_address = (char*)ALIGN_NEXT((uintptr_t)dlftbl->seg_end - (uintptr_t)dlftbl->seg_start, 64);
         ct_proc = dlftbl->ct_proc;
         (*ct_proc)(submenu);
         dlftbl->ct_proc = ct_proc;

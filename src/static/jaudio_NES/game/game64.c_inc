@@ -584,7 +584,12 @@ f32 SOU_ONGEN_AREA1 = 540.f;
 f32 SOU_ONGEN_AREA2 = 533.f;
 f32 sou_md_bgm_boost_pasent = 1.f;
 
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+/* 64-bit: audio structs with pointer fields are larger, need more heap space */
+u8 audiomemory[0x120000] ATTRIBUTE_ALIGN(32);
+#else
 u8 audiomemory[0x90000] ATTRIBUTE_ALIGN(32);
+#endif
 s16* SOU_FIR_STATE;
 s16 SOU_FIR_STATE_COPY[12];
 
@@ -3056,7 +3061,7 @@ u8 Na_MessageSpeedGet() {
     return sou_message_speed;
 }
 
-void Na_OngenPos(u32 id, u8 index, u16 angle, f32 distance) {
+void Na_OngenPos(uintptr_t id, u8 index, u16 angle, f32 distance) {
     u8 pan = 0;
     u8 i = 0;
     u8 j = 0;
@@ -3617,7 +3622,7 @@ extern void Na_KishaStatusTrg(u8 a) {
     }
 }
 
-extern void Na_KishaStatusLevel(f32 speed, u32 ongenNum1, u16 angle1, f32 distance1, u32 ongenNum2, u16 angle2,
+extern void Na_KishaStatusLevel(f32 speed, uintptr_t ongenNum1, u16 angle1, f32 distance1, uintptr_t ongenNum2, u16 angle2,
                                 f32 distance2) {
     f32 f30 = 0.f;
     f32 f29 = 0.f;

@@ -117,7 +117,7 @@ static void aES2_tug_of_war(NPC_SONCHO2* soncho, GAME_PLAY* play) {
         aES2_setup_think_proc(soncho, play, soncho->think_idx);
     }
     if (soncho->npc_class.draw.animation_id == aNPC_ANIM_CLAP1) {
-        sAdo_OngenPos((u32)soncho, NA_SE_2F, &soncho->npc_class.actor_class.world.position);
+        sAdo_OngenPos((uintptr_t)soncho, NA_SE_2F, &soncho->npc_class.actor_class.world.position);
     }
 }
 

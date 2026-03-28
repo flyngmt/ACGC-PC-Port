@@ -266,8 +266,13 @@ void Nas_HeapInit(ALHeap* heap, u8* p2, s32 p3) {
         heap->current = NULL;
         heap->last = NULL;
     } else {
+#ifdef TARGET_PC
+        length = p3 - ((uintptr_t)p2 & 0x1F);
+        heap->base = (u8*)ALIGN_NEXT((uintptr_t)p2, 32);
+#else
         length = p3 - ((u32)p2 & 0x1F);
         heap->base = (u8*)ALIGN_NEXT((u32)p2, 32);
+#endif
         heap->current = heap->base;
         heap->length = length;
         heap->last = NULL;
@@ -722,6 +727,8 @@ void* __Nas_SzCacheCheck_Inner(s32 tabletype, s32 audioCacheType, s32 id) {
         case WAVE_TABLE: {
             heap = &AG.wave_heap;
         } break;
+        default:
+            return NULL;
     }
     SZAuto* autoHeap = &heap->auto_heap;
     if (audioCacheType == 0) {
@@ -1369,7 +1376,11 @@ void __RestoreAddr(Wavelookuptable* a, smzwavetable* b) {
         u8* o = a_sample + a->_08;
         if (b_sample >= a_sample && b_sample < o) {
             // fakematch?
+#ifdef TARGET_PC
+            b->sample = (u8*)((uintptr_t)a->_04 + (b->sample - (uintptr_t)a->sample));
+#else
             b->sample = (u8*)((u32)a->_04 + (b->sample - (u32)a->sample));
+#endif
             if (EXGTYPE == 0) {
                 b->medium = a->medium;
             } else {

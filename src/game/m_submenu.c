@@ -620,7 +620,7 @@ static char* mSM_Object_Exchange_keep_new(GAME_PLAY* play, s16 bank_id, size_t s
     bank->size = size;
 
     if (exchange->bank_idx < mSc_OBJECT_BANK_NUM - 1) {
-        exchange->next_bank_ram_address = (char*)ALIGN_NEXT((u32)(exchange->next_bank_ram_address + size), 16);
+        exchange->next_bank_ram_address = (char*)ALIGN_NEXT((uintptr_t)(exchange->next_bank_ram_address + size), 16);
         exchange->bank_idx++;
     }
 

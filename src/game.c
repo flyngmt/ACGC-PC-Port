@@ -23,6 +23,11 @@ extern int g_pc_model_viewer;
 #include "GBA/gba.h"
 #include "m_vibctl.h"
 
+/* On x86/x86_64, SDL2 pulls in <xmmintrin.h> → <mm_malloc.h> → <errno.h>,
+ * which defines errno as a function-like macro. This conflicts with the
+ * pad_t struct member named errno. Undefine it after all headers. */
+#undef errno
+
 GAME* gamePT = NULL;
 
 static u16 last_button[MAXCONTROLLERS];
@@ -155,9 +160,9 @@ extern void game_main(GAME* this) {
         pc_crash_set_jmpbuf(&game_exec_jmpbuf);
         if (setjmp(game_exec_jmpbuf) != 0) {
             /* Recovered from crash in game exec */
-            printf("[PC] CRASH in game exec! doing_point=%d specific=0x%02X addr=0x%08X data=0x%08X\n",
+            printf("[PC] CRASH in game exec! doing_point=%d specific=0x%02X addr=%p data=%p\n",
                 this->doing_point, this->doing_point_specific,
-                pc_crash_get_addr(), pc_crash_get_data_addr());
+                (void*)pc_crash_get_addr(), (void*)pc_crash_get_data_addr());
         } else {
             this->exec(this);
         }

@@ -22,9 +22,14 @@ extern "C" {
 
 typedef u64 Z_OSTime;
 
+#if defined(__APPLE__) || defined(__linux__)
+/* macOS and Linux (glibc 2.41+ / GCC 15+) provide bcmp/bcopy/bzero — don't redeclare */
+#include <strings.h>
+#else
 int bcmp(void* v1, void* v2, u32 size);
 void bcopy(void* src, void* dst, size_t n);
 void bzero(void* ptr, size_t size);
+#endif
 void osSyncPrintf(const char* fmt, ...);
 void osWritebackDCache(void* vaddr, u32 nbytes);
 u32 osGetCount(void);

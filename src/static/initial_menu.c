@@ -433,7 +433,7 @@ extern void initial_menu_init() {
 }
 
 extern void initial_menu_cleanup() {
-  int msg;
+  OSMessage msg;
 
   if (Thread_p != NULL) {
     if (!osRecvMesg(&commandQ, (OSMessage*)&msg, OS_MESSAGE_NOBLOCK)) {

@@ -133,9 +133,9 @@ static int aITT_check_player_net(ACTOR* actorx) {
     int ret = FALSE;
 
     if (mPlib_Check_StopNet(&net_pos) == TRUE) {
-        u32 catch_label = mPlib_Get_item_net_catch_label();
+        uintptr_t catch_label = mPlib_Get_item_net_catch_label();
 
-        if (catch_label != (u32)actorx) {
+        if (catch_label != (uintptr_t)actorx) {
             f32 dx = net_pos.x - actorx->world.position.x;
             f32 dz = net_pos.z - actorx->world.position.z;
 
@@ -277,7 +277,7 @@ static void aITT_avoid(ACTOR* actorx, GAME* game) {
         case aINS_INSECT_TYPE_LADYBUG:
         case aINS_INSECT_TYPE_SPOTTED_LADYBUG:
         case aINS_INSECT_TYPE_MANTIS:
-            sAdo_OngenPos((u32)actorx, NA_SE_26, &actorx->world.position);
+            sAdo_OngenPos((uintptr_t)actorx, NA_SE_26, &actorx->world.position);
             break;
     }
 }
@@ -495,9 +495,9 @@ static void aITT_setupAction(aINS_INSECT_ACTOR* insect, int action, GAME* game) 
  */
 static void aITT_actor_move(ACTOR* actorx, GAME* game) {
     aINS_INSECT_ACTOR* insect = (aINS_INSECT_ACTOR*)actorx;
-    u32 catch_label = mPlib_Get_item_net_catch_label();
+    uintptr_t catch_label = mPlib_Get_item_net_catch_label();
 
-    if (catch_label == (u32)actorx) {
+    if (catch_label == (uintptr_t)actorx) {
         // @BUG - They forgot to make a separate case for the snail,
         // so it uses the ladybug/spotted ladybug/mantis let escape behavior.
         // This was fixed in the Australian release.

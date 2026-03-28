@@ -202,7 +202,7 @@ void minsect_batta_mv(MUSEUM_INSECT_PRIVATE_DATA* actor, GAME* game) {
                 }
             }
             if (dist < 200.f) {
-                sAdo_OngenPos((u32)actor, batta_sound_data[id], &actor->_1C);
+                sAdo_OngenPos((uintptr_t)actor, batta_sound_data[id], &actor->_1C);
             }
         } else if (actor->_04 == minsect_batta_silent_process && actor->_8E == 0) {
             if (actor->_00 == 17) {
@@ -212,7 +212,7 @@ void minsect_batta_mv(MUSEUM_INSECT_PRIVATE_DATA* actor, GAME* game) {
                 }
             }
             if (dist < 200.f) {
-                sAdo_OngenPos((u32)actor, batta_sound_data[id], &actor->_1C);
+                sAdo_OngenPos((uintptr_t)actor, batta_sound_data[id], &actor->_1C);
             }
         }
     }

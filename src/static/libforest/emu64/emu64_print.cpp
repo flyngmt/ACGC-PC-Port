@@ -54,21 +54,21 @@ void emu64::disp_matrix(MtxP mtx) {
 
 #pragma inline_depth(5)
 #pragma inline_max_size(1100)
-const char* emu64::segchk(u32 segment) {
+const char* emu64::segchk(uintptr_t segment) {
     static char str[64];
     char buf[30];
     const char str0[] = "anime_4_txt+%4u";
     const char str1[] = "anime_6_model+sizeof(Mtx)*%2u";
 
-    u32 partial_addr = seg2k0(segment);
-    u32 addr = convert_partial_address(partial_addr);
+    uintptr_t partial_addr = seg2k0(segment);
+    uintptr_t addr = convert_partial_address((u32)partial_addr);
 
     str[0] = '\0';
     if (segment == partial_addr) {
         if (addr == partial_addr) {
-            snprintf(str, sizeof(str), "0x%08x", segment);
+            snprintf(str, sizeof(str), "0x%08x", (u32)segment);
         } else {
-            snprintf(str, sizeof(str), "0x%08x /* PADDR=0x%08x */", segment, addr);
+            snprintf(str, sizeof(str), "0x%08x /* PADDR=0x%08x */", (u32)segment, (u32)addr);
         }
     } else {
         const char* s;

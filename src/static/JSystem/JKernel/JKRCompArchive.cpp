@@ -8,7 +8,11 @@
 #include "JSystem/JSystem.h"
 #include "JSystem/JUtility/JUTAssertion.h"
 
-JKRCompArchive::JKRCompArchive(long entryNum, EMountDirection mountDirection) : JKRArchive(entryNum, MOUNT_COMP) {
+#ifdef TARGET_PC
+#include <stdlib.h>
+#endif
+
+JKRCompArchive::JKRCompArchive(s32 entryNum, EMountDirection mountDirection) : JKRArchive(entryNum, MOUNT_COMP) {
     mMountDirection = mountDirection;
     if (!open(entryNum)) {
         return;
@@ -32,14 +36,22 @@ JKRCompArchive::~JKRCompArchive() {
         SDIFileEntry* fileEntries = mFileEntries;
         for (int i = 0; i < mArcInfoBlock->num_file_entries; i++) {
             u32 flag = (fileEntries->mFlag >> 24);
-            if ((flag & 16) == 0 && fileEntries->mData) {
-                JKRFreeToHeap(mHeap, fileEntries->mData);
+            if ((flag & 16) == 0 && getFileEntryData(fileEntries)) {
+                JKRFreeToHeap(mHeap, getFileEntryData(fileEntries));
             }
             fileEntries++;
         }
         JKRFreeToHeap(mHeap, mArcInfoBlock);
         mArcInfoBlock = nullptr;
     }
+
+#ifdef TARGET_PC
+    if (mFileEntryDataPtrs) {
+        free(mFileEntryDataPtrs);
+        mFileEntryDataPtrs = nullptr;
+    }
+#endif
+
     if (mAramPart) {
         delete mAramPart;
     }
@@ -51,7 +63,7 @@ JKRCompArchive::~JKRCompArchive() {
     mIsMounted = false;
 }
 
-bool JKRCompArchive::open(long entryNum) {
+bool JKRCompArchive::open(s32 entryNum) {
     mArcInfoBlock = nullptr;
     _60 = 0;
     mAramPart = nullptr;
@@ -62,6 +74,9 @@ bool JKRCompArchive::open(long entryNum) {
     mDirectories = nullptr;
     mFileEntries = nullptr;
     mStrTable = nullptr;
+#ifdef TARGET_PC
+    mFileEntryDataPtrs = nullptr;
+#endif
 
     mDvdFile = new (JKRGetSystemHeap(), 0) JKRDvdFile(entryNum);
     if (mDvdFile == nullptr) {
@@ -95,7 +110,11 @@ bool JKRCompArchive::open(long entryNum) {
                     JKRDvdToMainRam(entryNum, (u8*)mArcInfoBlock, EXPAND_SWITCH_DECOMPRESS,
                                     (u32)arcHeader->file_data_offset + mSizeOfMemPart, nullptr,
                                     JKRDvdRipper::ALLOC_DIR_TOP, 0x20, nullptr);
+#ifdef TARGET_PC
+                    _60 = (uintptr_t)mArcInfoBlock + arcHeader->file_data_offset;
+#else
                     _60 = (u32)mArcInfoBlock + arcHeader->file_data_offset;
+#endif
 
                     if (mSizeOfAramPart != 0) {
                         mAramPart = JKRAllocFromAram(mSizeOfAramPart, JKRAramHeap::Head);
@@ -108,9 +127,16 @@ bool JKRCompArchive::open(long entryNum) {
                                      arcHeader->header_length + arcHeader->file_data_offset + mSizeOfMemPart, 0);
                     }
 
+#ifdef TARGET_PC
+                    mDirectories = (SDIDirEntry*)((uintptr_t)mArcInfoBlock + mArcInfoBlock->node_offset);
+                    mFileEntries = (SDIFileEntry*)((uintptr_t)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
+                    mStrTable = (const char*)((uintptr_t)mArcInfoBlock + mArcInfoBlock->string_table_offset);
+                    mFileEntryDataPtrs = (void**)calloc(mArcInfoBlock->num_file_entries > 0 ? mArcInfoBlock->num_file_entries : 1, sizeof(void*));
+#else
                     mDirectories = (SDIDirEntry*)((u32)mArcInfoBlock + mArcInfoBlock->node_offset);
                     mFileEntries = (SDIFileEntry*)((u32)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
                     mStrTable = (const char*)((u32)mArcInfoBlock + mArcInfoBlock->string_table_offset);
+#endif
                     _68 = arcHeader->header_length + arcHeader->file_data_offset;
                 }
                 break;
@@ -144,7 +170,11 @@ bool JKRCompArchive::open(long entryNum) {
                             // header
                             JKRHeap::copyMemory((u8*)mArcInfoBlock, arcHeader + 1,
                                                 (arcHeader->file_data_offset + mSizeOfMemPart));
+#ifdef TARGET_PC
+                            _60 = (uintptr_t)mArcInfoBlock + arcHeader->file_data_offset;
+#else
                             _60 = (u32)mArcInfoBlock + arcHeader->file_data_offset;
+#endif
                             if (mSizeOfAramPart != 0) {
                                 mAramPart = JKRAllocFromAram(mSizeOfAramPart, JKRAramHeap::Head);
                                 if (mAramPart == nullptr) {
@@ -159,9 +189,16 @@ bool JKRCompArchive::open(long entryNum) {
                         }
                     }
                 }
+#ifdef TARGET_PC
+                mDirectories = (SDIDirEntry*)((uintptr_t)mArcInfoBlock + mArcInfoBlock->node_offset);
+                mFileEntries = (SDIFileEntry*)((uintptr_t)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
+                mStrTable = (const char*)((uintptr_t)mArcInfoBlock + mArcInfoBlock->string_table_offset);
+                mFileEntryDataPtrs = (void**)calloc(mArcInfoBlock->num_file_entries > 0 ? mArcInfoBlock->num_file_entries : 1, sizeof(void*));
+#else
                 mDirectories = (SDIDirEntry*)((u32)mArcInfoBlock + mArcInfoBlock->node_offset);
                 mFileEntries = (SDIFileEntry*)((u32)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
                 mStrTable = (const char*)((u32)mArcInfoBlock + mArcInfoBlock->string_table_offset);
+#endif
                 _68 = arcHeader->header_length + arcHeader->file_data_offset;
                 break;
         }
@@ -185,10 +222,10 @@ void* JKRCompArchive::fetchResource(SDIFileEntry* fileEntry, u32* pSize) {
 
     u32 ptrSize;
 
-    if (fileEntry->mData == nullptr) {
+    if (getFileEntryData(fileEntry) == nullptr) {
         u32 flag = fileEntry->mFlag >> 0x18;
         if (flag & 0x10) {
-            fileEntry->mData = (void*)(_60 + fileEntry->mDataOffset);
+            setFileEntryData(fileEntry, (void*)(_60 + fileEntry->mDataOffset));
             if (pSize)
                 *pSize = fileEntry->mSize;
         } else if (flag & 0x20) {
@@ -202,7 +239,7 @@ void* JKRCompArchive::fetchResource(SDIFileEntry* fileEntry, u32* pSize) {
             if (pSize)
                 *pSize = size;
 
-            fileEntry->mData = data;
+            setFileEntryData(fileEntry, data);
 
         } else if (flag & 0x40) {
             int compression = JKRConvertAttrToCompressionType(fileEntry->mFlag >> 0x18);
@@ -214,12 +251,12 @@ void* JKRCompArchive::fetchResource(SDIFileEntry* fileEntry, u32* pSize) {
             if (pSize)
                 *pSize = size;
 
-            fileEntry->mData = data;
+            setFileEntryData(fileEntry, data);
         }
     } else if (pSize) {
         *pSize = fileEntry->mSize;
     }
-    return fileEntry->mData;
+    return getFileEntryData(fileEntry);
 }
 
 void* JKRCompArchive::fetchResource(void* data, u32 compressedSize, SDIFileEntry* fileEntry, u32* pSize,
@@ -233,12 +270,12 @@ void* JKRCompArchive::fetchResource(void* data, u32 compressedSize, SDIFileEntry
     if (size == 0)
         JPANIC(651, ":::bad resource size. size = 0\n");
 
-    if (fileEntry->mData) {
+    if (getFileEntryData(fileEntry)) {
         if (size > (compressedSize & ~31)) {
             size = (compressedSize & ~31);
         }
 
-        JKRHeap::copyMemory(data, fileEntry->mData, size);
+        JKRHeap::copyMemory(data, getFileEntryData(fileEntry), size);
         expandSize = size;
     } else {
         u32 fileFlag = fileEntry->mFlag >> 0x18;
@@ -285,12 +322,12 @@ void JKRCompArchive::removeResourceAll() {
         SDIFileEntry* fileEntry = mFileEntries;
         for (int i = 0; i < mArcInfoBlock->num_file_entries; i++) {
             u32 flag = fileEntry->mFlag >> 0x18;
-            if (fileEntry->mData) {
+            if (getFileEntryData(fileEntry)) {
                 if ((flag & 0x10) == 0) {
-                    JKRFreeToHeap(mHeap, fileEntry->mData);
+                    JKRFreeToHeap(mHeap, getFileEntryData(fileEntry));
                 }
 
-                fileEntry->mData = nullptr;
+                setFileEntryData(fileEntry, nullptr);
             }
         }
     }
@@ -305,6 +342,6 @@ bool JKRCompArchive::removeResource(void* resource) {
         JKRFreeToHeap(mHeap, resource);
     }
 
-    fileEntry->mData = nullptr;
+    setFileEntryData(fileEntry, nullptr);
     return true;
 }

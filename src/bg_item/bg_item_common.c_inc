@@ -517,7 +517,7 @@ static int bIT_actor_shin_effect_move(GAME* game, bg_item_shin_c* shin) {
                 exit = TRUE;
                 break;
             case 4:
-                sAdo_OngenPos((u32)shin, 0x2C, &shin->position);
+                sAdo_OngenPos((uintptr_t)shin, 0x2C, &shin->position);
                 break;
             case 5:
                 eEC_CLIP->effect_kill_proc(eEC_EFFECT_ANAHIKARI, (u16)i);

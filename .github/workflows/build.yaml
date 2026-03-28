@@ -1,0 +1,124 @@
+name: Build
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: "Windows-x86_64", os: windows-latest, msys2_sys: MINGW64, msys2_env: mingw-w64-x86_64 }
+          - { name: "Windows-i686",   os: windows-latest, msys2_sys: MINGW32, msys2_env: mingw-w64-i686   }
+          - { name: "Linux-x86_64",   os: ubuntu-latest,  linux_arch: x86_64 }
+          - { name: "Linux-i686",     os: ubuntu-latest,  linux_arch: i686   }
+          - { name: "macOS-ARM64",    os: macos-latest  }
+          - { name: "macOS-x86_64",   os: macos-latest, macos_arch: x86_64 }
+
+    steps:
+      - uses: actions/checkout@v6
+
+      # ── Windows ──────────────────────────────────────────────────────
+      - uses: msys2/setup-msys2@v2
+        if: runner.os == 'Windows'
+        with:
+          msystem: ${{ matrix.msys2_sys }}
+          update: true
+          install: >-
+            ${{ matrix.msys2_env }}-gcc
+            ${{ matrix.msys2_env }}-cmake
+            ${{ matrix.msys2_env }}-SDL2
+            ${{ matrix.msys2_env }}-make
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          cd pc && mkdir -p build && cd build
+          cmake .. -G "MinGW Makefiles"
+          mingw32-make -j$(nproc)
+
+      # ── Linux ─────────────────────────────────────────────────────────
+      - name: Install deps (Linux x86_64)
+        if: runner.os == 'Linux' && matrix.linux_arch == 'x86_64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc g++ cmake libsdl2-dev libgl-dev
+
+      - name: Install deps (Linux i686)
+        if: runner.os == 'Linux' && matrix.linux_arch == 'i686'
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib g++-multilib cmake
+          # Install 32-bit libraries without dev packages to avoid glib conflicts
+          sudo apt-get install -y libsdl2-2.0-0:i386 libgl1:i386 libglx0:i386 libopengl0:i386
+          # Install x86_64 dev packages (headers are arch-independent)
+          sudo apt-get install -y libsdl2-dev libgl-dev
+
+      - name: Build (Linux x86_64)
+        if: runner.os == 'Linux' && matrix.linux_arch == 'x86_64'
+        run: |
+          cd pc && mkdir -p build && cd build
+          cmake ..
+          make -j$(nproc)
+
+      - name: Build (Linux i686)
+        if: runner.os == 'Linux' && matrix.linux_arch == 'i686'
+        run: |
+          cd pc && mkdir -p build32 && cd build32
+          cmake .. -DCMAKE_TOOLCHAIN_FILE=../cmake/Toolchain-linux32.cmake
+          make -j$(nproc)
+
+      # ── macOS ARM64 ───────────────────────────────────────────────────
+      - name: Install deps (macOS ARM64)
+        if: runner.os == 'macOS' && matrix.macos_arch != 'x86_64'
+        run: |
+          brew install gcc sdl2 cmake
+          GCC_VERSION=$(ls "$(brew --prefix)/bin/gcc-"* | grep -Eo '[0-9]+$' | sort -rn | head -1)
+          echo "GCC_VERSION=$GCC_VERSION" >> $GITHUB_ENV
+
+      - name: Build (macOS ARM64)
+        if: runner.os == 'macOS' && matrix.macos_arch != 'x86_64'
+        run: |
+          cd pc && mkdir -p build && cd build
+          cmake .. \
+            -DCMAKE_C_COMPILER=gcc-${GCC_VERSION} \
+            -DCMAKE_CXX_COMPILER=g++-${GCC_VERSION}
+          make -j$(sysctl -n hw.ncpu)
+
+      # ── macOS x86_64 (via Rosetta 2 + x86_64 Homebrew) ───────────────
+      - name: Install deps (macOS x86_64)
+        if: runner.os == 'macOS' && matrix.macos_arch == 'x86_64'
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh -o /tmp/brew_install.sh
+          arch -x86_64 /bin/bash /tmp/brew_install.sh
+          arch -x86_64 /usr/local/bin/brew install gcc sdl2 cmake
+          GCC_VERSION=$(ls /usr/local/bin/gcc-* | grep -Eo '[0-9]+$' | sort -rn | head -1)
+          echo "GCC_VERSION=$GCC_VERSION" >> $GITHUB_ENV
+
+      - name: Build (macOS x86_64)
+        if: runner.os == 'macOS' && matrix.macos_arch == 'x86_64'
+        run: |
+          cd pc && mkdir -p build && cd build
+          arch -x86_64 /usr/local/bin/cmake .. \
+            -DCMAKE_C_COMPILER=/usr/local/bin/gcc-${GCC_VERSION} \
+            -DCMAKE_CXX_COMPILER=/usr/local/bin/g++-${GCC_VERSION}
+          arch -x86_64 make -j$(sysctl -n hw.ncpu)
+
+      # ── Artifacts ─────────────────────────────────────────────────────
+      - uses: actions/upload-artifact@v7
+        if: runner.os == 'Windows' || (runner.os == 'Linux' && matrix.linux_arch == 'x86_64') || runner.os == 'macOS'
+        with:
+          name: AnimalCrossing-${{ matrix.name }}
+          path: pc/build/bin/
+
+      - uses: actions/upload-artifact@v7
+        if: runner.os == 'Linux' && matrix.linux_arch == 'i686'
+        with:
+          name: AnimalCrossing-${{ matrix.name }}
+          path: pc/build32/bin/

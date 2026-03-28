@@ -50,7 +50,11 @@ void* JKRDecomp::run() {
                 break;
             }
 
+#ifdef TARGET_PC
+            cmd->mCallback((uintptr_t)cmd);
+#else
             cmd->mCallback((u32)cmd);
+#endif
         }
 
         if (cmd->pMesgQueue1C != nullptr) {

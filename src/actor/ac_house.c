@@ -34,12 +34,20 @@ enum {
 };
 
 #define aHUS_GET_LOOKS(h) ((h)->arg0)
+#ifdef TARGET_PC
+#define aHUS_GET_ANIMAL_P(h) (Save_GetPointer(animals[(h)->arg2]))
+#else
 #define aHUS_GET_ANIMAL_P(h) ((Animal_c*)(h)->arg1)
+#endif
 #define aHUS_GET_ANIMAL_IDX(h) ((h)->arg2)
 #define aHUS_GET_LIGHT_PERCENT(h) ((h)->arg1_f)
 
 #define aHUS_SET_LOOKS(h, v) ((h)->arg0 = (v))
+#ifdef TARGET_PC
+#define aHUS_SET_ANIMAL_P(h, v)
+#else
 #define aHUS_SET_ANIMAL_P(h, v) ((h)->arg1 = (int)(v))
+#endif
 #define aHUS_SET_ANIMAL_IDX(h, v) ((h)->arg2 = (v))
 #define aHUS_SET_LIGHT_PERCENT(h, v) ((h)->arg1_f = (v))
 

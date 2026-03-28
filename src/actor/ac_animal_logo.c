@@ -481,7 +481,7 @@ static void aAL_setupAction(ANIMAL_LOGO_ACTOR* actor, GAME* game, int action) {
     &aAL_back_fadein,
     &aAL_start_key_chk_start_wait,
 #ifdef PC_ENHANCEMENTS
-    &aAL_pc_game_start_wait,
+    (ANIMAL_LOGO_ACTION_PROC)&aAL_pc_game_start_wait,
 #else
     &aAL_game_start_wait,
 #endif

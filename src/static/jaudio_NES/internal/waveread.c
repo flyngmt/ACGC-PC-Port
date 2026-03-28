@@ -17,6 +17,25 @@ CtrlGroup_* CGRP_ARRAY[16];
  * Size:	000038
  */
 
+#ifdef TARGET_PC
+static void PTconvert(void** pointer, uintptr_t base_address)
+{
+	/* ROM data stores 32-bit offsets. On 64-bit, void* is 8 bytes but the
+	 * serialized data has 4-byte values. Read as u32 offset, relocate. */
+	u32 offset = *(u32*)pointer;
+	if (offset == 0) {
+		*pointer = NULL;
+		return;
+	}
+	if (offset >= (u32)base_address) {
+		/* Already an absolute address (or larger than base) — leave as-is
+		 * but widen to pointer */
+		*pointer = (void*)(uintptr_t)offset;
+		return;
+	}
+	*pointer = (void*)(base_address + offset);
+}
+#else
 static void PTconvert(void** pointer, u32 base_address)
 {
 	if (*pointer == NULL) {
@@ -28,6 +47,7 @@ static void PTconvert(void** pointer, u32 base_address)
 	}
 	*pointer = *(char**)pointer + base_address;
 }
+#endif
 
 /*
  * --INFO--
@@ -36,7 +56,11 @@ static void PTconvert(void** pointer, u32 base_address)
  */
 CtrlGroup_* Wave_Test(u8* data)
 {
+#ifdef TARGET_PC
+    uintptr_t base_addr = (uintptr_t)data;
+#else
     u32 base_addr = (u32)data;
+#endif
 	CtrlGroup_* group;
 	SCNE_* scene;
 	Ctrl_* cst;
@@ -47,10 +71,24 @@ CtrlGroup_* Wave_Test(u8* data)
 	WaveArchiveBank_* arcBank;
 	WaveArchive_* arc;
 
+#ifdef TARGET_PC
+	/* ROM data has 32-bit pointer fields at fixed offsets regardless of
+	 * native pointer size. Read as u32 offsets and relocate manually. */
+	{
+		u32 arcBank_off = *(u32*)(data + 0x10);
+		u32 group_off   = *(u32*)(data + 0x14);
+		arcBank = arcBank_off ? (WaveArchiveBank_*)(base_addr + arcBank_off) : NULL;
+		group   = group_off   ? (CtrlGroup_*)(base_addr + group_off)         : NULL;
+		/* Write back relocated pointers for later use via struct fields */
+		((Wsys_*)data)->waveArcBank = arcBank;
+		((Wsys_*)data)->ctrlGroup   = group;
+	}
+#else
 	PTconvert((void**)&((Wsys_*)data)->waveArcBank, base_addr);
 	PTconvert((void**)&((Wsys_*)data)->ctrlGroup, base_addr);
 	arcBank       = *(WaveArchiveBank_**)(data + 0x10);
 	group         = *(CtrlGroup_**)(data + 0x14);
+#endif
 	CGRP_ARRAY[0] = group;
 
 	if (arcBank->magic != 'WINF') {

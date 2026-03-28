@@ -986,7 +986,11 @@ codec_continue_and_skip:
                         return cmd;
                     } else {
                         // This medium is not in ram, so dma the requested sample into ram
+#ifdef TARGET_PC
+                        samplesToLoadAddr = (u8*)Nas_WaveDmaCallBack((uintptr_t)(tmpSamplesToLoadAddr),
+#else
                         samplesToLoadAddr = (u8*)Nas_WaveDmaCallBack((u32)(tmpSamplesToLoadAddr),
+#endif
                         sampleDataChunkSize, flags,
                             &driver->sample_dma_idx, sample->medium);
                     }
@@ -1176,7 +1180,11 @@ codec_continue_and_skip:
         if (!STOP_VELOCONV) {
             // Load the velocity convolution table into DMEM_0x800
             s32 vel_conv_idx = driver->vel_conv_table_idx;
+#ifdef TARGET_PC
+            aLoadBuffer2(cmd++, VELOCONV_TABLE[vel_conv_idx], 0x800, sizeof(VELOCONV_TABLE[vel_conv_idx]));
+#else
             aLoadBuffer2(cmd++, (u32)VELOCONV_TABLE[vel_conv_idx], 0x800, sizeof(VELOCONV_TABLE[vel_conv_idx]));
+#endif
             aUnkCmd3(cmd++, DMEM_TEMP, 0x800, samples_per_update);
         }
 
