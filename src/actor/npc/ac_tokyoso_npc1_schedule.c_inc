@@ -168,9 +168,9 @@ static void aTKN1_omedeto(TOKYOSO_NPC1_ACTOR* actor, GAME_PLAY* play) {
     }
 
     if (aTKC_NPCID2TEAM(actorx->npc_id) != 0) {
-        sAdo_OngenPos((u32)actorx, 0x2F, &actorx->world.position);
+        sAdo_OngenPos((uintptr_t)actorx, 0x2F, &actorx->world.position);
     } else {
-        sAdo_OngenPos((u32)actorx, 0x31, &actorx->world.position);
+        sAdo_OngenPos((uintptr_t)actorx, 0x31, &actorx->world.position);
     }
 }
 

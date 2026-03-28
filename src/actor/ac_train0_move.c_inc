@@ -3,11 +3,11 @@ static void aTR0_ctrl_engineer(ACTOR* actor, GAME* game) {
     GAME_PLAY* play = (GAME_PLAY*)game;
     ACTOR* ac_p;
 
-    ac_p = (ACTOR*)train0->arg3;
+    ac_p = Actor_info_fgName_search(&play->actor_info, SP_NPC_ENGINEER, ACTOR_PART_NPC);
 
     if (ac_p == NULL) {
         if (CLIP(npc_clip)->setupActor_proc(play, SP_NPC_ENGINEER, -1, -1, -1, -1, -1, 0, 0) == TRUE) {
-            train0->arg3 = (int)Actor_info_fgName_search(&play->actor_info, SP_NPC_ENGINEER, ACTOR_PART_NPC);
+            train0->arg3 = TRUE;
         }
     } else {
         ac_p->world.position.x = -40.0f + train0->actor_class.world.position.x;
@@ -157,7 +157,10 @@ static void aTR0_delcheck(ACTOR* actor, GAME* game) {
 
     if ((abs_x >= 2) || (z != play->block_table.block_z) || (train0->action == 0)) {
         if (train0->arg3 != 0) {
-            Actor_delete((ACTOR*)train0->arg3);
+            ACTOR* eng = Actor_info_fgName_search(&play->actor_info, SP_NPC_ENGINEER, ACTOR_PART_NPC);
+            if (eng != NULL) {
+                Actor_delete(eng);
+            }
         }
         Actor_delete(actor->child_actor);
         Actor_delete(actor);

@@ -28,7 +28,7 @@ static int Player_actor_request_main_stung_mosquito_all(GAME* game, void* label,
     if (Player_actor_check_request_main_able(game, mPlayer_INDEX_STUNG_MOSQUITO, prio)) {
         mPlayer_request_stung_mosquito_c* req_stung_mosquito_p = &player->requested_main_index_data.stung_mosquito;
 
-        req_stung_mosquito_p->label = (u32)label;
+        req_stung_mosquito_p->label = (uintptr_t)label;
         Player_actor_request_main_index(game, mPlayer_INDEX_STUNG_MOSQUITO, prio);
         return TRUE;
     }

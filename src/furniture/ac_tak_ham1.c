@@ -14,7 +14,7 @@ static void fTHM1_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8*
 
     keyframe->frame_control.speed = 1.0f;
     cKF_SkeletonInfo_R_play(keyframe);
-    sAdo_OngenPos((u32)ftr_actor, 0x56, &ftr_actor->position);
+    sAdo_OngenPos((uintptr_t)ftr_actor, 0x56, &ftr_actor->position);
 }
 
 extern u8 int_tak_ham1_a1_tex_txt[];

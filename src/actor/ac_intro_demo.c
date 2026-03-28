@@ -63,20 +63,20 @@ static void aID_actor_ct(ACTOR* actorx, GAME* game) {
     if (mEv_CheckFirstIntro() == TRUE) {
         if (Common_Get(field_type) == mFI_FIELDTYPE_FG) {
             switch (mFI_GET_TYPE(Common_Get(last_field_id))) {
-                case mFI_FIELD_PLAYER0_ROOM:
-                    intro_demo->_1A4 = TRUE;
-                    intro_demo->next_action = aID_ACT_DECIDE_HOUSE;
-                    aID_setupAction(intro_demo, play, aID_ACT_BIRTH_RCN_GUIDE);
-                    mBGMPsComp_make_ps_demo(BGM_INTRO_RCN_GUIDE, 0x168);
-                    break;
-                default:
-                    aID_setupAction(intro_demo, play, 0);
-                    break;
+                    case mFI_FIELD_PLAYER0_ROOM:
+                        intro_demo->_1A4 = TRUE;
+                        intro_demo->next_action = aID_ACT_DECIDE_HOUSE;
+                        aID_setupAction(intro_demo, play, aID_ACT_BIRTH_RCN_GUIDE);
+                        mBGMPsComp_make_ps_demo(BGM_INTRO_RCN_GUIDE, 0x168);
+                        break;
+                    default:
+                        aID_setupAction(intro_demo, play, 0);
+                        break;
+                }
+            } else {
+                aID_setupAction(intro_demo, play, aID_ACT_IN_HOUSE);
             }
         } else {
-            aID_setupAction(intro_demo, play, aID_ACT_IN_HOUSE);
-        }
-    } else {
         aID_setupAction(intro_demo, play, aID_ACT_FIRST_JOB);
     }
 }

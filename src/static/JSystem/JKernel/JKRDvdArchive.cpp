@@ -8,6 +8,10 @@
 #include "JSystem/JSystem.h"
 #include "JSystem/JUtility/JUTAssertion.h"
 
+#ifdef TARGET_PC
+#include <stdlib.h>
+#endif
+
 JKRDvdArchive::JKRDvdArchive() : JKRArchive() {
 }
 
@@ -28,13 +32,20 @@ JKRDvdArchive::~JKRDvdArchive() {
         if (mArcInfoBlock) {
             SDIFileEntry* fileEntries = mFileEntries;
             for (int i = 0; i < mArcInfoBlock->num_file_entries; i++) {
-                if (fileEntries->mData != nullptr) {
-                    JKRFreeToHeap(mHeap, fileEntries->mData);
+                if (getFileEntryData(fileEntries) != nullptr) {
+                    JKRFreeToHeap(mHeap, getFileEntryData(fileEntries));
                 }
                 fileEntries++;
             }
             JKRFreeToHeap(mHeap, mArcInfoBlock);
         }
+
+#ifdef TARGET_PC
+        if (mFileEntryDataPtrs) {
+            free(mFileEntryDataPtrs);
+            mFileEntryDataPtrs = nullptr;
+        }
+#endif
 
         if (mDvdFile) {
             delete mDvdFile;
@@ -49,12 +60,15 @@ JKRDvdArchive::~JKRDvdArchive() {
 CW_FORCE_STRINGS(JKRDvdArchive_cpp, __FILE__, "isMounted()", "mMountCount == 1")
 #endif
 
-bool JKRDvdArchive::open(long entryNum) {
+bool JKRDvdArchive::open(s32 entryNum) {
     mArcInfoBlock = nullptr;
     _60 = 0;
     mDirectories = nullptr;
     mFileEntries = nullptr;
     mStrTable = nullptr;
+#ifdef TARGET_PC
+    mFileEntryDataPtrs = nullptr;
+#endif
 
     mDvdFile = new (JKRGetSystemHeap(), 0) JKRDvdFile(entryNum);
     if (mDvdFile == nullptr) {
@@ -79,6 +93,9 @@ bool JKRDvdArchive::open(long entryNum) {
             mDirectories = (SDIDirEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->node_offset);
             mFileEntries = (SDIFileEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
             mStrTable = (const char*)((u8*)mArcInfoBlock + mArcInfoBlock->string_table_offset);
+#ifdef TARGET_PC
+            mFileEntryDataPtrs = (void**)calloc(mArcInfoBlock->num_file_entries > 0 ? mArcInfoBlock->num_file_entries : 1, sizeof(void*));
+#endif
             _60 = mem->mDataOffset + mem->mSize; // End of data offset?
         }
     }
@@ -101,7 +118,7 @@ void* JKRDvdArchive::fetchResource(SDIFileEntry* fileEntry, u32* pSize) {
     u32 sizeRef;
     u8* data;
 
-    if (fileEntry->mData == nullptr) {
+    if (getFileEntryData(fileEntry) == nullptr) {
         int compression = JKRConvertAttrToCompressionType(fileEntry->mFlag >> 0x18);
         u32 size = fetchResource_subroutine(mEntryNum, _60 + fileEntry->mDataOffset, fileEntry->mSize, mHeap,
                                             (int)compression, mCompression, &data);
@@ -109,12 +126,12 @@ void* JKRDvdArchive::fetchResource(SDIFileEntry* fileEntry, u32* pSize) {
         if (pSize)
             *pSize = size;
 
-        fileEntry->mData = data;
+        setFileEntryData(fileEntry, data);
     } else if (pSize) {
         *pSize = fileEntry->mSize;
     }
 
-    return fileEntry->mData;
+    return getFileEntryData(fileEntry);
 }
 
 void* JKRDvdArchive::fetchResource(void* data, u32 compressedSize, SDIFileEntry* fileEntry, u32* pSize,
@@ -128,14 +145,14 @@ void* JKRDvdArchive::fetchResource(void* data, u32 compressedSize, SDIFileEntry*
         alignedSize = fileSize;
     }
 
-    if (fileEntry->mData == nullptr) {
+    if (getFileEntryData(fileEntry) == nullptr) {
         int compression = JKRConvertAttrToCompressionType(fileEntry->mFlag >> 0x18);
         if (expandSwitch != EXPAND_SWITCH_DECOMPRESS)
             compression = 0;
         alignedSize = fetchResource_subroutine(mEntryNum, _60 + fileEntry->mDataOffset, fileEntry->mSize, (u8*)data,
                                                fileSize, compression, mCompression);
     } else {
-        JKRHeap::copyMemory(data, fileEntry->mData, alignedSize);
+        JKRHeap::copyMemory(data, getFileEntryData(fileEntry), alignedSize);
     }
 
     if (pSize) {
@@ -144,7 +161,7 @@ void* JKRDvdArchive::fetchResource(void* data, u32 compressedSize, SDIFileEntry*
     return data;
 }
 
-u32 JKRDvdArchive::fetchResource_subroutine(long entryNum, u32 offset, u32 size, u8* data, u32 expandSize,
+u32 JKRDvdArchive::fetchResource_subroutine(s32 entryNum, u32 offset, u32 size, u8* data, u32 expandSize,
                                             int fileCompression, int archiveCompression) {
     u32 prevAlignedSize, alignedSize;
 
@@ -199,7 +216,7 @@ u32 JKRDvdArchive::fetchResource_subroutine(long entryNum, u32 offset, u32 size,
     return 0;
 }
 
-u32 JKRDvdArchive::fetchResource_subroutine(long entryNum, u32 offset, u32 size, JKRHeap* heap, int fileCompression,
+u32 JKRDvdArchive::fetchResource_subroutine(s32 entryNum, u32 offset, u32 size, JKRHeap* heap, int fileCompression,
                                             int archiveCompression, u8** pBuf) {
     u32 alignedSize = ALIGN_NEXT(size, 32);
 

@@ -279,11 +279,11 @@ static void aIKA_actor_move(ACTOR* actorx, GAME* game) {
     }
 
     label = mPlib_Get_item_net_catch_label();
-    if (label == (u32)actorx) {
+    if (label == (uintptr_t)actorx) {
         aIKA_setupAction(insect, aIKA_ACTION_LET_ESCAPE, game);
     } else {
         if (insect->action != aIKA_ACTION_ATTACK) {
-            sAdo_OngenPos((u32)actorx, NA_SE_KA_BUZZ, &actorx->world.position);
+            sAdo_OngenPos((uintptr_t)actorx, NA_SE_KA_BUZZ, &actorx->world.position);
         }
 
         if (insect->insect_flags.bit_3 == TRUE && insect->insect_flags.bit_2 == FALSE &&

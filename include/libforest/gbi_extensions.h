@@ -11,7 +11,11 @@ extern "C" {
 
 #ifndef _GBI_STATIC_PTR
 #ifdef TARGET_PC
+#if UINTPTR_MAX > 0xFFFFFFFFu
+#define _GBI_STATIC_PTR(s) (uintptr_t)(s)
+#else
 #define _GBI_STATIC_PTR(s) (unsigned int)(uintptr_t)(s)
+#endif
 #else
 #define _GBI_STATIC_PTR(s) (unsigned int)(s)
 #endif
@@ -1029,7 +1033,7 @@ typedef struct {
 do { \
   Gfx* _g = (Gfx*)(pkt); \
   _g->words.w0 = (u32)(_SHIFTL(cmd, 24, 8) | _SHIFTL(tag, 16, 8) | _SHIFTL(param, 0, 16)); \
-  _g->words.w1 = (u32)(extra); \
+  _GBI_SET_W1_RAW(_g, (extra)); \
 } while(0)
 
 #define gsDPParam2(cmd, tag, param, extra) \
@@ -1078,7 +1082,7 @@ do { \
 do { \
     Gfx* _g = (Gfx*)(pkt); \
     _g->words.w0 = _SHIFTL(G_LOADTLUT, 24, 8) | _SHIFTL(G_TLUT_DOLPHIN, 22, 2) | _SHIFTL(name, 16, 4) | _SHIFTL(unk, 14, 2) | _SHIFTL(count, 0, 14); \
-    _g->words.w1 = (unsigned int)addr; \
+    _GBI_SET_W1(_g, addr); \
 } while (0)
 
 #define gsDPLoadTLUT_Dolphin(name, count, unk, addr) \
@@ -1104,7 +1108,7 @@ do { \
     Gfx* _gfx = (Gfx*)(pkt); \
     _gfx->words.w0 = _SHIFTL(G_SETTIMG, 24, 8) | _SHIFTL(fmt, 21, 3) | _SHIFTL(siz, 19, 2) | _SHIFTL(1, 18, 1) | \
         _SHIFTL((h/4)-1, 10, 8) | _SHIFTL((w-1), 0, 10); \
-    _gfx->words.w1 = (unsigned int)img; \
+    _GBI_SET_W1(_gfx, img); \
 }}
 
 #define gDPSetTile_Dolphin(pkt, d_fmt, tile, tlut_name, wrap_s, wrap_t, shift_s, shift_t) \

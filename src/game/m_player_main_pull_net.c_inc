@@ -59,7 +59,7 @@ static void Player_actor_CorrectSomething_Pull_net(ACTOR* actor) {
     xyz_t* pos;
 
     if (player->keyframe0.frame_control.current_frame > 15.0f) {
-        u32 label = player->item_net_catch_label;
+        uintptr_t label = player->item_net_catch_label;
 
         if (label != 0 && player->item_net_catch_type == 0) {
             ((ACTOR*)label)->drawn = TRUE;
@@ -105,7 +105,7 @@ static void Player_actor_Pull_net_demo_ct(ACTOR* actor) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
     rgba_t color;
     mMsg_Window_c* win = mMsg_Get_base_window_p();
-    u32 label = player->item_net_catch_label;
+    uintptr_t label = player->item_net_catch_label;
     s8 type = player->item_net_catch_type;
     int msg_no = 0xA2C;
 

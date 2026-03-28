@@ -2612,7 +2612,7 @@ static u32 Cmd_Printf()
 	for (i = 0; i < fmtCount; ++i) {
 		fmtParms[i] = __ByteRead(SEQ_P);
 		if (fmtFlags[i] == 2) {
-			fmtParms[i] = (u32)Jam_OfsToAddr(SEQ_P, fmtParms[i]);
+			fmtParms[i] = (uintptr_t)Jam_OfsToAddr(SEQ_P, fmtParms[i]);
 		// } else if (fmtFlags[i] == 5) {
 		// 	fmtParms[i] = SEQ_P->trackId;
 		}
@@ -2993,7 +2993,7 @@ try_interrupt:
 				for (iVar11 = 0; iVar11 < (bVar10 >> 3 & 3); iVar11++) {
 					uVar2 = uVar2 << 8 | __ByteRead(track);
 				}
-				if ((u32)(bVar10 >> 3 & 3) == 1 && uVar2 >= 0x80) {
+				if ((bVar10 >> 3 & 3) == 1 && uVar2 >= 0x80) {
 					uVar2 = __ExchangeRegisterValue(track, uVar2 - 0x80);
 				}
 			} else {

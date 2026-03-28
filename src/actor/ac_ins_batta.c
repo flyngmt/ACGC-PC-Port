@@ -137,10 +137,10 @@ static int aIBT_check_ball(aINS_INSECT_ACTOR* insect) {
 static void aIBT_set_fly_se(aINS_INSECT_ACTOR* insect) {
     switch (insect->type) {
         case aINS_INSECT_TYPE_LONG_LOCUST:
-            sAdo_OngenPos((u32)insect, 0xA2, &insect->tools_actor.actor_class.world.position);
+            sAdo_OngenPos((uintptr_t)insect, 0xA2, &insect->tools_actor.actor_class.world.position);
             break;
         case aINS_INSECT_TYPE_MIGRATORY_LOCUST:
-            sAdo_OngenPos((u32)insect, 0xA3, &insect->tools_actor.actor_class.world.position);
+            sAdo_OngenPos((uintptr_t)insect, 0xA3, &insect->tools_actor.actor_class.world.position);
             break;
     }
 }
@@ -151,8 +151,8 @@ static int aIBT_check_player_net_sub(xyz_t* net_pos, aINS_INSECT_ACTOR* insect) 
 
     ret = FALSE;
     if (mPlib_Check_StopNet(net_pos) == TRUE) {
-        u32 label = mPlib_Get_item_net_catch_label();
-        if (label == (u32)insect) {
+        uintptr_t label = mPlib_Get_item_net_catch_label();
+        if (label == (uintptr_t)insect) {
             ret = TRUE;
         }
     }
@@ -184,8 +184,8 @@ static int aIBT_check_player_net2(aINS_INSECT_ACTOR* insect) {
 
     ret = FALSE;
     if (mPlib_Check_StopNet(&pos) == TRUE) {
-        u32 label = mPlib_Get_item_net_catch_label();
-        if (label == (u32)insect) {
+        uintptr_t label = mPlib_Get_item_net_catch_label();
+        if (label == (uintptr_t)insect) {
             insect->s32_work1 = 1;
         } else {
             x = pos.x - insect->tools_actor.actor_class.world.position.x;
@@ -423,7 +423,7 @@ static void aIBT_wait(ACTOR* actor, GAME* game) {
                     aIBT_anime_proc(insect);
                 }
                 if (insect->s32_work1 == 0) {
-                    sAdo_OngenPos((u32)insect, batta_sound_data[idx], &actor->world.position);
+                    sAdo_OngenPos((uintptr_t)insect, batta_sound_data[idx], &actor->world.position);
                 }
             }
         }
@@ -567,9 +567,9 @@ void aIBT_actor_move(ACTOR* actor, GAME* game) {
     aINS_INSECT_ACTOR* insect = (aINS_INSECT_ACTOR*)actor;
     GAME_PLAY* play = (GAME_PLAY*)game;
 
-    u32 label = mPlib_Get_item_net_catch_label();
+    uintptr_t label = mPlib_Get_item_net_catch_label();
 
-    if (label == (u32)actor) {
+    if (label == (uintptr_t)actor) {
         aIBT_setupAction(insect, aIBT_ACTION_LET_ESCAPE, game);
     } else {
         if (insect->insect_flags.bit_3 == TRUE && insect->insect_flags.bit_2 == FALSE) {

@@ -274,20 +274,21 @@ extern int Actor_draw_actor_no_culling_check(ACTOR* actor) {
 }
 
 extern int Actor_draw_actor_no_culling_check2(ACTOR* actor, xyz_t* camera_pos, f32 camera_w) {
+#ifdef TARGET_PC
+    /* PC port: the GC projection matrix produced clip-space values in a range the
+     * original culling thresholds were tuned for.  The PC/OpenGL projection produces
+     * values in a different range, causing false-negative culling.  Disable software
+     * frustum culling on PC — the GPU clips out-of-frustum geometry anyway.
+     * TODO: properly recalibrate the clip-space thresholds for the PC projection. */
+    (void)camera_pos;
+    (void)camera_w;
+    return TRUE;
+#else
     int res = FALSE;
 
     if (-actor->cull_radius < camera_pos->z && camera_pos->z < actor->cull_distance + actor->cull_radius) {
         f32 m = camera_w < 1.0f ? 1.0f : 1.0f / camera_w;
-#ifdef PC_ENHANCEMENTS
-        /* Widescreen hor+ widens the rendered frustum.  The projection matrix
-         * used to compute camera_pos is the original 4:3 one, so the NDC X
-         * edge (1.0) is too narrow.  Extend by the aspect ratio correction. */
-        f32 x_edge = (f32)g_pc_window_w / (f32)g_pc_window_h
-                   / ((f32)PC_GC_WIDTH / (f32)PC_GC_HEIGHT);
-        if (x_edge < 1.0f) x_edge = 1.0f;
-#else
         f32 x_edge = 1.0f;
-#endif
         int width_OK = (m * (fabsf(camera_pos->x) - actor->cull_width)) < x_edge;
 
         if (width_OK &&
@@ -297,6 +298,7 @@ extern int Actor_draw_actor_no_culling_check2(ACTOR* actor, xyz_t* camera_pos, f
     }
 
     return res;
+#endif
 }
 
 static void Actor_cull_check(ACTOR* actor) {

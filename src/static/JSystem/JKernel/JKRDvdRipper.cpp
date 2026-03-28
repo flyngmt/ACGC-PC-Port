@@ -48,7 +48,11 @@ void* JKRDvdRipper::loadToMainRAM(JKRDvdFile* file, u8* buf, JKRExpandSwitch exp
 
     if (expandSwitch == EXPAND_SWITCH_DECOMPRESS) {
         u8 buffer[64];
+#ifdef TARGET_PC
+        u8* aligned_buf = (u8*)ALIGN_NEXT((uintptr_t)buffer, 32);
+#else
         u8* aligned_buf = (u8*)ALIGN_NEXT((u32)buffer, 32);
+#endif
         while (true) {
             if (DVDReadPrio(file->getFileInfo(), aligned_buf, 32, 0, 2) >= 0) {
                 break;
@@ -105,7 +109,11 @@ void* JKRDvdRipper::loadToMainRAM(JKRDvdFile* file, u8* buf, JKRExpandSwitch exp
 
         if (offset != 0) {
             u8 buffer[64];
+#ifdef TARGET_PC
+            u8* aligned_buf = (u8*)ALIGN_NEXT((uintptr_t)buffer, 32);
+#else
             u8* aligned_buf = (u8*)ALIGN_NEXT((u32)buffer, 32);
+#endif
             while (true) {
                 if (DVDReadPrio(file->getFileInfo(), aligned_buf, 32, offset, 2) >= 0) {
                     break;
