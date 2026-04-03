@@ -147,6 +147,7 @@ static void graph_task_set00(GRAPH* this) {
 #ifdef TARGET_PC
             {
                 extern int pc_emu64_frame_cmds, pc_emu64_frame_tri_cmds, pc_emu64_frame_vtx_cmds;
+                extern int pc_emu64_frame_dl_cmds, pc_emu64_frame_crashes;
                 extern int pc_gx_draw_call_count;
                 PC_DIAG(5, "emu64 stats: cmds=%d tri=%d vtx=%d gl_draws=%d\n",
                         pc_emu64_frame_cmds, pc_emu64_frame_tri_cmds, pc_emu64_frame_vtx_cmds,

@@ -273,8 +273,8 @@ void   pc_gx_texture_cache_invalidate(void);
 
 #ifdef PC_ENHANCEMENTS
 /* EFB capture: store full-res GL texture from GXCopyTex, retrieve on texture load */
-void   pc_gx_efb_capture_store(u32 dest_ptr, GLuint gl_tex);
-GLuint pc_gx_efb_capture_find(u32 data_ptr);
+void   pc_gx_efb_capture_store(uintptr_t dest_ptr, GLuint gl_tex);
+GLuint pc_gx_efb_capture_find(uintptr_t data_ptr);
 void   pc_gx_efb_capture_cleanup(void);
 #endif
 

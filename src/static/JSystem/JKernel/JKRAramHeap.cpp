@@ -4,7 +4,11 @@
 
 JSUList<JKRAramBlock> JKRAramHeap::sAramList;
 
+#ifdef TARGET_PC
+JKRAramHeap::JKRAramHeap(uintptr_t baseAddress, u32 size) : JKRDisposer() {
+#else
 JKRAramHeap::JKRAramHeap(u32 baseAddress, u32 size) : JKRDisposer() {
+#endif
     OSInitMutex(&this->mMutex);
     this->mHeap = JKRHeap::findFromRoot(this);
     this->mSize = ALIGN_PREV(size, 0x20);
@@ -43,7 +47,7 @@ void JKRAramHeap::free(JKRAramBlock* block) {
 
 JKRAramBlock* JKRAramHeap::allocFromHead(u32 size) {
     size = ALIGN_NEXT(size, 32);
-    u32 min_size = 0xFFFFFFFFUL;
+    u32 min_size = 0xFFFFFFFFU;
     JKRAramBlock* block = nullptr;
 
     for (JSUListIterator<JKRAramBlock> it = sAramList.getFirst(); it != sAramList.getEnd(); it++) {

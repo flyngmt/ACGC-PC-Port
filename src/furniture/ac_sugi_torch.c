@@ -16,7 +16,7 @@ static void fSGT_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* 
 
     cKF_SkeletonInfo_R_play(keyframe);
     keyframe->frame_control.speed = 0.5f;
-    sAdo_OngenPos((u32)ftr_actor, 0x57, &ftr_actor->position);
+    sAdo_OngenPos((uintptr_t)ftr_actor, 0x57, &ftr_actor->position);
 }
 
 extern Gfx sugi_fireto_model[];

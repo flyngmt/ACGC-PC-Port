@@ -35,7 +35,7 @@ static void aHM0_merry(HANAMI_NPC0_ACTOR* actor) {
         }
     }
 
-    sAdo_OngenPos((u32)actor, actor->clap_se_no, &actor->npc_class.actor_class.world.position);
+    sAdo_OngenPos((uintptr_t)actor, actor->clap_se_no, &actor->npc_class.actor_class.world.position);
 }
 
 static void aHM0_drink(HANAMI_NPC0_ACTOR* actor) {

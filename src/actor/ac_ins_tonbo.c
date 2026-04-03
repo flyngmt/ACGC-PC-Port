@@ -831,9 +831,9 @@ static void aITB_setupAction(aINS_INSECT_ACTOR* insect, int action, GAME* game) 
  */
 static void aITB_actor_move(ACTOR* actorx, GAME* game) {
     aINS_INSECT_ACTOR* ins = (aINS_INSECT_ACTOR*)actorx;
-    u32 catch_label = (u32)mPlib_Get_item_net_catch_label();
+    uintptr_t catch_label = mPlib_Get_item_net_catch_label();
 
-    if (catch_label == (u32)ins) {
+    if (catch_label == (uintptr_t)ins) {
         ins->alpha0 = 255;
         aITB_setupAction(ins, aITB_ACT_LET_ESCAPE, game);
     } else if (ins->insect_flags.bit_3 == TRUE && ins->insect_flags.bit_2 == FALSE) {

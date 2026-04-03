@@ -20,12 +20,12 @@ u16 s_tlut_first_word[16];
 #define TEX_CACHE_SIZE 2048
 
 typedef struct {
-    u32 data_ptr;
+    uintptr_t data_ptr;
     u16 width;
     u16 height;
     u32 format;
     u32 tlut_name;   /* TLUT slot for CI4/CI8, 0xFFFFFFFF for non-indexed */
-    u32 tlut_ptr;
+    uintptr_t tlut_ptr;
     u32 tlut_hash;   /* FNV-1a of TLUT data + metadata */
     u32 data_hash;   /* FNV-1a of first N bytes */
     GLuint gl_tex;
@@ -99,8 +99,8 @@ static int tex_cache_hits = 0;
 static int tex_cache_misses = 0;
 
 /* Linear scan. Fine for <=2048 entries at ~100% hit rate. */
-static TexCacheEntry* tex_cache_find(u32 data_ptr, int w, int h, u32 fmt, u32 tlut_name,
-                                     u32 tlut_ptr, u32 tlut_hash, u32 data_hash) {
+static TexCacheEntry* tex_cache_find(uintptr_t data_ptr, int w, int h, u32 fmt, u32 tlut_name,
+                                     uintptr_t tlut_ptr, u32 tlut_hash, u32 data_hash) {
     for (int i = 0; i < tex_cache_count; i++) {
         TexCacheEntry* e = &tex_cache[i];
         if (e->data_ptr == data_ptr && e->width == w && e->height == h &&
@@ -112,8 +112,8 @@ static TexCacheEntry* tex_cache_find(u32 data_ptr, int w, int h, u32 fmt, u32 tl
     return NULL;
 }
 
-static TexCacheEntry* tex_cache_insert(u32 data_ptr, int w, int h, u32 fmt, u32 tlut_name,
-                                       u32 tlut_ptr, u32 tlut_hash, u32 data_hash, GLuint gl_tex) {
+static TexCacheEntry* tex_cache_insert(uintptr_t data_ptr, int w, int h, u32 fmt, u32 tlut_name,
+                                       uintptr_t tlut_ptr, u32 tlut_hash, u32 data_hash, GLuint gl_tex) {
     if (tex_cache_count >= TEX_CACHE_SIZE) {
         /* evict oldest half */
         int half = TEX_CACHE_SIZE / 2;
@@ -170,78 +170,80 @@ void pc_gx_texture_shutdown(void) {
 
 /* --- texture object API --- */
 
-/* GXTexObj layout for PC: 22 u32s (88 bytes) */
-#define TEXOBJ_IMAGE_PTR   0
-#define TEXOBJ_WIDTH       1
-#define TEXOBJ_HEIGHT      2
-#define TEXOBJ_FORMAT      3
-#define TEXOBJ_WRAP_S      4
-#define TEXOBJ_WRAP_T      5
-#define TEXOBJ_MIPMAP      6
-#define TEXOBJ_MIN_FILTER  7
-#define TEXOBJ_MAG_FILTER  8
-#define TEXOBJ_MIN_LOD     9
-#define TEXOBJ_MAX_LOD     10
-#define TEXOBJ_LOD_BIAS    11
-#define TEXOBJ_BIAS_CLAMP  12
-#define TEXOBJ_EDGE_LOD    13
-#define TEXOBJ_MAX_ANISO   14
-#define TEXOBJ_GL_TEX      15
-#define TEXOBJ_CI_FORMAT   16
-#define TEXOBJ_TLUT_NAME   17
-#define TEXOBJ_SIZE        22  /* total u32 count */
+/* PC-side texture object — replaces the u32[] array approach so pointers
+ * survive on both 32-bit and 64-bit platforms. */
+typedef struct {
+    void*  image_ptr;
+    u32    width;
+    u32    height;
+    u32    format;
+    u32    wrap_s;
+    u32    wrap_t;
+    u32    mipmap;
+    u32    min_filter;
+    u32    mag_filter;
+    f32    min_lod;
+    f32    max_lod;
+    f32    lod_bias;
+    u32    bias_clamp;
+    u32    edge_lod;
+    u32    max_aniso;
+    GLuint gl_tex;
+    u32    ci_format;
+    u32    tlut_name;
+} PCTexObj;
 
-/* GXTlutObj layout (4 u32s) */
-#define TLUTOBJ_DATA       0
-#define TLUTOBJ_FORMAT     1
-#define TLUTOBJ_N_ENTRIES  2
+typedef struct {
+    void*  data;
+    u32    format;
+    u32    n_entries;
+} PCTlutObj;
 
 void GXInitTexObj(void* obj, void* image_ptr, u16 width, u16 height, u32 format,
                   u32 wrap_s, u32 wrap_t, u8 mipmap) {
-    u32* o = (u32*)obj;
-    memset(o, 0, TEXOBJ_SIZE * sizeof(u32));
-    o[TEXOBJ_IMAGE_PTR] = (u32)(uintptr_t)image_ptr;
-    o[TEXOBJ_WIDTH] = width;
-    o[TEXOBJ_HEIGHT] = height;
-    o[TEXOBJ_FORMAT] = format;
-    o[TEXOBJ_WRAP_S] = wrap_s;
-    o[TEXOBJ_WRAP_T] = wrap_t;
-    o[TEXOBJ_MIPMAP] = mipmap;
-    o[TEXOBJ_MIN_FILTER] = 1; /* GX_LINEAR */
-    o[TEXOBJ_MAG_FILTER] = 1; /* GX_LINEAR */
+    PCTexObj* o = (PCTexObj*)obj;
+    memset(o, 0, sizeof(PCTexObj));
+    o->image_ptr = image_ptr;
+    o->width = width;
+    o->height = height;
+    o->format = format;
+    o->wrap_s = wrap_s;
+    o->wrap_t = wrap_t;
+    o->mipmap = mipmap;
+    o->min_filter = 1; /* GX_LINEAR */
+    o->mag_filter = 1; /* GX_LINEAR */
 }
 
 void GXInitTexObjCI(void* obj, void* image_ptr, u16 width, u16 height, u32 format,
                     u32 wrap_s, u32 wrap_t, u8 mipmap, u32 tlut_name) {
     GXInitTexObj(obj, image_ptr, width, height, format, wrap_s, wrap_t, mipmap);
-    u32* o = (u32*)obj;
-    o[TEXOBJ_CI_FORMAT] = format;
-    o[TEXOBJ_TLUT_NAME] = tlut_name;
+    PCTexObj* o = (PCTexObj*)obj;
+    o->ci_format = format;
+    o->tlut_name = tlut_name;
 }
 
 void GXInitTexObjData(void* obj, void* image_ptr) {
-    u32* o = (u32*)obj;
-    o[TEXOBJ_IMAGE_PTR] = (u32)(uintptr_t)image_ptr;
+    PCTexObj* o = (PCTexObj*)obj;
+    o->image_ptr = image_ptr;
 }
 
 void GXInitTexObjLOD(void* obj, u32 min_filt, u32 mag_filt, f32 min_lod, f32 max_lod,
                      f32 lod_bias, GXBool bias_clamp, GXBool edge_lod, u32 max_aniso) {
-    u32* o = (u32*)obj;
-    o[TEXOBJ_MIN_FILTER] = min_filt;
-    o[TEXOBJ_MAG_FILTER] = mag_filt;
-    /* store floats as bits */
-    memcpy(&o[TEXOBJ_MIN_LOD], &min_lod, sizeof(f32));
-    memcpy(&o[TEXOBJ_MAX_LOD], &max_lod, sizeof(f32));
-    memcpy(&o[TEXOBJ_LOD_BIAS], &lod_bias, sizeof(f32));
-    o[TEXOBJ_BIAS_CLAMP] = bias_clamp;
-    o[TEXOBJ_EDGE_LOD] = edge_lod;
-    o[TEXOBJ_MAX_ANISO] = max_aniso;
+    PCTexObj* o = (PCTexObj*)obj;
+    o->min_filter = min_filt;
+    o->mag_filter = mag_filt;
+    o->min_lod = min_lod;
+    o->max_lod = max_lod;
+    o->lod_bias = lod_bias;
+    o->bias_clamp = bias_clamp;
+    o->edge_lod = edge_lod;
+    o->max_aniso = max_aniso;
 }
 
 void GXInitTexObjWrapMode(void* obj, u32 s, u32 t) {
-    u32* o = (u32*)obj;
-    o[TEXOBJ_WRAP_S] = s;
-    o[TEXOBJ_WRAP_T] = t;
+    PCTexObj* o = (PCTexObj*)obj;
+    o->wrap_s = s;
+    o->wrap_t = t;
 }
 
 /* --- GC texture format decoders (tile layout -> linear RGBA8) --- */
@@ -598,21 +600,49 @@ void GXLoadTexObj(void* obj, u32 id) {
     if (id >= 8 && id != 0xFF && id < 0x100) return;
     if (id >= 8) return;
 
-    u32* o = (u32*)obj;
-    void* image_ptr = (void*)(uintptr_t)o[TEXOBJ_IMAGE_PTR];
-    int width = (int)o[TEXOBJ_WIDTH];
-    int height = (int)o[TEXOBJ_HEIGHT];
-    u32 format = o[TEXOBJ_FORMAT];
-    u32 wrap_s = o[TEXOBJ_WRAP_S], wrap_t = o[TEXOBJ_WRAP_T];
-    u32 tlut_key = (format == GX_TF_C4 || format == GX_TF_C8) ? o[TEXOBJ_TLUT_NAME] : 0xFFFFFFFF;
-    u32 tlut_ptr_key = 0;
+    PCTexObj* o = (PCTexObj*)obj;
+
+#ifdef TARGET_PC
+    {
+        static int tex_diag_frame = 0;
+        static int tex_diag_count = 0;
+        tex_diag_count++;
+        if (0 && tex_diag_frame < 3 && tex_diag_count <= 30) { /* disabled */
+            fprintf(stderr, "[TEX] id=%d fmt=0x%x %dx%d ptr=%p tlut=%d",
+                    id, o->format, o->width, o->height, o->image_ptr, o->tlut_name);
+            if (o->image_ptr) {
+                u8* d = (u8*)o->image_ptr;
+                fprintf(stderr, " data=[%02x%02x%02x%02x]", d[0], d[1], d[2], d[3]);
+            }
+            if ((o->format == 8 || o->format == 9) && o->tlut_name < 16) {
+                fprintf(stderr, " tlut_data=%p entries=%d is_be=%d",
+                        g_gx.tlut[o->tlut_name].data,
+                        g_gx.tlut[o->tlut_name].n_entries,
+                        g_gx.tlut[o->tlut_name].is_be);
+                if (g_gx.tlut[o->tlut_name].data) {
+                    u16* pal = (u16*)g_gx.tlut[o->tlut_name].data;
+                    fprintf(stderr, " pal=[%04x %04x %04x %04x]", pal[0], pal[1], pal[2], pal[3]);
+                }
+            }
+            fprintf(stderr, "\n");
+        }
+        if (tex_diag_count > 100) { tex_diag_count = 0; tex_diag_frame++; }
+    }
+#endif
+    void* image_ptr = o->image_ptr;
+    int width = (int)o->width;
+    int height = (int)o->height;
+    u32 format = o->format;
+    u32 wrap_s = o->wrap_s, wrap_t = o->wrap_t;
+    u32 tlut_key = (format == GX_TF_C4 || format == GX_TF_C8) ? o->tlut_name : 0xFFFFFFFF;
+    uintptr_t tlut_ptr_key = 0;
     u32 tlut_hash_key = 0;
-    u32 filter_mode = o[TEXOBJ_MIN_FILTER];
+    u32 filter_mode = o->min_filter;
 
     if (format == GX_TF_C4 || format == GX_TF_C8) {
-        int tlut_name = (int)o[TEXOBJ_TLUT_NAME];
+        int tlut_name = (int)o->tlut_name;
         if (tlut_name >= 0 && tlut_name < 16 && g_gx.tlut[tlut_name].data) {
-            tlut_ptr_key = (u32)(uintptr_t)g_gx.tlut[tlut_name].data;
+            tlut_ptr_key = (uintptr_t)g_gx.tlut[tlut_name].data;
             tlut_hash_key = tlut_content_hash(g_gx.tlut[tlut_name].data,
                                               g_gx.tlut[tlut_name].format,
                                               g_gx.tlut[tlut_name].n_entries,
@@ -623,13 +653,13 @@ void GXLoadTexObj(void* obj, u32 id) {
 #ifdef PC_ENHANCEMENTS
     /* EFB capture bypass: use full-res FBO texture instead of re-decoding */
     {
-        GLuint efb_tex = pc_gx_efb_capture_find(o[TEXOBJ_IMAGE_PTR]);
+        GLuint efb_tex = pc_gx_efb_capture_find((uintptr_t)image_ptr);
         if (efb_tex) {
             glBindTexture(GL_TEXTURE_2D, efb_tex);
             GLenum gl_filter = filter_mode ? GL_LINEAR : GL_NEAREST;
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter);
-            o[TEXOBJ_GL_TEX] = efb_tex;
+            o->gl_tex = efb_tex;
             g_gx.gl_textures[id] = efb_tex;
             g_gx.tex_obj_w[id] = width;
             g_gx.tex_obj_h[id] = height;
@@ -644,7 +674,8 @@ void GXLoadTexObj(void* obj, u32 id) {
     u32 hash = tex_content_hash(image_ptr, width, height, format);
 
     /* cache lookup */
-    TexCacheEntry* cached = tex_cache_find(o[TEXOBJ_IMAGE_PTR], width, height, format, tlut_key,
+    uintptr_t data_ptr_key = (uintptr_t)image_ptr;
+    TexCacheEntry* cached = tex_cache_find(data_ptr_key, width, height, format, tlut_key,
                                            tlut_ptr_key, tlut_hash_key, hash);
     if (cached) {
         tex_cache_hits++;
@@ -669,7 +700,7 @@ void GXLoadTexObj(void* obj, u32 id) {
             cached->min_filter = filter_mode;
         }
 
-        o[TEXOBJ_GL_TEX] = tex;
+        o->gl_tex = tex;
         g_gx.gl_textures[id] = tex;
         g_gx.tex_obj_w[id] = width;
         g_gx.tex_obj_h[id] = height;
@@ -687,7 +718,7 @@ void GXLoadTexObj(void* obj, u32 id) {
         int tp_tlut_entries = 0;
         int tp_tlut_is_be = 1;
         if ((format == GX_TF_C4 || format == GX_TF_C8)) {
-            int tlut_name = (int)o[TEXOBJ_TLUT_NAME];
+            int tlut_name = (int)o->tlut_name;
             if (tlut_name >= 0 && tlut_name < 16 && g_gx.tlut[tlut_name].data) {
                 tp_tlut = g_gx.tlut[tlut_name].data;
                 tp_tlut_entries = g_gx.tlut[tlut_name].n_entries;
@@ -709,14 +740,14 @@ void GXLoadTexObj(void* obj, u32 id) {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, gl_ws);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, gl_wt);
 
-            TexCacheEntry* entry = tex_cache_insert(o[TEXOBJ_IMAGE_PTR], width, height, format,
+            TexCacheEntry* entry = tex_cache_insert(data_ptr_key, width, height, format,
                                                     tlut_key, tlut_ptr_key, tlut_hash_key, hash, hd_tex);
             entry->wrap_s = wrap_s;
             entry->wrap_t = wrap_t;
             entry->min_filter = filter_mode;
             entry->external = 1;
 
-            o[TEXOBJ_GL_TEX] = hd_tex;
+            o->gl_tex = hd_tex;
             g_gx.gl_textures[id] = hd_tex;
             g_gx.tex_obj_w[id] = width;
             g_gx.tex_obj_h[id] = height;
@@ -735,7 +766,7 @@ void GXLoadTexObj(void* obj, u32 id) {
         if (rgba) {
             u8 palette[256][4];
             if (format == GX_TF_C4 || format == GX_TF_C8) {
-                int tlut_name = (int)o[TEXOBJ_TLUT_NAME];
+                int tlut_name = (int)o->tlut_name;
                 if (tlut_name >= 0 && tlut_name < 16 && g_gx.tlut[tlut_name].data) {
                     build_palette(g_gx.tlut[tlut_name].data,
                                   g_gx.tlut[tlut_name].format,
@@ -779,13 +810,13 @@ void GXLoadTexObj(void* obj, u32 id) {
     }
 
     /* insert into cache */
-    TexCacheEntry* entry = tex_cache_insert(o[TEXOBJ_IMAGE_PTR], width, height, format, tlut_key,
+    TexCacheEntry* entry = tex_cache_insert(data_ptr_key, width, height, format, tlut_key,
                                             tlut_ptr_key, tlut_hash_key, hash, tex);
     entry->wrap_s = wrap_s;
     entry->wrap_t = wrap_t;
     entry->min_filter = filter_mode;
 
-    o[TEXOBJ_GL_TEX] = tex;
+    o->gl_tex = tex;
     g_gx.gl_textures[id] = tex;
     g_gx.tex_obj_w[id] = width;
     g_gx.tex_obj_h[id] = height;
@@ -815,21 +846,28 @@ void GXInvalidateTexRegion(void* region) { (void)region; }
 /* --- TLUT --- */
 
 void GXInitTlutObj(void* obj, void* lut, u32 fmt, u16 n_entries) {
-    u32* o = (u32*)obj;
-    memset(o, 0, 4 * sizeof(u32));
-    o[TLUTOBJ_DATA] = (u32)(uintptr_t)lut;
-    o[TLUTOBJ_FORMAT] = fmt;
-    o[TLUTOBJ_N_ENTRIES] = n_entries;
+    PCTlutObj* o = (PCTlutObj*)obj;
+    memset(o, 0, sizeof(PCTlutObj));
+    o->data = lut;
+    o->format = fmt;
+    o->n_entries = n_entries;
 }
 
 void GXLoadTlut(void* obj, u32 idx) {
     pc_gx_flush_if_begin_complete();
     if (idx >= 16) return;
-    u32* o = (u32*)obj;
-    g_gx.tlut[idx].data = (const void*)(uintptr_t)o[TLUTOBJ_DATA];
-    g_gx.tlut[idx].format = (int)o[TLUTOBJ_FORMAT];
-    g_gx.tlut[idx].n_entries = (int)o[TLUTOBJ_N_ENTRIES];
-    g_gx.tlut[idx].is_be = 1; /* default to BE (ROM/JSystem data) */
+    PCTlutObj* o = (PCTlutObj*)obj;
+    g_gx.tlut[idx].data = (const void*)o->data;
+    g_gx.tlut[idx].format = (int)o->format;
+    g_gx.tlut[idx].n_entries = (int)o->n_entries;
+
+    /* Detect if the TLUT is in the executable (native) or ROM (BE) */
+    uintptr_t addr = (uintptr_t)o->data;
+    if (addr >= pc_image_base && addr < pc_image_end) {
+        g_gx.tlut[idx].is_be = 0;
+    } else {
+        g_gx.tlut[idx].is_be = 1;
+    }
 }
 
 /* PC_GX_TLUT_MODE env var: "be" forces BE decode for diagnostics */
@@ -870,18 +908,18 @@ void GXInitTlutRegion(void* region, u32 tmem_addr, u32 tlut_size) {
 }
 
 /* --- accessors --- */
-GXBool GXGetTexObjMipMap(const void* obj) { return ((const u32*)obj)[TEXOBJ_MIPMAP] != 0; }
-u32    GXGetTexObjFmt(const void* obj)    { return ((const u32*)obj)[TEXOBJ_FORMAT]; }
-u16    GXGetTexObjHeight(const void* obj) { return (u16)((const u32*)obj)[TEXOBJ_HEIGHT]; }
-u16    GXGetTexObjWidth(const void* obj)  { return (u16)((const u32*)obj)[TEXOBJ_WIDTH]; }
-u32    GXGetTexObjWrapS(const void* obj)  { return ((const u32*)obj)[TEXOBJ_WRAP_S]; }
-u32    GXGetTexObjWrapT(const void* obj)  { return ((const u32*)obj)[TEXOBJ_WRAP_T]; }
-void*  GXGetTexObjData(const void* obj)   { return (void*)(uintptr_t)((const u32*)obj)[TEXOBJ_IMAGE_PTR]; }
+GXBool GXGetTexObjMipMap(const void* obj) { return ((const PCTexObj*)obj)->mipmap != 0; }
+u32    GXGetTexObjFmt(const void* obj)    { return ((const PCTexObj*)obj)->format; }
+u16    GXGetTexObjHeight(const void* obj) { return (u16)((const PCTexObj*)obj)->height; }
+u16    GXGetTexObjWidth(const void* obj)  { return (u16)((const PCTexObj*)obj)->width; }
+u32    GXGetTexObjWrapS(const void* obj)  { return ((const PCTexObj*)obj)->wrap_s; }
+u32    GXGetTexObjWrapT(const void* obj)  { return ((const PCTexObj*)obj)->wrap_t; }
+void*  GXGetTexObjData(const void* obj)   { return ((const PCTexObj*)obj)->image_ptr; }
 
 void GXDestroyTexObj(void* obj) {
-    u32* o = (u32*)obj;
+    PCTexObj* o = (PCTexObj*)obj;
     /* don't delete GL texture here; cache eviction handles that */
-    o[TEXOBJ_GL_TEX] = 0;
+    o->gl_tex = 0;
 }
 
 void GXDestroyTlutObj(void* obj) { (void)obj; }

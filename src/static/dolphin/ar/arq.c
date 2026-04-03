@@ -98,9 +98,15 @@ void ARQInit(void)
 	}
 }
 
+#ifdef TARGET_PC
+void ARQPostRequest(struct ARQRequest* request, u32 owner, u32 type,
+                    u32 priority, uintptr_t source, uintptr_t dest, u32 length,
+                    ARQCallback callback)
+#else
 void ARQPostRequest(struct ARQRequest* request, u32 owner, u32 type,
                     u32 priority, u32 source, u32 dest, u32 length,
                     ARQCallback callback)
+#endif
 {
 	int level;
 

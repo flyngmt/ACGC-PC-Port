@@ -179,10 +179,10 @@ void minsect_okera_mv(MUSEUM_INSECT_PRIVATE_DATA* actor, GAME* game) {
     f32 dist = search_position_distance(&actor->_1C, &player->actor_class.world.position);
     actor->_04(actor, game);
     if (actor->_04 == okera_dig_wait_process && dist < 200.f) {
-        sAdo_OngenPos((u32)actor, 68, &actor->_1C);
+        sAdo_OngenPos((uintptr_t)actor, 68, &actor->_1C);
     }
     if (actor->_04 == okera_dig_up_process && dist < 200.f) {
-        sAdo_OngenPos((u32)actor, 69, &actor->_1C);
+        sAdo_OngenPos((uintptr_t)actor, 69, &actor->_1C);
     }
 
     //! NOTE: has to be written this way to match

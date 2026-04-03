@@ -2462,7 +2462,7 @@ static void Player_actor_Reset_Item_net_catch_request_table(ACTOR* actorx) {
     player->item_net_catch_label_request_force = 0;
 }
 
-static int Player_actor_Set_Item_net_catch_request_table(ACTOR* actorx, GAME* game, u32 label, s8 type,
+static int Player_actor_Set_Item_net_catch_request_table(ACTOR* actorx, GAME* game, uintptr_t label, s8 type,
                                                          const xyz_t* pos_p, f32 radius) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actorx;
 
@@ -2483,7 +2483,7 @@ static int Player_actor_Set_Item_net_catch_request_table(ACTOR* actorx, GAME* ga
     return FALSE;
 }
 
-static int Player_actor_Set_Item_net_catch_request_force(ACTOR* actorx, GAME* game, u32 label, s8 type) {
+static int Player_actor_Set_Item_net_catch_request_force(ACTOR* actorx, GAME* game, uintptr_t label, s8 type) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actorx;
 
     if (mPlib_get_player_actor_main_index(game) == mPlayer_INDEX_SWING_NET &&
@@ -4491,7 +4491,7 @@ static void Player_actor_cancel_request_change_proc_index_by_A_btn(ACTOR* actorx
     }
 }
 
-static u32 Player_actor_Get_item_net_catch_label(ACTOR* actorx) {
+static uintptr_t Player_actor_Get_item_net_catch_label(ACTOR* actorx) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actorx;
 
     switch (player->now_main_index) {
@@ -4505,7 +4505,7 @@ static u32 Player_actor_Get_item_net_catch_label(ACTOR* actorx) {
     }
 }
 
-static int Player_actor_Change_item_net_catch_label(ACTOR* actorx, u32 label, s8 insect_type) {
+static int Player_actor_Change_item_net_catch_label(ACTOR* actorx, uintptr_t label, s8 insect_type) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actorx;
     aINS_INSECT_ACTOR* insect_actor = (aINS_INSECT_ACTOR*)label;
 
@@ -7022,7 +7022,7 @@ static void Player_actor_Set_bgm_volume(ACTOR* actorx, int main_index) {
 static int Player_actor_Check_Label_main_push_snowball(GAME* game, void* label) {
     PLAYER_ACTOR* player = GET_PLAYER_ACTOR_GAME(game);
 
-    if (player->now_main_index == mPlayer_INDEX_PUSH_SNOWBALL && player->main_data.push_snowball.label == (u32)label) {
+    if (player->now_main_index == mPlayer_INDEX_PUSH_SNOWBALL && player->main_data.push_snowball.label == (uintptr_t)label) {
         return TRUE;
     }
 
@@ -7033,7 +7033,7 @@ static int Player_actor_Check_Label_main_wade_snowball(GAME* game, void* label) 
     PLAYER_ACTOR* player = GET_PLAYER_ACTOR_GAME(game);
 
     if (player->now_main_index == mPlayer_INDEX_WADE_SNOWBALL &&
-        player->main_data.wade_snowball.snowball_label == (u32)label) {
+        player->main_data.wade_snowball.snowball_label == (uintptr_t)label) {
         return TRUE;
     }
 
@@ -7772,13 +7772,13 @@ static int Player_actor_check_cancel_event_without_priority(GAME* game) {
 
 static int Player_actor_Check_able_force_speak_label(GAME* game, void* label) {
     PLAYER_ACTOR* player = GET_PLAYER_ACTOR_GAME(game);
-    u32 able_force_speak_label = (u32)player->able_force_speak_label;
+    uintptr_t able_force_speak_label = (uintptr_t)player->able_force_speak_label;
 
     if (able_force_speak_label == 0) {
         return TRUE;
     }
 
-    if (able_force_speak_label == (u32)label) {
+    if (able_force_speak_label == (uintptr_t)label) {
         return TRUE;
     }
 
@@ -7818,17 +7818,17 @@ static int Player_actor_Check_stung_mosquito(GAME* game, void* label) {
 
     switch (main_index) {
         case mPlayer_INDEX_STUNG_MOSQUITO: {
-            u32 stung_label = GET_PLAYER_ACTOR_GAME(game)->requested_main_index_data.stung_mosquito.label;
+            uintptr_t stung_label = GET_PLAYER_ACTOR_GAME(game)->requested_main_index_data.stung_mosquito.label;
 
-            if (stung_label == (u32)label) {
+            if (stung_label == (uintptr_t)label) {
                 return TRUE;
             }
             break;
         }
         case mPlayer_INDEX_NOTICE_MOSQUITO: {
-            u32 notice_label = GET_PLAYER_ACTOR_GAME(game)->requested_main_index_data.notice_mosquito.label;
+            uintptr_t notice_label = GET_PLAYER_ACTOR_GAME(game)->requested_main_index_data.notice_mosquito.label;
 
-            if (notice_label == (u32)label) {
+            if (notice_label == (uintptr_t)label) {
                 return TRUE;
             }
             break;
