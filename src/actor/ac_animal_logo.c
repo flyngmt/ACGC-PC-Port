@@ -328,6 +328,8 @@ static void aAL_fade_out_start_wait_init(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
 
 #ifdef PC_ENHANCEMENTS
 static void aAL_pc_game_start_wait(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
+  static const char* kLanguageOptions[] = { "default", "pt-BR", "en", "es", "fr", "de", "it", "ja" };
+  enum { kLanguageOptionsCount = 8 };
   GAME_PLAY* play = (GAME_PLAY*)game;
   u16 on_btn = gamePT->pads[PAD0].on.button;
   s8 stick_y = gamePT->pads[PAD0].now.stick_y;
@@ -366,12 +368,12 @@ static void aAL_pc_game_start_wait(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
       return;
     }
 
-    /* Up/down navigation within options (5 items: 0=res, 1=fs, 2=vsync, 3=msaa, 4=textures) */
+    /* Up/down navigation within options (6 items: 0=res, 1=fs, 2=vsync, 3=msaa, 4=textures, 5=language) */
     if (actor->pc_cursor_cooldown == 0) {
       if (stick_y > 30 || (on_btn & BUTTON_DUP)) {
         if (actor->pc_options_sel > 0) { actor->pc_options_sel--; actor->pc_cursor_cooldown = 8; }
       } else if (stick_y < -30 || (on_btn & BUTTON_DDOWN)) {
-        if (actor->pc_options_sel < 4) { actor->pc_options_sel++; actor->pc_cursor_cooldown = 8; }
+        if (actor->pc_options_sel < 5) { actor->pc_options_sel++; actor->pc_cursor_cooldown = 8; }
       }
 
       /* Left/right to change values */
@@ -402,6 +404,23 @@ static void aAL_pc_game_start_wait(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
           case 4: { /* Textures cycle up: 0→1→2 */
             if (g_pc_settings.preload_textures < 2) g_pc_settings.preload_textures++;
           } break;
+          case 5: { /* Language cycle up */
+            const char* lang = pc_settings_get_language();
+            int i;
+
+            for (i = 0; i < kLanguageOptionsCount; i++) {
+              if (strcmp(lang, kLanguageOptions[i]) == 0) {
+                break;
+              }
+            }
+
+            if (i >= kLanguageOptionsCount) {
+              i = 0;
+            }
+
+            i = (i + 1) % kLanguageOptionsCount;
+            pc_settings_set_language(kLanguageOptions[i]);
+          } break;
         }
       } else if (stick_x < -30 || (on_btn & BUTTON_DLEFT)) {
         changed = 1; actor->pc_cursor_cooldown = 8;
@@ -423,6 +442,23 @@ static void aAL_pc_game_start_wait(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
           } break;
           case 4: { /* Textures cycle down: 2→1→0 */
             if (g_pc_settings.preload_textures > 0) g_pc_settings.preload_textures--;
+          } break;
+          case 5: { /* Language cycle down */
+            const char* lang = pc_settings_get_language();
+            int i;
+
+            for (i = 0; i < kLanguageOptionsCount; i++) {
+              if (strcmp(lang, kLanguageOptions[i]) == 0) {
+                break;
+              }
+            }
+
+            if (i >= kLanguageOptionsCount) {
+              i = 0;
+            }
+
+            i = (i - 1 + kLanguageOptionsCount) % kLanguageOptionsCount;
+            pc_settings_set_language(kLanguageOptions[i]);
           } break;
         }
       }
@@ -481,7 +517,7 @@ static void aAL_setupAction(ANIMAL_LOGO_ACTOR* actor, GAME* game, int action) {
     &aAL_back_fadein,
     &aAL_start_key_chk_start_wait,
 #ifdef PC_ENHANCEMENTS
-    (ANIMAL_LOGO_ACTION_PROC)&aAL_pc_game_start_wait,
+    &aAL_pc_game_start_wait,
 #else
     &aAL_game_start_wait,
 #endif
@@ -822,7 +858,7 @@ static void aAL_pc_options_draw(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
   /* Semi-transparent background behind options panel */
   {
     Gfx* gfx;
-    int x0 = 45, y0_bg = 58, x1 = 295, y1_bg = 196;
+    int x0 = 45, y0_bg = 58, x1 = 295, y1_bg = 212;
     OPEN_DISP(graph);
     gfx = NOW_FONT_DISP;
     gDPPipeSync(gfx++);
@@ -934,14 +970,33 @@ static void aAL_pc_options_draw(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
     sel == item ? 255 : 180, sel == item ? 255 : 180, sel == item ? 255 : 180,
     sel == item ? 255 : 160, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
   if (sel == item) mFont_SetLineStrings(game, str_arrow, 1, x - 12.0f, y, 255, 255, 255, 255, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
+  item++; y += line_h;
+
+  /* Language */
+  {
+    const char* lang = pc_settings_get_language();
+    len = sprintf(buf, "< %s >", lang);
+  }
+  {
+    static u8 lbl[] = { 'L', 'a', 'n', 'g', 'u', 'a', 'g', 'e' };
+    mFont_SetLineStrings(game, lbl, sizeof(lbl), x, y,
+      sel == item ? 255 : 180, sel == item ? 255 : 180, sel == item ? 255 : 180,
+      sel == item ? 255 : 160, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
+  }
+  mFont_SetLineStrings(game, (u8*)buf, len, 180.0f, y,
+    sel == item ? 255 : 180, sel == item ? 255 : 180, sel == item ? 255 : 180,
+    sel == item ? 255 : 160, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
+  if (sel == item) mFont_SetLineStrings(game, str_arrow, 1, x - 12.0f, y, 255, 255, 255, 255, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
   y += line_h * 1.5f;
 
   /* Hints */
   {
     static u8 str_save[] = { 'S', 'T', 'A', 'R', 'T', ':', ' ', 'S', 'a', 'v', 'e' };
     static u8 str_back[] = { 'B', ':', ' ', 'B', 'a', 'c', 'k' };
+    static u8 str_restart[] = { '*', ' ', 'L', 'a', 'n', 'g', 'u', 'a', 'g', 'e', ' ', 'a', 'p', 'p', 'l', 'i', 'e', 's', ' ', 'o', 'n', ' ', 'r', 'e', 's', 't', 'a', 'r', 't' };
     mFont_SetLineStrings(game, str_save, sizeof(str_save), x, y, 255, 255, 255, 160, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
     mFont_SetLineStrings(game, str_back, sizeof(str_back), 190.0f, y, 255, 255, 255, 160, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
+    mFont_SetLineStrings(game, str_restart, sizeof(str_restart), x, y + line_h, 255, 220, 180, 140, FALSE, TRUE, 0.9f, 0.9f, mFont_MODE_FONT);
   }
 }
 

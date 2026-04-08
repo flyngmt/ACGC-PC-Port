@@ -19,6 +19,8 @@ extern PCSettings g_pc_settings;
 void pc_settings_load(void);
 void pc_settings_save(void);
 void pc_settings_apply(void);
+const char* pc_settings_get_language(void);
+void pc_settings_set_language(const char* language);
 
 #ifdef __cplusplus
 }
