@@ -26,9 +26,10 @@ typedef struct SOU_LEV_ONGEN_DATA {
     u8 _01;
     u8 _02;
     u8 _03;
-    u32 _04;
+    uintptr_t _04;
     u8 _08;
     u8 _09;
+    u8 _pad[2]; /* 8-byte alignment padding for 64-bit */
     f32 distance;
     f32 distance2;
 } SOU_LEV_ONGEN_DATA;
@@ -42,6 +43,7 @@ typedef struct SOU_LS_STACK {
     u8 _5;
     u8 _6;
     u8 _7;
+    u8 _pad[8]; /* 8-byte alignment padding for 64-bit */
 } SOU_LS_STACK;
 
 typedef struct SOU_LEV_SE {
@@ -62,7 +64,7 @@ typedef struct SOU_LEV_SE {
 } SOU_LEV_SE;
 
 typedef struct SOU_ONGEN_ENTRY {
-    u32 _00;
+    uintptr_t _00;
     u8 _04;
     u16 _06;
     u8 pan;
@@ -108,7 +110,7 @@ typedef struct SOU_VOICE_SE {
 } SOU_VOICE_SE;
 
 typedef struct SOU_ROOM_INS {
-    u32 _00;
+    uintptr_t _00;
     u8 _04;
     u8 _05;
     u8 _06;
@@ -584,7 +586,12 @@ f32 SOU_ONGEN_AREA1 = 540.f;
 f32 SOU_ONGEN_AREA2 = 533.f;
 f32 sou_md_bgm_boost_pasent = 1.f;
 
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+/* 64-bit: audio structs with pointer fields are larger, need more heap space */
+u8 audiomemory[0x120000] ATTRIBUTE_ALIGN(32);
+#else
 u8 audiomemory[0x90000] ATTRIBUTE_ALIGN(32);
+#endif
 s16* SOU_FIR_STATE;
 s16 SOU_FIR_STATE_COPY[12];
 
@@ -2877,7 +2884,9 @@ void Na_VoiceSe(u8 a, u8 b, u8 c, s16 voice, u8 scale, u8 f) {
                         } break;
                         default: {
                             sou_nobasu_count = 0;
-                            sou_now_boin = SHIIN2BOIN[a];
+                            if (a < ARRAY_COUNT(SHIIN2BOIN)) {
+                                sou_now_boin = SHIIN2BOIN[a];
+                            }
                         } break;
                     }
                 }
@@ -3056,7 +3065,7 @@ u8 Na_MessageSpeedGet() {
     return sou_message_speed;
 }
 
-void Na_OngenPos(u32 id, u8 index, u16 angle, f32 distance) {
+void Na_OngenPos(uintptr_t id, u8 index, u16 angle, f32 distance) {
     u8 pan = 0;
     u8 i = 0;
     u8 j = 0;
@@ -3080,9 +3089,9 @@ void Na_OngenPos(u32 id, u8 index, u16 angle, f32 distance) {
 
         //! @BUG: should be ARRAY_COUNT(sou_lev_ongen_data), reading unknown data
         if (index == 0xb) {
-            for (i = 0; i < ARRAY_COUNT(sou_ongen_entry); i++) {
+            for (i = 0; i < ARRAY_COUNT(sou_lev_ongen_data); i++) {
                 if (sou_lev_ongen_data[i]._08 == 0xc) {
-                    for (j = 0; j < ARRAY_COUNT(sou_ongen_entry); j++) {
+                    for (j = 0; j < ARRAY_COUNT(sou_lev_ongen_data); j++) {
                         if (sou_lev_ongen_data[j]._08 == 0xb && sou_lev_ongen_data[j].distance < distance) {
                             return;
                         }
@@ -3369,9 +3378,7 @@ extern void Na_SysLevStart(u8 id) {
         }
     }
     for (j = 0; j < ARRAY_COUNT(sou_sys_lev); j++) {
-        //! BUG: `i` will be ARRAY_COUNT(sou_sys_lev) if we get to this point,
-        // and we will be incrementing out of bounds
-        sou_sys_lev[i]._1++;
+        sou_sys_lev[j]._1++;
     }
 
 offset_jmp:
@@ -3443,7 +3450,7 @@ extern void Na_Pause(u8 pauseFlag) {
     sou_pause_flag = pauseFlag;
 }
 
-extern void Na_RhythmPos(u32 index, u8 unused, u16 angle, f32 distance) {
+extern void Na_RhythmPos(uintptr_t index, u8 unused, u16 angle, f32 distance) {
     u8 pan = 0;
     u8 subtrack = 0;
     f32 volume = 0.f;
@@ -3487,7 +3494,7 @@ extern void Na_SpecChange(int a) {
     }
 }
 
-extern void Na_MDPlayerPos(u16 angle, f32 distance, u16 b, u16 c, u32 id) {
+extern void Na_MDPlayerPos(u16 angle, f32 distance, u16 b, u16 c, uintptr_t id) {
     u8 pan = 0;
     f32 volume = 0.f;
     u8 filterStatus = 0;
@@ -3617,7 +3624,7 @@ extern void Na_KishaStatusTrg(u8 a) {
     }
 }
 
-extern void Na_KishaStatusLevel(f32 speed, u32 ongenNum1, u16 angle1, f32 distance1, u32 ongenNum2, u16 angle2,
+extern void Na_KishaStatusLevel(f32 speed, uintptr_t ongenNum1, u16 angle1, f32 distance1, uintptr_t ongenNum2, u16 angle2,
                                 f32 distance2) {
     f32 f30 = 0.f;
     f32 f29 = 0.f;
@@ -3719,7 +3726,6 @@ extern void Na_SubGameEnd() {
 }
 
 extern void Na_SceneMode(u8 a) {
-    u8 unused = 0;
     if (a != sou_scene_mode) {
 #ifdef TARGET_PC
         printf("[SCENE_MODE] %d -> %d\n", sou_scene_mode, a);
@@ -3874,7 +3880,7 @@ extern void Na_SceneMode(u8 a) {
     }
 }
 
-extern u8 Na_RoomIncectPos(int insectID, u8 index, u16 angle, f32 distance) {
+extern u8 Na_RoomIncectPos(uintptr_t insectID, u8 index, u16 angle, f32 distance) {
     u8 i = 0;
     u8 foundIndex = 0;
     u8 j = 0;
@@ -3985,7 +3991,7 @@ extern u8 Na_RoomIncectPos(int insectID, u8 index, u16 angle, f32 distance) {
     return ret;
 }
 
-extern void Na_FurnitureInstPos(int id, u16 angle, f32 distance) {
+extern void Na_FurnitureInstPos(uintptr_t id, u16 angle, f32 distance) {
     u8 i = 0;
     u8 pan = 0;
     f32 volume = 0.f;

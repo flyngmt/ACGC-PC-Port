@@ -48,7 +48,7 @@ static void aHN1_hurrahs(HANABI_NPC1_ACTOR* actor) {
 
 static void aHN1_clapping(HANABI_NPC1_ACTOR* actor) {
     aHN1_hurrahs(actor);
-    sAdo_OngenPos((u32)actor, actor->clap_se_no, &actor->npc_class.actor_class.world.position);
+    sAdo_OngenPos((uintptr_t)actor, actor->clap_se_no, &actor->npc_class.actor_class.world.position);
 }
 
 static void aHN1_setupAction(HANABI_NPC1_ACTOR* actor, int action) {

@@ -152,7 +152,7 @@ void minsect_goki_mv(MUSEUM_INSECT_PRIVATE_DATA* actor, GAME* game) {
         if (actor->_40 > 0.f) {
             goki_wall_hit_angle_corect(actor, game);
             mID_insect_moveF(actor);
-            sAdo_OngenPos((u32)actor, 0xa8, &actor->_1C);
+            sAdo_OngenPos((uintptr_t)actor, 0xa8, &actor->_1C);
             if (actor->_6E-- < 0) {
                 if (RANDOM_F(1.f) > 0.2f) {
                     actor->_6E = (s16)RANDOM_F(420.f) + 180;

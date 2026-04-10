@@ -28,7 +28,8 @@ f32 facos(f32);
 s16 sins(u16);
 s16 coss(u16);
 f32 fatan2(f32, f32);
-f32 fsqrt(f32);
+f32 game_fsqrt(f32);
+#define fsqrt game_fsqrt
 f32 facos(f32);
 #endif
 

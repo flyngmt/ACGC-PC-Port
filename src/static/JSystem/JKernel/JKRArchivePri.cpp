@@ -10,6 +10,9 @@ u32 JKRArchive::sCurrentDirID;
 JKRArchive::JKRArchive() {
     mIsMounted = false;
     mMountDirection = MOUNT_DIRECTION_HEAD;
+#ifdef TARGET_PC
+    mFileEntryDataPtrs = nullptr;
+#endif
 }
 
 JKRArchive::JKRArchive(s32 entryNum, JKRArchive::EMountMode mountMode) : JKRFileLoader() {
@@ -17,6 +20,9 @@ JKRArchive::JKRArchive(s32 entryNum, JKRArchive::EMountMode mountMode) : JKRFile
     mMountMode = mountMode;
     mMountCount = 1;
     _54 = 1;
+#ifdef TARGET_PC
+    mFileEntryDataPtrs = nullptr;
+#endif
     mHeap = JKRHeap::findFromRoot(this);
     if (!mHeap) {
         mHeap = JKRHeap::sCurrentHeap;
@@ -130,7 +136,7 @@ JKRArchive::SDIFileEntry* JKRArchive::findNameResource(const char* name) const {
 JKRArchive::SDIFileEntry* JKRArchive::findPtrResource(const void* ptr) const {
     SDIFileEntry* entry = mFileEntries;
     for (u32 i = 0; i < mArcInfoBlock->num_file_entries; entry++, i++) {
-        if (entry->mData == ptr) {
+        if (getFileEntryData(entry) == ptr) {
             return entry;
         }
     }

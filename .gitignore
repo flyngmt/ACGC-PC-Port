@@ -21,6 +21,7 @@ orig/*/*
 # Build files
 build/
 build32/
+build64/
 .ninja_*
 build.ninja
 

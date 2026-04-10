@@ -12,6 +12,9 @@ extern "C" {
 extern void Nap_AudioPortInit(void);
 extern void Nap_SetF32(u32 cmd, f32 param);
 extern void Nap_SetS32(u32 cmd, s32 param);
+#ifdef TARGET_PC
+extern void Nap_SetPtr(u32 cmd, void* ptr);
+#endif
 extern void Nap_SetS8(u32 cmd, s8 param);
 extern void Nap_SetU16(u32 cmd, u16 param);
 extern s32 Nap_SendStart(void);

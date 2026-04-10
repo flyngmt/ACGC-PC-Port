@@ -392,9 +392,9 @@ static void aIDG_actor_move(ACTOR* actor, GAME* game) {
     aINS_INSECT_ACTOR* insect = (aINS_INSECT_ACTOR*)actor;
     GAME_PLAY* play = (GAME_PLAY*)game;
  
-    u32 label = mPlib_Get_item_net_catch_label();
+    uintptr_t label = mPlib_Get_item_net_catch_label();
 
-    if (label == (u32)actor) {
+    if (label == (uintptr_t)actor) {
         insect->alpha0 = 255;
         aIDG_setupAction(insect, aIDG_ACTION_LET_ESCAPE, game);
     } else {

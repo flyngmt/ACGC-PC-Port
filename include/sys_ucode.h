@@ -21,16 +21,16 @@ typedef struct ucode_info_s {
 
 #define SP_UCODE_DATA_SIZE 0x800
 
-extern long long int gspF3DZEX2_NoN_PosLight_fifoDataStart[];
-extern long long int gspF3DZEX2_NoN_PosLight_fifoTextStart[];
+extern s64 gspF3DZEX2_NoN_PosLight_fifoDataStart[];
+extern s64 gspF3DZEX2_NoN_PosLight_fifoTextStart[];
 
-extern unsigned long long gspS2DEX2_fifoDataStart[];
-extern unsigned long long gspS2DEX2_fifoTextStart[];
+extern u64 gspS2DEX2_fifoDataStart[];
+extern u64 gspS2DEX2_fifoTextStart[];
 
-extern long long int* ucode_GetPolyTextStart();
-extern long long int* ucode_GetPolyDataStart();
-extern unsigned long long* ucode_GetSpriteTextStart();
-extern unsigned long long* ucode_GetSpriteDataStart();
+extern s64* ucode_GetPolyTextStart();
+extern s64* ucode_GetPolyDataStart();
+extern u64* ucode_GetSpriteTextStart();
+extern u64* ucode_GetSpriteDataStart();
 
 #ifdef __cplusplus
 };

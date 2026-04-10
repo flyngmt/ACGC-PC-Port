@@ -38,7 +38,7 @@ static int Player_actor_CulcAnimation_Putaway_net(ACTOR* actor, f32* frame_calc)
 
 static void Player_actor_CorrectSomething_Putaway_net(ACTOR* actor, GAME* game) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
-    u32 label = player->item_net_catch_label;
+    uintptr_t label = player->item_net_catch_label;
 
     if (label != 0) {
         cKF_FrameControl_c* fc = &player->keyframe0.frame_control;

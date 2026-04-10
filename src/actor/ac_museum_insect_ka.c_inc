@@ -75,7 +75,7 @@ void minsect_ka_mv(MUSEUM_INSECT_PRIVATE_DATA* actor, GAME* game) {
         actor->_6E = (s16)RANDOM_F(1200.f) + 600;
     }
     if (dist < 300.f) {
-        sAdo_OngenPos((u32)actor, 0xcf, &actor->_1C);
+        sAdo_OngenPos((uintptr_t)actor, 0xcf, &actor->_1C);
     }
     mID_insect_moveF(actor);
     actor->_0C += actor->_10;
