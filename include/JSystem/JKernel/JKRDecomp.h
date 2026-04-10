@@ -22,7 +22,11 @@
 #define SZP_GETBACKOFS(buf) (((*((u8*)buf) & 0xF) << 8) | (*(((u8*)buf) + 1)))
 #define SZP_GETCOUNT(buf) (*((u16*)buf) >> 12)
 
+#ifdef TARGET_PC
+typedef void DecompCallback(uintptr_t);
+#else
 typedef void DecompCallback(u32);
+#endif
 
 class JKRDecompCommand {
   public:

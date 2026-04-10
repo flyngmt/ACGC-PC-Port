@@ -122,7 +122,7 @@ extern void sAdo_SysLevStop(u8 id) {
     Na_SysLevStop(id);
 }
 
-extern void sAdo_OngenPos(u32 p1, u8 p2, const xyz_t* pos) {
+extern void sAdo_OngenPos(uintptr_t p1, u8 p2, const xyz_t* pos) {
     u16 scalc;
     f32 fcalc;
 
@@ -254,7 +254,7 @@ extern void sAdos_KishaStatusTrg(u8 state) {
     Na_KishaStatusTrg(state);
 }
 
-extern void sAdos_KishaStatusLevel(f32 speed, u32 ongenNum1, f32 distance1, u16 angle1, u32 ongenNum2,
+extern void sAdos_KishaStatusLevel(f32 speed, uintptr_t ongenNum1, f32 distance1, u16 angle1, uintptr_t ongenNum2,
                                    f32 distance2, u16 angle2) {
     Na_KishaStatusLevel(speed, ongenNum1, angle1, distance1, ongenNum2, angle2, distance2);
 }

@@ -7,7 +7,7 @@ static int Player_actor_request_main_door(GAME* game, const xyz_t* pos, s16 angl
         player->requested_main_index_data.door.player_pos.y = player->actor_class.world.position.y;
         player->requested_main_index_data.door.angle_y = angle_y;
         player->requested_main_index_data.door.type = type;
-        player->requested_main_index_data.door.label = (u32)label;
+        player->requested_main_index_data.door.label = (uintptr_t)label;
 
         Player_actor_request_main_index(game, mPlayer_INDEX_DOOR, priority);
 

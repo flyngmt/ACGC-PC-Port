@@ -29,6 +29,13 @@ na_spec_config NA_SPEC_CONFIG[1] = {
 };
 // clang-format on
 
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+/* 64-bit: audio structs with pointer fields are larger, need bigger heaps */
+ALGlobalsConst AGC = {
+    0x18, 0x30, 0xE0000, 0x70000, 0x50000,
+};
+#else
 ALGlobalsConst AGC = {
     0x18, 0x30, 0x70000, 0x38000, 0x28000,
 };
+#endif

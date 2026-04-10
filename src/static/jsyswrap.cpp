@@ -456,6 +456,17 @@ extern u32 JW_GetAramAddress(int res_no) {
         address = JC_JKRAramArchive_getAramAddress_byName(forest_arc_aram2_p, (u32)'DATA', aram_resName[res_no]);
     }
 
+#ifdef TARGET_PC
+    {
+        static int aram_log = 0;
+        if (0 && aram_log < 40) { /* disabled */
+            aram_log++;
+            fprintf(stderr, "[ARAM_ADDR] res_no=%d name=%s addr=0x%x\n",
+                    res_no, (res_no >= 0 && res_no < RESOURCE_NUM) ? aram_resName[res_no] : "?", address);
+        }
+    }
+#endif
+
     return address;
 }
 
@@ -490,7 +501,12 @@ extern void JW_Init() {
     void* arena_hi = OSGetArenaHi();
     void* arena_lo = OSGetArenaLo();
 
+#ifdef TARGET_PC
+    /* Overhead is larger on 64-bit due to wider pointers in JKR heap structs */
+    SystemHeapSize = (uintptr_t)arena_hi - (uintptr_t)arena_lo - 0x200;
+#else
     SystemHeapSize = (u32)arena_hi - (u32)arena_lo - 0xD0;
+#endif
     JC_JFWSystem_setMaxStdHeap(1);
     JC_JFWSystem_setSysHeapSize(SystemHeapSize);
     JC_JFWSystem_setFifoBufSize(0x10001);

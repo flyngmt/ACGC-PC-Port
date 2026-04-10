@@ -107,7 +107,7 @@ static void Player_actor_settle_main_Notice_net(ACTOR* actor, GAME* game) {
     }
 
     if (!main_notice->not_full_pocket) {
-        u32 label = player->item_net_catch_label;
+        uintptr_t label = player->item_net_catch_label;
 
         if (label != 0 && player->item_net_catch_type == 0) {
             ((aINS_INSECT_ACTOR*)label)->patience = 100.0f;
@@ -250,7 +250,7 @@ static void Player_actor_request_proc_index_fromNotice_net(ACTOR* actor, GAME* g
         Player_actor_request_main_putaway_net(game, main_notice->exchange_flag, mPlayer_REQUEST_PRIORITY_28);
     } else if (msg_control == 0x53) {
         if (player->item_net_catch_type == 0) {
-            u32 label = player->item_net_catch_label;
+            uintptr_t label = player->item_net_catch_label;
             mPlayer_request_release_creature_u release_data;
 
             bzero(&release_data, sizeof(mPlayer_request_release_creature_u));

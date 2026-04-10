@@ -30,7 +30,7 @@ extern void Na_VoiceSe(u8, u8, u8, s16, u8, u8);
 extern void Na_MessageStatus(u8 messageStatus);
 extern void Na_MessageSpeed(u8 messageSpeed);
 extern u8 Na_MessageSpeedGet();
-extern void Na_OngenPos(u32 id, u8 index, u16 angle, f32 distance);
+extern void Na_OngenPos(uintptr_t id, u8 index, u16 angle, f32 distance);
 extern void Na_OngenTrgStartSpeed(u16 num, u16 angle, f32 distance, f32 speed);
 extern void Na_OngenTrgStart(u16 a, u16 angle, f32 distance);
 extern void Na_SetOutMode(u8 outMode);
@@ -48,7 +48,7 @@ extern u8 Na_CheckRestartReady();
 extern void Na_Restart();
 extern u8 Na_SubGameOK();
 extern void Na_KishaStatusTrg(u8);
-extern void Na_KishaStatusLevel(f32 speed, u32 ongenNum1, u16 angle1, f32 distance1, u32 ongenNum2, u16 angle2,
+extern void Na_KishaStatusLevel(f32 speed, uintptr_t ongenNum1, u16 angle1, f32 distance1, uintptr_t ongenNum2, u16 angle2,
                                 f32 distance2);
 extern void Na_TTKK_ARM(u8);
 extern void Na_BgmMuteClear();

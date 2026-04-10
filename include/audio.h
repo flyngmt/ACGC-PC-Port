@@ -78,7 +78,7 @@ extern u8 sAdo_MessageSpeedGet();
 extern void sAdo_SysLevStop(u8 id);
 extern void sAdo_SysLevStart(u8 id);
 
-extern void sAdo_OngenPos(u32 p1, u8 p2, const xyz_t* pos);
+extern void sAdo_OngenPos(uintptr_t p1, u8 p2, const xyz_t* pos);
 extern void sAdo_OngenTrgStart(u16 id, const xyz_t* pos);
 
 extern void sAdo_SetOutMode(u8 mode);
@@ -115,7 +115,7 @@ extern int sAdo_SubGameOK();
 extern void sAdo_Tenki(u8 mode);
 
 extern void sAdos_KishaStatusTrg(u8 state);
-extern void sAdos_KishaStatusLevel(f32 speed, u32 ongenNum1, f32 distance1, u16 angle1, u32 ongenNum2,
+extern void sAdos_KishaStatusLevel(f32 speed, uintptr_t ongenNum1, f32 distance1, u16 angle1, uintptr_t ongenNum2,
                                    f32 distance2, u16 angle2);
 
 extern int sAdos_GetRadioCounter(Radio_c* radio);

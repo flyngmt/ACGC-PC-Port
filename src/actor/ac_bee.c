@@ -165,7 +165,7 @@ static void aBEE_fly(ACTOR* actorx, GAME* game) {
     xyz_t pos;
 
     aBEE_calc_fly_angle(actorx);
-    if ((u32)bee == mPlib_Get_item_net_catch_label()) {
+    if ((uintptr_t)bee == mPlib_Get_item_net_catch_label()) {
         aBEE_setupAction(bee, aBEE_ACT_CAUGHT, game);
     } else if (actorx->shape_info.rotation.x <= DEG2SHORT_ANGLE2(22.5f)) {
         if (mPlib_check_player_actor_main_index_Pitfall(game)) {
@@ -197,9 +197,9 @@ static void aBEE_fly(ACTOR* actorx, GAME* game) {
 
                 swing_timer = GET_PLAYER_ACTOR_NOW()->Get_Item_net_catch_swing_timer_proc(GET_PLAYER_ACTOR_NOW_ACTOR(), gamePT);
                 if ((swing_timer > 0.0f || mPlib_Check_StopNet(&pos)) && actorx->player_distance_xz < 40.0f) {
-                    GET_PLAYER_ACTOR_NOW()->Set_Item_net_catch_request_force_proc(GET_PLAYER_ACTOR_NOW_ACTOR(), gamePT, (u32)actorx, TRUE);
+                    GET_PLAYER_ACTOR_NOW()->Set_Item_net_catch_request_force_proc(GET_PLAYER_ACTOR_NOW_ACTOR(), gamePT, (uintptr_t)actorx, TRUE);
                 } else {
-                    GET_PLAYER_ACTOR_NOW()->Set_Item_net_catch_request_table_proc(GET_PLAYER_ACTOR_NOW_ACTOR(), gamePT, (u32)actorx, TRUE, &actorx->world.position, 24.0f);
+                    GET_PLAYER_ACTOR_NOW()->Set_Item_net_catch_request_table_proc(GET_PLAYER_ACTOR_NOW_ACTOR(), gamePT, (uintptr_t)actorx, TRUE, &actorx->world.position, 24.0f);
                 }
             }
 
@@ -223,7 +223,7 @@ static void aBEE_caught(ACTOR* actorx, GAME* game) {
     }
 
     if (bee->insect_actor != NULL) {
-        if (mPlib_Change_item_net_catch_label((u32)bee->insect_actor, 0)) {
+        if (mPlib_Change_item_net_catch_label((uintptr_t)bee->insect_actor, 0)) {
             aBEE_setupAction(bee, aBEE_ACT_DISAPPEAR, game);
             return;
         }
@@ -346,7 +346,7 @@ static void aBEE_setupAction(BEE_ACTOR* bee, int action, GAME* game) {
 static void aBEE_actor_move(ACTOR* actorx, GAME* game) {
     BEE_ACTOR* bee = (BEE_ACTOR*)actorx;
     
-    sAdo_OngenPos((u32)actorx, NA_SE_B0, &actorx->world.position);
+    sAdo_OngenPos((uintptr_t)actorx, NA_SE_B0, &actorx->world.position);
     if ((actorx->world.position.x < 0.0f && actorx->world.position.z < 0.0f)) {
         // empty block, maybe for debug?
     } else {

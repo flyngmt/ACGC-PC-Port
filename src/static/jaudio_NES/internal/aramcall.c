@@ -103,7 +103,11 @@ void Init_AramMotherHeap(void)
 		inited = TRUE;
 
 		void* alloc = ARAllocFull(&outSize);
+#ifdef TARGET_PC
+		Jac_InitMotherHeap(&aram_mother, (uintptr_t)alloc, outSize, 0);
+#else
 		Jac_InitMotherHeap(&aram_mother, (u32)alloc, outSize, 0);
+#endif
 	}
 }
 

@@ -286,8 +286,8 @@ static int aICH_check_player_net(aINS_INSECT_ACTOR* insect) {
 
     ret = FALSE;
     if (mPlib_Check_StopNet(&pos) == TRUE) {
-        u32 label = mPlib_Get_item_net_catch_label();
-        if ((label != (u32)insect)) {
+        uintptr_t label = mPlib_Get_item_net_catch_label();
+        if ((label != (uintptr_t)insect)) {
             xDiff = pos.x - insect->tools_actor.actor_class.world.position.x;
             zDiff = pos.z - insect->tools_actor.actor_class.world.position.z;
 
@@ -618,9 +618,9 @@ static void aICH_actor_move(ACTOR* actor, GAME* game) {
     aINS_INSECT_ACTOR* insect = (aINS_INSECT_ACTOR*)actor;
     GAME_PLAY* play = (GAME_PLAY*)game;
  
-    u32 label = mPlib_Get_item_net_catch_label();
+    uintptr_t label = mPlib_Get_item_net_catch_label();
 
-    if (label == (u32)actor) {
+    if (label == (uintptr_t)actor) {
         insect->alpha0 = 255;
         aICH_anime_proc(insect);
         aICH_setupAction(insect, aICH_ACTION_LET_ESCAPE, game);

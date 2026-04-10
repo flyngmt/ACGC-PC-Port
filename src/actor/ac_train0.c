@@ -52,10 +52,12 @@ static void aTR0_actor_dt(ACTOR* actor, GAME* game) {
     tr_home_pos = train0->actor_class.home.position;
     mFI_SetFG_common(EMPTY_NO, tr_home_pos, FALSE);
 
-    engineer_p = (ACTOR*)train0->arg3;
-    if (engineer_p != NULL) {
-        Actor_delete(engineer_p);
-        train0->arg3 = (int)NULL;
+    if (train0->arg3 != 0) {
+        engineer_p = Actor_info_fgName_search(&((GAME_PLAY*)game)->actor_info, SP_NPC_ENGINEER, ACTOR_PART_NPC);
+        if (engineer_p != NULL) {
+            Actor_delete(engineer_p);
+        }
+        train0->arg3 = 0;
     }
 
     cKF_SkeletonInfo_R_dt(&train0->keyframe);

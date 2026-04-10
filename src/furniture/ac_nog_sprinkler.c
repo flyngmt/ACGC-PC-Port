@@ -27,7 +27,7 @@ static void fNS_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* d
 
     if (aFTR_CAN_PLAY_SE(ftr_actor)) {
         if (ftr_actor->dynamic_work_s[0] == TRUE) {
-            sAdo_OngenPos((u32)ftr_actor, 0x5B, &ftr_actor->position);
+            sAdo_OngenPos((uintptr_t)ftr_actor, 0x5B, &ftr_actor->position);
         }
     }
 

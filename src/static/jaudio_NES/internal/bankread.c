@@ -11,6 +11,23 @@ static Bank_* bankp[BANKP_SIZE];
  * Address:	8000BE00
  * Size:	000024
  */
+#ifdef TARGET_PC
+static void PTconvert(void** pointer, uintptr_t base_address)
+{
+	/* ROM data stores 32-bit offsets. On 64-bit, void* is 8 bytes but the
+	 * serialized data has 4-byte values. Read as u32 offset, relocate. */
+	u32 offset = *(u32*)pointer;
+	if (offset == 0) {
+		*pointer = NULL;
+		return;
+	}
+	if (offset >= (u32)base_address) {
+		*pointer = (void*)(uintptr_t)offset;
+		return;
+	}
+	*pointer = (void*)(base_address + offset);
+}
+#else
 static void PTconvert(void** pointer, u32 base_address)
 {
 	if (*pointer >= (void*)base_address || *pointer == NULL) {
@@ -18,6 +35,7 @@ static void PTconvert(void** pointer, u32 base_address)
 	}
 	*pointer = *(char**)pointer + base_address;
 }
+#endif
 
 /*
  * --INFO--
@@ -27,7 +45,11 @@ static void PTconvert(void** pointer, u32 base_address)
 Bank_* Bank_Test(u8* ibnk_address)
 {
 	u32 i, j, k;
+#ifdef TARGET_PC
+	uintptr_t base_addr = (uintptr_t)ibnk_address;
+#else
 	u32 base_addr    = (u32)ibnk_address;
+#endif
 	Bank_* startBank = (Bank_*)(ibnk_address + 0x20);
 	if (startBank->mMagic != 'BANK') {
 		return NULL;

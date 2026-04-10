@@ -164,7 +164,7 @@ static int aFD_OperateWaterSound(xyz_t* center_pos, ACTOR* actorx, s16 ongen_typ
                 aFD_ongen_info2_c* info = &ongen_info[i];
 
                 if (info->sound_source_no != -1) {
-                    u32 ongen_id = (u32)actorx + (mFI_GetBlockXMax() * info->bz + info->bx) * mFM_SOUND_SOURCE_NUM +
+                    uintptr_t ongen_id = (uintptr_t)actorx + (mFI_GetBlockXMax() * info->bz + info->bx) * mFM_SOUND_SOURCE_NUM +
                                    info->sound_source_no;
                     mFM_bg_sound_source_c* source = mFI_GetSoundSourcePBlockNum(info->bx, info->bz);
 
@@ -281,7 +281,7 @@ static void Bg_Draw_Actor_move(ACTOR* actorx, GAME* game) {
                 frog_se_pos.y = 0.0f;
                 frog_se_pos.z = mFI_UNIT_BASE_SIZE_F + (f32)pond_z * mFI_UNIT_BASE_SIZE_F;
                 frog_se_pos.y = mCoBG_GetBgY_OnlyCenter_FromWpos(frog_se_pos, 0.0f);
-                sAdo_OngenPos((u32)&Bg_Draw_Actor_move, 0xA1, &frog_se_pos);
+                sAdo_OngenPos((uintptr_t)&Bg_Draw_Actor_move, 0xA1, &frog_se_pos);
             }
 
             /* Pond sound effect */
@@ -289,7 +289,7 @@ static void Bg_Draw_Actor_move(ACTOR* actorx, GAME* game) {
             pond_pos.y = 0.0f;
             pond_pos.z = mFI_UNIT_BASE_SIZE_F * 0.5f + (f32)pond_z * mFI_UNIT_BASE_SIZE_F;
             pond_pos.y = mCoBG_GetBgY_OnlyCenter_FromWpos(pond_pos, 0.0f);
-            sAdo_OngenPos((u32)&Bg_Draw_Actor_ct, 0x16, &pond_pos);
+            sAdo_OngenPos((uintptr_t)&Bg_Draw_Actor_ct, 0x16, &pond_pos);
         }
     }
 

@@ -2140,7 +2140,7 @@ static void aMR_CallSitDownOngenPosSE(const xyz_t* pos) {
         /* Check for massage chair */
         switch (ftr_actor->name) {
             case FTR_KON_MASAJI:
-                sAdo_OngenPos((u32)ftr_actor, 39, &ftr_actor->position);
+                sAdo_OngenPos((uintptr_t)ftr_actor, 39, &ftr_actor->position);
                 break;
         }
     }
