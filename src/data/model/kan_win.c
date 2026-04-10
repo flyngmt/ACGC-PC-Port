@@ -278,7 +278,7 @@ Vtx kan_win_v[] = {
 #endif
 
 Gfx kan_win_moji1_model[] = {
-    gsSPDisplayList(anime_4_txt + 0x48),
+    gsSPDisplayList(anime_4_txt + 9 * sizeof(Gfx)),
     gsDPSetTextureImage_Dolphin(G_IM_FMT_I, G_IM_SIZ_4b, 64, 16, kan_win_map_tex),
     gsDPSetTile_Dolphin(G_DOLPHIN_TLUT_DEFAULT_MODE, 0, 15, GX_CLAMP, GX_CLAMP, 0, 0),
     gsSPVertex(kan_win_v, 4, 0),
@@ -287,7 +287,7 @@ Gfx kan_win_moji1_model[] = {
 };
 
 Gfx kan_win_moji2_model[] = {
-    gsSPDisplayList(anime_4_txt + 0x70),
+    gsSPDisplayList(anime_4_txt + 14 * sizeof(Gfx)),
     gsDPSetTextureImage_Dolphin(G_IM_FMT_I, G_IM_SIZ_4b, 32, 16, kan_win_acre_tex),
     gsDPSetTile_Dolphin(G_DOLPHIN_TLUT_DEFAULT_MODE, 0, 15, GX_CLAMP, GX_CLAMP, 0, 0),
     gsSPVertex(&kan_win_v[4], 4, 0),
@@ -321,7 +321,7 @@ Gfx kan_win_kiwakuT_model[] = {
 };
 
 Gfx kan_win_futiT_model[] = {
-    gsSPDisplayList(anime_4_txt + 0x18),
+    gsSPDisplayList(anime_4_txt + 3 * sizeof(Gfx)),
     gsDPSetTextureImage_Dolphin(G_IM_FMT_IA, G_IM_SIZ_8b, 16, 16, kan_win_ga4_tex),
     gsDPSetTile_Dolphin(G_DOLPHIN_TLUT_DEFAULT_MODE, 0, 0, GX_CLAMP, GX_CLAMP, 0, 0),
     gsSPVertex(&kan_win_v[39], 16, 0),
@@ -339,7 +339,7 @@ Gfx kan_win_futiT_model[] = {
 };
 
 Gfx kan_win_futi2T_model[] = {
-    gsSPDisplayList(anime_4_txt + 0x30),
+    gsSPDisplayList(anime_4_txt + 6 * sizeof(Gfx)),
     gsDPSetTextureImage_Dolphin(G_IM_FMT_IA, G_IM_SIZ_8b, 16, 16, kan_win_ga4_tex),
     gsDPSetTile_Dolphin(G_DOLPHIN_TLUT_DEFAULT_MODE, 0, 0, GX_CLAMP, GX_CLAMP, 0, 0),
     gsSPVertex(&kan_win_v[55], 16, 0),
@@ -357,7 +357,7 @@ Gfx kan_win_futi2T_model[] = {
 };
 
 Gfx kan_win_wakuT_model[] = {
-    gsSPDisplayList(anime_4_txt + 0x58),
+    gsSPDisplayList(anime_4_txt + 11 * sizeof(Gfx)),
     gsDPSetTextureImage_Dolphin(G_IM_FMT_IA, G_IM_SIZ_8b, 64, 64, kan_win_waku2a_tex),
     gsDPSetTile_Dolphin(G_DOLPHIN_TLUT_DEFAULT_MODE, 0, 0, GX_MIRROR, GX_MIRROR, 0, 0),
     gsSPVertex(&kan_win_v[71], 4, 0),
@@ -433,7 +433,7 @@ Gfx kan_win_tyou2T_model[] = {
 };
 
 Gfx kan_win_sakiT_model[] = {
-    gsSPDisplayList(anime_4_txt + 0x58),
+    gsSPDisplayList(anime_4_txt + 11 * sizeof(Gfx)),
     gsDPSetTextureImage_Dolphin(G_IM_FMT_IA, G_IM_SIZ_8b, 32, 32, kan_win_saki_tex),
     gsDPSetTile_Dolphin(G_DOLPHIN_TLUT_DEFAULT_MODE, 0, 0, GX_MIRROR, GX_MIRROR, 0, 0),
     gsSPVertex(&kan_win_v[127], 4, 0),

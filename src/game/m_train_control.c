@@ -49,8 +49,8 @@ static void mTRC_KishaStatusLevel(GAME_PLAY* play, f32 speed, xyz_t pos) {
     xyz_t mic_pos;
     u16 unsigned_angle;
     u16 unsigned_angle2;
-    u32 ongen;
-    u32 ongen2;
+    uintptr_t ongen;
+    uintptr_t ongen2;
 
     mTRC_SetMicPos(play, &mic_pos);
 
@@ -68,8 +68,8 @@ static void mTRC_KishaStatusLevel(GAME_PLAY* play, f32 speed, xyz_t pos) {
     distance2 = sqrtf(SQ(x) + SQ(y) + SQ(z));
     unsigned_angle2 = (int)angle;
 
-    ongen = (u32)Common_GetPointer(train_coming_flag);
-    ongen2 = (u32)Common_GetPointer(train_exists_flag);
+    ongen = (uintptr_t)Common_GetPointer(train_coming_flag);
+    ongen2 = (uintptr_t)Common_GetPointer(train_exists_flag);
     sAdos_KishaStatusLevel(speed, ongen, distance, unsigned_angle,
                            ongen2, distance2, unsigned_angle2);
 }
@@ -438,6 +438,7 @@ static void mTRC_trainSet(GAME_PLAY* play) {
                 /* spawn train actor since it doesn't exist */
                 train_actor =
                     (ACTOR*)Common_Get(clip.structure_clip)->setup_actor_proc(&play->game, TRAIN0, -1, x, 740.0f);
+                fflush(stdout);
 
                 /* for whatever reason, train actor didn't spawn, so exit */
                 if (train_actor == NULL) {

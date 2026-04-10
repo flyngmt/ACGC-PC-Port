@@ -298,7 +298,7 @@ static void aIHD_actor_move(ACTOR* actorx, GAME* game) {
     }
 
     label = mPlib_Get_item_net_catch_label();
-    if (label == (u32)actorx) {
+    if (label == (uintptr_t)actorx) {
         aIHD_setupAction(insect, aIHD_ACTION_LET_ESCAPE, game);
     } else {
         if (mEv_check_status(mEv_EVENT_GHOST, mEv_STATUS_RUN) == FALSE) {

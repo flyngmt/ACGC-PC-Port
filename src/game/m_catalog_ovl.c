@@ -1417,7 +1417,7 @@ extern void mCL_catalog_ovl_construct(Submenu* submenu) {
             seg0_p += 0x2000;
 
             overlay->catalog_ovl->item_data[i].seg1 =
-                (u8*)ALIGN_NEXT((u32)overlay->catalog_ovl->item_data[i].segment_data, 32);
+                (u8*)ALIGN_NEXT((uintptr_t)overlay->catalog_ovl->item_data[i].segment_data, 32);
         }
 
         submenu->next_overlay_address = (char*)seg0_p;

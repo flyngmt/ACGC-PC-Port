@@ -287,7 +287,7 @@ static void aMSN_MoveDustcloth(aMSN_DustCloth_c* dustcloth, GAME* game) {
                 /* Play sewing SFX */
                 xyz_t pos = { 91.0f, 40.0f, 136.0f };
 
-                sAdo_OngenPos((u32)&aMSN_MoveDustcloth, 0x48, &pos);
+                sAdo_OngenPos((uintptr_t)&aMSN_MoveDustcloth, 0x48, &pos);
             }
         } else if (dustcloth->frame >= 120) {
             f32 percent = get_percent(138, 120, dustcloth->frame);

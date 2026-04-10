@@ -172,8 +172,8 @@ static void Arrange_Room_Actor_draw(ACTOR* actor, GAME* game) {
     aAR_DrawWall(&arrange_room->actor_class, &play->game);
 }
 
-static void Arrange_Room_Actor_move() {
-
+static void Arrange_Room_Actor_move(ACTOR* actor, GAME* game) {
+    (void)actor; (void)game;
 }
 
 static void aAR_Redma() {

@@ -372,7 +372,7 @@ static void aSHR_actor_move(ACTOR* actorx, GAME* game) {
 
     (*(aSHR_PROC)shrine->structure_class.action_proc)(shrine, play);
     aSHR_Present_move(&aSHR_present, shrine, play);
-    sAdo_OngenPos((u32)actorx, 0x5A, &actorx->world.position);
+    sAdo_OngenPos((uintptr_t)actorx, 0x5A, &actorx->world.position);
 }
 
 static void aSHR_actor_init(ACTOR* actorx, GAME* game) {
