@@ -26,6 +26,7 @@
 #include "zurumode.h"
 #include "pc_save_bswap.h"
 #include "pc_settings.h"
+#include "m_cockroach.h"
 #include "game.h"
 
 #include <stdio.h>
@@ -269,14 +270,8 @@ static int pc_save_write_gci_to(const char* gci_path, const char* tmp_path) {
 
     /* ARAM blocks: original, mail, diary */
     {
+        /* GC order: mail, original, diary (matches Dolphin/GC save format) */
         u32 offset = sizeof(MemcardHeader_c) + 32; /* 0x1460 */
-        offset = ALIGN_NEXT(offset, 32);
-        if (l_aram_block_p_table[mCD_ARAM_DATA_ORIGINAL]) {
-            memcpy(others_ptr + offset, l_aram_block_p_table[mCD_ARAM_DATA_ORIGINAL],
-                   l_aram_alloc_size_table[mCD_ARAM_DATA_ORIGINAL]);
-            pc_save_bswap_keep_original((mCD_keep_original_c*)(others_ptr + offset), PC_BSWAP_TO_BE);
-        }
-        offset += l_aram_alloc_size_table[mCD_ARAM_DATA_ORIGINAL];
 
         offset = ALIGN_NEXT(offset, 32);
         if (l_aram_block_p_table[mCD_ARAM_DATA_MAIL]) {
@@ -285,6 +280,14 @@ static int pc_save_write_gci_to(const char* gci_path, const char* tmp_path) {
             pc_save_bswap_keep_mail((mCD_keep_mail_c*)(others_ptr + offset), PC_BSWAP_TO_BE);
         }
         offset += l_aram_alloc_size_table[mCD_ARAM_DATA_MAIL];
+
+        offset = ALIGN_NEXT(offset, 32);
+        if (l_aram_block_p_table[mCD_ARAM_DATA_ORIGINAL]) {
+            memcpy(others_ptr + offset, l_aram_block_p_table[mCD_ARAM_DATA_ORIGINAL],
+                   l_aram_alloc_size_table[mCD_ARAM_DATA_ORIGINAL]);
+            pc_save_bswap_keep_original((mCD_keep_original_c*)(others_ptr + offset), PC_BSWAP_TO_BE);
+        }
+        offset += l_aram_alloc_size_table[mCD_ARAM_DATA_ORIGINAL];
 
         offset = ALIGN_NEXT(offset, 32);
         if (l_aram_block_p_table[mCD_ARAM_DATA_DIARY]) {
@@ -431,41 +434,57 @@ static int pc_save_read_gci(const char* path) {
     memcpy(&common_data.save.save, save_src, sizeof(Save_t));
     pc_save_bswap(&common_data.save.save, PC_BSWAP_FROM_BE);
 
-    /* --- Load ARAM blocks from Others section --- */
+    /* --- Load ARAM blocks from Others section ---
+     * GC/Dolphin order: mail, original, diary  (landid in first block matches save)
+     * Old PC port order: original, mail, diary  (landid in first block is 0x0000)
+     * Detect which format, then always save in GC order going forward. */
     {
         u8* others_ptr = file_data + GCI_OTHERS_OFFSET;
-        offset = sizeof(MemcardHeader_c) + 32; /* skip header + pad */
+        u32 block_start = ALIGN_NEXT(sizeof(MemcardHeader_c) + 32, 32);
+        /* Read landid (BE u16 at byte 2-3 of first ARAM block) */
+        u16 first_landid_be = ((u16)others_ptr[block_start + 2] << 8) | others_ptr[block_start + 3];
+        u16 save_land_id = common_data.save.save.land_info.id;
+        int gc_order = (first_landid_be == save_land_id && save_land_id != 0);
+        u32 mail_size = l_aram_alloc_size_table[mCD_ARAM_DATA_MAIL];
+        u32 orig_size = l_aram_alloc_size_table[mCD_ARAM_DATA_ORIGINAL];
+        u32 diary_size = l_aram_alloc_size_table[mCD_ARAM_DATA_DIARY];
+        u32 off_first, off_second;
 
-        offset = ALIGN_NEXT(offset, 32);
-        if (l_aram_block_p_table[mCD_ARAM_DATA_ORIGINAL]) {
-            pc_save_bswap_verify_roundtrip_original(others_ptr + offset,
-                                                     l_aram_alloc_size_table[mCD_ARAM_DATA_ORIGINAL]);
-            memcpy(l_aram_block_p_table[mCD_ARAM_DATA_ORIGINAL], others_ptr + offset,
-                   l_aram_alloc_size_table[mCD_ARAM_DATA_ORIGINAL]);
-            pc_save_bswap_keep_original((mCD_keep_original_c*)l_aram_block_p_table[mCD_ARAM_DATA_ORIGINAL],
-                                        PC_BSWAP_FROM_BE);
+        if (gc_order) {
+            OSReport("[PC] GCI: ARAM blocks in GC order (mail, original, diary)\n");
+            off_first = block_start;                                         /* mail */
+            off_second = ALIGN_NEXT(off_first + mail_size, 32);              /* original */
+        } else {
+            OSReport("[PC] GCI: ARAM blocks in legacy PC order (original, mail, diary) — will migrate on next save\n");
+            off_first = ALIGN_NEXT(block_start + orig_size, 32);             /* mail (after original) */
+            off_second = block_start;                                        /* original */
         }
-        offset += l_aram_alloc_size_table[mCD_ARAM_DATA_ORIGINAL];
 
-        offset = ALIGN_NEXT(offset, 32);
         if (l_aram_block_p_table[mCD_ARAM_DATA_MAIL]) {
-            pc_save_bswap_verify_roundtrip_mail(others_ptr + offset,
-                                                 l_aram_alloc_size_table[mCD_ARAM_DATA_MAIL]);
-            memcpy(l_aram_block_p_table[mCD_ARAM_DATA_MAIL], others_ptr + offset,
-                   l_aram_alloc_size_table[mCD_ARAM_DATA_MAIL]);
+            pc_save_bswap_verify_roundtrip_mail(others_ptr + off_first, mail_size);
+            memcpy(l_aram_block_p_table[mCD_ARAM_DATA_MAIL], others_ptr + off_first, mail_size);
             pc_save_bswap_keep_mail((mCD_keep_mail_c*)l_aram_block_p_table[mCD_ARAM_DATA_MAIL],
                                     PC_BSWAP_FROM_BE);
         }
-        offset += l_aram_alloc_size_table[mCD_ARAM_DATA_MAIL];
 
-        offset = ALIGN_NEXT(offset, 32);
-        if (l_aram_block_p_table[mCD_ARAM_DATA_DIARY]) {
-            pc_save_bswap_verify_roundtrip_diary(others_ptr + offset,
-                                                  l_aram_alloc_size_table[mCD_ARAM_DATA_DIARY]);
-            memcpy(l_aram_block_p_table[mCD_ARAM_DATA_DIARY], others_ptr + offset,
-                   l_aram_alloc_size_table[mCD_ARAM_DATA_DIARY]);
-            pc_save_bswap_keep_diary((mCD_keep_diary_c*)l_aram_block_p_table[mCD_ARAM_DATA_DIARY],
-                                     PC_BSWAP_FROM_BE);
+        if (l_aram_block_p_table[mCD_ARAM_DATA_ORIGINAL]) {
+            pc_save_bswap_verify_roundtrip_original(others_ptr + off_second, orig_size);
+            memcpy(l_aram_block_p_table[mCD_ARAM_DATA_ORIGINAL], others_ptr + off_second, orig_size);
+            pc_save_bswap_keep_original((mCD_keep_original_c*)l_aram_block_p_table[mCD_ARAM_DATA_ORIGINAL],
+                                        PC_BSWAP_FROM_BE);
+        }
+
+        /* Diary is always last regardless of order */
+        {
+            u32 off_diary = gc_order
+                ? ALIGN_NEXT(off_second + orig_size, 32)
+                : ALIGN_NEXT(off_first + mail_size, 32);
+            if (l_aram_block_p_table[mCD_ARAM_DATA_DIARY]) {
+                pc_save_bswap_verify_roundtrip_diary(others_ptr + off_diary, diary_size);
+                memcpy(l_aram_block_p_table[mCD_ARAM_DATA_DIARY], others_ptr + off_diary, diary_size);
+                pc_save_bswap_keep_diary((mCD_keep_diary_c*)l_aram_block_p_table[mCD_ARAM_DATA_DIARY],
+                                         PC_BSWAP_FROM_BE);
+            }
         }
     }
 
@@ -515,26 +534,35 @@ static int pc_save_read_gci_to_keep(const char* path) {
         }
     }
 
-    /* Load ARAM blocks from Others section */
+    /* Load ARAM blocks — detect GC vs legacy PC order (same logic as main load) */
     {
         u8* others_ptr = file_data + GCI_OTHERS_OFFSET;
-        offset = sizeof(MemcardHeader_c) + 32;
+        u32 block_start = ALIGN_NEXT(sizeof(MemcardHeader_c) + 32, 32);
+        u16 first_landid_be = ((u16)others_ptr[block_start + 2] << 8) | others_ptr[block_start + 3];
+        u16 save_land_id = l_keepSave.save.land_info.id;
+        int gc_order = (first_landid_be == save_land_id && save_land_id != 0);
+        u32 mail_size = l_aram_alloc_size_table[mCD_ARAM_DATA_MAIL];
+        u32 orig_size = l_aram_alloc_size_table[mCD_ARAM_DATA_ORIGINAL];
+        u32 off_mail, off_orig, off_diary;
 
-        /* Original designs */
-        offset = ALIGN_NEXT(offset, 32);
-        memcpy(&l_keepOriginal, others_ptr + offset, l_aram_alloc_size_table[mCD_ARAM_DATA_ORIGINAL]);
-        pc_save_bswap_keep_original(&l_keepOriginal, PC_BSWAP_FROM_BE);
-        offset += l_aram_alloc_size_table[mCD_ARAM_DATA_ORIGINAL];
+        if (gc_order) {
+            off_mail = block_start;
+            off_orig = ALIGN_NEXT(off_mail + mail_size, 32);
+        } else {
+            off_orig = block_start;
+            off_mail = ALIGN_NEXT(off_orig + orig_size, 32);
+        }
+        off_diary = gc_order
+            ? ALIGN_NEXT(off_orig + orig_size, 32)
+            : ALIGN_NEXT(off_mail + mail_size, 32);
 
-        /* Mail */
-        offset = ALIGN_NEXT(offset, 32);
-        memcpy(&l_keepMail, others_ptr + offset, l_aram_alloc_size_table[mCD_ARAM_DATA_MAIL]);
+        memcpy(&l_keepMail, others_ptr + off_mail, mail_size);
         pc_save_bswap_keep_mail(&l_keepMail, PC_BSWAP_FROM_BE);
-        offset += l_aram_alloc_size_table[mCD_ARAM_DATA_MAIL];
 
-        /* Diary */
-        offset = ALIGN_NEXT(offset, 32);
-        memcpy(&l_keepDiary, others_ptr + offset, l_aram_alloc_size_table[mCD_ARAM_DATA_DIARY]);
+        memcpy(&l_keepOriginal, others_ptr + off_orig, orig_size);
+        pc_save_bswap_keep_original(&l_keepOriginal, PC_BSWAP_FROM_BE);
+
+        memcpy(&l_keepDiary, others_ptr + off_diary, l_aram_alloc_size_table[mCD_ARAM_DATA_DIARY]);
         pc_save_bswap_keep_diary(&l_keepDiary, PC_BSWAP_FROM_BE);
     }
 
@@ -782,6 +810,12 @@ void mCD_LoadLand(void) {
 int mCD_SaveHome_bg(int param_1, int* chan) {
     int slot = mCD_GetThisLandSlotNo();
     int result;
+
+    /* Update cockroach "last visited" timestamp before saving.
+     * On GC this was done in mCD_SaveHome_bg_set_data (m_card.c).
+     * Without it, the day gap never resets and cockroaches respawn
+     * every load even after being killed. */
+    mCkRh_SavePlayTime(Common_Get(player_no));
 
     /* Clear reset code before saving — marks this as a proper shutdown */
     if (Now_Private != NULL) {

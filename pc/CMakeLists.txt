@@ -36,6 +36,7 @@ add_compile_definitions(
     VERSION=0
     F3DEX_GBI_2
     NDEBUG
+    BUGFIXES        # Fix OOB reads in letter scoring tables (m_mail_check_ovl.c).
     _LANGUAGE_C    # Required for N64 GBI/ultratypes headers
     PC_ENHANCEMENTS   # Optional visual improvements (MSAA, etc). Remove to get pure PC port.
     KEYBOARD_TYPING   # Physical keyboard typing in text editor. Remove for platforms without keyboards.
