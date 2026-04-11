@@ -9,6 +9,7 @@ PCSettings g_pc_settings = {
     .vsync         = 0,
     .msaa          = 4,
     .preload_textures = 0,
+    .disable_resetti = 0,
 };
 
 static const char* SETTINGS_FILE = "settings.ini";
@@ -30,7 +31,11 @@ static const char* DEFAULT_SETTINGS =
     "\n"
     "[Enhancements]\n"
     "# Preload HD textures at startup: 0 = off (load on demand), 1 = preload, 2 = preload + cache file (fastest)\n"
-    "preload_textures = 0\n";
+    "preload_textures = 0\n"
+    "\n"
+    "[Gameplay]\n"
+    "# Disable Mr. Resetti: 0 = normal, 1 = disable\n"
+    "disable_resetti = 0\n";
 
 static const char* skip_ws(const char* s) {
     while (*s == ' ' || *s == '\t') s++;
@@ -61,6 +66,8 @@ static void apply_setting(const char* key, const char* value) {
             g_pc_settings.msaa = val;
     } else if (strcmp(key, "preload_textures") == 0) {
         if (val >= 0 && val <= 2) g_pc_settings.preload_textures = val;
+    } else if (strcmp(key, "disable_resetti") == 0) {
+        if (val == 0 || val == 1) g_pc_settings.disable_resetti = val;
     }
 }
 
@@ -95,6 +102,10 @@ void pc_settings_save(void) {
     fprintf(f, "[Enhancements]\n");
     fprintf(f, "# Preload HD textures at startup: 0 = off (load on demand), 1 = preload, 2 = preload + cache file (fastest)\n");
     fprintf(f, "preload_textures = %d\n", g_pc_settings.preload_textures);
+    fprintf(f, "\n");
+    fprintf(f, "[Gameplay]\n");
+    fprintf(f, "# Disable Mr. Resetti: 0 = normal, 1 = disable\n");
+    fprintf(f, "disable_resetti = %d\n", g_pc_settings.disable_resetti);
     fclose(f);
     printf("[Settings] Saved %s\n", SETTINGS_FILE);
 }

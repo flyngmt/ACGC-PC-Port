@@ -28,6 +28,9 @@ int pc_save_bswap_verify_roundtrip_mail(const u8* original_be, u32 size);
 int pc_save_bswap_verify_roundtrip_original(const u8* original_be, u32 size);
 int pc_save_bswap_verify_roundtrip_diary(const u8* original_be, u32 size);
 
+/* Byte-swap foreigner (passport) data for Card B travel */
+void pc_save_bswap_foreigner(mCD_foreigner_c* f, pc_bswap_dir_t dir);
+
 /* Compute BE checksum matching mFRm_GetFlatCheckSum on real GC */
 u16 pc_checksum_be(const u8* data, u32 size, u16 old_checksum);
 

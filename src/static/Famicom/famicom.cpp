@@ -13,6 +13,13 @@ extern "C" {
     /* fixNES battery RAM — sync with famicomCommon.bbramp for save persistence */
     extern unsigned char* emuPrgRAM;
     extern unsigned int emuPrgRAMsize;
+
+    /* Card slot for current town (A=0 home, B=1 visiting) */
+    int mCD_GetThisLandSlotNo(void);
+}
+
+static const char* pc_nes_save_dir(void) {
+    return (mCD_GetThisLandSlotNo() == 1) ? "save/card_b" : "save/card_a";
 }
 
 static void pc_sync_bbramp_to_prgram() {
@@ -2743,7 +2750,9 @@ extern int famicom_internal_data_load() {
     famicomCommon.save_data_header = (FamicomSaveDataHeader*)famicomCommonSave;
     famicomCommon.internal_save_datap = nullptr;
     {
-        FILE* f = fopen("save/DobutsunomoriP_F_SAVE.sav", "rb");
+        char nes_path[300];
+        snprintf(nes_path, sizeof(nes_path), "%s/DobutsunomoriP_F_SAVE.sav", pc_nes_save_dir());
+        FILE* f = fopen(nes_path, "rb");
         if (f) {
             fread(famicomCommonSave, 1, sizeof(famicomCommonSave), f);
             fclose(f);
@@ -2794,7 +2803,9 @@ extern int famicom_internal_data_save() {
 #ifdef TARGET_PC
     /* PC: Write NES save data to local file */
     {
-        FILE* f = fopen("save/DobutsunomoriP_F_SAVE.sav", "wb");
+        char nes_path[300];
+        snprintf(nes_path, sizeof(nes_path), "%s/DobutsunomoriP_F_SAVE.sav", pc_nes_save_dir());
+        FILE* f = fopen(nes_path, "wb");
         if (f) {
             fwrite(famicomCommonSave, 1, sizeof(famicomCommonSave), f);
             fclose(f);

@@ -998,6 +998,13 @@ int pc_save_bswap_verify_roundtrip_diary(const u8* original_be, u32 size) {
     return result;
 }
 
+void pc_save_bswap_foreigner(mCD_foreigner_c* f, pc_bswap_dir_t dir) {
+    swap16(&f->checksum);
+    swap_Private(&f->priv, dir);
+    swap_Animal(&f->remove_animal, dir, 0);
+    swap16(&f->copy_protect);
+}
+
 /* BE-aware checksum matching mFRm_GetFlatCheckSum on GC.
  * Reads byte stream as BE u16 pairs (GC reads native PPC u16 directly). */
 
