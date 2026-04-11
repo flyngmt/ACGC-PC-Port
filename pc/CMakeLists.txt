@@ -67,6 +67,7 @@ include_directories(
     ${DECOMP_ROOT}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/glad/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/fixnes
     # .inc assets are loaded at runtime from disc image (no build/GAFE01_00 needed)
 )
 
@@ -245,6 +246,14 @@ list(FILTER GAME_CXX_SOURCES EXCLUDE REGEX ".*/Runtime\\.PPCEABI\\.H/.*")
 list(FILTER GAME_CXX_SOURCES EXCLUDE REGEX ".*/MSL_C\\.PPCEABI\\.bare\\.H/.*")
 list(FILTER GAME_CXX_SOURCES EXCLUDE REGEX ".*/Famicom/.*")
 
+# Re-include Famicom files (PPC asm guarded out with #ifndef TARGET_PC)
+list(APPEND GAME_CXX_SOURCES
+    ${DECOMP_ROOT}/src/static/Famicom/famicom.cpp
+    ${DECOMP_ROOT}/src/static/Famicom/famicom_nesinfo.cpp
+    ${DECOMP_ROOT}/src/static/Famicom/ks_nes_core.cpp
+    ${DECOMP_ROOT}/src/static/Famicom/ks_nes_draw.cpp
+)
+
 # Exclude emu64_print.cpp (it's #included directly from emu64.c, not a standalone file)
 list(FILTER GAME_CXX_SOURCES EXCLUDE REGEX ".*/emu64_print\\.cpp$")
 
@@ -278,10 +287,52 @@ set(PC_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/pc_texture_pack.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/pc_settings.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/pc_keybindings.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/pc_nes_fixnes.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/pc_stubs.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/pc_stubs_cpp.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/pc_assets.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/pc_disc.c
+)
+
+# =============================================================================
+# fixNES — vendored NES emulator (MIT License, by FIX94)
+# =============================================================================
+set(FIXNES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/fixnes)
+file(GLOB FIXNES_MAPPER_SOURCES ${FIXNES_DIR}/mapper/*.c)
+set(FIXNES_SOURCES
+    ${FIXNES_DIR}/cpu.c
+    ${FIXNES_DIR}/ppu.c
+    ${FIXNES_DIR}/apu.c
+    ${FIXNES_DIR}/mem.c
+    ${FIXNES_DIR}/input.c
+    ${FIXNES_DIR}/mapper.c
+    ${FIXNES_DIR}/mapperList.c
+    ${FIXNES_DIR}/vrc_irq.c
+    ${FIXNES_DIR}/audio.c
+    ${FIXNES_DIR}/fm2play.c
+    ${FIXNES_DIR}/audio_fds.c
+    ${FIXNES_DIR}/audio_mmc5.c
+    ${FIXNES_DIR}/audio_vrc6.c
+    ${FIXNES_DIR}/audio_vrc7.c
+    ${FIXNES_DIR}/audio_n163.c
+    ${FIXNES_DIR}/audio_s5b.c
+    ${FIXNES_MAPPER_SOURCES}
+)
+# fixNES compile flags: optimize for performance (third-party code, no decomp UB),
+# enable inlining (critical for cycle-by-cycle emulation), lower APU frequency
+set_source_files_properties(${FIXNES_SOURCES}
+    PROPERTIES
+    COMPILE_OPTIONS "-w;-O2"
+    COMPILE_DEFINITIONS "COL_TEX_BSWAP;COL_GL_BSWAP;DO_INLINE_ATTRIBS=1"
+)
+# Also optimize the fixNES wrapper (frame loop is hot)
+# Note: DO NOT set DO_INLINE_ATTRIBS here — the always_inline functions (cpuCycle etc)
+# are in separate TUs and can't be inlined across files. They'll be inlined within
+# their own .c files where -O2 + DO_INLINE_ATTRIBS is set.
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/pc_nes_fixnes.c
+    PROPERTIES
+    COMPILE_OPTIONS "-Wall;-Wextra;-O2;-Wno-unused-parameter"
+    COMPILE_DEFINITIONS ""
 )
 
 # Rename game's main() to ac_entry() to avoid conflict with PC main() and game_main(GAME*)
@@ -353,6 +404,7 @@ endif()
 # =============================================================================
 add_executable(ac_pc
     ${PC_SOURCES}
+    ${FIXNES_SOURCES}
     ${GAME_C_SOURCES}
     ${GAME_CXX_SOURCES}
     ${RC_FILE}

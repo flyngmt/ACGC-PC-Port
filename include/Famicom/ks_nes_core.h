@@ -4,6 +4,10 @@
 #include "types.h"
 #include "Famicom/ks_nes_common.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void ksNesDrawMakeOBJIndTex(ksNesCommonWorkObj* wp);
 extern void ksNesDrawMakeOBJIndTexMMC5(ksNesCommonWorkObj* wp);
 extern void ksNesConvertChrToI8(ksNesCommonWorkObj* wp, const unsigned char* foo, unsigned long bar);
@@ -272,5 +276,9 @@ extern void ksNesStoreb8_6000();
 
 // unknown
 // #define KS_NES_FLAG_??? = (1 << 14) // 0x00004000
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

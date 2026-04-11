@@ -2108,19 +2108,11 @@ static void aMR_FamicomEmuCommonMove(FTR_ACTOR* ftr_actor, ACTOR* actorx, GAME* 
     MY_ROOM_ACTOR* my_room = (MY_ROOM_ACTOR*)actorx;
 
     if (ftr_actor->switch_changed_flag) {
-#ifdef TARGET_PC
-        /* NES emulators are not implemented on PC — show "no data" message and return */
-        if (mMsg_Check_MainHide(mMsg_Get_base_window_p())) {
-            my_room->requested_msg_type = aMR_MSG_STATE_NO_PACK_NO_DATA;
-            my_room->room_msg_flag = TRUE;
-        }
-#else
         if (rom_no == 0) {
             aMR_RequestStartEmu_MemoryC(my_room, ftr_actor, 0);
         } else {
             aMR_RequestStartEmu(my_room, ftr_actor, rom_no, agb_rom_no);
         }
-#endif
     }
 }
 

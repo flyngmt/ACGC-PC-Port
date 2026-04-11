@@ -284,6 +284,20 @@ void pc_gx_begin_frame(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+void pc_gx_restore_after_nes(void) {
+    /* NES emulator uses its own shader/VAO/state. Rebind the game's GL objects
+     * and mark all GX state dirty so uniforms/textures get re-uploaded. */
+    glBindVertexArray(g_gx.vao);
+    glBindBuffer(GL_ARRAY_BUFFER, g_gx.vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_gx.ebo);
+    g_gx.dirty = PC_GX_DIRTY_ALL;
+    g_gx.current_shader = 0; /* Force shader rebind on next draw */
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
 void pc_gx_shutdown(void) {
     pc_gx_tev_shutdown();
     pc_gx_texture_shutdown();

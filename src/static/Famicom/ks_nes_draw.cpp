@@ -1,6 +1,12 @@
+#ifdef TARGET_PC
+#include "dolphin/gx/GXEnum.h"
+#include "dolphin/gx/GXTexture.h"
+#include "dolphin/gx/GXVert.h"
+#else
 #include "gx/GXEnum.h"
 #include "gx/GXTexture.h"
 #include "gx/GXVert.h"
+#endif
 #define FIX_SQRT_LINKAGE
 #include "Famicom/ks_nes_draw.h"
 #include "dolphin/gx.h"
