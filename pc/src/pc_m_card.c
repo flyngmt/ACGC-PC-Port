@@ -275,25 +275,39 @@ static int pc_save_write_gci_to(const char* gci_path, const char* tmp_path) {
 
         offset = ALIGN_NEXT(offset, 32);
         if (l_aram_block_p_table[mCD_ARAM_DATA_MAIL]) {
-            memcpy(others_ptr + offset, l_aram_block_p_table[mCD_ARAM_DATA_MAIL],
-                   l_aram_alloc_size_table[mCD_ARAM_DATA_MAIL]);
-            pc_save_bswap_keep_mail((mCD_keep_mail_c*)(others_ptr + offset), PC_BSWAP_TO_BE);
+            u8* blk = others_ptr + offset;
+            u32 sz = l_aram_alloc_size_table[mCD_ARAM_DATA_MAIL];
+            memcpy(blk, l_aram_block_p_table[mCD_ARAM_DATA_MAIL], sz);
+            pc_save_bswap_keep_mail((mCD_keep_mail_c*)blk, PC_BSWAP_TO_BE);
+            /* Recompute BE checksum over the bswapped block so Dolphin's
+             * mFRm_ReturnCheckSum validates.*/
+            blk[0] = 0;
+            blk[1] = 0;
+            put_be16(blk, pc_checksum_be(blk, sz, 0));
         }
         offset += l_aram_alloc_size_table[mCD_ARAM_DATA_MAIL];
 
         offset = ALIGN_NEXT(offset, 32);
         if (l_aram_block_p_table[mCD_ARAM_DATA_ORIGINAL]) {
-            memcpy(others_ptr + offset, l_aram_block_p_table[mCD_ARAM_DATA_ORIGINAL],
-                   l_aram_alloc_size_table[mCD_ARAM_DATA_ORIGINAL]);
-            pc_save_bswap_keep_original((mCD_keep_original_c*)(others_ptr + offset), PC_BSWAP_TO_BE);
+            u8* blk = others_ptr + offset;
+            u32 sz = l_aram_alloc_size_table[mCD_ARAM_DATA_ORIGINAL];
+            memcpy(blk, l_aram_block_p_table[mCD_ARAM_DATA_ORIGINAL], sz);
+            pc_save_bswap_keep_original((mCD_keep_original_c*)blk, PC_BSWAP_TO_BE);
+            blk[0] = 0;
+            blk[1] = 0;
+            put_be16(blk, pc_checksum_be(blk, sz, 0));
         }
         offset += l_aram_alloc_size_table[mCD_ARAM_DATA_ORIGINAL];
 
         offset = ALIGN_NEXT(offset, 32);
         if (l_aram_block_p_table[mCD_ARAM_DATA_DIARY]) {
-            memcpy(others_ptr + offset, l_aram_block_p_table[mCD_ARAM_DATA_DIARY],
-                   l_aram_alloc_size_table[mCD_ARAM_DATA_DIARY]);
-            pc_save_bswap_keep_diary((mCD_keep_diary_c*)(others_ptr + offset), PC_BSWAP_TO_BE);
+            u8* blk = others_ptr + offset;
+            u32 sz = l_aram_alloc_size_table[mCD_ARAM_DATA_DIARY];
+            memcpy(blk, l_aram_block_p_table[mCD_ARAM_DATA_DIARY], sz);
+            pc_save_bswap_keep_diary((mCD_keep_diary_c*)blk, PC_BSWAP_TO_BE);
+            blk[0] = 0;
+            blk[1] = 0;
+            put_be16(blk, pc_checksum_be(blk, sz, 0));
         }
     }
 
