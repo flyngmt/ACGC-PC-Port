@@ -268,10 +268,11 @@ static int pc_save_write_gci_to(const char* gci_path, const char* tmp_path) {
         memcpy(comment + 32, Save_Get(land_info).name, 8);
     }
 
-    /* ARAM blocks: original, mail, diary */
+    /* ARAM blocks: mail, original, diary (GC/Dolphin order).
+     * Set landid on mail block so load-time detection identifies the order. */
     {
-        /* GC order: mail, original, diary (matches Dolphin/GC save format) */
         u32 offset = sizeof(MemcardHeader_c) + 32; /* 0x1460 */
+        u16 land_id = Save_Get(land_info).id;
 
         offset = ALIGN_NEXT(offset, 32);
         if (l_aram_block_p_table[mCD_ARAM_DATA_MAIL]) {
@@ -279,8 +280,10 @@ static int pc_save_write_gci_to(const char* gci_path, const char* tmp_path) {
             u32 sz = l_aram_alloc_size_table[mCD_ARAM_DATA_MAIL];
             memcpy(blk, l_aram_block_p_table[mCD_ARAM_DATA_MAIL], sz);
             pc_save_bswap_keep_mail((mCD_keep_mail_c*)blk, PC_BSWAP_TO_BE);
+            /* Set landid (BE u16 at offset 2) so load detects GC order */
+            put_be16(blk + 2, land_id);
             /* Recompute BE checksum over the bswapped block so Dolphin's
-             * mFRm_ReturnCheckSum validates.*/
+             * mFRm_ReturnCheckSum validates. */
             blk[0] = 0;
             blk[1] = 0;
             put_be16(blk, pc_checksum_be(blk, sz, 0));
@@ -449,11 +452,10 @@ static int pc_save_read_gci(const char* path) {
     pc_save_bswap(&common_data.save.save, PC_BSWAP_FROM_BE);
 
     /* --- Load ARAM blocks from Others section ---
-     * GC/Dolphin saves use order: mail, original, diary.
-     * Old PC port builds used the wrong order: original, mail, diary.
-     * Detect by checking the landid field at the start of the first block:
-     * GC sets landid = save's land_info.id (non-zero); old PC never set it (0).
-     * Always save in GC order going forward. */
+     * Current saves (PC + Dolphin/GC) use order: mail, original, diary.
+     * Old PC saves (before landid fix) used: original, mail, diary.
+     * Detect by checking the landid field at offset 2 of the first block:
+     * if it matches save's land_info.id, first block is mail (GC order). */
     {
         u8* others_ptr = file_data + GCI_OTHERS_OFFSET;
         u32 block_start = ALIGN_NEXT(sizeof(MemcardHeader_c) + 32, 32);
@@ -465,14 +467,16 @@ static int pc_save_read_gci(const char* path) {
         u32 off_mail, off_orig, off_diary;
 
         if (gc_order) {
+            /* Dolphin/GC save: mail, original, diary */
             off_mail = block_start;
             off_orig = ALIGN_NEXT(block_start + mail_size, 32);
+            off_diary = ALIGN_NEXT(off_orig + orig_size, 32);
         } else {
-            OSReport("[PC] GCI: detected legacy PC ARAM order — migrating on next save\n");
-            off_mail = ALIGN_NEXT(block_start + orig_size, 32);
+            /* PC save: original, mail, diary */
             off_orig = block_start;
+            off_mail = ALIGN_NEXT(block_start + orig_size, 32);
+            off_diary = ALIGN_NEXT(off_mail + mail_size, 32);
         }
-        off_diary = ALIGN_NEXT(off_orig + orig_size, 32);
 
         if (l_aram_block_p_table[mCD_ARAM_DATA_MAIL]) {
             pc_save_bswap_verify_roundtrip_mail(others_ptr + off_mail, mail_size);
@@ -556,11 +560,12 @@ static int pc_save_read_gci_to_keep(const char* path) {
         if (gc_order) {
             off_mail = block_start;
             off_orig = ALIGN_NEXT(block_start + mail_size, 32);
+            off_diary = ALIGN_NEXT(off_orig + orig_size, 32);
         } else {
-            off_mail = ALIGN_NEXT(block_start + orig_size, 32);
             off_orig = block_start;
+            off_mail = ALIGN_NEXT(block_start + orig_size, 32);
+            off_diary = ALIGN_NEXT(off_mail + mail_size, 32);
         }
-        off_diary = ALIGN_NEXT(off_orig + orig_size, 32);
 
         memcpy(&l_keepMail, others_ptr + off_mail, mail_size);
         pc_save_bswap_keep_mail(&l_keepMail, PC_BSWAP_FROM_BE);
