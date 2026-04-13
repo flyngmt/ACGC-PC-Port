@@ -26,8 +26,8 @@ static void my_alloc_init(GAME* game, void* start, size_t size) {
      * Just init the zelda arena from the malloc'd block directly. */
     (void)game;
     if (start != NULL && size != 0) {
-        u32 aligned = ALIGN_NEXT((u32)start, 16);
-        u32 tsize = aligned - (u32)start;
+        uintptr_t aligned = ALIGN_NEXT((uintptr_t)start, 16);
+        uintptr_t tsize = aligned - (uintptr_t)start;
         zelda_InitArena((void*)aligned, size - tsize);
     }
 #else
