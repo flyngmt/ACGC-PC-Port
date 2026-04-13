@@ -284,6 +284,20 @@ void pc_gx_begin_frame(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+void pc_gx_restore_after_nes(void) {
+    /* NES emulator uses its own shader/VAO/state. Rebind the game's GL objects
+     * and mark all GX state dirty so uniforms/textures get re-uploaded. */
+    glBindVertexArray(g_gx.vao);
+    glBindBuffer(GL_ARRAY_BUFFER, g_gx.vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_gx.ebo);
+    g_gx.dirty = PC_GX_DIRTY_ALL;
+    g_gx.current_shader = 0; /* Force shader rebind on next draw */
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
 void pc_gx_shutdown(void) {
     pc_gx_tev_shutdown();
     pc_gx_texture_shutdown();
@@ -452,19 +466,19 @@ static void pc_gx_cache_uniform_locations(GLuint shader) {
 
     g_gx.uloc.num_tev_stages = UL("u_num_tev_stages");
     for (i = 0; i < PC_GX_MAX_TEV_STAGES; i++) {
-        snprintf(name, sizeof(name), "u_tev%d_color_in", i);
+        snprintf(name, sizeof(name), "u_tev_color_in[%d]", i);
         g_gx.uloc.tev_color_in[i] = UL(name);
-        snprintf(name, sizeof(name), "u_tev%d_alpha_in", i);
+        snprintf(name, sizeof(name), "u_tev_alpha_in[%d]", i);
         g_gx.uloc.tev_alpha_in[i] = UL(name);
-        snprintf(name, sizeof(name), "u_tev%d_color_op", i);
+        snprintf(name, sizeof(name), "u_tev_color_op[%d]", i);
         g_gx.uloc.tev_color_op[i] = UL(name);
-        snprintf(name, sizeof(name), "u_tev%d_alpha_op", i);
+        snprintf(name, sizeof(name), "u_tev_alpha_op[%d]", i);
         g_gx.uloc.tev_alpha_op[i] = UL(name);
-        snprintf(name, sizeof(name), "u_tev%d_tc_src", i);
+        snprintf(name, sizeof(name), "u_tev_tc_src[%d]", i);
         g_gx.uloc.tev_tc_src[i] = UL(name);
-        snprintf(name, sizeof(name), "u_tev%d_ind_cfg", i);
+        snprintf(name, sizeof(name), "u_tev_ind_cfg[%d]", i);
         g_gx.uloc.tev_ind_cfg[i] = UL(name);
-        snprintf(name, sizeof(name), "u_tev%d_ind_wrap", i);
+        snprintf(name, sizeof(name), "u_tev_ind_wrap[%d]", i);
         g_gx.uloc.tev_ind_wrap[i] = UL(name);
     }
 
@@ -531,11 +545,11 @@ static void pc_gx_cache_uniform_locations(GLuint shader) {
 
     /* Per-stage bias/scale/clamp/output */
     for (i = 0; i < PC_GX_MAX_TEV_STAGES; i++) {
-        snprintf(name, sizeof(name), "u_tev%d_bsc", i);
+        snprintf(name, sizeof(name), "u_tev_bsc[%d]", i);
         g_gx.uloc.tev_bsc[i] = UL(name);
-        snprintf(name, sizeof(name), "u_tev%d_out", i);
+        snprintf(name, sizeof(name), "u_tev_out[%d]", i);
         g_gx.uloc.tev_out[i] = UL(name);
-        snprintf(name, sizeof(name), "u_tev%d_swap", i);
+        snprintf(name, sizeof(name), "u_tev_swap[%d]", i);
         g_gx.uloc.tev_swap[i] = UL(name);
     }
     g_gx.uloc.swap_table = UL("u_swap_table");

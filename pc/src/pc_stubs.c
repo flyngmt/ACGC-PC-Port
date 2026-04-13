@@ -14,8 +14,7 @@ unsigned char cKF_Animation_R_getKeyTable[4] = {0};
 char _e_data = 0;
 char _f_rodata = 0;
 
-void* my_malloc_current = NULL;
-u8 save_game_image = 0;
+/* my_malloc_current and save_game_image now provided by famicom.cpp */
 
 /* DVD */
 BOOL DVDCheckDisk(void) { return 0; }
@@ -47,6 +46,7 @@ void OSDetachThread(void* thread) { (void)thread; }
 s32 OSResumeThread(void* thread) { (void)thread; return 0; }
 s32 OSSuspendThread(void* thread) { (void)thread; return 0; }
 BOOL OSIsThreadTerminated(void* thread) { (void)thread; return 1; }
+BOOL OSJoinThread(void* thread, void** val) { (void)thread; (void)val; return 1; }
 s32 OSEnableScheduler(void) { return 0; }
 void OSYieldThread(void) {}
 long OSCheckActiveThreads(void) { return 0; }
@@ -72,24 +72,16 @@ void VIConfigurePan(u16 x_origin, u16 y_origin, u16 width, u16 height) {
 int __abs(int x) { return x < 0 ? -x : x; }
 void _strip(float x) { (void)x; }
 
-/* famicom (NES emulator) */
-void famicom_1frame(void) {}
-int famicom_cleanup(void) { return 0; }
-int famicom_external_data_save(void) { return 0; }
-int famicom_external_data_save_check(void) { return 0; }
-int famicom_getErrorChan(void) { return 0; }
-int famicom_get_disksystem_titles(int* n_games, char* title_name_bufp, int namebuf_size) {
-    (void)n_games; (void)title_name_bufp; (void)namebuf_size; return 0;
-}
-int famicom_init(int rom_idx, void* malloc_info, int player_no) {
-    (void)rom_idx; (void)malloc_info; (void)player_no; return 0;
-}
-int famicom_internal_data_load(void) { return 0; }
-int famicom_internal_data_save(void) { return 0; }
-void famicom_mount_archive(void) {}
-int famicom_mount_archive_end_check(void) { return 1; }
-int famicom_rom_load_check(void) { return 0; }
-void famicom_setCallback_getSaveChan(void* proc) { (void)proc; }
+/* famicom (NES emulator) — real implementation in famicom.cpp, stubs for linker */
+void ksNesEmuFrame(void* wp, void* sp, u32 flags) { (void)wp; (void)sp; (void)flags; }
+
+/* famicom.cpp dependencies: CARD functions, nesinfo, misc */
+int CARDGetAttributes(int chan, int fileNo, u8* attr) { (void)chan; (void)fileNo; (void)attr; return -1; }
+int CARDSetAttributes(int chan, int fileNo, u8 attr) { (void)chan; (void)fileNo; (void)attr; return -1; }
+int CARDFastOpen(int chan, int fileNo, void* fileInfo) { (void)chan; (void)fileNo; (void)fileInfo; return -1; }
+int bcmp(const void* a, const void* b, unsigned int n) { return memcmp(a, b, n); }
+
+/* nesinfo — now provided by famicom_nesinfo.cpp */
 
 /* libultra */
 void osContGetQuery(void* status) { (void)status; }

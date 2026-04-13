@@ -1,4 +1,4 @@
-/* pc_disc.c - Read files from GC disc images (CISO/ISO/GCM)
+/* Read files from GC disc images (CISO/ISO/GCM)
  * Used by pc_assets.c for DOL+REL extraction and pc_dvd.c for runtime file reads. */
 #ifdef TARGET_PC
 #include <stdio.h>
@@ -261,8 +261,13 @@ static void build_fst_table(DiscFile* df) {
         }
     }
 
-    if (g_pc_verbose)
+    if (g_pc_verbose) {
         printf("[PC] FST: %d files indexed\n", g_fst_file_count);
+        for (int fi = 0; fi < g_fst_file_count; fi++)
+            printf("[PC] FST[%d]: %s (%u bytes @ 0x%X)\n", fi,
+                   g_fst_files[fi].path, g_fst_files[fi].file_size,
+                   g_fst_files[fi].disc_offset);
+    }
 }
 
 /* ---- disc image search ---- */

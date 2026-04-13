@@ -811,6 +811,9 @@ static void aAL_title_draw(GAME* game, ANIMAL_LOGO_ACTOR* actor) {
 }
 
 #ifdef PC_ENHANCEMENTS
+/* Shared cursor glyph used by both the main title menu and the options overlay. */
+static u8 str_arrow[] = ">";
+
 static void aAL_pc_options_draw(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
   GRAPH* graph = game->graph;
   char buf[48];
@@ -843,13 +846,12 @@ static void aAL_pc_options_draw(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
 
   int sel = actor->pc_options_sel;
   int item = 0;
-  static u8 str_arrow[] = { '>' };
 
   /* Title */
   {
-    static u8 str_title[] = { '-', ' ', 'O', 'p', 't', 'i', 'o', 'n', 's', ' ', '-' };
-    f32 tw = (f32)mFont_GetStringWidth(str_title, sizeof(str_title), TRUE);
-    mFont_SetLineStrings(game, str_title, sizeof(str_title),
+    static u8 str_title[] = "- Options -";
+    f32 tw = (f32)mFont_GetStringWidth(str_title, sizeof(str_title) - 1, TRUE);
+    mFont_SetLineStrings(game, str_title, sizeof(str_title) - 1,
       (SCREEN_WIDTH_F - tw) * 0.5f, y,
       255, 255, 255, 255, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
   }
@@ -858,8 +860,8 @@ static void aAL_pc_options_draw(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
   /* Resolution */
   len = sprintf(buf, "< %dx%d >", g_pc_settings.window_width, g_pc_settings.window_height);
   {
-    static u8 lbl[] = { 'R', 'e', 's', 'o', 'l', 'u', 't', 'i', 'o', 'n' };
-    mFont_SetLineStrings(game, lbl, sizeof(lbl), x, y,
+    static u8 lbl[] = "Resolution";
+    mFont_SetLineStrings(game, lbl, sizeof(lbl) - 1, x, y,
       sel == item ? 255 : 180, sel == item ? 255 : 180, sel == item ? 255 : 180,
       sel == item ? 255 : 160, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
   }
@@ -876,8 +878,8 @@ static void aAL_pc_options_draw(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
     len = sprintf(buf, "%s", fs);
   }
   {
-    static u8 lbl[] = { 'D', 'i', 's', 'p', 'l', 'a', 'y' };
-    mFont_SetLineStrings(game, lbl, sizeof(lbl), x, y,
+    static u8 lbl[] = "Display";
+    mFont_SetLineStrings(game, lbl, sizeof(lbl) - 1, x, y,
       sel == item ? 255 : 180, sel == item ? 255 : 180, sel == item ? 255 : 180,
       sel == item ? 255 : 160, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
   }
@@ -890,8 +892,8 @@ static void aAL_pc_options_draw(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
   /* VSync */
   len = sprintf(buf, "< %s >", g_pc_settings.vsync ? "On" : "Off");
   {
-    static u8 lbl[] = { 'V', 'S', 'y', 'n', 'c' };
-    mFont_SetLineStrings(game, lbl, sizeof(lbl), x, y,
+    static u8 lbl[] = "VSync";
+    mFont_SetLineStrings(game, lbl, sizeof(lbl) - 1, x, y,
       sel == item ? 255 : 180, sel == item ? 255 : 180, sel == item ? 255 : 180,
       sel == item ? 255 : 160, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
   }
@@ -907,8 +909,8 @@ static void aAL_pc_options_draw(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
   else
     len = sprintf(buf, "< Off >");
   {
-    static u8 lbl[] = { 'M', 'S', 'A', 'A' };
-    mFont_SetLineStrings(game, lbl, sizeof(lbl), x, y,
+    static u8 lbl[] = "MSAA";
+    mFont_SetLineStrings(game, lbl, sizeof(lbl) - 1, x, y,
       sel == item ? 255 : 180, sel == item ? 255 : 180, sel == item ? 255 : 180,
       sel == item ? 255 : 160, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
   }
@@ -925,8 +927,8 @@ static void aAL_pc_options_draw(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
     len = sprintf(buf, "%s", tp);
   }
   {
-    static u8 lbl[] = { 'T', 'e', 'x', 't', 'u', 'r', 'e', 's' };
-    mFont_SetLineStrings(game, lbl, sizeof(lbl), x, y,
+    static u8 lbl[] = "Textures";
+    mFont_SetLineStrings(game, lbl, sizeof(lbl) - 1, x, y,
       sel == item ? 255 : 180, sel == item ? 255 : 180, sel == item ? 255 : 180,
       sel == item ? 255 : 160, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
   }
@@ -938,10 +940,10 @@ static void aAL_pc_options_draw(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
 
   /* Hints */
   {
-    static u8 str_save[] = { 'S', 'T', 'A', 'R', 'T', ':', ' ', 'S', 'a', 'v', 'e' };
-    static u8 str_back[] = { 'B', ':', ' ', 'B', 'a', 'c', 'k' };
-    mFont_SetLineStrings(game, str_save, sizeof(str_save), x, y, 255, 255, 255, 160, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
-    mFont_SetLineStrings(game, str_back, sizeof(str_back), 190.0f, y, 255, 255, 255, 160, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
+    static u8 str_save[] = "START: Save";
+    static u8 str_back[] = "B: Back";
+    mFont_SetLineStrings(game, str_save, sizeof(str_save) - 1, x, y, 255, 255, 255, 160, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
+    mFont_SetLineStrings(game, str_back, sizeof(str_back) - 1, 190.0f, y, 255, 255, 255, 160, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
   }
 }
 
@@ -966,12 +968,11 @@ static void aAL_pc_menu_draw(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
   static const u32 dim_g[5] = {  40,  50,  40,  50,  50 };
   static const u32 dim_b[5] = {  40,  30,  60,  70,  60 };
 
-  static u8 str_start[] = { 'S', 't', 'a', 'r', 't', ' ', 'G', 'a', 'm', 'e' };
-  static u8 str_options[] = { 'O', 'p', 't', 'i', 'o', 'n', 's' };
-  static u8 str_arrow[] = { '>' };
+  static u8 str_start[] = "Start Game";
+  static u8 str_options[] = "Options";
 
-  f32 start_w = (f32)mFont_GetStringWidth(str_start, sizeof(str_start), TRUE);
-  f32 opt_w = (f32)mFont_GetStringWidth(str_options, sizeof(str_options), TRUE);
+  f32 start_w = (f32)mFont_GetStringWidth(str_start, sizeof(str_start) - 1, TRUE);
+  f32 opt_w = (f32)mFont_GetStringWidth(str_options, sizeof(str_options) - 1, TRUE);
   f32 start_x = (SCREEN_WIDTH_F - start_w) * 0.5f;
   f32 opt_x = (SCREEN_WIDTH_F - opt_w) * 0.5f;
   f32 y0 = 135.0f;
@@ -979,7 +980,7 @@ static void aAL_pc_menu_draw(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
   int sel = actor->pc_menu_sel;
 
   /* "Start Game" */
-  mFont_SetLineStrings(game, str_start, sizeof(str_start), start_x, y0,
+  mFont_SetLineStrings(game, str_start, sizeof(str_start) - 1, start_x, y0,
     sel == 0 ? sel_r[td] : dim_r[td],
     sel == 0 ? sel_g[td] : dim_g[td],
     sel == 0 ? sel_b[td] : dim_b[td],
@@ -987,7 +988,7 @@ static void aAL_pc_menu_draw(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
     FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
 
   /* "Options" */
-  mFont_SetLineStrings(game, str_options, sizeof(str_options), opt_x, y1,
+  mFont_SetLineStrings(game, str_options, sizeof(str_options) - 1, opt_x, y1,
     sel == 1 ? sel_r[td] : dim_r[td],
     sel == 1 ? sel_g[td] : dim_g[td],
     sel == 1 ? sel_b[td] : dim_b[td],

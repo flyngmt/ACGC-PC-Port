@@ -8,10 +8,14 @@
 #include "_mem.h"
 #include "dolphin/os.h"
 
+#ifndef TARGET_PC
 #pragma optimizewithasm off
+#endif
 
 // TODO: verify function signatures.
 // TODO: replace hard-coded function pointers with function names.
+
+#ifndef TARGET_PC /* All function tables + asm reference PPC asm entry points */
 
 typedef void (*STORE_FUNC)(u32 addr, u32 data);
 
@@ -2307,6 +2311,8 @@ KS_NES_INSTR ksNesInstJumpTbl[0x100] = {
 };
 // clang-format on
 
+#endif /* !TARGET_PC */
+
 void ksNesDrawMakeOBJIndTex(ksNesCommonWorkObj* wp) {
     static const u8 array[] = {
         0x00, 0x02, 0x04, 0x06, 0x07, 0x05, 0x03, 0x01,
@@ -2626,6 +2632,13 @@ void ksNesPushResetButton(ksNesStateObj* sp) {
 }
 
 int ksNesReset(ksNesCommonWorkObj* wp, ksNesStateObj* sp, u32 flags, u8* chrramp, u8* bbramp) {
+#ifdef TARGET_PC
+    /* On PC, fixNES handles NES emulation — ksNesReset just needs to succeed */
+    (void)wp; (void)sp; (void)flags; (void)chrramp; (void)bbramp;
+    return 0;
+}
+#else
+{
     u8* wramp;
     uint uVar1;
     uint uVar2;
@@ -2923,7 +2936,9 @@ int ksNesReset(ksNesCommonWorkObj* wp, ksNesStateObj* sp, u32 flags, u8* chrramp
     sp->os_tick = os_tick;
     return 0; // return success.
 }
+#endif /* !TARGET_PC */
 
+#ifndef TARGET_PC
 void ksNesEmuFrame(ksNesCommonWorkObj* wp, ksNesStateObj* sp, u32 flags) {
     u8 status;
     size_t count = 0;
@@ -2965,6 +2980,9 @@ void ksNesEmuFrame(ksNesCommonWorkObj* wp, ksNesStateObj* sp, u32 flags) {
 
     return;
 }
+#endif /* !TARGET_PC */
+
+#ifndef TARGET_PC /* PPC inline assembly — replaced by pc_nes_core.c on PC */
 
 #define REGISTER_A r14
 #define REGISTER_X r15
@@ -7417,5 +7435,7 @@ L_8003DE94:
 }
 
 // clang-format on
+
+#endif /* !TARGET_PC */
 
 // void ksNesStoreBBRAM() {}

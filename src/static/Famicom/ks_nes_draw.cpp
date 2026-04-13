@@ -1,6 +1,12 @@
+#ifdef TARGET_PC
+#include "dolphin/gx/GXEnum.h"
+#include "dolphin/gx/GXTexture.h"
+#include "dolphin/gx/GXVert.h"
+#else
 #include "gx/GXEnum.h"
 #include "gx/GXTexture.h"
 #include "gx/GXVert.h"
+#endif
 #define FIX_SQRT_LINKAGE
 #include "Famicom/ks_nes_draw.h"
 #include "dolphin/gx.h"
@@ -917,7 +923,7 @@ void ksNesDrawOBJMMC5(ksNesCommonWorkObj* wp, ksNesStateObj* sp, u32 sprite_prio
 #ifndef BUGFIXES
     GXInitTexObj(&obj, wp->draw_ctx.sprite_chr_bank_lut, 8, 4, GX_TF_IA8, GX_CLAMP, GX_CLAMP, 0);
 #else
-    GXInitTexObj(&GStack_9c, wp->draw_ctx.sprite_chr_bank_lut, 5, 4, GX_TF_IA8, GX_CLAMP, GX_CLAMP, 0);
+    GXInitTexObj(&obj, wp->draw_ctx.sprite_chr_bank_lut, 5, 4, GX_TF_IA8, GX_CLAMP, GX_CLAMP, 0);
 #endif
     GXInitTexObjLOD(&obj, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
     GXLoadTexObj(&obj, GX_TEXMAP1);

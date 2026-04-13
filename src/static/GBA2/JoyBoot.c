@@ -28,6 +28,11 @@ extern void mGcgba_EndComm() {
 }
 
 extern int mGcgba_ConnectEnabled() {
+#ifdef TARGET_PC
+  /* Pretend a GBA is connected so Kapp'n lets us travel to the island. */
+  Port = GBA_CHAN0;
+  return GBA2_GBA_STATE_SUCCESS;
+#else
   int state = GBA2_GBA_STATE_TRANSMITTING;
 
   if (g_Joy_wrk.cmd_attempts < GBA2_CONNECTED_TRIES) {
@@ -53,6 +58,7 @@ extern int mGcgba_ConnectEnabled() {
 
   g_Joy_wrk.cmd_attempts++;
   return state;
+#endif
 }
 
 static void CallBack(s32 port, s32 ret) {
@@ -336,6 +342,10 @@ extern int mGcgba_IsEditor() {
 }
 
 extern int mGcgba_IsIsland() {
+#ifdef TARGET_PC
+  /* No GBA: fail fast so Sendo falls back to the RAM island data path. */
+  return GBA2_GBA_STATE_ERROR;
+#else
   int gba_state = GBA2_GBA_STATE_TRANSMITTING;
 
   if (Port < GBA_CHAN0 || Port >= GBA_MAX_CHAN) {
@@ -376,6 +386,7 @@ extern int mGcgba_IsIsland() {
   }
 
   return gba_state;
+#endif
 }
 
 static int mGcgba_Recv_sub(Joy_wrk_c* jwork, u8* recv_buf, size_t buf_size, u32 cmd) {

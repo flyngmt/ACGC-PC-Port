@@ -2496,10 +2496,10 @@ static void mED_editor_ovl_draw(Submenu* submenu, GAME* game) {
 #if defined(TARGET_PC) && defined(KEYBOARD_TYPING)
     {
         extern int g_pc_typing_mode;
-        static u8 str_on[]  = { 'K','e','y','b','o','a','r','d',' ','T','y','p','i','n','g',' ','(','T','a','b',')',':',' ','O','n' };
-        static u8 str_off[] = { 'K','e','y','b','o','a','r','d',' ','T','y','p','i','n','g',' ','(','T','a','b',')',':',' ','O','f','f' };
-        u8* str = g_pc_typing_mode ? str_on : str_off;
-        int len = g_pc_typing_mode ? sizeof(str_on) : sizeof(str_off);
+        static u8 str_on[]  = "Keyboard Typing (Tab): On";
+        static u8 str_off[] = "Keyboard Typing (Tab): Off";
+        u8* str = g_pc_typing_mode ? str_on  : str_off;
+        int len = (g_pc_typing_mode ? sizeof(str_on) : sizeof(str_off)) - 1; /* drop NUL */
         f32 scale = 0.6f;
         f32 x = 80.0f;
 

@@ -1,5 +1,9 @@
 #include "Famicom/famicomPriv.h"
 
+#ifdef TARGET_PC
+extern "C" void pc_fixnes_write_wram(unsigned int ofs, const unsigned char* data, unsigned int size);
+#endif
+
 #include "_mem.h"
 #include "dolphin/os.h"
 #include "libultra/libultra.h"
@@ -479,6 +483,12 @@ static void update_highscore_raw(unsigned int ofs, unsigned int size, u8* initia
             // The high score in WRAM has been reset to its default value.
             OSReport("WRAMのハイスコアが初期値になりました\n");
             memcpy(current_score_p, high_score, size);
+#ifdef TARGET_PC
+            /* Also write to fixNES Main_Mem so the NES game displays saved
+             * scores. The sp->wram write above keeps the mirror consistent
+             * so the next forward sync (Main_Mem→sp->wram) won't clobber. */
+            pc_fixnes_write_wram(ofs, high_score, size);
+#endif
             *state = HIGHSCORE_STATE_SET;
         } else {
             // The high score in WRAM has not been reset to its default value. Offset=%04x\n

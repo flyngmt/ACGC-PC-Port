@@ -1,6 +1,43 @@
 #include "Famicom/famicomPriv.h"
 #include "Famicom/famicomInternal.hpp"
 
+#ifdef TARGET_PC
+#include <stdio.h>
+extern "C" {
+    void pc_fixnes_init(unsigned char* ines_data, int ines_size);
+    void pc_fixnes_set_input(unsigned char buttons);
+    unsigned short* pc_fixnes_frame(void);
+    void pc_fixnes_render_frame(unsigned short* fb);
+    void pc_fixnes_cleanup(void);
+
+    /* fixNES battery RAM — sync with famicomCommon.bbramp for save persistence */
+    extern unsigned char* emuPrgRAM;
+    extern unsigned int emuPrgRAMsize;
+
+    /* fixNES WRAM → sp->wram sync for high-score persistence */
+    void pc_fixnes_sync_wram(unsigned char* dst_wram);
+
+    /* Card slot for current town (A=0 home, B=1 visiting) */
+    int mCD_GetThisLandSlotNo(void);
+}
+
+static const char* pc_nes_save_dir(void) {
+    return (mCD_GetThisLandSlotNo() == 1) ? "save/card_b" : "save/card_a";
+}
+
+static void pc_sync_bbramp_to_prgram() {
+    if (!emuPrgRAM || !famicomCommon.bbramp) return;
+    u32 copy_size = emuPrgRAMsize < KS_NES_BBRAM_SIZE ? emuPrgRAMsize : KS_NES_BBRAM_SIZE;
+    memcpy(emuPrgRAM, famicomCommon.bbramp, copy_size);
+}
+
+static void pc_sync_prgram_to_bbramp() {
+    if (!emuPrgRAM || !famicomCommon.bbramp) return;
+    u32 copy_size = emuPrgRAMsize < KS_NES_BBRAM_SIZE ? emuPrgRAMsize : KS_NES_BBRAM_SIZE;
+    memcpy(famicomCommon.bbramp, emuPrgRAM, copy_size);
+}
+#endif
+
 #include "libc/string.h"
 #include "dolphin/gx.h"
 #include "dolphin/os.h"
@@ -81,7 +118,13 @@ static u8 calcSum(u8* data, size_t len) {
 }
 
 extern int famicom_getErrorChan() {
+#ifdef TARGET_PC
+    /* PC skips the card path so errorChan stays -1; aMR_SetSlotString would
+     * then always display "Card B". Report the real save slot instead. */
+    return mCD_GetThisLandSlotNo();
+#else
     return errorChan;
+#endif
 }
 
 static void famicom_save_data_setup(FamicomSaveDataHeader* header, u32 size, u8* identifier) {
@@ -1574,22 +1617,38 @@ static void select_game() {
 }
 
 extern int famicom_mount_archive_end_check() {
+#ifdef TARGET_PC
+    /* On PC, don't block the title screen if famicom.arc failed to mount.
+     * The archive is only needed when actually playing NES games. */
+    return 1;
+#endif
     return famicom_arc != nullptr;
 }
 
 extern void famicom_mount_archive() {
     if (famicom_arc == nullptr && famicom_arc_mounting == false) {
         famicom_arc_mounting = true;
+#ifdef TARGET_PC
+        /* Use MOUNT_ARAM on PC — JKRAramArchive has byte-swap support for RARC headers */
+        famicom_arc = (JKRArchive*)JC__JKRMountArchive("famicom.arc", JKRArchive::MOUNT_ARAM, JC__JKRGetSystemHeap(), JKRArchive::MOUNT_DIRECTION_HEAD);
+#else
         famicom_arc = (JKRArchive*)JC__JKRMountArchive("famicom.arc", JKRArchive::MOUNT_COMP, JC__JKRGetSystemHeap(), JKRArchive::MOUNT_DIRECTION_HEAD);
-        
+#endif
+
         if (famicom_arc == nullptr) {
+#ifdef TARGET_PC
+            printf("[FAMICOM] famicom.arc mount failed — NES games unavailable\n");
+#else
             OSDVDFatalError();
+#endif
         }
 
         famicom_arc_mounting = false;
     }
 
+#ifndef TARGET_PC
     JKRAram::getAramHeap()->dump();
+#endif
 }
 
 static void famicom_mount_archive_wait() {
@@ -1722,7 +1781,10 @@ extern int famicom_init(int rom_idx, Famicom_MallocInfo* malloc_info, int player
 
     if (famicomCommon.noise_bufp == nullptr || JKRFileLoader::readGlbResource(famicomCommon.noise_bufp, KS_NES_NOISE_DATA_SIZE, "noise.bin.szs", EXPAND_SWITCH_DECOMPRESS)) {
         if (famicomCommon.noise_bufp != nullptr) {
+#ifndef TARGET_PC
+            /* On PC, fixNES handles NES audio directly — skip jaudio_NES */
             EmuSound_Start(famicomCommon.noise_bufp + 0x2000);
+#endif
         }
 
         nesrom_idx_loaded = -1;
@@ -1916,6 +1978,12 @@ static int SetupResIcon(const ResTIMG* img, u8* dst, size_t max_size, size_t* si
 extern int famicom_cleanup() {
     int res = FALSE;
 
+#ifdef TARGET_PC
+    /* Sync fixNES battery RAM back to bbramp before save extraction */
+    pc_sync_prgram_to_bbramp();
+    pc_fixnes_cleanup();
+#endif
+
     if (nesrom_idx_loaded != -1 && save_game_image == 0) {
         OSReport("nesrom_memcard = %d nesrom_idx = %d\n", famicomCommon.nesrom_memcard, nesrom_idx);
 
@@ -2052,7 +2120,7 @@ static int famicom_rom_load() {
         }
 
         nesinfo_tags_set(famicomCommon.rom_no - 1);
-        
+
         nesinfo_data_size = loaded_size;
         nesinfo_data_start = famicomCommon.nesromp;
         nesinfo_data_end = nesinfo_data_start + loaded_size;
@@ -2067,7 +2135,9 @@ static int famicom_rom_load() {
         memcard_game_header->flags0.has_comment_img = TRUE;
         memcard_game_header->flags0.no_copy_flag = FALSE;
         memcard_game_header->flags1.no_move_flag = FALSE;
+#ifndef TARGET_PC
         SetupInternalCommentImage(famicomCommon.memcard_save_comment);
+#endif
     }
 
     u32 max_ofs = 0;
@@ -2130,7 +2200,6 @@ static int famicom_rom_load() {
     }
 
     int reset_res = ksNesReset(wp, famicomCommon.sp, flags | 0x10, famicomCommon.chrramp, famicomCommon.bbramp);
-
     if (reset_res != 0) {
         OSReport("err code=%d (0x%x), %x,%x,%x,%x,%x,%x\n",
             reset_res, reset_res, famicomCommon.wp, famicomCommon.sp,
@@ -2140,6 +2209,18 @@ static int famicom_rom_load() {
         OSReport("NES emu reset failed!!");
     }
     else {
+#ifdef TARGET_PC
+        /* Initialize fixNES with the loaded ROM, then load battery RAM save */
+        pc_fixnes_init(famicomCommon.nesromp, nesrom_buffer_size);
+        pc_sync_bbramp_to_prgram();
+        /* Fill sp->wram with 0xFF so the HSC UNSET→SET check doesn't
+         * prematurely match all-zero initial values before the NES game
+         * boots and writes its own defaults. On GC, ksNesReset leaves
+         * wram[0x000..0x1FF] as heap garbage, achieving the same effect.
+         * The first forward sync (after fixNES runs a few frames) will
+         * overwrite this with real Main_Mem data. */
+        memset(famicomCommon.sp->wram, 0xFF, KS_NES_WRAM_SIZE);
+#endif
         OSReport("ksNesReset() OK PC=%x, prg_size = 0x%x, chr_size = 0x%x\n",
             famicomCommon.sp->PC, famicomCommon.sp->prg_size, famicomCommon.sp->chr_size);
         nesrom_idx_loaded = nesrom_idx;
@@ -2287,6 +2368,40 @@ static void ksnes_thread_kill(OSAlarm* alarm, OSContext* context) {
 }
 
 static int ksnes_thread_exec(u32 flags) {
+#ifdef TARGET_PC
+    /* On PC, use fixNES emulator for NES rendering + audio */
+    {
+        /* Convert AC pad format to fixNES format.
+         * AC pads[0] bits: 31=A, 30=B, 29=Select, 28=Start, 27=Up, 26=Down, 25=Left, 24=Right
+         * fixNES expects:  bit0=A, bit1=B, bit2=Select, ..., bit7=Right */
+        static unsigned int turbo_counter = 0;
+        turbo_counter++;
+        unsigned int pad = famicomCommon.wp->pads[0];
+        unsigned char raw = (unsigned char)((pad >> 24) & 0xFF);
+        /* Reverse bit order */
+        unsigned char buttons = 0;
+        for (int b = 0; b < 8; b++)
+            buttons |= ((raw >> (7 - b)) & 1) << b;
+        /* GC X → turbo A, GC Y → turbo B (read from raw InputData) */
+        {
+            unsigned int raw_input = InputValid[0] ? InputData[0] : 0;
+            /* GC X = bit 10, GC Y = bit 11 */
+            if ((raw_input & (1 << 10)) && (turbo_counter & 2))
+                buttons |= 1; /* turbo A (bit 0) */
+            if ((raw_input & (1 << 11)) && (turbo_counter & 2))
+                buttons |= 2; /* turbo B (bit 1) */
+        }
+        pc_fixnes_set_input(buttons);
+        unsigned short* fb = pc_fixnes_frame();
+        pc_fixnes_render_frame(fb);
+        /* Sync fixNES internal RAM → ksNes wram every 2 frames so
+         * nesinfo_update_highscore can detect high-score changes. */
+        if (famicomCommon.sp != nullptr && (turbo_counter & 1) == 0) {
+            pc_fixnes_sync_wram(famicomCommon.sp->wram);
+        }
+    }
+    return 0;
+#endif
     int res;
     u8* ksnes_emu_stack = (u8*)my_malloc(KS_NES_EMU_STACK_SIZE, 32);
 
@@ -2527,9 +2642,11 @@ extern void famicom_1frame() {
         }
     }
 
+#ifndef TARGET_PC
     GXSetScissor(0, 0, 640, 480);
     GXSetViewport(0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 1.0f);
     ksNesDraw(famicomCommon.wp, famicomCommon.sp);
+#endif
 
     if (filer_mode != 0 || filer_demo_mode != FILER_DEMO_MODE_NORMAL) {
         JW_SetLowResoMode(FALSE);
@@ -2642,6 +2759,28 @@ static int famicom_cardResultToMiyake(s32 cardResult) {
 }
 
 extern int famicom_internal_data_load() {
+#ifdef TARGET_PC
+    /* PC: Load NES save data from local file */
+    bzero(&famicomCommon, sizeof(FamicomCommon));
+    famicomCommon.nesrom_memcard = FALSE;
+    strncpy((char*)famicomCommon.mura_save_name, "DobutsunomoriP_MURA", 32);
+    strncpy((char*)famicomCommon.famicom_save_name, "DobutsunomoriP_F_SAVE", 32);
+    famicomCommon.save_data_name = (u8*)"GAFEFSC\x1A";
+    famicomCommon.save_data_single_size = 0x660;
+    famicomCommon.save_data_total_size = sizeof(FamicomSaveDataHeader) + 0x660 * PLAYER_NUM;
+    famicomCommon.save_data_header = (FamicomSaveDataHeader*)famicomCommonSave;
+    famicomCommon.internal_save_datap = nullptr;
+    {
+        char nes_path[300];
+        snprintf(nes_path, sizeof(nes_path), "%s/DobutsunomoriP_F_SAVE.sav", pc_nes_save_dir());
+        FILE* f = fopen(nes_path, "rb");
+        if (f) {
+            fread(famicomCommonSave, 1, sizeof(famicomCommonSave), f);
+            fclose(f);
+        }
+    }
+    return 0;
+#endif
     famicom_mount_archive_wait();
     bzero(&famicomCommon, sizeof(FamicomCommon));
     famicomCommon.nesrom_memcard = FALSE;
@@ -2682,9 +2821,22 @@ extern int famicom_internal_data_load() {
 }
 
 extern int famicom_internal_data_save() {
+#ifdef TARGET_PC
+    /* PC: Write NES save data to local file */
+    {
+        char nes_path[300];
+        snprintf(nes_path, sizeof(nes_path), "%s/DobutsunomoriP_F_SAVE.sav", pc_nes_save_dir());
+        FILE* f = fopen(nes_path, "wb");
+        if (f) {
+            fwrite(famicomCommonSave, 1, sizeof(famicomCommonSave), f);
+            fclose(f);
+        }
+    }
+    return 0;
+#endif
     s32 result;
     s32 chan;
-    
+
     famicom_mount_archive_wait();
     bzero(&famicomCommon, sizeof(FamicomCommon));
     famicomCommon.nesrom_memcard = FALSE;
@@ -2736,6 +2888,9 @@ extern int famicom_internal_data_save() {
 }
 
 extern int famicom_external_data_save() {
+#ifdef TARGET_PC
+    return 0;
+#endif
     s32 result;
     s32 chan;
 

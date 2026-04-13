@@ -539,6 +539,16 @@ static void aSEN_pl_ride_on_check2_talk_proc(NPC_SENDO_ACTOR* sendo, GAME_PLAY* 
     if (mMsg_Check_MainNormalContinue(msg_p) == TRUE) {
         switch (mChoice_Get_ChoseNum(mChoice_Get_base_window_p())) {
             case mChoice_CHOICE0:
+#ifdef TARGET_PC
+                /* Skip the AGB save chain (msgs 0x3082/0x3086/0x308A all
+                 * reference the GBA) and go straight to "climb aboard". */
+                mDemo_Set_OrderValue(mDemo_ORDER_NPC0, 9, 0);
+                mNpc_SetIslandGetFtrtoRoom();
+                aSEN_setup_pl_ride_on(sendo);
+                mMsg_Set_continue_msg_num(msg_p, aSEN_get_msg_no(sendo, 0x3083));
+                aSEN_change_talk_proc(sendo, aSEN_TALK_END_WAIT);
+                break;
+#else
                 /* Player chose to ride */
                 if (aSEN_compare_ram_island_and_village() == FALSE) {
                     mDemo_Set_OrderValue(mDemo_ORDER_NPC0, 9, 0);
@@ -555,6 +565,7 @@ static void aSEN_pl_ride_on_check2_talk_proc(NPC_SENDO_ACTOR* sendo, GAME_PLAY* 
                 mNpc_SetIslandGetFtrtoRoom();
 
                 break;
+#endif
             case mChoice_CHOICE1:
                 /* Player chose not to ride */
                 mDemo_Set_OrderValue(mDemo_ORDER_NPC0, 9, 0);
@@ -1281,10 +1292,16 @@ static void aSEN_actor_move(ACTOR* actorx, GAME* game) {
 
     aSEN_set_matrix(sendo);
 
+#ifndef TARGET_PC
+    /* PC: skip the kappa music-sync. With the audio thread decoupled from
+     * the game frame, the teleported wipkogu1 frame crosses the push/pull
+     * SE markers (frames 1/36, SEs 0x463/0x462) far too often and the oar
+     * creak stutters. Natural keyframe loop speed gives the right cadence. */
     if (sendo->npc_class.draw.anim_speed_type == aNPC_ANIM_SPEED_TYPE_FREE) {
         sAdos_GetKappaCounter(&sendo->kappa_counter);
         aSEN_set_anime_current(sendo);
     }
+#endif
 
     (*Common_Get(clip).npc_clip->move_proc)(actorx, game);
 }

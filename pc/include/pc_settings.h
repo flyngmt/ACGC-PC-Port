@@ -12,6 +12,8 @@ typedef struct {
     int vsync;            /* 0=off, 1=on */
     int msaa;             /* 0=off, 2/4/8=samples */
     int preload_textures; /* 0=off (load on demand), 1=on (load all at startup), 2=on + cache file */
+    int disable_resetti;  /* 0=normal (Resetti appears on reset), 1=disable reset penalty */
+    int nes_aspect;       /* NES emulator aspect: 0=fullscreen stretch, 1=4:3 pillarbox (default) */
 } PCSettings;
 
 extern PCSettings g_pc_settings;

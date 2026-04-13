@@ -350,6 +350,21 @@ static int mMsg_LoadMsgData(mMsg_Data_c* msg_data, int index, int cut) {
                 *dst_p++ = *src_p++;
             }
 
+#ifdef TARGET_PC
+            /* Truncate Kapp'n's island-arrival msg (12410/12620) at the page
+             * break — page 2 is "Now ye can turn off yer Game Boy Advance...". */
+            if (index == 12410 || index == 12620) {
+                u8* p = msg_data->text_buf.data;
+                int j;
+                for (j = 0; j < (int)size - 1; j++) {
+                    if (p[j] == 0x7F && p[j + 1] == 0x04) {
+                        p[j + 1] = 0x00;
+                        break;
+                    }
+                }
+            }
+#endif
+
             msg_data->msg_no = index;
             msg_data->data_loaded = TRUE;
             msg_data->msg_len = mMsg_Count_MsgData(msg_data->text_buf.data);

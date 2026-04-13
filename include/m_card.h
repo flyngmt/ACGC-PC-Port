@@ -322,7 +322,29 @@ extern int mCD_save_data_main_to_aram(void* src, u32 size, u32 idx);
 #ifdef TARGET_PC
 extern int pc_save_loaded;
 extern int pc_save_reload(void);
-#endif
+
+/* These structs are local to m_card.c in the original decomp, but the PC port
+   needs them in pc_m_card.c and pc_save_bswap.c for foreigner/travel support. */
+
+typedef struct {
+    u16 checksum;
+    Private_c priv;
+    Animal_c remove_animal;
+    u16 copy_protect;
+    u8 _2DEA[54];
+} mCD_foreigner_c;
+
+typedef union {
+    struct {
+        char comment[CARD_COMMENT_SIZE];
+        u8 banner[0xC00 + 0x200];
+        u8 icon[0x400 * 8 + 0x200];
+        mCD_foreigner_c file;
+    };
+    u8 sector_align[mCD_ALIGN_SECTORSIZE(sizeof(MemcardHeader_c) + sizeof(mCD_foreigner_c))];
+} ForeignerFile_c;
+
+#endif /* TARGET_PC */
 
 #ifdef __cplusplus
 }
