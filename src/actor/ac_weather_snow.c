@@ -25,12 +25,12 @@ aWeather_Profile_c iam_weather_snow = {
 static int aWeatherSnow_DecideMakeSnowCount(ACTOR* actor, GAME* game) {
     WEATHER_ACTOR* weather = (WEATHER_ACTOR*)actor;
 
-    if (weather->current_level == 1) {
+    if (weather->current_level == mEnv_WEATHER_INTENSITY_LIGHT) {
         return (game->frame_counter & 7) == 0;
-    } else if (weather->current_level == 2) {
+    } else if (weather->current_level == mEnv_WEATHER_INTENSITY_NORMAL) {
         return (game->frame_counter & 3) == 0;
     }
-    return (game->frame_counter & 1);
+    return (game->frame_counter & 1); // HEAVY
 }
 
 static void aWeatherSnow_make(ACTOR* actor, GAME* game) {
@@ -132,14 +132,15 @@ static void aWeatherSnow_CheckSnowScroll(aWeather_Priv* priv, GAME_PLAY* play) {
     }
 }
 
-static void aWeatherSnow_SetWind2Snow(aWeather_Priv* priv) {
-
+static void aWeatherSnow_SetWind2Snow(aWeather_Priv* priv, GAME* game) {
     if (Common_Get(clip.weather_clip) != NULL) {
         WEATHER_ACTOR* weather = (WEATHER_ACTOR*)Common_Get(clip.weather_clip)->actor;
         if (weather != NULL) {
-            priv->pos.x += weather->wind_info.x;
-            priv->pos.y += weather->wind_info.y;
-            priv->pos.z += weather->wind_info.z;
+            const float dt = (float)game->graph->dt_num_60fps_frames;
+
+            priv->pos.x += weather->wind_info.x * dt;
+            priv->pos.y += weather->wind_info.y * dt;
+            priv->pos.z += weather->wind_info.z * dt;
         }
     }
 }
@@ -148,8 +149,8 @@ static void aWeatherSnow_move(aWeather_Priv* priv, GAME* game) {
     GAME_PLAY* play = (GAME_PLAY*)game;
 
     xyz_t_add(&priv->pos, &priv->speed, &priv->pos);
-    priv->work[0] += priv->work[1];
-    aWeatherSnow_SetWind2Snow(priv);
+    priv->work[0] += (float)priv->work[1] * game->graph->dt_num_60fps_frames;
+    aWeatherSnow_SetWind2Snow(priv, game);
     aWeatherSnow_CheckSnowScroll(priv, play);
 }
 
@@ -199,7 +200,7 @@ void aWeatherSnow_draw(aWeather_Priv* priv, GAME* game) {
 
         OPEN_DISP(game->graph);
 
-        suMtxMakeTS(work, 0.00195999979042f * scale, 0.00195999979042f * scale, 0.00195999979042f * scale, pos.x, pos.y,
+        suMtxMakeTS(work, 0.00196f * scale, 0.00196f * scale, 0.00196f * scale, pos.x, pos.y,
                     pos.z);
 
         gSPMatrix(NEXT_POLY_XLU_DISP, work, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);

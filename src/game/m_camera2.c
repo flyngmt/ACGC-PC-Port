@@ -101,7 +101,7 @@ static void Camera2_SetEyePos_fromCenterPos(GAME_PLAY* play) {
     Camera2_SetEyePos_fromCenterPosCalc(play, &camera->lookat.center, &camera->lookat.eye);
 }
 
-static void Camera2_MoveDirectionAngleXYZ_morph(GAME_PLAY* play, const s_xyz* goal_dir, int delta) {
+static void Camera2_MoveDirectionAngleXYZ_morph(GAME_PLAY* play, const s_xyz* goal_dir, float delta) {
     s_xyz* dir;
     s_xyz* dir_vel;
     Camera2* camera = &play->camera;
@@ -118,7 +118,7 @@ static void Camera2_MoveDirectionAngleXYZ_morph(GAME_PLAY* play, const s_xyz* go
         dir_vel->y = 0;
         dir_vel->z = 0;
     } else {
-        f32 t = 1.0f / (f32)delta;
+        f32 t = 1.0f / delta;
         s_xyz last_dir;
         last_dir.x = dir->x;
         last_dir.y = dir->y;
@@ -782,8 +782,8 @@ extern void Camera2_ClearActorTalking_Cull(GAME_PLAY* play) {
     }
 }
 
-static void Camera2_AddCullTimer(f32* cull_timer, f32 max) {
-    *cull_timer += 1.0f;
+static void Camera2_AddCullTimer(f32* cull_timer, f32 max, const f32 dt_frames) {
+    *cull_timer += dt_frames;
 
     if (*cull_timer > max) {
         *cull_timer = max;
@@ -970,7 +970,7 @@ static void Camera2_SetPos_Wade(GAME_PLAY* play) {
 }
 
 static void Camera2_request_proc_index_fromWade(GAME_PLAY* play) {
-    play->camera.main_data.wade.timer += 1.0f;
+    play->camera.main_data.wade.timer += play->game.graph->dt_num_60fps_frames;
 
     if (play->camera.main_data.wade.timer > play->camera.main_data.wade.goal_time) {
         play->camera.requested_main_index_priority = 0;
@@ -1213,7 +1213,7 @@ static void Camera2_SetPos_Talk(GAME_PLAY* play) {
 }
 
 static void Camera2_Talk_AddCullTimer(GAME_PLAY* play) {
-    Camera2_AddCullTimer(&play->camera.main_data.talk.cull_timer, 15.0f);
+    Camera2_AddCullTimer(&play->camera.main_data.talk.cull_timer, 15.0f, play->game.graph->dt_num_60fps_frames);
 }
 
 static void Camera2_Talk_SetTalking_Cull(GAME_PLAY* play) {
@@ -1386,11 +1386,7 @@ static void Camera2_MoveDirectionAngleXYZVParam(GAME_PLAY* play, const s_xyz* go
     add_calc_short_angle2(&dir->y, goal_dir->y, 0.10557282f, SHT_MAX_S, 2);
     add_calc_short_angle2(&dir->z, goal_dir->z, 0.10557282f, SHT_MAX_S, 2);
 
-#ifndef BUGFIXES
-    dir_vel->z = dir->x - x; // @BUG
-#else
     dir_vel->x = dir->x - x;
-#endif
     dir_vel->y = dir->y - y;
     dir_vel->z = dir->z - z;
 }
@@ -1430,7 +1426,7 @@ static void Camera2_main_Normal_SetPos_fromPlayer(GAME_PLAY* play, int force) {
         Camera2_main_Normal_SetEndCenterPos_fromPlayer(play, &end_center_pos);
         Camera2_MoveVparamCenter(play, &end_center_pos);
         Camera2_SetEyePos_fromCenterPos(play);
-        main_data->normal.morph_counter--;
+        main_data->normal.morph_counter -= play->game.graph->dt_num_60fps_frames;
     }
 
     Camera2_SetView(play);
@@ -1440,11 +1436,9 @@ static void Camera2_main_Normal_AdjustDistanceAndDirection(GAME_PLAY* play, f32*
     Camera2* camera = &play->camera;
     CameraMainData* main_data = &camera->main_data;
 
-    if ((main_data->normal.flags & 1) == 0 && (camera->flags & 1) == 0) {
-        return;
+    if ((camera->now_main_index == CAMERA2_PROCESS_NORMAL && (main_data->normal.flags & 1) != 0) || (camera->flags & 1) != 0) {
+        *dist *= 1.5f;
     }
-
-    *dist *= 1.5f;
 }
 
 extern int Camera2_request_main_normal(GAME_PLAY* play, int flags, int priority) {
@@ -1539,7 +1533,7 @@ static void Camera2_CalcPos_Demo(GAME_PLAY* play, xyz_t* pos, f32* dist, s_xyz* 
     int dy;
 
     if (now_delta != goal_delta) {
-        now_delta += 1.0f;
+        now_delta += play->game.graph->dt_num_60fps_frames;
 
         if (now_delta > goal_delta) {
             now_delta = goal_delta;
@@ -1673,7 +1667,7 @@ static void Camera2_SetPos_Item(GAME_PLAY* play) {
 }
 
 static void Camera2_Item_AddCullTimer(GAME_PLAY* play) {
-    Camera2_AddCullTimer(&play->camera.main_data.item.cull_timer, 6.0f);
+    Camera2_AddCullTimer(&play->camera.main_data.item.cull_timer, 6.0f, play->game.graph->dt_num_60fps_frames);
 }
 
 static void Camera2_Item_SetTalking_Cull(GAME_PLAY* play) {
@@ -1702,7 +1696,7 @@ extern int Camera2_request_main_lock(GAME_PLAY* play, const xyz_t* center_pos, c
         play->camera.request_data.lock.center_pos = *center_pos;
         play->camera.request_data.lock.eye_pos = *eye_pos;
         play->camera.request_data.lock.fov_y = fov_y;
-        play->camera.request_data.lock.morph_counter = morph_counter;
+        play->camera.request_data.lock.morph_counter = (float)morph_counter;
         play->camera.request_data.lock.near = near;
         play->camera.request_data.lock.far = far;
 
@@ -1718,7 +1712,7 @@ static void Camera2_setup_main_Lock(GAME_PLAY* play) {
     play->camera.main_data.lock.center_pos = play->camera.request_data.lock.center_pos;
     play->camera.main_data.lock.eye_pos = play->camera.request_data.lock.eye_pos;
     play->camera.main_data.lock.fov_y = play->camera.request_data.lock.fov_y;
-    play->camera.main_data.lock.morph_counter = play->camera.request_data.lock.morph_counter;
+    play->camera.main_data.lock.morph_counter = (float)play->camera.request_data.lock.morph_counter;
     play->camera.main_data.lock.near = play->camera.request_data.lock.near;
     play->camera.main_data.lock.far = play->camera.request_data.lock.far;
 
@@ -1759,25 +1753,25 @@ static void Camera2_Lock_SetNearFar(GAME_PLAY* play, f32 near, f32 far, int step
 }
 
 static void Camera2_Lock_MorphCounterProc(GAME_PLAY* play) {
-    int morph_counter = play->camera.main_data.lock.morph_counter;
+    float morph_counter = play->camera.main_data.lock.morph_counter;
 
     if (morph_counter <= 0) {
         play->camera.main_data.lock.morph_counter = 0;
     } else {
-        play->camera.main_data.lock.morph_counter = morph_counter - 1;
+        play->camera.main_data.lock.morph_counter = morph_counter - play->game.graph->dt_num_60fps_frames;
     }
 }
 
 static void Camera2_SetPos_Lock(GAME_PLAY* play) {
-    int morph_counter = play->camera.main_data.lock.morph_counter;
+    float morph_counter = play->camera.main_data.lock.morph_counter;
     f32 fov_y = play->camera.main_data.lock.fov_y;
     f32 near = play->camera.main_data.lock.near;
     f32 far = play->camera.main_data.lock.far;
 
-    Camera2_Lock_SetCenterPos(play, &play->camera.main_data.lock.center_pos, morph_counter);
-    Camera2_Lock_SetEyePos(play, &play->camera.main_data.lock.eye_pos, morph_counter);
-    Camera2_Lock_SetFovy(play, fov_y, morph_counter);
-    Camera2_Lock_SetNearFar(play, near, far, morph_counter);
+    Camera2_Lock_SetCenterPos(play, &play->camera.main_data.lock.center_pos, (int)morph_counter);
+    Camera2_Lock_SetEyePos(play, &play->camera.main_data.lock.eye_pos, (int)morph_counter);
+    Camera2_Lock_SetFovy(play, fov_y, (int)morph_counter);
+    Camera2_Lock_SetNearFar(play, near, far, (int)morph_counter);
     Camera2_Lock_MorphCounterProc(play);
     Camera2_DirectionCalc(play);
     Camera2_SetView(play);
@@ -1841,7 +1835,7 @@ static void Camera2_Door_SetCenterPos(GAME_PLAY* play, int step) {
     center_vel_p->z = center_p->z - start_center.z;
 }
 
-static void Camera2_Door_SetEyePos(GAME_PLAY* play, int step) {
+static void Camera2_Door_SetEyePos(GAME_PLAY* play, float step) {
     Camera2* camera = &play->camera;
     CameraLookat* lookat = &camera->lookat;
     xyz_t* center = &lookat->center;
@@ -1884,19 +1878,19 @@ static void Camera2_Door_SetEyePos(GAME_PLAY* play, int step) {
 }
 
 static void Camera2_Door_MorphCounterProc(GAME_PLAY* play) {
-    int morph_counter = play->camera.main_data.door.morph_counter;
+    float morph_counter = play->camera.main_data.door.morph_counter;
 
     if (morph_counter <= 0) {
         play->camera.main_data.door.morph_counter = 0;
     } else {
-        play->camera.main_data.door.morph_counter = morph_counter - 1;
+        play->camera.main_data.door.morph_counter = morph_counter - play->game.graph->dt_num_60fps_frames;
     }
 }
 
 static void Camera2_SetPos_Door(GAME_PLAY* play) {
-    int morph_counter = play->camera.main_data.door.morph_counter;
+    float morph_counter = play->camera.main_data.door.morph_counter;
 
-    Camera2_Door_SetCenterPos(play, morph_counter);
+    Camera2_Door_SetCenterPos(play, (int)morph_counter);
     Camera2_Door_SetEyePos(play, morph_counter);
     Camera2_Door_MorphCounterProc(play);
     Camera2_SetView(play);
@@ -1920,7 +1914,7 @@ extern int Camera2_request_main_simple2(GAME_PLAY* play, const xyz_t* center, co
         play->camera.request_data.simple.center_pos = *center;
         play->camera.request_data.simple.angle = *dir;
         play->camera.request_data.simple.distance = dist;
-        play->camera.request_data.simple.morph_counter = morph_counter;
+        play->camera.request_data.simple.morph_counter = (float)morph_counter;
         play->camera.request_data.simple.mode = mode;
 
         Camera2_request_main_index(play, CAMERA2_PROCESS_SIMPLE, priority);
@@ -1992,7 +1986,7 @@ extern int Camera2_request_main_simple(GAME_PLAY* play, const xyz_t* pos, const 
         play->camera.request_data.simple.center_pos = *pos;
         play->camera.request_data.simple.angle = *dir;
         play->camera.request_data.simple.distance = dist;
-        play->camera.request_data.simple.morph_counter = morph_counter;
+        play->camera.request_data.simple.morph_counter = (float)morph_counter;
         play->camera.request_data.simple.mode = 0;
         Camera2_request_main_index(play, CAMERA2_PROCESS_SIMPLE, priority);
 
@@ -2006,7 +2000,7 @@ static void Camera2_setup_main_Simple(GAME_PLAY* play) {
     play->camera.main_data.simple.center_pos = play->camera.request_data.simple.center_pos;
     play->camera.main_data.simple.angle = play->camera.request_data.simple.angle;
     play->camera.main_data.simple.distance = play->camera.request_data.simple.distance;
-    play->camera.main_data.simple.morph_counter = play->camera.request_data.simple.morph_counter;
+    play->camera.main_data.simple.morph_counter = (float)play->camera.request_data.simple.morph_counter;
     play->camera.main_data.simple.mode = play->camera.request_data.simple.mode;
     play->camera.main_data.simple.cull_timer = 0.0f;
     Camera2_setup_main_Base(play);
@@ -2071,18 +2065,18 @@ static void Camera2_Simple_AngleCalc(GAME_PLAY* play, const s_xyz* goal_angle, i
 }
 
 static void Camera2_SetPos_Simple(GAME_PLAY* play) {
-    int morph_counter = play->camera.main_data.simple.morph_counter;
+    float morph_counter = play->camera.main_data.simple.morph_counter;
     f32 goal_dist = play->camera.main_data.simple.distance;
 
-    Camera2_Lock_SetCenterPos(play, &play->camera.main_data.simple.center_pos, morph_counter);
-    Camera2_Simple_MorphDistance(play, goal_dist, morph_counter);
-    Camera2_Simple_AngleCalc(play, &play->camera.main_data.simple.angle, morph_counter);
+    Camera2_Lock_SetCenterPos(play, &play->camera.main_data.simple.center_pos, (int)morph_counter);
+    Camera2_Simple_MorphDistance(play, goal_dist, (int)morph_counter);
+    Camera2_Simple_AngleCalc(play, &play->camera.main_data.simple.angle, (int)morph_counter);
     Camera2_SetEyePos_fromCenterPos(play);
     Camera2_SetView(play);
 }
 
 static void Camera2_Simple_AddCullTimer(GAME_PLAY* play) {
-    Camera2_AddCullTimer(&play->camera.main_data.simple.cull_timer, 6.0f);
+    Camera2_AddCullTimer(&play->camera.main_data.simple.cull_timer, 6.0f, play->game.graph->dt_num_60fps_frames);
 }
 
 static void Camera2_main_Simple(GAME_PLAY* play) {
@@ -2225,7 +2219,7 @@ static void Camera2_SetPos_Cust_Talk(GAME_PLAY* play) {
 }
 
 static void Camera2_Cust_Talk_AddCullTimer(GAME_PLAY* play) {
-    Camera2_AddCullTimer(&play->camera.main_data.cust_talk.cull_timer, 15.0f);
+    Camera2_AddCullTimer(&play->camera.main_data.cust_talk.cull_timer, 15.0f, play->game.graph->dt_num_60fps_frames);
 }
 
 static void Camera2_main_Cust_talk(GAME_PLAY* play) {
@@ -2322,16 +2316,16 @@ static void Camera2_Inter_SetPosEye(GAME_PLAY* play, f32 eye_ratio) {
 
 static void Camera2_Inter_CounterProc(GAME_PLAY* play) {
     if (play->camera.main_data.inter.flags & 2) {
-        int count = play->camera.main_data.inter.now_delta;
+        float count = play->camera.main_data.inter.now_delta;
 
         if (count <= 0) {
             play->camera.main_data.inter.now_delta = 0;
             Camera2_request_main_normal(play, 0, 5);
         } else {
-            play->camera.main_data.inter.now_delta = count - 1;
+            play->camera.main_data.inter.now_delta = count - play->game.graph->dt_num_60fps_frames;
         }
     } else if (play->camera.main_data.inter.flags & 4) {
-        int count = play->camera.main_data.inter.now_delta;
+        float count = play->camera.main_data.inter.now_delta;
         xyz_t pos;
         s_xyz angle;
         f32 dist;
@@ -2350,16 +2344,16 @@ static void Camera2_Inter_CounterProc(GAME_PLAY* play) {
             pos.z += (UT_Z_NUM / 2 + 2) * mFI_UT_WORLDSIZE_Z_F;
             Camera2_request_main_simple(play, &pos, &angle, dist, 0, 6);
         } else {
-            play->camera.main_data.inter.now_delta = count - 1;
+            play->camera.main_data.inter.now_delta = count - play->game.graph->dt_num_60fps_frames;
         }
     } else {
-        int count = play->camera.main_data.inter.now_delta;
-        int max = play->camera.main_data.inter.max_delta;
+        float count = play->camera.main_data.inter.now_delta;
+        float max = play->camera.main_data.inter.max_delta;
 
         if (count >= max) {
             play->camera.main_data.inter.now_delta = max;
         } else {
-            play->camera.main_data.inter.now_delta = count + 1;
+            play->camera.main_data.inter.now_delta = count + play->game.graph->dt_num_60fps_frames;
         }
     }
 }
@@ -2367,13 +2361,13 @@ static void Camera2_Inter_CounterProc(GAME_PLAY* play) {
 static void Camera2_SetPos_Inter(GAME_PLAY* play) {
     Camera2* camera = &play->camera;
     f32 ratio;
-    int now = camera->main_data.inter.now_delta;
-    int max = camera->main_data.inter.max_delta;
+    float now = camera->main_data.inter.now_delta;
+    float max = camera->main_data.inter.max_delta;
     f32 slope0 = camera->main_data.inter.slope0;
     f32 slope1 = camera->main_data.inter.slope1;
 
     if (max != 0) {
-        ratio = cKF_HermitCalc((f32)now / (f32)max, 1.0f, 0.0f, 1.0f, slope0, slope1);
+        ratio = cKF_HermitCalc(now / max, 1.0f, 0.0f, 1.0f, slope0, slope1);
     } else {
         ratio = 0.0f;
     }
@@ -2547,8 +2541,8 @@ static void Camera2_main_Staff_Roll_SetPos(GAME_PLAY* play) {
             Camera2_Lock_SetEyePos(play, &main_data->staff_roll.last_eye_pos, main_data->staff_roll.morph_counter);
             Camera2_DirectionCalc(play);
 
-            if (main_data->staff_roll.morph_counter != 0) {
-                main_data->staff_roll.morph_counter--;
+            if (main_data->staff_roll.morph_counter > 0) {
+                main_data->staff_roll.morph_counter -= play->game.graph->dt_num_60fps_frames;
             } else {
                 camera->focus_distance = main_data->staff_roll.last_distance;
                 camera->direction = main_data->staff_roll.last_direction;
@@ -2558,23 +2552,23 @@ static void Camera2_main_Staff_Roll_SetPos(GAME_PLAY* play) {
         } else if (main_data->staff_roll.flags & 1) {
             xyz_t* center_vel_p = &camera->movement_velocity;
             xyz_t* center_p = &camera->lookat.center;
-            u32 morph_counter = main_data->staff_roll.morph_counter;
-            f32 t = (320.0f - (f32)morph_counter) / 320.0f;
+            f32 morph_counter = main_data->staff_roll.morph_counter;
+            f32 t = (320.0f - morph_counter) / 320.0f;
 
             last_center = *center_p;
 
             Camera2_Staff_Roll_Center(play, speaker, listener, &center, distance, t, FALSE);
-            Camera2_Lock_SetCenterPos(play, &center, main_data->staff_roll.morph_counter);
+            Camera2_Lock_SetCenterPos(play, &center, (int)main_data->staff_roll.morph_counter);
             center_vel_p->x = center_p->x - last_center.x;
             center_vel_p->y = center_p->y - last_center.y;
             center_vel_p->z = center_p->z - last_center.z;
             Camera2_Staff_Roll_DistAngle(play, speaker, listener, &angle, distance);
             Camera2_PolaPosCalc(&eye, angle.x + (u16)SHT_MIN_S, angle.y + (u16)SHT_MIN_S, &center,
                                 camera->focus_distance);
-            Camera2_Lock_SetEyePos(play, &eye, main_data->staff_roll.morph_counter);
+            Camera2_Lock_SetEyePos(play, &eye, (int)main_data->staff_roll.morph_counter);
 
-            if (main_data->staff_roll.morph_counter != 0) {
-                main_data->staff_roll.morph_counter--;
+            if (main_data->staff_roll.morph_counter > 0) {
+                main_data->staff_roll.morph_counter -= play->game.graph->dt_num_60fps_frames;
             } else {
                 main_data->staff_roll.flags &= ~1;
             }
@@ -2586,18 +2580,18 @@ static void Camera2_main_Staff_Roll_SetPos(GAME_PLAY* play) {
             Camera2_MoveDirectionAngleXYZ_morph(play, &angle, 0);
             Camera2_SetEyePos_fromCenterPos(play);
 
-            main_data->staff_roll.r_delta++;
+            main_data->staff_roll.r_delta += play->game.graph->dt_num_60fps_frames;
             if (main_data->staff_roll.r_delta > 4600) {
                 main_data->staff_roll.r_delta = 0;
             }
 
-            main_data->staff_roll.rotation_x_delta++;
+            main_data->staff_roll.rotation_x_delta += play->game.graph->dt_num_60fps_frames;
             if (main_data->staff_roll.rotation_x_delta > CAMERA2_STAFFROLL_CENTER_X_ROT_STEP_DIVISOR) {
                 main_data->staff_roll.rotation_x_delta = 0;
             }
         }
 
-        main_data->staff_roll.rotation_y_delta++;
+        main_data->staff_roll.rotation_y_delta += play->game.graph->dt_num_60fps_frames;
         if (main_data->staff_roll.rotation_y_delta > CAMERA2_STAFFROLL_CENTER_Y_ROT_STEP_DIVISOR) {
             main_data->staff_roll.rotation_y_delta = 0;
         }

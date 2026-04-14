@@ -11,6 +11,10 @@
 extern "C" {
 #endif
 
+#define GRAPH_BASE_FRAME_RATE 60.0f
+#define SECONDS_TO_FRAMES(seconds) ((seconds) * GRAPH_BASE_FRAME_RATE)
+#define FRAMES_TO_SECONDS(frames) ((frames) * (1.0f / GRAPH_BASE_FRAME_RATE))
+
 typedef enum {
     GRAPH_DOING_ZERO = 0,
     GRAPH_DOING_CT,
@@ -86,6 +90,8 @@ typedef struct graph_s {
     /* 0x035C */ Gfx* last_dl;
     /* 0x0360 */ Gfx* Gfx_list10; /* new0 (highlight/reflections?) */
     /* 0x0364 */ Gfx* Gfx_list11; /* new1 (highlight/reflections?) */
+    /* 0x0368 */ double dt; // number of seconds that have passed since the last execution frame
+    /* 0x0370 */ double dt_num_60fps_frames; // the number of 60FPS frames that have passed since the last execution frame
 } GRAPH ATTRIBUTE_ALIGN(8);       // one of the missing structs is likely aligned to 8 bytes.
 
 extern void graph_proc(void* arg);

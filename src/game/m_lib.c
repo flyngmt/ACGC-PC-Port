@@ -54,6 +54,18 @@
 #include "sys_math.h"
 #include "sys_math3d.h"
 
+static f32 mlib_calc_dt_fraction(f32 fraction) {
+    if (fraction <= 0.0f) {
+        return 0.0f;
+    }
+
+    if (fraction >= 1.0f) {
+        return 1.0f;
+    }
+
+    return 1.0f - DTCONV_GRAPH(1.0f - fraction, gamePT->graph);
+}
+
 /**
  * @brief Copy memory from the source buffer to the destination buffer.
  *
@@ -136,14 +148,19 @@ extern f32 sin_s(s16 angle) {
  * @return TRUE if the angle reaches the target, FALSE otherwise.
  */
 extern int chase_angle(s16* const pValue, const s16 target, s16 step) {
-    if (step) {
-        f32 updateScale = game_GameFrame_2F;
+    if (step != 0) {
+        const double updateScale = game_GameFrame_2F * gamePT->graph->dt_num_60fps_frames;
+
+        step = (double)step * updateScale;
+        if (step < 1) {
+            step = 1; // don't allow 0 step size
+        }
 
         if ((s16)(*pValue - target) > 0) {
             step = -step;
         }
 
-        *pValue += (s16)(step * updateScale);
+        *pValue += step;
 
         if (((s16)(*pValue - target) * step) >= 0) {
             *pValue = target;
@@ -169,7 +186,20 @@ extern int chase_angle(s16* const pValue, const s16 target, s16 step) {
  * @return TRUE if the value reaches the target, FALSE otherwise.
  */
 extern int chase_s(s16* const pValue, const s16 target, s16 step) {
-    if (step) {
+    if (step != 0) {
+        int temp_step = (int)((double)step * gamePT->graph->dt_num_60fps_frames);
+        if (temp_step == 0) {
+            if (step < 0) {
+                temp_step = -1;
+            } else {
+                temp_step = 1;
+            }
+        }
+
+        step = CLAMP(temp_step, SHT_MIN_S, SHT_MAX_S); // clamp between -32768 and 32767. Note that 0 is excluded.
+    }
+
+    if (step != 0) {
         if (*pValue > target) {
             step = -step;
         }
@@ -201,14 +231,29 @@ extern int chase_s(s16* const pValue, const s16 target, s16 step) {
  * @return TRUE if the value reaches the target, FALSE otherwise.
  */
 extern int chase_f(f32* const pValue, const f32 target, f32 step) {
-    if (step) {
+    float m_step = step;
+
+    if (m_step != 0) {
+        m_step *= gamePT->graph->dt_num_60fps_frames;
+
+        // Provide a bit of sanity here, this might be too small
+        if (fabsf(m_step) < 0.0001f) {
+            if (step > 0.0f) {
+                m_step = 0.0001f;
+            } else {
+                m_step = -0.0001f;
+            }
+        }
+    }
+
+    if (m_step != 0) {
         if (*pValue > target) {
-            step = -step;
+            m_step = -m_step;
         }
 
-        *pValue += step;
+        *pValue += m_step;
 
-        if ((step * (*pValue - target)) >= 0.0f) {
+        if ((m_step * (*pValue - target)) >= 0.0f) {
             *pValue = target;
             return TRUE;
         }
@@ -241,7 +286,18 @@ extern f32 chase_xyz_t(xyz_t* const pValue, const xyz_t* const target, const f32
 
     dist = Math3DVecLength(&diff);
     if (dist > fraction) {
-        stepSize = fraction / dist;
+        const float step = fraction / dist;
+        stepSize = step * gamePT->graph->dt_num_60fps_frames;
+
+        // Provide a bit of sanity here, this might be too small
+        if (fabsf(stepSize) < 0.0001f) {
+            if (step > 0.0f) {
+                stepSize = 0.0001f;
+            } else {
+                stepSize = -0.0001f;
+            }
+        }
+        
         pValue->x += stepSize * diff.x;
         pValue->y += stepSize * diff.y;
         pValue->z += stepSize * diff.z;
@@ -267,9 +323,22 @@ extern f32 chase_xyz_t(xyz_t* const pValue, const xyz_t* const target, const f32
  * @return TRUE if the angle reaches the limit, FALSE otherwise.
  */
 extern int chase_angle2(s16* const pValue, const s16 limit, const s16 step) {
-    s16 prev = *pValue;
+    const s16 prev = *pValue;
+    s16 m_step = step;
 
-    *pValue += step;
+    if (step != 0) {
+        m_step = (double)m_step * gamePT->graph->dt_num_60fps_frames;
+
+        if (m_step == 0) {
+            if (step < 0) {
+                m_step = -1;
+            } else {
+                m_step = 1;
+            }
+        }
+    }
+
+    *pValue += m_step;
     if (((s16)(*pValue - limit) * (s16)(prev - limit)) <= 0) {
         s32 absDiff = ABS((s16)(*pValue - limit));
 
@@ -293,9 +362,14 @@ extern void inter_float(f32* const pValue, const f32 arg1, const int step) {
     if (step <= 0) {
         *pValue = arg1;
     } else {
-        f32 diff = arg1 - *pValue;
+        const float diff = arg1 - *pValue;
+        int m_step = (double)step / gamePT->graph->dt_num_60fps_frames;
 
-        *pValue += diff / step;
+        if (m_step < 1) {
+            m_step = 1;
+        }
+
+        *pValue += diff / m_step;
     }
 }
 
@@ -450,16 +524,19 @@ extern s16 search_position_angleX(const xyz_t* const pos, const xyz_t* const tar
 extern f32 add_calc(f32* pValue, f32 target, f32 fraction, f32 maxStep, f32 minStep) {
     f32 negMinStep;
     f32 stepSize;
+    const f32 dt_fraction = mlib_calc_dt_fraction(fraction);
+    const f32 dt_maxStep = maxStep * gamePT->graph->dt_num_60fps_frames;
+    const f32 dt_minStep = minStep * gamePT->graph->dt_num_60fps_frames;
 
     if (*pValue != target) {
-        stepSize = fraction * (target - *pValue);
-        negMinStep = -minStep;
+        stepSize = dt_fraction * (target - *pValue);
+        negMinStep = -dt_minStep;
 
-        if ((stepSize <= negMinStep) || (minStep <= stepSize)) {
-            if (stepSize > maxStep) {
-                stepSize = maxStep;
-            } else if (stepSize < -maxStep) {
-                stepSize = -maxStep;
+        if ((stepSize <= negMinStep) || (dt_minStep <= stepSize)) {
+            if (stepSize > dt_maxStep) {
+                stepSize = dt_maxStep;
+            } else if (stepSize < -dt_maxStep) {
+                stepSize = -dt_maxStep;
             }
 
             *pValue += stepSize;
@@ -475,7 +552,7 @@ extern f32 add_calc(f32* pValue, f32 target, f32 fraction, f32 maxStep, f32 minS
             }
         } else {
             if (stepSize > 0.0f) {
-                *pValue += minStep;
+                *pValue += dt_minStep;
                 if (*pValue > target) {
                     *pValue = target;
                 }
@@ -504,14 +581,16 @@ extern f32 add_calc(f32* pValue, f32 target, f32 fraction, f32 maxStep, f32 minS
  */
 extern void add_calc2(f32* pValue, f32 target, f32 fraction, f32 maxStep) {
     f32 stepSize;
+    const f32 dt_fraction = mlib_calc_dt_fraction(fraction);
+    const f32 dt_maxStep = maxStep * gamePT->graph->dt_num_60fps_frames;
 
     if (*pValue != target) {
-        stepSize = fraction * (target - *pValue);
+        stepSize = dt_fraction * (target - *pValue);
 
-        if (stepSize > maxStep) {
-            stepSize = maxStep;
-        } else if (stepSize < -maxStep) {
-            stepSize = -maxStep;
+        if (stepSize > dt_maxStep) {
+            stepSize = dt_maxStep;
+        } else if (stepSize < -dt_maxStep) {
+            stepSize = -dt_maxStep;
         }
 
         *pValue += stepSize;
@@ -526,12 +605,13 @@ extern void add_calc2(f32* pValue, f32 target, f32 fraction, f32 maxStep) {
  * @param maxStep Maximum allowed step size.
  */
 extern void add_calc0(f32* pValue, f32 fraction, f32 maxStep) {
-    f32 stepSize = *pValue * fraction;
+    f32 stepSize = *pValue * mlib_calc_dt_fraction(fraction);
+    const f32 dt_maxStep = maxStep * gamePT->graph->dt_num_60fps_frames;
 
-    if (stepSize > maxStep) {
-        stepSize = maxStep;
-    } else if (stepSize < -maxStep) {
-        stepSize = -maxStep;
+    if (stepSize > dt_maxStep) {
+        stepSize = dt_maxStep;
+    } else if (stepSize < -dt_maxStep) {
+        stepSize = -dt_maxStep;
     }
 
     *pValue -= stepSize;
@@ -552,41 +632,42 @@ extern void add_calc0(f32* pValue, f32 fraction, f32 maxStep) {
  * @return The difference between the updated input variable angle and the target angle.
  */
 extern s16 add_calc_short_angle2(s16* pValue, s16 target, f32 fraction, s16 maxStep, s16 minStep) {
-    s16 stepSize = 0;
+    s16 step = 0;
     s16 diff = target - *pValue;
+    f32 stepSize = 0.0f;
+    const f32 dt_fraction = mlib_calc_dt_fraction(fraction);
+    const f32 dt_maxStep = MAX((f32)maxStep * gamePT->graph->dt_num_60fps_frames, 1.0f);
+    const f32 dt_minStep = MAX((f32)minStep * gamePT->graph->dt_num_60fps_frames, 1.0f);
 
     if (*pValue != target) {
-        stepSize = (s16)(diff * fraction);
+        stepSize = diff * dt_fraction;
 
-        if ((stepSize > minStep) || (stepSize < -minStep)) {
-            if (stepSize > maxStep) {
-                stepSize = maxStep;
-            } else if (stepSize < -maxStep) {
-                stepSize = -maxStep;
+        if ((stepSize > dt_minStep) || (stepSize < -dt_minStep)) {
+            if (stepSize > dt_maxStep) {
+                stepSize = dt_maxStep;
+            } else if (stepSize < -dt_maxStep) {
+                stepSize = -dt_maxStep;
             }
+        } else if (diff >= 0) {
+            stepSize = dt_minStep;
+        } else {
+            stepSize = -dt_minStep;
+        }
 
-            *pValue += stepSize;
+        step = (s16)stepSize;
+        if ((step == 0) && (diff != 0)) {
+            step = diff > 0 ? 1 : -1;
+        }
 
-            if (stepSize > 0) {
-                if ((s16)(target - *pValue) < 0) {
-                    *pValue = target;
-                }
-            } else {
-                if ((s16)(target - *pValue) > 0) {
-                    *pValue = target;
-                }
+        *pValue += step;
+
+        if (step > 0) {
+            if ((s16)(target - *pValue) < 0) {
+                *pValue = target;
             }
         } else {
-            if (diff >= 0) {
-                *pValue += minStep;
-                if ((s16)(target - *pValue) < 0) {
-                    *pValue = target;
-                }
-            } else {
-                *pValue -= minStep;
-                if ((s16)(target - *pValue) > 0) {
-                    *pValue = target;
-                }
+            if ((s16)(target - *pValue) > 0) {
+                *pValue = target;
             }
         }
     }
@@ -613,6 +694,9 @@ extern s16 add_calc_short_angle3(s16* pValue, s16 target, f32 fraction, s16 maxS
     s32 uTarget;
     s32 newValue;
     s32 uValue;
+    const f32 dt_fraction = mlib_calc_dt_fraction(fraction);
+    const f32 dt_maxStep = MAX((f32)maxStep * gamePT->graph->dt_num_60fps_frames, 1.0f);
+    const f32 dt_minStep = MAX((f32)minStep * gamePT->graph->dt_num_60fps_frames, 1.0f);
 
     if (target != *pValue) {
         uValue = (u16)*pValue;
@@ -622,12 +706,12 @@ extern s16 add_calc_short_angle3(s16* pValue, s16 target, f32 fraction, s16 maxS
             uTarget += 65536; /* Add 360 short degrees */
         }
 
-        stepSize = (uTarget - uValue) * fraction;
+        stepSize = (uTarget - uValue) * dt_fraction;
 
-        if (stepSize > maxStep) {
-            stepSize = maxStep;
-        } else if (stepSize < minStep) {
-            stepSize = minStep;
+        if (stepSize > dt_maxStep) {
+            stepSize = dt_maxStep;
+        } else if (stepSize < dt_minStep) {
+            stepSize = dt_minStep;
         }
 
         newValue = uValue + (s32)stepSize;

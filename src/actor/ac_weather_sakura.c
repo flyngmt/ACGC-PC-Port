@@ -45,7 +45,7 @@ static void aWeatherSakura_make(ACTOR* actor, GAME* game) {
     xyz_t mod_pos;
 
     if (aWeatherSakura_DecideMakeSakuraCount(actor, game) != 0) {
-        base.y = -0.8f + (RANDOM_F(-0.0999999642372f));
+        base.y = -0.8f + (RANDOM_F(-0.1f));
         if (count != -1) {
             x = -100.0f + (RANDOM_F(200.0f));
             z = -200.0f + (RANDOM_F(380.0f));
@@ -134,24 +134,26 @@ static void aWeatherSakura_CheckSakuraScroll(aWeather_Priv* priv) {
     }
 }
 
-static void aWeatherSakura_SetWind2Sakura(aWeather_Priv* priv) {
+static void aWeatherSakura_SetWind2Sakura(aWeather_Priv* priv, GAME* game) {
+    const float dt = (float)game->graph->dt_num_60fps_frames;
 
-    priv->pos.x += 0.45f;
+    priv->pos.x += 0.45f * dt;
 }
 
 static void aWeatherSakura_move(aWeather_Priv* priv, GAME* game) {
     GAME_PLAY* play = (GAME_PLAY*)game;
+    const float dt = (float)game->graph->dt_num_60fps_frames;
 
-    priv->pos.x += priv->speed.x;
-    priv->pos.y += priv->speed.y;
-    priv->pos.z += priv->speed.z;
+    priv->pos.x += priv->speed.x * dt;
+    priv->pos.y += priv->speed.y * dt;
+    priv->pos.z += priv->speed.z * dt;
 
-    priv->work[3] += priv->work[4];
-    aWeatherSakura_SetWind2Sakura(priv);
+    priv->work[3] += (float)priv->work[4] * dt;
+    aWeatherSakura_SetWind2Sakura(priv, game);
     aWeatherSakura_CheckSakuraScroll(priv);
-    priv->work[0] += 0x200;
-    priv->work[1] += 0x8DC;
-    priv->work[2] += 0x474;
+    priv->work[0] += 0x200 * dt;
+    priv->work[1] += 0x8DC * dt;
+    priv->work[2] += 0x474 * dt;
 }
 
 static void aWeatherSakura_set(GAME* game) {

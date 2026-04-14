@@ -111,6 +111,8 @@ extern void graph_ct(GRAPH* this) {
     bzero(this, sizeof(GRAPH));
     this->frame_counter = 0;
     this->cfb_bank = 0;
+    this->dt = FRAMES_TO_SECONDS(1.0f);
+    this->dt_num_60fps_frames = 1.0f;
     SETREG(SREG, 33, GETREG(SREG, 33) & ~2);
     SETREG(SREG, 33, GETREG(SREG, 33) & ~1);
     zurumode_init();
@@ -363,6 +365,10 @@ extern void graph_proc(void* arg) {
     while (dlftbl != NULL) {
         size_t size = dlftbl->alloc_size;
         GAME* game = (GAME*)malloc(size);
+        OSTime time = OSGetTime();
+        const OSTick u_multiplier = OSSecondsToTicks(1);
+        const double d_multiplier = 1.0 / (double)u_multiplier;
+
         game_class_p = game;
         bzero(game, size);
         GRAPH_SET_DOING_POINT(__graph, GAME_CT);
@@ -375,7 +381,16 @@ extern void graph_proc(void* arg) {
                && g_pc_running
 #endif
         ) {
-            PC_DIAG(10, "graph_proc: loop top, game=%p\n", (void*)game);
+            const OSTime current_time = OSGetTime();
+            double delta_time = ((u32)(current_time - time)) * d_multiplier;
+            GRAPH* graph = __graph;
+
+            graph->dt = delta_time;
+            graph->dt_num_60fps_frames = SECONDS_TO_FRAMES(delta_time);
+            time = current_time;
+
+            // PC_DIAG(10, "graph_proc: loop top, game=%p, dt: %f\n", (void*)game, delta_time);
+            // OSReport("graph_proc: loop top, game=%p, dt: %f, 60fps frames: %f\n", (void*)game, delta_time, graph->dt_num_60fps_frames);
             if (!dvderr_draw()) {
                 graph_main(__graph, game);
             }

@@ -60,6 +60,16 @@ extern "C" {
 #define DIFF_SHORT_ANGLE(x, y) ((s16)((x) - (y)))
 #define DIFF_USHORT_ANGLE(x, y) ((u16)((x) - (y)))
 
+// fixed timestep -> delta time conversions
+#define DTCONV(v, dt) powf(v, GRAPH_BASE_FRAME_RATE * (dt)) // raw dt in seconds
+#define DTCONV_GRAPH(v, graph) powf(v, (graph)->dt_num_60fps_frames) // used with GRAPH*
+#define DTCONV_GAME(v, game) DTCONV_GRAPH(v, (game)->graph) // used with GAME*
+
+#define DTCONV_CALC_LAMBDA(v) (GRAPH_BASE_FRAME_RATE * logf(v)) // calculate dt exponential lambda, cache result
+#define DTCONV_EXP(lambda, dt) expf((lambda) * (dt)) // optimized route for precalculated dt lambdas
+#define DTCONV_EXP_GRAPH(lambda, graph) DTCONV_EXP(lambda, (graph)->dt) // optimized route for GRAPH*
+#define DTCONV_EXP_GAME(lambda, game) DTCONV_EXP_GRAPH(lambda, (game)->graph) // optimized route for GAME*
+
 typedef struct rgba_t { // can be put in other place
     u8 r, g, b, a;
 } rgba_t;

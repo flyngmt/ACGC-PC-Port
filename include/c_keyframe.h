@@ -69,6 +69,7 @@ typedef struct frame_control_s {
     f32 max_frames;
     f32 speed;
     f32 current_frame;
+    f32 previous_frame;
     int mode;
 } cKF_FrameControl_c;
 

@@ -140,7 +140,7 @@ static void aWeatherRain_set(GAME* game) {
 
 static void aWeatherRain_move(aWeather_Priv* priv, GAME* game) {
     WEATHER_ACTOR* weather;
-    s16 timer = (1000 - priv->timer);
+    float timer = (1000.0f - priv->timer);
 
     if (priv->work[0] == 0) {
         aWeatherRain_MoveRain(priv);
@@ -156,7 +156,7 @@ static void aWeatherRain_move(aWeather_Priv* priv, GAME* game) {
 
 void aWeatherRain_draw(aWeather_Priv* priv, GAME* game) {
     static f32 rain_scale[] = {
-        0.000299999985145f,
+        0.0003f,
         0.035f,
         0.01f,
     };

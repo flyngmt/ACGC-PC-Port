@@ -52,7 +52,7 @@ static void aWeatherLeaf_make(ACTOR* actor, GAME* game) {
     xyz_t mod_pos;
 
     if (aWeatherLeaf_DecideMakeLeafCount(actor, game) != 0) {
-        base.y = -0.8f + (RANDOM_F(-0.0999999642372f));
+        base.y = -0.8f + (RANDOM_F(-0.1f));
         if (count != -1) {
             x = -100.0f + (RANDOM_F(200.0f));
             z = -200.0f + (RANDOM_F(380.0f));
@@ -141,23 +141,25 @@ static void aWeatherLeaf_CheckLeafScroll(aWeather_Priv* priv) {
     }
 }
 
-static void aWeatherLeaf_SetWind2Leaf(aWeather_Priv* priv) {
+static void aWeatherLeaf_SetWind2Leaf(aWeather_Priv* priv, GAME* game) {
+    const float dt = (float)game->graph->dt_num_60fps_frames;
 
-    priv->pos.x += 0.45f;
+    priv->pos.x += 0.45f * dt;
 }
 
 static void aWeatherLeaf_move(aWeather_Priv* priv, GAME* game) {
     GAME_PLAY* play = (GAME_PLAY*)game;
+    const float dt = (float)game->graph->dt_num_60fps_frames;
 
-    priv->pos.x += priv->speed.x;
-    priv->pos.y += priv->speed.y;
-    priv->pos.z += priv->speed.z;
+    priv->pos.x += priv->speed.x * dt;
+    priv->pos.y += priv->speed.y * dt;
+    priv->pos.z += priv->speed.z * dt;
 
-    priv->work[3] += priv->work[4];
-    aWeatherLeaf_SetWind2Leaf(priv);
+    priv->work[3] += (float)priv->work[4] * dt;
+    aWeatherLeaf_SetWind2Leaf(priv, game);
     aWeatherLeaf_CheckLeafScroll(priv);
-    priv->work[1] += 0x8DC;
-    priv->work[2] += 0x474;
+    priv->work[1] += 0x8DC * dt;
+    priv->work[2] += 0x474 * dt;
 }
 
 static void aWeatherLeaf_set(GAME* game) {
@@ -193,7 +195,7 @@ void aWeatherLeaf_draw(aWeather_Priv* priv, GAME* game) {
 
         OPEN_DISP(game->graph);
 
-        suMtxMakeSRT(work, 0.00499999988824f, 0.00499999988824f, 0.00499999988824f, priv->work[2], priv->work[1],
+        suMtxMakeSRT(work, 0.005f, 0.005f, 0.005f, priv->work[2], priv->work[1],
                      priv->work[2], pos.x, pos.y, pos.z);
 
         gSPMatrix(NEXT_POLY_XLU_DISP, work, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);

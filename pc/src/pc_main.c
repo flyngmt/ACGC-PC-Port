@@ -266,10 +266,16 @@ int main(int argc, char* argv[]) {
             printf("Usage: AnimalCrossing [options]\n");
             printf("  --verbose, -v       Enable diagnostic output\n");
             printf("  --no-framelimit     Disable frame limiter\n");
+            printf("  --framelimit [N]    Set the target frame rate\n");
             printf("  --model-viewer [N]  Launch model viewer (optional start index)\n");
             printf("  --time HOUR         Override in-game hour (0-23)\n");
             printf("  --help, -h          Show this help message\n");
             return 0;
+        } else if (strcmp(argv[i], "--framelimit") == 0) {
+            if (i + 1 < argc && argv[i + 1][0] != '-') {
+                g_frame_limiter = atoi(argv[i + 1]);
+                i++;
+            }
         } else if (strcmp(argv[i], "--no-framelimit") == 0) {
             g_pc_no_framelimit = 1;
         } else if (strcmp(argv[i], "--verbose") == 0 || strcmp(argv[i], "-v") == 0) {

@@ -62,7 +62,8 @@ static void Player_actor_SearchAnimation_Demo_walk(ACTOR* actorx, GAME* game, f3
     }
 }
 
-static int Player_actor_Movement_Demo_walk(ACTOR* actorx, f32* over_speed_normalize_NoneZero_p) {
+static int Player_actor_Movement_Demo_walk(ACTOR* actorx, GAME* game, f32* over_speed_normalize_NoneZero_p) {
+    const double dt_frames = game->graph->dt_num_60fps_frames;
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actorx;
     f32 over_speed_normalize_NoneZero =
         Player_actor_Culc_over_speed_normalize_NoneZero(actorx, &actorx->world.position);
@@ -116,13 +117,13 @@ static int Player_actor_Movement_Demo_walk(ACTOR* actorx, f32* over_speed_normal
         now_speed = actorx->speed;
         if (now_speed != speed) {
             if (now_speed < speed) {
-                now_speed += 0.60899997f;
+                now_speed += dt_frames * 0.609f;
 
                 if (now_speed > speed) {
                     now_speed = speed;
                 }
             } else if (now_speed > speed) {
-                now_speed -= 0.32625001f;
+                now_speed -= dt_frames * 0.32625f;
                 if (now_speed < speed) {
                     now_speed = speed;
                 }
@@ -169,12 +170,12 @@ static int Player_actor_Movement_Demo_walk(ACTOR* actorx, f32* over_speed_normal
         f32 now_dx = demo_posX - actorx->world.position.x;
         f32 now_dz = demo_posZ - actorx->world.position.z;
 
-        now_dx = ABS(now_dx);
+        now_dx = fabsf(now_dx);
         if (now_dx < 0.5f) {
             actorx->world.position.x = demo_posX;
         }
 
-        now_dz = ABS(now_dz);
+        now_dz = fabsf(now_dz);
         if (now_dz < 0.5f) {
             actorx->world.position.z = demo_posZ;
         }
@@ -216,7 +217,7 @@ static void Player_actor_main_Demo_walk(ACTOR* actorx, GAME* game) {
     f32 last_anim0_cur_frame;
     int end_flag;
 
-    end_flag = Player_actor_Movement_Demo_walk(actorx, &over_speed_normalize_NoneZero);
+    end_flag = Player_actor_Movement_Demo_walk(actorx, game, &over_speed_normalize_NoneZero);
     Player_actor_Reinput_force_position_angle(actorx, game);
     Player_actor_CulcAnimation_Demo_walk(actorx, over_speed_normalize_NoneZero, &last_anim0_cur_frame);
     Player_actor_SearchAnimation_Demo_walk(actorx, game, last_anim0_cur_frame);

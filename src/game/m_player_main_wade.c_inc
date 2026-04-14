@@ -83,7 +83,7 @@ static void Player_actor_BGcheck_Wade(ACTOR* actorx) {
     Player_actor_BGcheck_common_type2(actorx);
 }
 
-static int Player_actor_able_request_proc_index_fromWade_common(ACTOR* actorx) {
+static int Player_actor_able_request_proc_index_fromWade_common(ACTOR* actorx, GAME* game) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actorx;
     mPlayer_main_wade_c* main_wade_p = &player->main_data.wade;
     f32* timer_p = &main_wade_p->timer;
@@ -92,7 +92,7 @@ static int Player_actor_able_request_proc_index_fromWade_common(ACTOR* actorx) {
         return TRUE;
     }
 
-    *timer_p += 1.0f;
+    *timer_p += gamePT->graph->dt_num_60fps_frames;
     return FALSE;
 }
 
@@ -100,7 +100,7 @@ static void Player_actor_request_proc_index_fromWade(ACTOR* actorx, GAME* game) 
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actorx;
     mPlayer_main_wade_c* main_wade_p = &player->main_data.wade;
 
-    if (Player_actor_able_request_proc_index_fromWade_common(actorx)) {
+    if (Player_actor_able_request_proc_index_fromWade_common(actorx, game)) {
         Player_actor_SettleRequestMainIndexPriority(actorx);
         Player_actor_request_main_walk_all(game, &main_wade_p->end_pos, -5.0f,
                                            mPlayer_WALK_FLAG_SET_POS | mPlayer_WALK_FLAG_RESET_MORPH, 1);

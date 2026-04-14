@@ -69,6 +69,7 @@ extern int           g_pc_running;
 extern int           g_pc_verbose;
 extern int           g_pc_no_framelimit;
 extern int           g_pc_time_override;
+extern u32           g_frame_limiter;
 
 extern int g_pc_window_w;
 extern int g_pc_window_h;

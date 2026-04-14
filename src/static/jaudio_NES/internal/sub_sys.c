@@ -9,6 +9,14 @@
 #include "jaudio_NES/driver.h"
 #include "dolphin/os.h"
 
+#ifdef TARGET_PC
+#define AUDIO_PORT_CMD_CAPACITY 2048
+#define AUDIO_PORT_CMD_MASK (AUDIO_PORT_CMD_CAPACITY - 1)
+#else
+#define AUDIO_PORT_CMD_CAPACITY 256
+#define AUDIO_PORT_CMD_MASK (AUDIO_PORT_CMD_CAPACITY - 1)
+#endif
+
 static void __Nas_GroupFadeOut(s32 group, s32 fadeout_timer);
 static void __Nas_GroupFadeIn(s32 group, s32 fadein_timer);
 static s32 Nap_SilenceCheck_Inner(s32 flags);
@@ -211,15 +219,18 @@ extern void Nap_AudioPortInit(void) {
 }
 
 static void Nap_PortSet(u32 data, s32* param_p) {
-    AudioPort* port_p = &AG.audio_port_cmds[AG.thread_cmd_write_pos & 0xFF];
+    u16 write_pos = AG.thread_cmd_write_pos;
+    u16 next_write_pos = write_pos + 1;
+
+    if ((u16)(next_write_pos - AG.thread_cmd_read_pos) > AUDIO_PORT_CMD_CAPACITY) {
+        return;
+    }
+
+    AudioPort* port_p = &AG.audio_port_cmds[write_pos & AUDIO_PORT_CMD_MASK];
 
     port_p->raw_cmd = data;
     port_p->param.asS32 = *param_p;
-
-    AG.thread_cmd_write_pos++;
-    if (AG.thread_cmd_write_pos == AG.thread_cmd_read_pos) {
-        AG.thread_cmd_write_pos--;
-    }
+    AG.thread_cmd_write_pos = next_write_pos;
 }
 
 extern void Nap_SetF32(u32 cmd, f32 param) {
@@ -263,7 +274,7 @@ extern s32 Nap_SendStart(void) {
         return -1;
     }
 
-    msg = ((AG.thread_cmd_read_pos & 0xFF) << 8) | (AG.thread_cmd_write_pos & 0xFF);
+    msg = ((AG.thread_cmd_read_pos & 0xFFFF) << 16) | (AG.thread_cmd_write_pos & 0xFFFF);
     res = Z_osSendMesg(AG.thread_cmd_proc_mq_p, (OSMesg)msg, OS_MESG_NOBLOCK);
 
     if (res != -1) {
@@ -316,30 +327,31 @@ extern void Nap_Process1Command(AudioPort* port) {
 }
 
 extern void Nap_AudioPortProcess(u32 msg) {
-    static u8 begin = 0;
+    static u16 begin = 0;
+    u16 end = msg & 0xFFFF;
+    int hit_stop = FALSE;
 
     if (AG.thread_cmd_queue_finished == FALSE) {
-        begin = (msg >> 8) & 0xFF;
+        begin = (msg >> 16) & 0xFFFF;
     }
 
-    while (TRUE) {
-        u32 now = begin;
+    while (begin != end) {
         AudioPort* port;
 
-        if (now == (msg & 0xFF)) {
-            AG.thread_cmd_queue_finished = FALSE;
-            return;
-        }
-
-        port = &AG.audio_port_cmds[now];
+        port = &AG.audio_port_cmds[begin & AUDIO_PORT_CMD_MASK];
         begin++;
         if (port->command.opcode == AUDIOCMD_SYS_STOP_PROCESSING) {
             AG.thread_cmd_queue_finished = TRUE;
+            hit_stop = TRUE;
             break;
         }
 
         Nap_Process1Command(port);
         port->command.opcode = AUDIOCMD_NOOP;
+    }
+
+    if (!hit_stop && begin == end) {
+        AG.thread_cmd_queue_finished = FALSE;
     }
 }
 

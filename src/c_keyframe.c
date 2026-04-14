@@ -16,6 +16,7 @@ static void cKF_FrameControl_zeroClera(cKF_FrameControl_c* frame_control) {
     bzero(frame_control, sizeof(cKF_FrameControl_c));
     frame_control->max_frames = 1.0f;
     frame_control->current_frame = 1.0f;
+    frame_control->previous_frame = 1.0f;
     frame_control->speed = 1.0f;
     frame_control->end_frame = 1.0f;
     frame_control->start_frame = 1.0f;
@@ -56,6 +57,7 @@ static void cKF_FrameControl_setFrame(cKF_FrameControl_c* frame_control, f32 sta
     frame_control->max_frames = max_frames;
     frame_control->speed = speed;
     frame_control->current_frame = current_frame;
+    frame_control->previous_frame = current_frame;
     frame_control->mode = mode;
 }
 
@@ -88,21 +90,51 @@ static int cKF_FrameControl_passCheck(cKF_FrameControl_c* fc, f32 current, f32* 
     return FALSE;
 }
 
-extern int cKF_FrameControl_passCheck_now(cKF_FrameControl_c* fc, f32 current) {
-    f32 cur = fc->current_frame;
-    f32 speed;
-    int ret = FALSE;
+extern int cKF_FrameControl_passCheck_now(cKF_FrameControl_c* fc, const float current) {
+    const float cur = fc->current_frame;
 
-    if (cur != current) {
-        speed = (fc->start_frame < fc->end_frame) ? fc->speed : -fc->speed;
-        if ((speed >= 0.0f && cur >= current && cur - speed < current) ||
-            (speed < 0.0f && cur <= current && cur - speed > current)) {
-            ret = TRUE;
-        }
+    if (cur == current) {
+        return TRUE;
     } else {
-        ret = TRUE;
+        const float prev = fc->previous_frame;
+        const float start = fc->start_frame;
+        const float end = fc->end_frame;
+        float speed = fc->speed;
+
+        if (start >= end) {
+            speed = -speed;
+        }
+
+        if (speed >= 0.0f) {
+            if (prev <= cur) {
+                // no wrap this update
+                if (prev < current && cur >= current) {
+                    return TRUE;
+                }
+            } else {
+                // wrapped from end -> start
+                if ((prev < end && current > prev && current <= end) ||
+                    (cur >= start && current >= start && current <= cur)) {
+                    return TRUE;
+                }
+            }
+        } else { // playing backwards
+            if (prev >= cur) {
+                // no wrap
+                if (prev > current && cur <= current) {
+                    return TRUE;
+                }
+            } else {
+                // wrapped from start -> end
+                if ((prev > start && current >= start && current < prev) ||
+                    (cur <= end && current >= cur && current <= end)) {
+                    return TRUE;
+                }
+            }
+        }
     }
-    return ret;
+
+    return FALSE;
 }
 
 extern int cKF_FrameControl_stop_proc(cKF_FrameControl_c* fc) {
@@ -154,9 +186,12 @@ static int cKF_FrameControl_repeat_proc(cKF_FrameControl_c* fc) {
  * @param fc Pointer to the frame control structure.
  * @return Animation state after update.
  */
-static int cKF_FrameControl_play(cKF_FrameControl_c* fc) {
+ static int cKF_FrameControl_play(cKF_FrameControl_c* fc) {
     int rec;
-    f32 frame;
+    float speed;
+
+    // Store the previous frame BEFORE any modifications (stop_proc may clamp current_frame)
+    fc->previous_frame = fc->current_frame;
 
     if (fc->mode == cKF_FRAMECONTROL_STOP) {
         rec = cKF_FrameControl_stop_proc(fc);
@@ -165,8 +200,16 @@ static int cKF_FrameControl_play(cKF_FrameControl_c* fc) {
     }
 
     if (rec == cKF_STATE_NONE) {
-        frame = (fc->start_frame < fc->end_frame) ? fc->speed : -fc->speed;
-        fc->current_frame += frame;
+        speed = fc->speed;
+        if (fc->start_frame >= fc->end_frame) {
+            speed = -speed;
+        }
+
+        speed *= gamePT->graph->dt_num_60fps_frames;
+        // if (frame > 0.0f) {
+        //     OSReport("cKF_FrameControl_play: dt: %f, frame: %f, fc->current_frame: %f, fc->max_frames: %f\n", GAME_DELTATIME, frame, fc->current_frame, fc->max_frames);
+        // }
+        fc->current_frame += speed; // TODO: we should probably pass in graph somehow
     }
     if (fc->current_frame < 1.0f) {
         fc->current_frame = (fc->current_frame - 1.0f) + fc->max_frames;

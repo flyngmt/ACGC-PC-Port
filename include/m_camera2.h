@@ -54,7 +54,7 @@ typedef struct camera_main_demo_s {
 
 typedef struct camera_main_door_s {
     u32 flags;
-    int morph_counter;
+    float morph_counter;
     xyz_t center_position;
 } CameraDoor;
 
@@ -70,8 +70,8 @@ typedef struct camera_main_inter_s {
 
     u32 flags;
 
-    int now_delta;
-    int max_delta;
+    float now_delta;
+    float max_delta;
 
     int pad[2];
 } CameraInter;
@@ -87,7 +87,7 @@ typedef struct camera_main_lock_s {
 
     f32 fov_y;
 
-    int morph_counter;
+    float morph_counter;
 
     f32 near;
     f32 far;
@@ -99,7 +99,7 @@ typedef struct camera_main_normal_s {
     int last_indoor_distance_addition_idx;
     int last_indoor_direction_addition_idx;
 
-    int morph_counter;
+    float morph_counter;
 } CameraNormal;
 
 typedef struct camera_main_simple_s {
@@ -107,7 +107,7 @@ typedef struct camera_main_simple_s {
     s_xyz angle;
     f32 distance;
 
-    int morph_counter;
+    float morph_counter;
     int mode;
 
     f32 cull_timer;
@@ -121,14 +121,13 @@ typedef struct camera_main_staff_roll_s {
     ACTOR* speaker_actor;
     ACTOR* listener_actor;
 
-    s16 rotation_y_delta;
-    s16 r_delta;
-    s16 rotation_x_delta;
+    float rotation_y_delta;
+    float rotation_x_delta;
+    float r_delta;
 
+    float morph_counter;
+    float dist_counter;
     u16 flags;
-    u16 morph_counter;
-    u16 pad;
-    u16 dist_counter;
     s_xyz last_direction;
 } CameraStaffRoll;
 

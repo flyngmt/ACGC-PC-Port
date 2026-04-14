@@ -580,6 +580,7 @@ static void Game_play_move(GAME* game) {
     }
 
     if (play->submenu.process_status == mSM_PROCESS_WAIT) {
+        evw_anime_add_scroll_phase(&play->game);
         game->doing_point = 0;
         game->doing_point_specific = 0x92;
         game->doing_point = 1;

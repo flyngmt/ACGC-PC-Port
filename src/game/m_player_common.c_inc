@@ -900,7 +900,7 @@ static void Player_actor_set_eye_pattern(ACTOR* actorx, int idx) {
 static void Player_actor_set_eye_pattern_normal(ACTOR* actorx) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actorx;
     mPlayer_eye_pattern_c* eye_pattern_p = &player->eye_pattern_normal;
-    s16* timer_p = &eye_pattern_p->timer;
+    float* timer_p = &eye_pattern_p->timer;
     s16* pattern_p = &eye_pattern_p->pattern;
     int* blink_count_p = &player->blink_count;
     int idx;
@@ -910,7 +910,12 @@ static void Player_actor_set_eye_pattern_normal(ACTOR* actorx) {
     if (idx == 0) {
         idx = 0;
     } else {
-        idx = --(*timer_p);
+        *timer_p -= gamePT->graph->dt_num_60fps_frames;
+        if (*timer_p < 0) {
+            *timer_p = 0;
+        }
+
+        idx = (int)*timer_p;
     }
 
     if (idx == 0) {
@@ -923,7 +928,7 @@ static void Player_actor_set_eye_pattern_normal(ACTOR* actorx) {
         }
     }
 
-    *pattern_p = *timer_p;
+    *pattern_p = (int)*timer_p;
     if (*pattern_p >= 16) {
         *pattern_p = 0;
     }

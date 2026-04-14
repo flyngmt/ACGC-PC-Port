@@ -110,12 +110,12 @@ static void Player_actor_SetEffect_Walk(ACTOR* actor, GAME* game, f32 left_targe
     cKF_FrameControl_c* fc = &player->keyframe0.frame_control;
 
     if (Player_actor_Check_AnimationFrame(fc, left_target_frame) != FALSE) {
-        Common_Get(clip).effect_clip->effect_make_proc(eEC_EFFECT_WALK_ASIMOTO, player->left_foot_pos, 2,
+        eEC_CLIP->effect_make_proc(eEC_EFFECT_WALK_ASIMOTO, player->left_foot_pos, 2,
                                                        player->left_foot_angle.y, game, 0xFFFF,
                                                        actor->bg_collision_check.result.unit_attribute, 0);
 
     } else if (Player_actor_Check_AnimationFrame(fc, right_target_frame) != FALSE) {
-        Common_Get(clip).effect_clip->effect_make_proc(eEC_EFFECT_WALK_ASIMOTO, player->right_foot_pos, 2,
+        eEC_CLIP->effect_make_proc(eEC_EFFECT_WALK_ASIMOTO, player->right_foot_pos, 2,
                                                        player->right_foot_angle.y, game, 0xFFFF,
                                                        actor->bg_collision_check.result.unit_attribute, 0);
     }
@@ -131,6 +131,7 @@ static void Player_actor_SearchAnimation_Walk(ACTOR* actor, GAME* game, f32 fram
 static void Player_actor_Movement_Walk(ACTOR* actor, GAME* game, f32* frame) {
     f32 movePR = Player_actor_GetController_move_percentR();
     s16 angle = Player_actor_Get_ControllerAngle(game);
+    const float dt_frames = gamePT->graph->dt_num_60fps_frames;
     f32 mod;
     s16 target = actor->world.angle.y;
     f32 over_norm;
@@ -143,13 +144,13 @@ static void Player_actor_Movement_Walk(ACTOR* actor, GAME* game, f32* frame) {
         mod = 0.5f;
     } else {
         if (movePR <= 0.05f) {
-            mod = 0.0099999998f;
+            mod = 0.01f;
         } else {
-            mod = 0.0099999998f + (0.5157895f * (movePR - 0.05f));
+            mod = 0.01f + (0.5157895f * (movePR - 0.05f));
         }
     }
 
-    add_calc_short_angle2(&target, angle, 1.0f - sqrtf(1.0f - mod), 2500, 50);
+    add_calc_short_angle2(&target, angle, CALC_EASE(mod), 2500, 50);
 
     actor->world.angle.y = actor->shape_info.rotation.y = target;
 
@@ -180,12 +181,12 @@ static void Player_actor_Movement_Walk(ACTOR* actor, GAME* game, f32* frame) {
     old_speed = actor->speed;
     if (old_speed != movePR) {
         if (old_speed < movePR) {
-            old_speed += 0.60899997f;
+            old_speed += 0.609f * dt_frames;
             if (old_speed > movePR) {
                 old_speed = movePR;
             }
         } else if (old_speed > movePR) {
-            old_speed -= 0.32625002f;
+            old_speed -= 0.32625f * dt_frames;
             if (old_speed < movePR) {
                 old_speed = movePR;
             }

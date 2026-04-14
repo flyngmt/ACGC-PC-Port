@@ -11,10 +11,17 @@ static u32 retrace_count = 0;
 u32 pc_frame_counter = 0;
 static Uint64 frame_start_time = 0;
 static Uint64 perf_freq = 0;
+
+// 16667us = 60.0 Hz (NTSC).
+u32 g_frame_limiter = 60; // 60Hz
+static int frame_limiter = 16667; // (1/60) * 1000000
 static void (*vi_pre_callback)(u32) = NULL;
 static void (*vi_post_callback)(u32) = NULL;
 
-void VIInit(void) { }
+void VIInit(void) {
+    frame_limiter = (u32)((1.0 / (double)g_frame_limiter) * 1000000);
+    OSReport("frame limit=%d\n", frame_limiter);
+}
 
 void VIConfigure(void* rm) { (void)rm; }
 
@@ -49,9 +56,9 @@ void VIWaitForRetrace(void) {
         if (frame_start_time) {
             Uint64 now = SDL_GetPerformanceCounter();
             Uint64 elapsed_us = (now - frame_start_time) * 1000000 / perf_freq;
-            /* 16667us = 60.0 Hz (NTSC). Spin for sub-ms precision. */
-            while (elapsed_us < 16667) {
-                Uint64 remain_us = 16667 - elapsed_us;
+            /* Spin for sub-ms precision. */
+            while (elapsed_us < frame_limiter) {
+                Uint64 remain_us = frame_limiter - elapsed_us;
                 if (remain_us > 2000) {
                     SDL_Delay(1);
                 }

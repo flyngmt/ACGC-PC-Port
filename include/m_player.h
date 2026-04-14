@@ -2075,7 +2075,7 @@ typedef struct controller_data_s {
 
 typedef struct player_eye_pattern_s {
     s16 pattern;
-    s16 timer;
+    float timer;
 } mPlayer_eye_pattern_c;
 
 /* sizeof(struct player_actor_s) == 0x13A8 */

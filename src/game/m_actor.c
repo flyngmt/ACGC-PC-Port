@@ -44,12 +44,14 @@ extern void Actor_world_to_eye(ACTOR* actor, f32 eye_height) {
 }
 
 extern void Actor_position_move(ACTOR* actor) {
+    const double dt_frames = gamePT->graph->dt_num_60fps_frames;
+
     (*((GAME_PLAY*)gamePT)->kankyo.nature.proc)(actor);
 
     /* divide by 2 because of 30fps -> 60fps? */
-    actor->world.position.x += 0.5f * actor->position_speed.x + actor->status_data.collision_vec.x;
-    actor->world.position.y += 0.5f * actor->position_speed.y + actor->status_data.collision_vec.y;
-    actor->world.position.z += 0.5f * actor->position_speed.z + actor->status_data.collision_vec.z;
+    actor->world.position.x += (0.5 * dt_frames) * actor->position_speed.x + actor->status_data.collision_vec.x;
+    actor->world.position.y += (0.5 * dt_frames) * actor->position_speed.y + actor->status_data.collision_vec.y;
+    actor->world.position.z += (0.5 * dt_frames) * actor->position_speed.z + actor->status_data.collision_vec.z;
 }
 
 extern void Actor_position_speed_set(ACTOR* actor) {

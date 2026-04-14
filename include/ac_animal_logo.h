@@ -54,18 +54,18 @@ struct actor_animal_logo_s {
   s_xyz sing_work_area[15];
   s_xyz sing_morph_area[15];
 
-  s16 back_opacity;
-  int copyright_opacity;
-  f32 press_start_opacity;
-  s16 start_opacity_timer;
-  int title_timer;
+  float back_opacity;
+  float copyright_opacity;
+  float press_start_opacity;
+  float start_opacity_timer;
+  float title_timer;
   int titledemo_no;
 
 #ifdef PC_ENHANCEMENTS
   int pc_menu_sel;         /* 0=Start Game, 1=Options */
   int pc_options_open;     /* options sub-menu visible */
   int pc_options_sel;      /* highlighted option (unused for now) */
-  int pc_cursor_cooldown;  /* stick debounce timer */
+  float pc_cursor_cooldown;  /* stick debounce timer */
   int pc_unused[2];
 #else
   int unused_56C[6];

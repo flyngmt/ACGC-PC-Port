@@ -1,0 +1,9 @@
+CompileFlags:
+  CompilationDatabase: pc/build32
+  Add: [ "-fdeclspec", "-D__INTELLISENSE__", "-DVERSION=0", "-DDEBUG=0", "-DNDEBUG", "-DF3DEX_GBI_2", "-D_LANGUAGE_C", "-IF:/Projects/ACGC-PC-Port/include", "-IF:/Projects/ACGC-PC-Port/src", "-IF:/Projects/ACGC-PC-Port", "-IF:/Projects/ACGC-PC-Port/pc/include" ]
+
+Diagnostics:
+  UnusedIncludes: None
+
+Completion:
+  HeaderInsertion: Never

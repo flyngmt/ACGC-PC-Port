@@ -20,10 +20,10 @@ typedef struct game_trademark_s {
   /* 0x000218 */ int unused_218[15]; // n64
   /* 0x000254 */ int unused_254; // n64
   /* 0x000258 */ int unused_258[38400]; // n64 texture
-  /* 0x025A58 */ u32 alpha;
-  /* 0x025A5C */ s16 logo_timer;
-  /* 0x025A5E */ u16 alpha2;
-  /* 0x025A60 */ s16 move_timer;
+  /* 0x025A58 */ float alpha;
+  /* 0x025A5C */ float logo_timer;
+  /* 0x025A5E */ float alpha2;
+  /* 0x025A60 */ float move_timer;
   /* 0x025A62 */ s16 unused_25a62; // n64
   /* 0x025A64 */ s16 unused_25a64; // n64
   /* 0x025A66 */ u8 stage;

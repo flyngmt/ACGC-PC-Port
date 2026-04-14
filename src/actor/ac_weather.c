@@ -113,7 +113,7 @@ static int aWeather_GetWeatherPrvNum(ACTOR* actor) {
     aWeather_Priv* priv = weather->priv;
     int i;
 
-    for (i = 0; i < 100; i++) {
+    for (i = 0; i < WEATHER_PRV_COUNT; i++) {
         if (priv->use == 0) {
             return i;
         }
@@ -140,7 +140,7 @@ static aWeather_Priv* aWeather_GetWeatherPrv(u8 status, s16 timer, xyz_t* pos, x
     WEATHER_ACTOR* weather = (WEATHER_ACTOR*)actor;
     aWeather_Priv* priv = weather->priv;
 
-    if ((id != -1) && (id < 100)) {
+    if ((id != -1) && (id < WEATHER_PRV_COUNT)) {
         if (priv[id].use == 0) {
             priv[id].use = 1;
             priv[id].status = status;
@@ -322,9 +322,9 @@ static void aWeather_SecureWeatherPrivateWork(ACTOR* actorx) {
     WEATHER_ACTOR* weather = (WEATHER_ACTOR*)actorx;
     int i;
 
-    weather->priv = zelda_malloc(sizeof(aWeather_Priv) * 100);
+    weather->priv = zelda_malloc(sizeof(aWeather_Priv) * WEATHER_PRV_COUNT);
     if (weather->priv != NULL) {
-        for (i = 0; i < 100; i++) {
+        for (i = 0; i < WEATHER_PRV_COUNT; i++) {
             bzero(&weather->priv[i], sizeof(aWeather_Priv));
         }
     }
@@ -386,7 +386,7 @@ static void Weather_Actor_ct(ACTOR* actor, GAME* game) {
     int cur;
     xyz_t* pos = Camera2_getCenterPos_p();
 
-    aWeather_SetClip(actor, 0);
+    aWeather_SetClip(actor, FALSE);
 
     if (mEv_IsTitleDemo()) {
         cur = mEv_CheckTitleDemo() - mEv_TITLEDEMO_START1;
@@ -433,22 +433,18 @@ static void Weather_Actor_ct(ACTOR* actor, GAME* game) {
 
     aWeather_SetNowProfile(actor, weather->current_status);
 
-    if ((weather->current_status == 2) || (weather->current_status == 3)) {
+    if ((weather->current_status == mEnv_WEATHER_SNOW) || (weather->current_status == mEnv_WEATHER_SAKURA)) {
         weather->pos.y -= 50.0f;
-        aWeather_SnowInAdvance(actor, game, 0x28);
+        aWeather_SnowInAdvance(actor, game, 40);
         weather->pos.y += 50.0f;
     }
 
     weather->stop_sound_effect = 0;
     weather->start_sound_effect = 0;
 
-    if ((Save_Get(scene_no) == SCENE_MY_ROOM_BASEMENT_S) || ((Save_Get(scene_no) - SCENE_MY_ROOM_BASEMENT_M) <= 1U) ||
-        (Save_Get(scene_no) == SCENE_MY_ROOM_BASEMENT_LL1)) {
+    if (mSc_IS_SCENE_BASEMENT(Save_Get(scene_no))) {
         weather->basement_event = 1;
-    } else if (((Common_Get(last_scene_no) == SCENE_MY_ROOM_BASEMENT_S) ||
-                ((Common_Get(last_scene_no) - SCENE_MY_ROOM_BASEMENT_M) <= 1U) ||
-                (Common_Get(last_scene_no) == SCENE_MY_ROOM_BASEMENT_LL1)) &&
-               (play->fb_wipe_type == WIPE_TYPE_EVENT)) {
+    } else if (mSc_IS_SCENE_BASEMENT(Common_Get(last_scene_no)) && (play->fb_wipe_type == WIPE_TYPE_EVENT)) {
         weather->basement_event = 2;
     } else {
         weather->basement_event = 0;
@@ -470,7 +466,7 @@ static void Weather_Actor_dt(ACTOR* actor, GAME* game) {
         zelda_free(weather->priv);
     }
 
-    aWeather_SetClip(actor, 1);
+    aWeather_SetClip(actor, TRUE);
 }
 
 static void aWeather_DrawWeatherPrv(ACTOR* actor, GAME* game) {
@@ -487,7 +483,7 @@ static void aWeather_DrawWeatherPrv(ACTOR* actor, GAME* game) {
             weather->current_profile->set(game);
         }
         if (weather->current_profile->draw != NULL) {
-            for (i = 0; i < 100; i++, priv++) {
+            for (i = 0; i < WEATHER_PRV_COUNT; i++, priv++) {
                 if (priv->use != 0) {
                     weather->current_profile->draw(priv, game);
                 }
@@ -520,12 +516,11 @@ static void aWeather_MoveWeatherPrv(ACTOR* actorx, GAME* game) {
     priv = weather->priv;
 
     if ((weather->current_profile != NULL) && (priv != NULL) && (weather->current_profile->move != NULL)) {
-
-        for (i = 0; i < 100; i++, priv++) {
+        for (i = 0; i < WEATHER_PRV_COUNT; i++, priv++) {
             if (priv->use != 0) {
                 weather->current_profile->move(priv, game);
-                if (priv->timer != -100) {
-                    priv->timer--;
+                if (priv->timer != WEATHER_PRV_HOLD_TIMER) {
+                    priv->timer -= game->graph->dt_num_60fps_frames;
                     if (priv->timer <= 0) {
                         aWeather_AbolishPrivate(actorx, i);
                     }
@@ -543,8 +538,7 @@ static int aWeather_CountWeatherPrivate(ACTOR* actorx) {
 
     count = 0;
 
-    for (i = 0; i < 100; i++) {
-
+    for (i = 0; i < WEATHER_PRV_COUNT; i++) {
         if (priv->use != 0) {
             count++;
         }
@@ -589,14 +583,16 @@ static void aWeather_RenewWeatherLevel(ACTOR* actorx, GAME* game) {
     s16 level;
 
     if (weather->current_level != weather->current_aim_level) {
-        weather->counter++;
+        weather->counter += game->graph->dt_num_60fps_frames;
         if (weather->counter >= 180) {
             weather->counter = 0;
             level = weather->current_level;
-            if (weather->current_aim_level < level)
+            if (weather->current_aim_level < level) {
                 weather->current_level--;
-            else
+            } else {
                 weather->current_level++;
+            }
+
             aWeather_ChangeEnvSE(actorx, game, weather->current_status, weather->current_level);
         }
     }
@@ -613,7 +609,7 @@ static void aWeather_ChangeWeatherTime0(ACTOR* actorx) {
             Save_Get(scene_no) == SCENE_START_DEMO3) {
             return;
         }
-        if (!(mFI_CheckPlayerBlockInfo() & 0x400000) && (mTM_check_renew_time(0) != 0)) {
+        if ((mFI_CheckPlayerBlockInfo() & mRF_BLOCKKIND_OFFING) == 0 && (mTM_check_renew_time(0) != 0)) {
             mEnv_RandomWeather(&rndWeather, &rndIntensity);
             mEv_GetEventWeather(&evWeather, &evIntensity);
             if (evWeather != -1) {
@@ -642,32 +638,53 @@ static void aWeather_ChangeWeatherTime0(ACTOR* actorx) {
     }
 }
 
-static void aWeather_MakeKaminari(ACTOR* actorx) {
+/** True if unwrapped time crosses a 1000-frame-unit phase threshold this update (t0 -> t0+dt). */
+static int aWeather_KaminariCrossedPhase(float t0, float dt, float thresh) {
+    const float period = 1000.0f;
+    float next;
+    float delta = t0 - thresh;
+
+    if (delta < 0.0f) {
+        next = thresh;
+    } else {
+        int n = (int)(delta / period) + 1;
+
+        next = thresh + (float)n * period;
+    }
+    return (next <= t0 + dt);
+}
+
+static void aWeather_MakeKaminari(ACTOR* actorx, GAME* game) {
     WEATHER_ACTOR* weather = (WEATHER_ACTOR*)actorx;
     lbRTC_time_c time = Common_Get(time.rtc_time);
-    u8 month = time.month;
-    s16 timer;
+    lbRTC_month_t month = time.month;
+    float dt;
+    float t0;
 
     if ((weather->basement_event != 1)) {
         if ((Save_Get(scene_no) == SCENE_START_DEMO) || (Save_Get(scene_no) == SCENE_START_DEMO2) ||
             Save_Get(scene_no) == SCENE_START_DEMO3) {
             return;
         }
-        if ((month >= lbRTC_JUNE) && (month <= lbRTC_AUGUST) && (weather->current_status == 1) &&
-            (weather->current_level == 3)) {
-            timer = weather->lightning_timer % 1000;
-            if (((timer == weather->lightning_timer2) || (timer == (weather->lightning_timer2 + 20))) &&
-                (Common_Get(clip.effect_clip) != NULL) && ((Save_Get(scene_no) - SCENE_MY_ROOM_BASEMENT_S) > 3U) &&
-                ((Save_Get(scene_no) - SCENE_MUSEUM_ROOM_PAINTING) > 1U) &&
-                (Save_Get(scene_no) != SCENE_MUSEUM_ROOM_FISH)) {
+        if ((month >= lbRTC_JUNE) && (month <= lbRTC_AUGUST) && (weather->current_status == mEnv_WEATHER_RAIN) &&
+            (weather->current_level == mEnv_WEATHER_INTENSITY_HEAVY)) {
+            dt = (float)game->graph->dt_num_60fps_frames;
+            t0 = weather->lightning_timer;
+            weather->lightning_timer += dt;
+
+            if (((aWeather_KaminariCrossedPhase(t0, dt, weather->lightning_timer2) ||
+                  aWeather_KaminariCrossedPhase(t0, dt, weather->lightning_timer2 + 20.0f)) &&
+                 (Common_Get(clip.effect_clip) != NULL) && !mSc_IS_SCENE_BASEMENT(Save_Get(scene_no)) &&
+                 Save_Get(scene_no) != SCENE_MUSEUM_ROOM_PAINTING) && Save_Get(scene_no) != SCENE_MUSEUM_ROOM_FOSSIL &&
+                 Save_Get(scene_no) != SCENE_MUSEUM_ROOM_FISH) {
                 rgba_t kaminari_color = { 70, 70, 160, 255 };
                 Common_Get(clip.effect_clip)->regist_effect_light(kaminari_color, 2, 35, FALSE);
             }
-            if (timer == (weather->lightning_timer2 + 65)) {
+            
+            if (aWeather_KaminariCrossedPhase(t0, dt, weather->lightning_timer2 + 65.0f)) {
                 sAdo_SysTrgStart(0x424);
                 weather->lightning_timer2 = (100.0f + (RANDOM_F(500.0f)));
             }
-            weather->lightning_timer++;
         }
     }
 }
@@ -689,7 +706,7 @@ static void Weather_Actor_move(ACTOR* actor, GAME* game) {
     lookat = &camera->lookat;
     angle = search_position_angleY(&lookat->center, &lookat->eye);
 
-    aWeather_MakeKaminari(actor);
+    aWeather_MakeKaminari(actor, game);
     aWeather_CheckWeatherTimer(actor);
     aWeather_MakeWeatherPrv(actor, game);
     aWeather_RenewWeatherLevel(actor, game);

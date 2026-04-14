@@ -933,8 +933,13 @@ typedef struct AudioGlobals {
     /* 0x8790 */ chnode channel_node; /* main chnode */
     /* 0x87D0 */ struct group_ main_group;
     /* 0x8930 */ sub main_sub;
+#ifdef TARGET_PC
+    /* 0x8A30 */ u16 thread_cmd_write_pos;
+    /* 0x8A32 */ u16 thread_cmd_read_pos;
+#else
     /* 0x8A30 */ u8 thread_cmd_write_pos;
     /* 0x8A31 */ u8 thread_cmd_read_pos;
+#endif
     /* 0x8A32 */ u8 thread_cmd_queue_finished;
     /* 0x8A34 */ u16 thread_cmd_group_mask[AUDIO_GROUP_MAX];
     /* 0x8A40 */ OSMesgQueue* spec_change_mq_p;
@@ -951,10 +956,11 @@ typedef struct AudioGlobals {
      * pauses for ~14 frames while the game keeps sending 55 cmds/frame.
      * Need more queue slots to avoid overflow. */
     /* 0x8A9C */ OSMesg thread_cmd_proc_msg_buf[64];
+    /* 0x8AAC */ AudioPort audio_port_cmds[2048];
 #else
     /* 0x8A9C */ OSMesg thread_cmd_proc_msg_buf[4];
-#endif
     /* 0x8AAC */ AudioPort audio_port_cmds[256];
+#endif
     /* 0x92AC */ s32 _92AC;
 } AudioGlobals;
 

@@ -4,9 +4,26 @@
 #include "libforest/gbi_extensions.h"
 #include "m_rcp.h"
 
-static Gfx* evw_tex_scroll_set(GAME_PLAY* play, const EVW_ANIME_SCROLL* scroll) {
-    int scroll_x = scroll->x * play->game_frame;
-    int scroll_y = scroll->y * play->game_frame;
+static double scroll_phase = 0.0;
+
+extern void evw_anime_reset_scroll_phase() {
+    scroll_phase = 0.0;
+}
+
+extern void evw_anime_add_scroll_phase(GAME* game) {
+    scroll_phase += game->graph->dt_num_60fps_frames;
+}
+
+extern double evw_anime_get_scroll_phase() {
+    return scroll_phase;
+}
+
+static Gfx* evw_tex_scroll_set(GAME_PLAY* play, EVW_ANIME_SCROLL* scroll) {
+    // const f32 dt_scale = GRAPH_BASE_FRAME_RATE * play->game.graph->delta_time;
+    // int scroll_x = scroll->x * (play->game_frame * dt_scale);
+    // int scroll_y = scroll->y * (play->game_frame * dt_scale);
+    int scroll_x = (int)(scroll->x * scroll_phase);
+    int scroll_y = (int)(scroll->y * scroll_phase);
 
     return tex_scroll2_dolphin(play->game.graph, scroll_x, -scroll_y, scroll->width, scroll->height);
 }
@@ -25,14 +42,14 @@ static void evw_anime_scroll1(GAME_PLAY* play, int segment, void* evw_data) {
     CLOSE_DISP(g);
 }
 
-static Gfx* evw_two_tex_scroll_set(GAME_PLAY* play, const EVW_ANIME_SCROLL* scrolls) {
-    u32 frame = play->game_frame;
+static Gfx* evw_two_tex_scroll_set(GAME_PLAY* play, EVW_ANIME_SCROLL* scrolls) {
+    f32 phase = scroll_phase;
 
-    int x0 = scrolls[0].x * frame;
-    int y0 = scrolls[0].y * frame;
+    int x0 = (int)(scrolls[0].x * phase);
+    int y0 = (int)(scrolls[0].y * phase);
 
-    int x1 = scrolls[1].x * frame;
-    int y1 = scrolls[1].y * frame;
+    int x1 = (int)(scrolls[1].x * phase);
+    int y1 = (int)(scrolls[1].y * phase);
 
     return two_tex_scroll_dolphin(play->game.graph, 0, x0, -y0, scrolls[0].width, scrolls[0].height, 1, x1, -y1,
                                   scrolls[1].width, scrolls[1].height);
@@ -73,7 +90,7 @@ static void evw_color_set(GAME_PLAY* play, int segment, const EVW_ANIME_COL_PRIM
 static void evw_anime_colreg_manual(GAME_PLAY* play, int segment, void* evw_data) {
     EVW_ANIME_COLREG* color_reg = (EVW_ANIME_COLREG*)evw_data;
 
-    int frame_idx = play->game_frame % color_reg->frame_count;
+    int frame_idx = ((int)scroll_phase) % color_reg->frame_count;
     EVW_ANIME_COL_PRIM* prim = color_reg->prim_colors;
     EVW_ANIME_COL_ENV* env = color_reg->env_colors;
 
@@ -94,7 +111,7 @@ static void evw_anime_colreg_linear(GAME_PLAY* play, int segment, void* evw_data
 
     u16* keyframe = color_reg->keyframes;
     u32 game_frame = play->game_frame;
-    int anime_frame = game_frame % color_reg->frame_count;
+    int anime_frame = ((int)scroll_phase) % color_reg->frame_count;
     int now_keyframe;
     int last_keyframe;
     int frame_idx = 1;
@@ -215,7 +232,7 @@ static void evw_anime_colreg_nonlinear(GAME_PLAY* play, int segment, void* evw_d
     EVW_ANIME_COL_PRIM* prim_src = colreg->prim_colors;
     EVW_ANIME_COL_ENV* env_src = colreg->env_colors;
     u16* keyframes = colreg->keyframes;
-    f32 now_frame = play->game_frame % colreg->frame_count;
+    f32 now_frame = MOD_F(scroll_phase, colreg->frame_count);
     int i;
 
     EVW_ANIME_COLREG_F colreg_float;
@@ -270,7 +287,7 @@ static void evw_anime_colreg_nonlinear(GAME_PLAY* play, int segment, void* evw_d
 static void evw_anime_texanime(GAME_PLAY* play, int segment, void* evw_data) {
     EVW_ANIME_TEXANIME* texanime = (EVW_ANIME_TEXANIME*)evw_data;
     GRAPH* g = play->game.graph;
-    int frame = play->game_frame % (texanime->frame_count * 2);                  // 30fps pattern -> 60fps pattern
+    int frame = (int)(scroll_phase) % (texanime->frame_count * 2);
     void* tex_p = texanime->texture_tbl[texanime->animation_pattern[frame / 2]]; // 60fps pattern back to 30fps
 
     OPEN_DISP(g);

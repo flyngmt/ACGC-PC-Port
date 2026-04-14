@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "m_play_h.h"
+#include "game_h.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -76,6 +77,9 @@ typedef struct evw_anime_s {
 } EVW_ANIME_DATA;
 
 extern void Evw_Anime_Set(GAME_PLAY* play, EVW_ANIME_DATA* evw_anime_data);
+extern void evw_anime_add_scroll_phase(GAME* game);
+extern void evw_anime_reset_scroll_phase();
+extern f64 evw_anime_get_scroll_phase();
 
 #ifdef __cplusplus
 }

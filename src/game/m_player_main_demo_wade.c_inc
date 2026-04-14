@@ -74,7 +74,7 @@ static void Player_actor_BGcheck_Demo_wade(ACTOR* actorx) {
     Player_actor_BGcheck_common_type2(actorx);
 }
 
-static int Player_actor_able_request_proc_index_fromDemo_wade_common(ACTOR* actorx) {
+static int Player_actor_able_request_proc_index_fromDemo_wade_common(ACTOR* actorx, GAME* game) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actorx;
     mPlayer_main_demo_wade_c* main_demo_wade_p = &player->main_data.demo_wade;
     f32* timer_p = &main_demo_wade_p->timer;
@@ -83,7 +83,7 @@ static int Player_actor_able_request_proc_index_fromDemo_wade_common(ACTOR* acto
         return TRUE;
     }
 
-    *timer_p += 1.0f;
+    *timer_p += gamePT->graph->dt_num_60fps_frames;
     return FALSE;
 }
 
@@ -91,7 +91,7 @@ static void Player_actor_request_proc_index_fromDemo_wade(ACTOR* actorx, GAME* g
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actorx;
     mPlayer_main_demo_wade_c* main_demo_wade_p = &player->main_data.demo_wade;
 
-    if (Player_actor_able_request_proc_index_fromDemo_wade_common(actorx)) {
+    if (Player_actor_able_request_proc_index_fromDemo_wade_common(actorx, game)) {
         f32 goal_pos_x;
         f32 goal_pos_z;
         f32 speed;

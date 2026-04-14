@@ -7,6 +7,11 @@
 #include "m_bgm.h"
 #include "m_common_data.h"
 
+#define mTD_LENGTH_SECONDS 60
+#define mTD_LENGTH_FRAMES_30FPS (mTD_LENGTH_SECONDS * 30)
+#define mTD_LENGTH_FRAMES_60FPS (mTD_LENGTH_SECONDS * 60)
+#define mTD_START_END_FRAME (mTD_LENGTH_FRAMES_60FPS - 70) // 3530 frames
+
 #define mTD_HEADER_POSX 0
 #define mTD_HEADER_POSY 1
 #define mTD_HEADER_POSZ 2
@@ -16,11 +21,18 @@
 
 static int S_now_demono = mEv_TITLEDEMO_LOGO;
 static int S_tdemo_frame;
+static float S_tdemo_time = 0.0f;
 static u16 S_titledemo_to_play;
+static float S_tdemo_frame_accum;
 
 static u16 get_demo_header(int titledemo_no, int key) {
-    static u16* pact_data_head_pt[mTD_TITLE_DEMO_NUM] = { pact0_head_table, pact1_head_table, pact2_head_table,
-                                                            pact3_head_table, pact4_head_table };
+    static const u16* pact_data_head_pt[mTD_TITLE_DEMO_NUM] = {
+        pact0_head_table, // 0
+        pact1_head_table, // 1
+        pact2_head_table, // 2
+        pact3_head_table, // 3
+        pact4_head_table, // 4
+    };
 
     return pact_data_head_pt[titledemo_no][key];
 }
@@ -61,16 +73,23 @@ extern void mTD_player_keydata_init(GAME_PLAY* play) {
     }
 
     S_tdemo_frame = 0;
+    S_tdemo_time = 0.0f;
+    S_tdemo_frame_accum = 0.0f;
 }
 
 static u16 get_tdemo_keydata(int frame) {
-    /* BUG: this was probably meant to be marked as static */
-    u16* pact_data_keydata_pt[mTD_TITLE_DEMO_NUM] = { pact0_key_data, pact1_key_data, pact2_key_data, pact3_key_data,
-                                                      pact4_key_data };
+    static const u16* pact_data_keydata_pt[mTD_TITLE_DEMO_NUM] = {
+        pact0_key_data, // 0
+        pact1_key_data, // 1
+        pact2_key_data, // 2
+        pact3_key_data, // 3
+        pact4_key_data, // 4
+    };
 
     return pact_data_keydata_pt[mEv_CheckTitleDemo() - mEv_TITLEDEMO_START1][frame];
 }
 
+#if 0
 /* @fakematch? - the weirdness with btn_a needing to be assigned to a u8 then int needs to be investigated */
 static void set_player_demo_keydata(int frame) {
     u16 keydata0;
@@ -84,14 +103,40 @@ static void set_player_demo_keydata(int frame) {
     u8 tmp_a;
     int btn_a;
     int btn_b;
-    int f0;
-    int f1;
+    // int f0;
+    // int f1;
 
+    // We have 1800 frames at 30fps, so we need to pull out our current frame AND the next frame using delta time
+    float progress = S_tdemo_time / mTD_LENGTH_SECONDS;
+    float frame_progress = progress * mTD_LENGTH_FRAMES_30FPS;
+    int current_frame = (int)frame_progress;
+    int next_frame = current_frame + 1;
+    float percent = frame_progress - (float)current_frame; // 0.0f to 1.0f
+
+    // TODO: how can we interpolate between the two frames
+
+    keydata0 = get_tdemo_keydata(current_frame);
+    keydata1 = get_tdemo_keydata(next_frame);
+
+    k0_sx = (s16)(keydata0 & 0xFE00) / 512;
+    k0_sy = (s16)((keydata0 & 0x00FE) << 8) / 512;
+    k1_sx = (s16)(keydata1 & 0xFE00) / 512;
+    k1_sy = (s16)((keydata1 & 0x00FE) << 8) / 512;
+
+    // blend stick inputs
+    stick_x = k0_sx * (1.0f - percent) + k1_sx * percent;
+    stick_y = k0_sy * (1.0f - percent) + k1_sy * percent;
+
+    tmp_a = keydata0 & 1;
+    btn_a = tmp_a;
+    btn_b = (u8)(keydata0 >> 8) & 1;
+    
+#if 0
     /* convert 60fps framerate to 30fps input */
     f0 = frame / 2;
     f1 = f0 + (frame % 2);
 
-    if (f0 != f1 && f1 < 1800) {
+    if (f0 != f1 && f1 < mTD_LENGTH_FRAMES_30FPS) {
         keydata0 = get_tdemo_keydata(f0);
         keydata1 = get_tdemo_keydata(f1);
 
@@ -119,7 +164,59 @@ static void set_player_demo_keydata(int frame) {
         btn_a = tmp_a;
         btn_b = (u8)(keydata0 >> 8) & 1;
     }
+
+#endif
     mPlib_SetData1_controller_data_for_title_demo(btn_a, btn_b, (f32)stick_x, (f32)stick_y);
+}
+#endif
+
+/* Zero-order hold version that keeps recorded 30fps magnitude when running at higher FPS.
+   This avoids triangle-shaped stick pulses that can underflow acre transitions. */
+static void set_player_demo_keydata_hold(float delta_time) {
+    u16 keydata;
+    s8 stick_x;
+    s8 stick_y;
+    int btn_a;
+    int btn_b;
+    int frame_index = S_tdemo_frame;
+
+    /* Clamp delta_time to prevent large jumps on first frame or frame spikes */
+    if (delta_time > (1.0f / 30.0f)) {
+        delta_time = 1.0f / 30.0f;
+    }
+
+    /* Clamp so we never read past recorded data; caller handles end-of-demo. */
+    if (frame_index < 0) {
+        frame_index = 0;
+    } else if (frame_index >= mTD_LENGTH_FRAMES_30FPS) {
+        frame_index = mTD_LENGTH_FRAMES_30FPS - 1;
+    }
+
+    keydata = get_tdemo_keydata(frame_index);
+    stick_x = (s16)(keydata & 0xFE00) / 512;
+    stick_y = (s16)((keydata & 0x00FE) << 8) / 512;
+    btn_a = keydata & 1;
+    btn_b = (u8)(keydata >> 8) & 1;
+
+    /* Hold last recorded sample so magnitude matches the original 30fps capture. */
+    mPlib_SetData1_controller_data_for_title_demo(btn_a, btn_b, (f32)stick_x, (f32)stick_y);
+
+    /* Advance the 30fps sample index using accumulated fractional frames.
+       Sampling happens before advancing so we never skip the initial samples even if the first delta is large. */
+    if (delta_time < 0.0f) {
+        delta_time = 0.0f;
+    }
+
+    S_tdemo_frame_accum += delta_time * 30.0f; /* convert time to 30fps frames */
+    if (S_tdemo_frame_accum >= 1.0f) {
+        int whole_frames = (int)S_tdemo_frame_accum;
+        S_tdemo_frame += whole_frames;
+        S_tdemo_frame_accum -= (float)whole_frames;
+
+        if (S_tdemo_frame >= mTD_LENGTH_FRAMES_30FPS) {
+            S_tdemo_frame = mTD_LENGTH_FRAMES_30FPS - 1;
+        }
+    }
 }
 
 static void mTD_game_end_init(GAME_PLAY* play) {
@@ -132,10 +229,13 @@ static void mTD_game_end_init(GAME_PLAY* play) {
 
 extern void title_demo_move(GAME_PLAY* play) {
     if (mEv_IsTitleDemo()) {
-        set_player_demo_keydata(S_tdemo_frame);
-        S_tdemo_frame++;
+        float delta_time = play->game.graph->dt;
 
-        if (S_tdemo_frame >= 3600) {
+        set_player_demo_keydata_hold(delta_time);
+        S_tdemo_time += delta_time;
+
+        // if (S_tdemo_frame >= 3600) {
+        if (S_tdemo_time >= mTD_LENGTH_SECONDS) {
             mTD_game_end_init(play);
         }
     }
@@ -171,7 +271,7 @@ extern int mTD_get_titledemo_no() {
 
 extern int mTD_tdemo_button_ok_check() {
     int res = TRUE;
-    if (S_tdemo_frame >= 3530) {
+    if (S_tdemo_frame >= mTD_START_END_FRAME) {
         res = FALSE;
     }
 
