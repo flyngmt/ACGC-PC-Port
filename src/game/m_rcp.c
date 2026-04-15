@@ -376,6 +376,36 @@ extern Gfx* two_tex_scroll_dolphin(GRAPH* graph, int tile1, int x1, int y1, int 
     return dl;
 }
 
+// @BUG - we don't need to clear the screen by drawing a full screen quad with the clear color,
+// as JW_setClearColor handles that for us.
+#if defined(BUGFIXES) || defined(TARGET_PC)
+extern void DisplayList_initialize(GRAPH* graph, u8 clear_r, u8 clear_g, u8 clear_b, GAME* game) {
+    OPEN_DISP(graph);
+
+    gSPDisplayList(NOW_POLY_OPA_DISP++, RSP_RDP_clear_data);
+    gSPDisplayList(NOW_POLY_XLU_DISP++, RSP_RDP_clear_data);
+    gSPDisplayList(NOW_OVERLAY_DISP++, RSP_RDP_clear_data);
+    gSPDisplayList(NOW_FONT_DISP++, RSP_RDP_clear_data);
+    gSPDisplayList(NOW_BG_OPA_DISP++, RSP_RDP_clear_data);
+    gSPDisplayList(NOW_BG_XLU_DISP++, z_gsCPModeSet_Data[2]);
+    gSPDisplayList(NOW_SHADOW_DISP++, z_gsCPModeSet_Data[2]);
+    gSPDisplayList(NOW_LIGHT_DISP++, z_gsCPModeSet_Data[2]);
+
+    gDPSetScissor(NOW_POLY_OPA_DISP++, G_SC_NON_INTERLACE, 0, 0, 640, 480);
+    gDPSetScissor(NOW_POLY_XLU_DISP++, G_SC_NON_INTERLACE, 0, 0, 640, 480);
+    gDPSetScissor(NOW_OVERLAY_DISP++, G_SC_NON_INTERLACE, 0, 0, 640, 480);
+    gDPSetScissor(NOW_FONT_DISP++, G_SC_NON_INTERLACE, 0, 0, 640, 480);
+    gDPSetScissor(NOW_SHADOW_DISP++, G_SC_NON_INTERLACE, 0, 0, 640, 480);
+    gDPSetScissor(NOW_LIGHT_DISP++, G_SC_NON_INTERLACE, 0, 0, 640, 480);
+    gDPSetScissor(NOW_BG_OPA_DISP++, G_SC_NON_INTERLACE, 0, 0, 640, 480);
+    gDPSetScissor(NOW_BG_XLU_DISP++, G_SC_NON_INTERLACE, 0, 0, 640, 480);
+
+    CLOSE_DISP(graph);
+
+    JW_setClearColor(clear_r, clear_g, clear_b);
+    mFont_Main_start(graph);
+}
+#else
 extern void DisplayList_initialize(GRAPH* graph, u8 clear_r, u8 clear_g, u8 clear_b, GAME* game) {
     OPEN_DISP(graph);
 
@@ -410,6 +440,7 @@ extern void DisplayList_initialize(GRAPH* graph, u8 clear_r, u8 clear_g, u8 clea
 
     mFont_Main_start(graph);
 }
+#endif
 
 extern void fade_rgba8888_draw(Gfx** gfxp, u32 alpha) {
     static Gfx fade_gfx[6] = {
