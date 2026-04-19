@@ -18,9 +18,9 @@ PCGXState g_gx;
 
 #ifdef PC_ENHANCEMENTS
 /* Aspect correction: factor = gc_aspect/actual_aspect, offset = content left edge in GC coords */
-static float g_aspect_factor = 1.0f;
-static float g_aspect_offset = 0.0f;
-static int   g_aspect_active = 0;
+float g_aspect_factor = 1.0f;
+float g_aspect_offset = 0.0f;
+int   g_aspect_active = 0;
 
 static void pc_gx_update_aspect(void) {
     float gc_aspect = (float)PC_GC_WIDTH / (float)PC_GC_HEIGHT;

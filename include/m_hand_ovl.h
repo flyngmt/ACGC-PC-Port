@@ -56,6 +56,7 @@ typedef struct hand_info_s {
     u8 catch_pg;
     s16 haniwa_item_cond;
     u32 haniwa_item_price;
+    f32 visual_pos[2]; // Visual position (so mouse follows smoothly)
 } mHD_hand_info_c;
 
 /* sizeof(struct hand_ovl_s) == 0x378 */
