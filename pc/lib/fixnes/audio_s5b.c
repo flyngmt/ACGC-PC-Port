@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <inttypes.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include "audio_s5b.h"

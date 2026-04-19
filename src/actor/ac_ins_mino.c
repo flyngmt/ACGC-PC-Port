@@ -618,9 +618,9 @@ static void aIMN_setupAction(aINS_INSECT_ACTOR* insect, int action, GAME* game) 
  */
 static void aIMN_actor_move(ACTOR* actorx, GAME* game) {
     aINS_INSECT_ACTOR* insect = (aINS_INSECT_ACTOR*)actorx;
-    u32 catch_label = mPlib_Get_item_net_catch_label();
+    uintptr_t catch_label = mPlib_Get_item_net_catch_label();
 
-    if (catch_label == (u32)actorx) {
+    if (catch_label == (uintptr_t)actorx) {
         insect->alpha0 = 255;
         insect->tools_actor.actor_class.shape_info.rotation.y = DEG2SHORT_ANGLE2(180.0f);
         aIMN_setupAction(insect, aIMN_ACT_LET_ESCAPE, game);

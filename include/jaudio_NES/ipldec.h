@@ -24,7 +24,7 @@ void Jac_DSPagbDecodeAsync(void* task, void* cmd, DSPCallback callback);
  */
 typedef struct DSPTask {
 	u8 target;            // _00, ipl (gc) or agb (gameboy player)
-	u32 cmd;              // _04
+	uintptr_t cmd;        // _04
 	void* task;           // _08
 	DSPCallback callback; // _0C
 } DSPTask;

@@ -333,6 +333,6 @@ static void Player_actor_sound_move_temochi_kazaguruma(ACTOR* actor) {
     }
     if (speed != 0.0f) {
         sAdo_kazagurumaLevel(speed);
-        sAdo_OngenPos((u32)player, NA_SE_TEMOCHI_KAZAGURUMA, &actor->world.position);
+        sAdo_OngenPos((uintptr_t)player, NA_SE_TEMOCHI_KAZAGURUMA, &actor->world.position);
     }
 }

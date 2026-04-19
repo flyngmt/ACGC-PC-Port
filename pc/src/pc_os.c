@@ -4,7 +4,7 @@
 #include <time.h>
 
 /* --- Memory arena --- */
-static u8* arena_memory = NULL;
+u8* arena_memory = NULL;
 static u8* arena_lo = NULL;
 static u8* arena_hi = NULL;
 
@@ -238,7 +238,21 @@ void LCDisable(void) {}
 /* --- Init --- */
 void OSInit(void) {
     if (!arena_memory) {
-        /* alloc arena at >=0x10000000 to avoid collision with N64 segment addresses */
+        /* alloc arena — on 64-bit, any mmap/VirtualAlloc returns high addresses
+         * naturally (well above 0x0FFFFFFF), so no fixed-address loop needed.
+         * On 32-bit, alloc at >=0x10000000 to avoid collision with N64 segment addresses. */
+#if UINTPTR_MAX > 0xFFFFFFFFu
+        /* 64-bit: let OS choose address (will be above N64 segment range) */
+#ifdef _WIN32
+        arena_memory = (u8*)VirtualAlloc(NULL,
+            PC_MAIN_MEMORY_SIZE, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+#else
+        arena_memory = (u8*)mmap(NULL, PC_MAIN_MEMORY_SIZE,
+            PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+        if (arena_memory == MAP_FAILED) arena_memory = NULL;
+#endif
+#else
+        /* 32-bit: try fixed addresses above N64 segment range */
         {
             u32 base;
             for (base = 0x10000000; base <= 0x50000000; base += 0x01000000) {
@@ -257,9 +271,10 @@ void OSInit(void) {
                 if (arena_memory) break;
             }
         }
+#endif
         if (!arena_memory) {
-            /* fallback (may cause seg2k0 issues) */
-            fprintf(stderr, "[PC] WARNING: VirtualAlloc at high address failed, "
+            /* fallback (may cause seg2k0 issues on 32-bit) */
+            fprintf(stderr, "[PC] WARNING: memory allocation at high address failed, "
                             "falling back to malloc (seg2k0 may misfire)\n");
             arena_memory = (u8*)malloc(PC_MAIN_MEMORY_SIZE);
         }
@@ -365,8 +380,8 @@ int __osResetSwitchPressed = 0;
 /* --- Address translation (physical addr → arena_memory offset) --- */
 void* OSPhysicalToCached(u32 paddr) { return (void*)(arena_memory + paddr); }
 void* OSPhysicalToUncached(u32 paddr) { return (void*)(arena_memory + paddr); }
-u32 OSCachedToPhysical(void* caddr) { return (u32)((u8*)caddr - arena_memory); }
-u32 OSUncachedToPhysical(void* ucaddr) { return (u32)((u8*)ucaddr - arena_memory); }
+u32 OSCachedToPhysical(void* caddr) { return (u32)(uintptr_t)((u8*)caddr - arena_memory); }
+u32 OSUncachedToPhysical(void* ucaddr) { return (u32)(uintptr_t)((u8*)ucaddr - arena_memory); }
 void* OSCachedToUncached(void* caddr) { return caddr; }
 void* OSUncachedToCached(void* ucaddr) { return ucaddr; }
 

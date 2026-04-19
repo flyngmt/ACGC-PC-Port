@@ -11,13 +11,13 @@ static int Player_actor_request_main_push_snowball_all(GAME* game, void* label, 
         mPlayer_main_wade_snowball_c* wade_snowball_p = &player->main_data.wade_snowball;
 
         /* When wading between acres, check the snowball label is the same as the one pushed */
-        if (wade_snowball_p->snowball_label != (u32)label) {
+        if (wade_snowball_p->snowball_label != (uintptr_t)label) {
             return FALSE;
         }
     }
 
     if (Player_actor_check_request_main_able(game, mPlayer_INDEX_PUSH_SNOWBALL, prio)) {
-        req_push_snowball_p->label = (u32)label;
+        req_push_snowball_p->label = (uintptr_t)label;
         req_push_snowball_p->wade_flag = wade_flag;
 
         Player_actor_request_main_index(game, mPlayer_INDEX_PUSH_SNOWBALL, prio);

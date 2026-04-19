@@ -17,7 +17,7 @@ int JSURandomOutputStream::getAvailable() const {
 }
 
 int JSURandomOutputStream::skip(s32 amount) {
-    int s = this->seekPos(amount, SEEK_CUR);
+    int s = this->seekPos(amount, (JSUStreamSeekFrom)SEEK_CUR);
     return s;
 }
 

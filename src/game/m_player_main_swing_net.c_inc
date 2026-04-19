@@ -242,7 +242,7 @@ static int Player_actor_CatchSomethingCheck_common(ACTOR* actor, f32 frame) {
         mPlayer_main_swing_net_c* main_swing = &player->main_data.swing_net;
         u32 label;
         s8 type;
-        u32 pl_label = player->item_net_catch_label;
+        uintptr_t pl_label = player->item_net_catch_label;
 
         main_swing->swing_timer += 0.5f;
 
@@ -281,7 +281,7 @@ static int Player_actor_CatchSomethingCheck_Swing_net(ACTOR* actor) {
 static void Player_actor_CorrectSomething_Swing_net(ACTOR* actor) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
     xyz_t* pos = &player->net_pos;
-    u32 label = player->item_net_catch_label;
+    uintptr_t label = player->item_net_catch_label;
 
     if (label != 0 && player->item_net_catch_type == 0) {
         ((ACTOR*)label)->drawn = FALSE;
