@@ -40,6 +40,7 @@ add_compile_definitions(
     _LANGUAGE_C    # Required for N64 GBI/ultratypes headers
     PC_ENHANCEMENTS   # Optional visual improvements (MSAA, etc). Remove to get pure PC port.
     KEYBOARD_TYPING   # Physical keyboard typing in text editor. Remove for platforms without keyboards.
+    MOUSE_INPUT       # Mouse input for menu and misc interfaces. Remove for platforms without mouse.
 )
 
 # Common compiler flags (applied to all sources)
@@ -275,6 +276,7 @@ set(PC_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/pc_dvd.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/pc_pad.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/pc_typing.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/pc_mouse.c
     ${DECOMP_ROOT}/src/static/dolphin/pad/Padclamp.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/pc_card.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/pc_vi.c

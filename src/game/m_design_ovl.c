@@ -1010,12 +1010,29 @@ void mDE_undo(mDE_Ovl_c* design_ovl) {
     bcopy(&design_ovl->texture, &design_ovl->undo_texture, sizeof(design_ovl->texture));
 }
 
+#ifdef MOUSE_INPUT
+    #define GET_BUTTON_PRESSED(b, m) chkTrigger(b) || (pc_mouse_button_pressed() & m)
+    #define GET_BUTTON_HELD(b, m) chkButton(b) || (pc_mouse_button_held() & m)
+#else
+    #define GET_BUTTON_PRESSED(b, m) chkTrigger(b)
+    #define GET_BUTTON_HELD(b, m) chkButton(b)
+#endif
+
 void mDE_main_pen_move(mDE_Ovl_c* design_ovl) {
     design_ovl->_699 = 0;
     design_ovl->_698 = 1;
-    if (chkTrigger(BUTTON_A)) {
+#ifdef MOUSE_INPUT
+    int current_x = design_ovl->cursor_x;
+    int current_y = design_ovl->cursor_y;
+#endif
+
+    if (GET_BUTTON_PRESSED(BUTTON_A, 1 << 0)) {
         design_ovl->_6CC = 1;
         mDE_set_undo_texture(design_ovl);
+#ifdef MOUSE_INPUT
+        design_ovl->prev_cursor_x = current_x;
+        design_ovl->prev_cursor_y = current_y;
+#endif
         switch (design_ovl->_6A0) {
             case 1: {
                 sAdo_SysTrgStart(0x451);
@@ -1027,8 +1044,9 @@ void mDE_main_pen_move(mDE_Ovl_c* design_ovl) {
                 sAdo_SysTrgStart(0x450);
             } break;
         }
-    } else if (chkButton(BUTTON_A) && design_ovl->_6CC) {
+    } else if (GET_BUTTON_HELD(BUTTON_A, 1 << 0) && design_ovl->_6CC) {
         mDE_get_pal_on_cursor(design_ovl, design_ovl->cursor_x, design_ovl->cursor_y);
+#ifndef MOUSE_INPUT
         switch (design_ovl->_6A0) {
             case 1: {
                 mDE_set_texture_template(design_ovl, mDE_pen_2, design_ovl->cursor_x, design_ovl->cursor_y, 2, 2, 0, 1);
@@ -1040,7 +1058,66 @@ void mDE_main_pen_move(mDE_Ovl_c* design_ovl) {
                 mDE_set_pal_on_cursor(design_ovl, design_ovl->cursor_x, design_ovl->cursor_y, design_ovl->_6A4);
             } break;
         }
+#else
+        int prev_x = design_ovl->prev_cursor_x;
+        int prev_y = design_ovl->prev_cursor_y;
+        
+        if (prev_x == -1 || prev_y == -1) {
+            prev_x = current_x;
+            prev_y = current_y;
+        }
+        
+        // Calculate steps for interpolation (Manhattan)
+        int dx = current_x - prev_x;
+        int dy = current_y - prev_y;
+        int steps = ABS(dx) + ABS(dy);
+
+        if (steps > 1 && pc_mouse_button_held() & (1 << 0)) {
+            // Interpolate between previous and current positions then draw
+            for (int step = 1; step <= steps; step++) {
+                int interp_x = prev_x + (dx * step) / steps;
+                int interp_y = prev_y + (dy * step) / steps;
+
+                switch (design_ovl->_6A0) {
+                    case 1: {
+                        mDE_set_texture_template(design_ovl, mDE_pen_2, interp_x, interp_y, 2, 2, 0, 1);
+                    } break;
+                    case 2: {
+                        mDE_set_texture_template(design_ovl, mDE_pen_3, interp_x, interp_y, 3, 3, 0, 2);
+                    } break;
+                    default: {
+                        mDE_set_pal_on_cursor(design_ovl, interp_x, interp_y, design_ovl->_6A4);
+                    } break;
+                }
+            }
+        } else {
+            switch (design_ovl->_6A0) {
+                case 1: {
+                    mDE_set_texture_template(design_ovl, mDE_pen_2, current_x, current_y, 2, 2, 0, 1);
+                } break;
+                case 2: {
+                    mDE_set_texture_template(design_ovl, mDE_pen_3, current_x, current_y, 3, 3, 0, 2);
+                } break;
+                default: {
+                    mDE_set_pal_on_cursor(design_ovl, current_x, current_y, design_ovl->_6A4);
+                } break;
+            }
+        }
+
+        design_ovl->prev_cursor_x = current_x;
+        design_ovl->prev_cursor_y = current_y;
+#endif
     }
+#ifdef MOUSE_INPUT
+    else {
+        if (design_ovl->_6CC) {
+            design_ovl->_6CC = 0;
+            design_ovl->prev_cursor_x = -1;
+            design_ovl->prev_cursor_y = -1;
+        }
+    }
+#endif
+
     switch (design_ovl->_6A0) {
         case 1: {
             if (design_ovl->cursor_y == mDE_POS_MIN) {
@@ -1120,7 +1197,7 @@ void mDE_main_pen_move(mDE_Ovl_c* design_ovl) {
 
 void mDE_main_nuri_move(mDE_Ovl_c* design_ovl) {
     design_ovl->_699 = 1;
-    if (chkTrigger(BUTTON_A)) {
+    if (GET_BUTTON_PRESSED(BUTTON_A, 1 << 0)) {
         sAdo_SysTrgStart(0x455);
         mDE_set_undo_texture(design_ovl);
         mDE_paint(design_ovl, design_ovl->_6A4);
@@ -1307,7 +1384,7 @@ void mDE_main_waku_move(mDE_Ovl_c* design_ovl) {
         design_ovl->_688 = ABS(design_ovl->_678 - design_ovl->cursor_x) + 1;
         design_ovl->_68C = ABS(design_ovl->_67C - design_ovl->cursor_y) + 1;
     }
-    if (chkTrigger(BUTTON_A)) {
+    if (GET_BUTTON_PRESSED(BUTTON_A, 1 << 0)) {
         if (design_ovl->_69A == 0) {
             design_ovl->_658 = design_ovl->_650;
             design_ovl->_65C = design_ovl->_654;
@@ -1355,7 +1432,7 @@ void mDE_main_waku_move(mDE_Ovl_c* design_ovl) {
         design_ovl->_69A = !design_ovl->_69A;
     }
 
-    if (chkTrigger(BUTTON_B) && design_ovl->_69A == TRUE) {
+    if (GET_BUTTON_PRESSED(BUTTON_B, 1 << 2) && design_ovl->_69A == TRUE) {
         design_ovl->_69A = 0;
         design_ovl->_698 = 0;
         design_ovl->_680 = 0;
@@ -1401,7 +1478,7 @@ void mDE_main_mark_move(mDE_Ovl_c* design_ovl) {
             } break;
         }
     }
-    if (chkTrigger(BUTTON_A)) {
+    if (GET_BUTTON_PRESSED(BUTTON_A, 1 << 0)) {
         mDE_set_undo_texture(design_ovl);
         sAdo_SysTrgStart(0x455);
         if (Save_Get(scene_no) == SCENE_START_DEMO3 || GETREG(NMREG, 0x5f)) {
@@ -1452,7 +1529,7 @@ void mDE_main_mark_move(mDE_Ovl_c* design_ovl) {
 
 void mDE_main_undo_move(mDE_Ovl_c* design_ovl) {
     design_ovl->_699 = 7;
-    if (chkTrigger(BUTTON_A)) {
+    if (GET_BUTTON_PRESSED(BUTTON_A, 1 << 0)) {
         mDE_undo(design_ovl);
     }
 }
@@ -1709,9 +1786,102 @@ void mDE_mode_stick_control_analog(mDE_Ovl_c* design_ovl) {
     mDE_cursor_analog_move(design_ovl);
 }
 
+#ifdef MOUSE_INPUT
+// Checks if a point (px, py) is inside a rectangle defined in these coordinates.
+// min_x = left edge - min_y = bottom edge - max_x = right edge - max_y = top edge
+static int mDE_point_in_rect(f32 px, f32 py, f32 min_x, f32 min_y, f32 max_x, f32 max_y) {
+    return (px >= min_x && px <= max_x && py >= min_y && py <= max_y);
+}
+
+void mDE_mode_main_mouse_move(mDE_Ovl_c* design_ovl) {
+    // Mouse center position to grid area
+    const f32 design_area = 77.5f; // 75 + 2.5
+    int new_cursor_x = (int)((design_ovl->centered_x + design_area) / 5.0f);
+    int new_cursor_y = (int)(-(design_ovl->centered_y - design_area) / 5.0f);
+
+    // Pen grid max bounds check
+    int min = 0;
+    if (design_ovl->main_mode_act == mDE_MAIN_MODE_PEN) {
+        switch (design_ovl->_6A0) {
+            case 1:
+                min = 1;
+                break;
+            case 2:
+                min = 2;
+                break;
+        }
+    }
+
+    // Clamp to valid grid range
+    if (new_cursor_x < mDE_POS_MIN) new_cursor_x = mDE_POS_MIN;
+    if (new_cursor_x > mDE_POS_MAX - min) new_cursor_x = mDE_POS_MAX - min;
+    if (new_cursor_y < mDE_POS_MIN) new_cursor_y = mDE_POS_MIN;
+    if (new_cursor_y > mDE_POS_MAX - min) new_cursor_y = mDE_POS_MAX - min;
+    
+    // Update cursor position
+    if (new_cursor_x != design_ovl->cursor_x || new_cursor_y != design_ovl->cursor_y) {
+        design_ovl->cursor_x = new_cursor_x;
+        design_ovl->cursor_y = new_cursor_y;
+        design_ovl->_650 = design_ovl->cursor_x * 5;
+        design_ovl->_654 = -design_ovl->cursor_y * 5;
+        design_ovl->_660 = design_ovl->_650 + 2.5f;
+        design_ovl->_664 = design_ovl->_654 - 2.5f;
+        
+        sAdo_SysTrgStart(0x453);
+    }
+
+    // Waku cursor orientation check    
+    if (pc_mouse_moved() && design_ovl->main_mode_act == mDE_MAIN_MODE_WAKU) {
+        if (design_ovl->_69A && design_ovl->_699 != 9) {
+            // Calculate orientation based on cursor position relative to start point
+            if (design_ovl->cursor_x >= design_ovl->_678 && design_ovl->cursor_y <= design_ovl->_67C) {
+                design_ovl->_6D8 = 1; // right-top
+            } else if (design_ovl->cursor_x >= design_ovl->_678 && design_ovl->cursor_y >= design_ovl->_67C) {
+                design_ovl->_6D8 = 0; // right-bottom
+            } else if (design_ovl->cursor_x <= design_ovl->_678 && design_ovl->cursor_y <= design_ovl->_67C) {
+                design_ovl->_6D8 = 3; // left-top
+            } else if (design_ovl->cursor_x <= design_ovl->_678 && design_ovl->cursor_y >= design_ovl->_67C) {
+                design_ovl->_6D8 = 2; // left-bottom
+            }
+            design_ovl->_6D9 = design_ovl->_6D8;
+
+            // Update selection box dimensions for visual feedback
+            int x_start, y_start, x_end, y_end;
+            if (design_ovl->_678 > design_ovl->cursor_x) {
+                x_start = design_ovl->cursor_x;
+                x_end = design_ovl->_678;
+            } else {
+                x_start = design_ovl->_678;
+                x_end = design_ovl->cursor_x;
+            }
+            
+            if (design_ovl->_67C > design_ovl->cursor_y) {
+                y_start = design_ovl->cursor_y;
+                y_end = design_ovl->_67C;
+            } else {
+                y_start = design_ovl->_67C;
+                y_end = design_ovl->cursor_y;
+            }
+            
+            design_ovl->_680 = x_start * 5;
+            design_ovl->_684 = -y_start * 5;
+            design_ovl->_688 = (x_end - x_start) + 1;
+            design_ovl->_68C = (y_end - y_start) + 1;
+        }
+    }
+}
+#endif
+
 void mDE_mode_main_move(mDE_Ovl_c* design_ovl) {
     design_ovl->move_pR = gamePT->mcon.move_pR;
     design_ovl->_6C4 = 1;
+ 
+#ifdef MOUSE_INPUT
+    if (design_ovl->mouse_active) {
+        mDE_mode_main_mouse_move(design_ovl);
+    }
+#endif
+
     if (design_ovl->main_mode_act == mDE_MAIN_MODE_PEN && chkButton(BUTTON_A)) {
         design_ovl->_6C4 = 3;
         if (GETREG(NMREG, 0x13)) {
@@ -1763,10 +1933,10 @@ void mDE_mode_main_move(mDE_Ovl_c* design_ovl) {
         }
     }
 
-    if (chkTrigger(BUTTON_B) && design_ovl->_69A == 0) {
+    if (GET_BUTTON_PRESSED(BUTTON_B, 1 << 2) && design_ovl->_69A == 0) {
         design_ovl->_6CD = 1;
         design_ovl->_6A4 = mDE_get_pal_on_cursor(design_ovl, design_ovl->cursor_x, design_ovl->cursor_y);
-    } else if (chkButton(BUTTON_B) && design_ovl->_69A == 0 && design_ovl->_6CD) {
+    } else if (GET_BUTTON_HELD(BUTTON_B, 1 << 2) && design_ovl->_69A == 0 && design_ovl->_6CD) {
         design_ovl->_6DB = 1;
         design_ovl->_6A4 = mDE_get_pal_on_cursor(design_ovl, design_ovl->cursor_x, design_ovl->cursor_y);
     } else if (design_ovl->_6DB) {
@@ -1869,7 +2039,7 @@ void mDE_mode_main_move(mDE_Ovl_c* design_ovl) {
         }
         mDE_mode_main_shortcut_tool(design_ovl, 4);
     }
-    if (chkTrigger(BUTTON_X)) {
+    if (GET_BUTTON_PRESSED(BUTTON_X, 1 << 1)) {
         design_ovl->_69D = !design_ovl->_69D;
         if (design_ovl->_69D == FALSE) {
             sAdo_SysTrgStart(0x457);
@@ -1884,10 +2054,71 @@ void mDE_mode_main_move(mDE_Ovl_c* design_ovl) {
         mDE_print_texture(design_ovl);
     }
     design_ovl->main_mode_proc(design_ovl);
-    if (chkButton(BUTTON_B) && design_ovl->_69A == 0 && design_ovl->_6CD) {
+    if (GET_BUTTON_HELD(BUTTON_B, 1 << 2) && design_ovl->_69A == 0 && design_ovl->_6CD) {
         design_ovl->_699 = 8;
     }
 }
+
+#ifdef MOUSE_INPUT
+void mDE_mode_pallet_mouse_move(mDE_Ovl_c* design_ovl) {
+    int color_index = -1;
+
+    const f32 cx   = 110.0f;
+    const f32 step = 10.0f;
+
+    for (int i = 0; i < 16; i++) {
+        f32 cy = (i == 0) ? 63.0f : 63.0f - i * step;
+
+        f32 half_h = (i == 0) ? 12.0f : 5.0f;
+
+        if (mDE_point_in_rect(design_ovl->centered_x, design_ovl->centered_y,
+                              cx - 15.0f, cy - half_h,
+                              cx + 15.0f, cy + half_h)) {
+            color_index = i;
+            break;
+        }
+    }
+
+    if (color_index >= 0 && color_index <= 15) {
+        u32 mouse_pressed = pc_mouse_button_pressed();
+
+        if (design_ovl->_6A5 != color_index) {
+            design_ovl->_6A5 = color_index;
+            sAdo_SysTrgStart(0x459);
+        }
+
+        if (design_ovl->_6A5 == 0) {
+            if (mouse_pressed & (1 << 0)) {
+                // Left click cycles palette forwards
+                sAdo_SysTrgStart(0x458);
+                design_ovl->palette_no++;
+                if (design_ovl->palette_no >= 0x10) {
+                    design_ovl->palette_no = 0;
+                }
+                design_ovl->palette_p = mNW_PaletteIdx2Palette(design_ovl->palette_no);
+                mDE_pallet_RGB5A3_to_RGB24(design_ovl);
+            }
+            if (mouse_pressed & (1 << 2)) {
+                // Right click cycles palette backwards
+                sAdo_SysTrgStart(0x458);
+                if (design_ovl->palette_no == 0) {
+                    design_ovl->palette_no = 0xf;
+                } else {
+                    design_ovl->palette_no--;
+                }
+                design_ovl->palette_p = mNW_PaletteIdx2Palette(design_ovl->palette_no);
+                mDE_pallet_RGB5A3_to_RGB24(design_ovl);
+            }
+        } else {
+            if (mouse_pressed & (1 << 0)) {
+                // Click to select color
+                sAdo_SysTrgStart(0x45a);
+                design_ovl->_6A4 = design_ovl->_6A5;
+            }
+        }
+    }
+}
+#endif
 
 void mDE_mode_pallet_move(mDE_Ovl_c* design_ovl) {
     int old6A5 = design_ovl->_6A5;
@@ -1902,6 +2133,14 @@ void mDE_mode_pallet_move(mDE_Ovl_c* design_ovl) {
     } else {
         design_ovl->_6BC = 4;
     }
+
+#ifdef MOUSE_INPUT
+    if (design_ovl->mouse_active) {
+        mDE_mode_pallet_mouse_move(design_ovl);
+        return;
+    }
+#endif
+
     mDE_judge_stick_nuetral(design_ovl);
     mDE_judge_stick_full(design_ovl);
     if (mDE_judge_stick(design_ovl)) {
@@ -1948,7 +2187,7 @@ void mDE_mode_pallet_move(mDE_Ovl_c* design_ovl) {
 }
 
 void mDE_mode_grid_move(mDE_Ovl_c* design_ovl) {
-    if (chkTrigger(BUTTON_A)) {
+    if (GET_BUTTON_PRESSED(BUTTON_A, 1 << 0)) {
         design_ovl->_69D = !design_ovl->_69D;
         if (design_ovl->_69D == FALSE) {
             sAdo_SysTrgStart(0x457);
@@ -1957,6 +2196,104 @@ void mDE_mode_grid_move(mDE_Ovl_c* design_ovl) {
         }
     }
 }
+
+#ifdef MOUSE_INPUT
+void mDE_mode_tool_mouse_move(mDE_Ovl_c* design_ovl) {   
+    int index_x = -1;
+    int index_y = -1;
+    f32 min_x_d, min_y_d, max_x_d, max_y_d = 0;
+    
+    const f32 base_y = 6.0f;
+    const f32 base_x = -122.0f;
+    const f32 step   = 24.0f;
+    
+    // Number of slots per row based on context
+    int slots_per_row[5];
+    if (Save_Get(scene_no) == SCENE_START_DEMO3 || GETREG(NMREG, 0x5f)) {
+        slots_per_row[0] = 3;  // Pen sizes
+        slots_per_row[1] = 6;  // Fill patterns
+        slots_per_row[2] = 5;  // Shape tools
+        slots_per_row[3] = 5;  // Stamps (kao 1-5)
+        slots_per_row[4] = 1;  // Undo
+    } else {
+        slots_per_row[0] = 3;  // Pen sizes
+        slots_per_row[1] = 6;  // Fill patterns
+        slots_per_row[2] = 5;  // Shape tools
+        slots_per_row[3] = 4;  // Stamps (heart, star, circle, square)
+        slots_per_row[4] = 1;  // Undo
+    }
+    
+    // Find which tool slot the mouse is over
+    for (int y = 0; y < 5; y++) {
+        f32 min_y = base_y - y * step;
+        f32 max_y = min_y + step;
+        
+        for (int x = 0; x < slots_per_row[y]; x++) {
+            f32 min_x = base_x + x * step;
+            f32 max_x = min_x + step;
+            
+            if (mDE_point_in_rect(design_ovl->centered_x, design_ovl->centered_y, 
+                                  min_x, min_y, max_x, max_y)) {
+                index_x = x;
+                index_y = y;
+                min_x_d = min_x;
+                min_y_d = min_y;
+                max_x_d = max_x;
+                max_y_d = max_y;
+                break;
+            }
+        }
+    }
+
+    // Update tool selection based on mouse hover
+    if (index_y != -1) {
+        u32 mouse_pressed = pc_mouse_button_pressed();
+
+        design_ovl->mouse_tool_active = 1;
+        if (design_ovl->mouse_tool_y != index_y || design_ovl->mouse_tool_x != index_x) {
+            design_ovl->mouse_tool_x = index_x;
+            design_ovl->mouse_tool_y = index_y;
+            sAdo_SysTrgStart(NA_SE_32);
+        }
+
+        // Handle click to select/activate tool
+        if (mouse_pressed & (1 << 0)) {
+            if (index_x > 0) design_ovl->mouse_tool_active = 0;
+            sAdo_SysTrgStart(NA_SE_33);
+            design_ovl->_69E = design_ovl->mouse_tool_x;
+            design_ovl->_69F = design_ovl->mouse_tool_y;
+            switch (index_y) {
+                case 0: // Pen tools
+                    design_ovl->_6A0 = index_x;
+                    mDE_main_mode_setup_action(design_ovl, mDE_MAIN_MODE_PEN);
+                    if (index_x > 0) mDE_setup_action(design_ovl, mDE_MODE_MAIN);
+                    break;
+                case 1: // Fill/Nuri tools
+                    design_ovl->_6A1 = index_x;
+                    mDE_main_mode_setup_action(design_ovl, mDE_MAIN_MODE_NURI);
+                    if (index_x > 0) mDE_setup_action(design_ovl, mDE_MODE_MAIN);
+                    break;
+                case 2: // Shape/Waku tools
+                    design_ovl->_6A2 = index_x;
+                    mDE_main_mode_setup_action(design_ovl, mDE_MAIN_MODE_WAKU);
+                    if (index_x > 0) mDE_setup_action(design_ovl, mDE_MODE_MAIN);
+                    break;
+                case 3: // Stamp/Mark tools
+                    design_ovl->_6A3 = index_x;
+                    mDE_main_mode_setup_action(design_ovl, mDE_MAIN_MODE_MARK);
+                    if (index_x > 0) mDE_setup_action(design_ovl, mDE_MODE_MAIN);
+                    break;
+                case 4: // Undo
+                    mDE_main_mode_setup_action(design_ovl, mDE_MAIN_MODE_UNDO);
+                    if (index_x > 0) mDE_setup_action(design_ovl, mDE_MODE_MAIN);
+                    break;
+            }
+        }
+    } else {
+        design_ovl->mouse_tool_active = 0;
+    }
+}
+#endif
 
 void mDE_mode_tool_move(mDE_Ovl_c* design_ovl) {
     design_ovl->move_pR = gamePT->mcon.move_pR;
@@ -1970,6 +2307,18 @@ void mDE_mode_tool_move(mDE_Ovl_c* design_ovl) {
     } else {
         design_ovl->_6BC = 8;
     }
+    
+#ifdef MOUSE_INPUT
+    if (design_ovl->mouse_active) {
+        mDE_mode_tool_mouse_move(design_ovl);
+        return;
+    }
+    if (design_ovl->mouse_tool_active) {
+        design_ovl->_69E = design_ovl->mouse_tool_x;
+        design_ovl->_69F = design_ovl->mouse_tool_y;
+        design_ovl->mouse_tool_active = 0;
+    }
+#endif
     mDE_judge_stick_nuetral(design_ovl);
     mDE_judge_stick_full(design_ovl);
     if (mDE_judge_stick(design_ovl)) {
@@ -2096,6 +2445,64 @@ void mDE_move_tool_decide(mDE_Ovl_c* design_ovl) {
 void mDE_move_Play(Submenu* submenu, mSM_MenuInfo_c* info) {
     u32 trigger = submenu->overlay->menu_control.trigger;
     mDE_Ovl_c* design_ovl = submenu->overlay->design_ovl;
+
+#ifdef MOUSE_INPUT
+    // Handle mouse movement for cursor
+    s32 mouse_x, mouse_y;
+    pc_mouse_get_native_position(&mouse_x, &mouse_y);
+    
+    // Set half position for interface
+    f32 ui_x = (f32)mouse_x * 0.5f;
+    f32 ui_y = (f32)mouse_y * 0.5f;
+    
+    // Convert from top-left origin (0,0) to centered origin (0,0 at center)
+    f32 centered_x = ui_x - 160.0f;
+    f32 centered_y = 120.0f - ui_y;
+    design_ovl->centered_x = centered_x;
+    design_ovl->centered_y = centered_y;
+
+    if (trigger) {
+        design_ovl->mouse_active = 0;
+    }
+    if (pc_mouse_active()) {
+        design_ovl->mouse_active = 1;
+    }
+
+    // Mode switching with mouse
+    if (design_ovl->mouse_active) {
+        u32 mouse_held = pc_mouse_button_held();
+        int holding_mouse = (
+            (((mouse_held >> 0) & 1 || (mouse_held >> 2) & 1) && design_ovl->mode == mDE_MODE_MAIN) || // Holding left/right click while drawing
+            ((design_ovl->_69A && design_ovl->_699 != 9) && design_ovl->mode == mDE_MAIN_MODE_WAKU) // Waku active selection
+        );
+
+        int new_mode = -1;
+        // Check each mode area (prioritize smaller areas first - tool and grid)
+        // Tool menu area (left side, tool selection)
+        if (mDE_point_in_rect(centered_x, centered_y, -122.0f, -93.0f, -97.0f, 27.0f) || design_ovl->mouse_tool_active) {
+            if (!holding_mouse) new_mode = mDE_MODE_TOOL;
+        }
+        // Grid toggle area
+        else if (mDE_point_in_rect(centered_x, centered_y, -126.0f, 47.0f, -92.0f, 80.0f)) {
+            if (!holding_mouse) new_mode = mDE_MODE_GRID;
+        }
+        // Palette area (right side)
+        else if (mDE_point_in_rect(centered_x, centered_y, 95.0f, -92.0f, 120.0f, 85.0f)) {
+            if (!holding_mouse) new_mode = mDE_MODE_PALLET;
+        }
+        // Main design area
+        else if (mDE_point_in_rect(centered_x, centered_y, -80.0f, -80.0f, 80.0f, 80.0f)) {
+            if (!holding_mouse) new_mode = mDE_MODE_MAIN;
+        }
+
+        // Switch mode if changed
+        if (new_mode != -1 && new_mode != design_ovl->mode) {
+            mDE_setup_action(design_ovl, new_mode);
+            sAdo_SysTrgStart(NA_SE_37);
+        }
+    }
+#endif
+
     if (submenu->current_menu_type == mSM_OVL_DESIGN) {
         if (trigger & BUTTON_START) {
             design_ovl->_698 = 0;
@@ -2316,7 +2723,14 @@ void mDE_set_frame_mark_dl(Submenu* submenu, GAME* game, mSM_MenuInfo_c* menu) {
     gSPDisplayList(POLY_OPA_DISP++, des_win_before);
     Matrix_push();
     if (design_ovl->mode == mDE_MODE_TOOL) {
-        Matrix_translate(-112.f + design_ovl->_69E * 0x18, 16.f - design_ovl->_69F * 0x18, 0.f, MTX_MULT);
+#ifdef MOUSE_INPUT
+        if (design_ovl->mouse_tool_active) { // Visual hover on mouse rather than actual selection
+            Matrix_translate(-112.f + design_ovl->mouse_tool_x * 0x18, 16.f - design_ovl->mouse_tool_y * 0x18, 0.f, MTX_MULT);
+        } else
+#endif
+        {
+            Matrix_translate(-112.f + design_ovl->_69E * 0x18, 16.f - design_ovl->_69F * 0x18, 0.f, MTX_MULT);
+        }
         gSPMatrix(POLY_OPA_DISP++, _Matrix_to_Mtx_new(graph), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
         gDPSetPrimColor(POLY_OPA_DISP++, 0, 255, 185, 50, 50, 255);
     } else {
@@ -2678,6 +3092,16 @@ void mDE_design_ovl_init(Submenu* submenu) {
     design_ovl->_664 = -77.5f;
     design_ovl->cursor_x = 15;
     design_ovl->cursor_y = 15;
+#ifdef MOUSE_INPUT
+    design_ovl->mouse_active = 0;
+    design_ovl->centered_x = 0;
+    design_ovl->centered_y = 0;
+    design_ovl->mouse_tool_active = 0;
+    design_ovl->mouse_tool_x = 0;
+    design_ovl->mouse_tool_y = 0;
+    design_ovl->prev_cursor_x = -1;
+    design_ovl->prev_cursor_y = -1;
+#endif
     bcopy(&design_ovl->texture, &design_ovl->work_texture, sizeof(design_ovl->work_texture));
     osWritebackDCache(&design_ovl->work_texture, sizeof(design_ovl->work_texture));
     if (Save_Get(scene_no) == SCENE_START_DEMO3 || GETREG(NMREG, 0x5f)) {

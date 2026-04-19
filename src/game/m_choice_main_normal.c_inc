@@ -7,13 +7,73 @@ static void mChoice_determimation_set(mChoice_c* choice) {
     choice_data->selected_choice_idx = idx;
 }
 
+#ifdef MOUSE_INPUT
+    #define GET_BUTTON_PRESSED(b, m) chkTrigger(b) || ((pc_mouse_button_pressed() & m) && hover_idx != -1)
+#else
+    #define GET_BUTTON_PRESSED(b, m) chkTrigger(b)
+#endif
+
+#ifdef MOUSE_INPUT
+static int mChoice_GetMouseHoverIdx(mChoice_c* choice, f32 mx, f32 my) {
+    // Calculate the offset applied by mChoice_SetMatrix
+    f32 offset_x = (choice->center_x - 160.0f);
+    f32 offset_y = (-choice->center_y + 120.0f);
+    f32 scale = choice->scale;
+
+    // Adjust mouse position based on the menu's translation
+    f32 local_mx = (mx - offset_x);
+    f32 local_my = (my + offset_y);
+
+    if (scale > 0.0f && scale != 1.0f) {
+        local_mx /= scale;
+        local_my /= scale;
+    }
+
+    // Now do hitbox check
+    f32 tx = choice->text_x;
+    f32 ty = choice->text_y;
+    
+    for (int i = 0; i < choice->data.choice_num; i++) {
+        f32 line_top = ty + (i * 16.0f);
+        f32 line_bottom = line_top + 16.0f;
+        
+        if (local_my >= line_top && local_my < line_bottom) {
+            // Horizontal check (Assuming ~8 units per character)
+            f32 text_w = (f32)choice->data.string_lens[i] * 8.0f;
+            if (local_mx >= tx && local_mx < (tx + text_w)) {
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+#endif
+
 static int mChoice_Main_Normal_SetChoice(mChoice_c* choice, GAME* game) {
     int res = FALSE;
 
-    if (chkTrigger(BUTTON_A)) {
+#ifdef MOUSE_INPUT
+    // Mouse movement
+    int nmx, nmy;
+    pc_mouse_get_native_position(&nmx, &nmy);
+    f32 mx = (f32)nmx * 0.5f;
+    f32 my = (f32)nmy * 0.5f;
+
+    // Update selection via hover
+    int hover_idx = mChoice_GetMouseHoverIdx(choice, mx, my);
+    if (pc_mouse_active() && hover_idx != -1 && hover_idx != choice->selected_choice_idx) {
+        choice->selected_choice_idx = hover_idx;
+        mChoice_sound_CURSOL(); 
+        
+        choice->choice_automove_type = mChoice_AUTOMOVE_STOPPED;
+        choice->choice_automove_timer = 0.0f;
+    }
+#endif
+
+    if (GET_BUTTON_PRESSED(BUTTON_A, 1 << 0)) {
         mChoice_determimation_set(choice);
         res = TRUE;
-    } else if (choice->no_b_flag && chkTrigger(BUTTON_B)) {
+    } else if (choice->no_b_flag && GET_BUTTON_PRESSED(BUTTON_B, 1 << 2)) {
         choice->selected_choice_idx = choice->data.choice_num - 1;
         mChoice_determimation_set(choice);
         res = TRUE;

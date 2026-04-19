@@ -100,7 +100,7 @@ static void mHD_hand_pos_get(Submenu* submenu, f32* pos, int table_type, int tab
     }
 }
 
-static void mHD_hand_position_move(Submenu* submenu) {
+static void mHD_update_logical_position(Submenu* submenu) {
     mHD_Ovl_c* hand_ovl = submenu->overlay->hand_ovl;
     mTG_tag_c* tag = &submenu->overlay->tag_ovl->tags[0];
     int table_idx = submenu->overlay->tag_ovl->get_table_idx_proc(tag);
@@ -162,6 +162,51 @@ static void mHD_hand_position_move(Submenu* submenu) {
     } else {
         hand_ovl->info.move_flag = mHD_MOVE_NONE;
     }
+}
+
+static void mHD_update_visual_position(Submenu* submenu) {
+    mHD_Ovl_c* hand_ovl = submenu->overlay->hand_ovl;
+    mTG_Ovl_c* tag_ovl = submenu->overlay->tag_ovl;
+
+#ifdef MOUSE_INPUT
+    if (tag_ovl->mouse_active) {
+        f32 target_x = (tag_ovl->mouse_x - 160.0f);
+        f32 target_y = (120.0f - tag_ovl->mouse_y);
+        
+        f32 dX = target_x - hand_ovl->info.visual_pos[0];
+        f32 dY = target_y - hand_ovl->info.visual_pos[1];
+        
+        if (fabsf(dX) > 0.1f || fabsf(dY) > 0.1f) {
+            f32 speed = 0.3f;
+            hand_ovl->info.visual_pos[0] += dX * speed;
+            hand_ovl->info.visual_pos[1] += dY * speed;
+        } else {
+            hand_ovl->info.visual_pos[0] = target_x;
+            hand_ovl->info.visual_pos[1] = target_y;
+        }
+    } else
+#endif
+    {
+        f32 dX = hand_ovl->info.pos[0] - hand_ovl->info.visual_pos[0];
+        f32 dY = hand_ovl->info.pos[1] - hand_ovl->info.visual_pos[1];
+        
+        if (fabsf(dX) > 0.1f || fabsf(dY) > 0.1f) {
+            f32 speed = 0.3f;
+            hand_ovl->info.visual_pos[0] += dX * speed;
+            hand_ovl->info.visual_pos[1] += dY * speed;
+        } else {
+            hand_ovl->info.visual_pos[0] = hand_ovl->info.pos[0];
+            hand_ovl->info.visual_pos[1] = hand_ovl->info.pos[1];
+        }
+    }
+}
+
+static void mHD_hand_position_move(Submenu* submenu) {
+    /* Update logical position (what the game uses for item logic) */
+    mHD_update_logical_position(submenu);
+    
+    /* Update visual position (what we render) */
+    mHD_update_visual_position(submenu);
 }
 
 static void mHD_drop_item(Submenu* submenu, mTG_tag_c* tag, mActor_name_t* item, Mail_c* mail) {
@@ -981,10 +1026,11 @@ static void mHD_hand_ovl_draw(Submenu* submenu, GAME* game) {
         f32 pos_adj;
         mTG_tag_c* tag;
 
-        target_pos[0] =
-            (hand_ovl->info.pos[0] + hand_ovl->info.ofs[0] * cos_z + hand_ovl->info.ofs[1] * (-cos_x * sin_z)) + 4.0f;
-        target_pos[1] =
-            (hand_ovl->info.pos[1] + hand_ovl->info.ofs[0] * sin_z + hand_ovl->info.ofs[1] * (cos_x * cos_z)) - 4.0f;
+        /* Use visual_pos for rendering */
+        target_pos[0] = (hand_ovl->info.visual_pos[0] + hand_ovl->info.ofs[0] * cos_z + 
+                        hand_ovl->info.ofs[1] * (-cos_x * sin_z)) + 4.0f;
+        target_pos[1] = (hand_ovl->info.visual_pos[1] + hand_ovl->info.ofs[0] * sin_z + 
+                        hand_ovl->info.ofs[1] * (cos_x * cos_z)) - 4.0f;
 
         /* Draw hand shadow first */
         Matrix_push();
@@ -1072,6 +1118,9 @@ extern void mHD_hand_ovl_construct(Submenu* submenu) {
     mMl_clear_mail(&hand_ovl->info.mail);
     hand_ovl->info.item_cond = mPr_ITEM_COND_NORMAL;
 
+    hand_ovl->info.visual_pos[0] = 0.0f;
+    hand_ovl->info.visual_pos[1] = 0.0f;
+ 
     if (menu_info->menu_type == mSM_OVL_INVENTORY && menu_info->data0 == mSM_IV_OPEN_EXCHANGE) {
         mActor_name_t item;
         int item_cond;

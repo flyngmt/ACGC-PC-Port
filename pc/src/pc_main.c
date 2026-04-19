@@ -7,6 +7,7 @@
 #include "pc_assets.h"
 #include "pc_disc.h"
 #include "pc_typing.h"
+#include "pc_mouse.h"
 
 /* prefer discrete GPU on laptops */
 #ifdef _WIN32
@@ -245,6 +246,11 @@ int pc_platform_poll_events(void) {
                     pc_platform_update_window_size();
                 }
                 break;
+#ifdef MOUSE_INPUT
+            case SDL_MOUSEWHEEL:
+                g_mouse_wheel_delta += event.wheel.y;
+                break;
+#endif
             case SDL_KEYDOWN:
                 if (event.key.keysym.sym == SDLK_ESCAPE) {
                     if (pc_confirm_quit()) {
@@ -263,6 +269,9 @@ int pc_platform_poll_events(void) {
                 break;
         }
     }
+
+    pc_mouse_update();
+
     return 1;
 }
 
