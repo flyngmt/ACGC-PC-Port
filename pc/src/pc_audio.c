@@ -9,6 +9,7 @@
  * so OS preemption of the game thread doesn't cause audio dropouts.
  */
 #include "pc_platform.h"
+#include "pc_settings.h"
 #include "jaudio_NES/audiothread.h"
 
 #define PC_AUDIO_SAMPLE_RATE 32000
@@ -128,8 +129,15 @@ void AIInitDMA(u32 addr, u32 size) {
         n_samples = free & ~1u;
     }
 
+    int vol = g_pc_settings.master_volume;
+    if (vol < 0)   vol = 0;
+    if (vol > 100) vol = 100;
+
     for (u32 i = 0; i < n_samples; i++) {
-        ring_buffer[(wp + i) & RING_BUF_MASK] = src[i];
+        int s = ((int)src[i] * vol) / 100;
+        if (s >  32767) s =  32767;
+        if (s < -32768) s = -32768;
+        ring_buffer[(wp + i) & RING_BUF_MASK] = (s16)s;
     }
 
     SDL_MemoryBarrierRelease();
@@ -142,6 +150,11 @@ void AIStartDMA(void) {
 
 void AIStopDMA(void) {
     if (audio_device != 0) SDL_PauseAudioDevice(audio_device, 1);
+}
+
+void pc_audio_set_paused(int paused) {
+    /* Currently unused */
+    if (audio_device != 0) SDL_PauseAudioDevice(audio_device, paused ? 1 : 0);
 }
 
 u32  AIGetDMAStartAddr(void) { return 0; }

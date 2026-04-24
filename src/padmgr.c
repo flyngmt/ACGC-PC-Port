@@ -355,6 +355,30 @@ static void padmgr_UpdatePC(void) {
         this->cur_pads[i].errno = 0; /* CONT_NO_ERROR */
     }
 
+    {
+        extern int g_pc_paused;
+        extern int g_pc_pause_input_drain;
+        int suppress = g_pc_paused;
+        if (g_pc_pause_input_drain) {
+            /* Only buttons gate the drain. Gamepad stick drift could keep
+             * cur_pads[].stick_* non-zero indefinitely and lock the player
+             * out. Buttons reliably go to 0 on release. */
+            int any_button = 0;
+            for (i = 0; i < MAXCONTROLLERS; i++) {
+                if (this->cur_pads[i].button != 0) { any_button = 1; break; }
+            }
+            if (any_button) suppress = 1;
+            else            g_pc_pause_input_drain = 0;
+        }
+        if (suppress) {
+            for (i = 0; i < MAXCONTROLLERS; i++) {
+                this->cur_pads[i].button = 0;
+                this->cur_pads[i].stick_x = 0;
+                this->cur_pads[i].stick_y = 0;
+            }
+        }
+    }
+
     /* Always report PAD0 as connected (keyboard is always available) */
     this->device_type[0] = PADMGR_TYPE_CONTROLLER;
 

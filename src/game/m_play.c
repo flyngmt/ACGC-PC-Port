@@ -552,6 +552,13 @@ static void Game_play_move(GAME* game) {
     GAME_PLAY* play = (GAME_PLAY*)game;
     int pause;
 
+#ifdef TARGET_PC
+    {
+        extern int g_pc_paused;
+        if (g_pc_paused) return;
+    }
+#endif
+
     game->doing_point = 0;
     game->doing_point_specific = 0x8D;
     game->doing_point = 1;

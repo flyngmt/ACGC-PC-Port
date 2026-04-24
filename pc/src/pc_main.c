@@ -7,6 +7,7 @@
 #include "pc_assets.h"
 #include "pc_disc.h"
 #include "pc_typing.h"
+#include "pc_pause_menu.h"
 
 /* prefer discrete GPU on laptops */
 #ifdef _WIN32
@@ -211,22 +212,6 @@ void pc_platform_swap_buffers(void) {
     SDL_GL_SwapWindow(g_pc_window);
 }
 
-static int pc_confirm_quit(void) {
-    const SDL_MessageBoxButtonData buttons[] = {
-        { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, "Cancel" },
-        { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Quit" },
-    };
-    const SDL_MessageBoxData data = {
-        SDL_MESSAGEBOX_INFORMATION, g_pc_window,
-        "Animal Crossing", "Are you sure you want to quit?",
-        2, buttons, NULL
-    };
-    int button = 0;
-    if (SDL_ShowMessageBox(&data, &button) < 0)
-        return 1; /* on error, just quit */
-    return button == 1;
-}
-
 int pc_platform_poll_events(void) {
     SDL_Event event;
 
@@ -235,22 +220,25 @@ int pc_platform_poll_events(void) {
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
             case SDL_QUIT:
-                if (pc_confirm_quit()) {
-                    g_pc_running = 0;
-                    return 0;
-                }
-                break;
+                g_pc_running = 0;
+                return 0;
             case SDL_WINDOWEVENT:
                 if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
                     pc_platform_update_window_size();
                 }
                 break;
             case SDL_KEYDOWN:
-                if (event.key.keysym.sym == SDLK_ESCAPE) {
-                    if (pc_confirm_quit()) {
-                        g_pc_running = 0;
-                        return 0;
+                if (event.key.keysym.sym == SDLK_ESCAPE && !event.key.repeat) {
+                    if (g_pc_paused) {
+                        pc_pause_menu_handle_event(&event);
+                    } else {
+                        pc_pause_menu_toggle();
                     }
+                    break;
+                }
+                if (g_pc_paused) {
+                    pc_pause_menu_handle_event(&event);
+                    break; /* swallow all keys while paused */
                 }
                 if (event.key.keysym.sym == SDLK_F3 && !event.key.repeat) {
                     g_pc_no_framelimit ^= 1;
@@ -259,6 +247,7 @@ int pc_platform_poll_events(void) {
                 pc_typing_handle_event(&event);
                 break;
             case SDL_TEXTINPUT:
+                if (g_pc_paused) break;
                 pc_typing_handle_event(&event);
                 break;
         }

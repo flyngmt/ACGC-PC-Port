@@ -14,6 +14,7 @@ typedef struct {
     int preload_textures; /* 0=off (load on demand), 1=on (load all at startup), 2=on + cache file */
     int disable_resetti;  /* 0=normal (Resetti appears on reset), 1=disable reset penalty */
     int nes_aspect;       /* NES emulator aspect: 0=fullscreen stretch, 1=4:3 pillarbox (default) */
+    int master_volume;    /* Applied at the PC audio output, 0-100 (default 100) */
 } PCSettings;
 
 extern PCSettings g_pc_settings;
@@ -21,6 +22,7 @@ extern PCSettings g_pc_settings;
 void pc_settings_load(void);
 void pc_settings_save(void);
 void pc_settings_apply(void);
+void pc_settings_cycle_resolution(int* width, int* height, int dir);
 
 #ifdef __cplusplus
 }

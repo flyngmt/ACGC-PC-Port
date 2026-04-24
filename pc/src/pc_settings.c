@@ -11,6 +11,7 @@ PCSettings g_pc_settings = {
     .preload_textures = 0,
     .disable_resetti = 0,
     .nes_aspect = 1,
+    .master_volume = 100,
 };
 
 static const char* SETTINGS_FILE = "settings.ini";
@@ -39,7 +40,11 @@ static const char* DEFAULT_SETTINGS =
     "disable_resetti = 0\n"
     "\n"
     "# NES emulator aspect ratio: 0 = stretch to fullscreen, 1 = 4:3 pillarbox\n"
-    "nes_aspect = 1\n";
+    "nes_aspect = 1\n"
+    "\n"
+    "[Audio]\n"
+    "# Master output volume as a percentage (0-100)\n"
+    "master_volume = 100\n";
 
 static const char* skip_ws(const char* s) {
     while (*s == ' ' || *s == '\t') s++;
@@ -74,6 +79,8 @@ static void apply_setting(const char* key, const char* value) {
         if (val == 0 || val == 1) g_pc_settings.disable_resetti = val;
     } else if (strcmp(key, "nes_aspect") == 0) {
         if (val == 0 || val == 1) g_pc_settings.nes_aspect = val;
+    } else if (strcmp(key, "master_volume") == 0) {
+        if (val >= 0 && val <= 100) g_pc_settings.master_volume = val;
     }
 }
 
@@ -115,6 +122,10 @@ void pc_settings_save(void) {
     fprintf(f, "\n");
     fprintf(f, "# NES emulator aspect ratio: 0 = stretch to fullscreen, 1 = 4:3 pillarbox\n");
     fprintf(f, "nes_aspect = %d\n", g_pc_settings.nes_aspect);
+    fprintf(f, "\n");
+    fprintf(f, "[Audio]\n");
+    fprintf(f, "# Master output volume as a percentage (0-100)\n");
+    fprintf(f, "master_volume = %d\n", g_pc_settings.master_volume);
     fclose(f);
     printf("[Settings] Saved %s\n", SETTINGS_FILE);
 }
@@ -124,17 +135,131 @@ int pc_settings_get_nes_aspect(void) {
     return g_pc_settings.nes_aspect;
 }
 
+/* --- Resolution preset table (shared) ---
+ * Ordered by width then height. The desktop's native size is injected at
+ * first use (de-duplicated against the static list) so the user can snap
+ * to whatever their monitor is running.*/
+#define RES_MAX 32
+static int res_w_tbl[RES_MAX];
+static int res_h_tbl[RES_MAX];
+static int res_count = 0;
+
+static void add_preset(int w, int h) {
+    if (res_count >= RES_MAX) return;
+    for (int i = 0; i < res_count; i++) {
+        if (res_w_tbl[i] == w && res_h_tbl[i] == h) return; /* de-dupe */
+    }
+    int at = res_count;
+    for (int i = 0; i < res_count; i++) {
+        if (res_w_tbl[i] > w || (res_w_tbl[i] == w && res_h_tbl[i] > h)) {
+            at = i;
+            break;
+        }
+    }
+    for (int i = res_count; i > at; i--) {
+        res_w_tbl[i] = res_w_tbl[i - 1];
+        res_h_tbl[i] = res_h_tbl[i - 1];
+    }
+    res_w_tbl[at] = w;
+    res_h_tbl[at] = h;
+    res_count++;
+}
+
+static void ensure_presets(void) {
+    if (res_count > 0) return;
+    /* 4:3 */
+    add_preset(640,  480);
+    add_preset(800,  600);
+    add_preset(960,  720);
+    add_preset(1024, 768);
+    add_preset(1152, 864);
+    add_preset(1280, 960);
+    add_preset(1400, 1050);
+    add_preset(1600, 1200);
+    /* 16:9 */
+    add_preset(1280, 720);
+    add_preset(1366, 768);
+    add_preset(1600, 900);
+    add_preset(1920, 1080);
+    add_preset(2560, 1440);
+    add_preset(3840, 2160);
+    /* Desktop native (inserted sorted, de-duped against the list above). */
+    SDL_DisplayMode mode;
+    if (SDL_GetDesktopDisplayMode(0, &mode) == 0) {
+        add_preset(mode.w, mode.h);
+    }
+}
+
+/* Find the closest preset by total pixel count. Used when the caller's
+ * current (w, h) isn't in the list (e.g. custom settings.ini value). */
+static int nearest_index(int w, int h) {
+    long long want = (long long)w * h;
+    int best = 0;
+    long long best_diff = (long long)1 << 62;
+    for (int i = 0; i < res_count; i++) {
+        long long diff = (long long)res_w_tbl[i] * res_h_tbl[i] - want;
+        if (diff < 0) diff = -diff;
+        if (diff < best_diff) { best_diff = diff; best = i; }
+    }
+    return best;
+}
+
+void pc_settings_cycle_resolution(int* width, int* height, int dir) {
+    ensure_presets();
+    int cur = -1;
+    for (int i = 0; i < res_count; i++) {
+        if (res_w_tbl[i] == *width && res_h_tbl[i] == *height) { cur = i; break; }
+    }
+    if (cur < 0) cur = nearest_index(*width, *height);
+
+    if (dir > 0 && cur < res_count - 1) cur++;
+    else if (dir < 0 && cur > 0) cur--;
+
+    *width  = res_w_tbl[cur];
+    *height = res_h_tbl[cur];
+}
+
 void pc_settings_apply(void) {
     if (!g_pc_window) return;
 
-    if (g_pc_settings.fullscreen == 1) {
-        SDL_SetWindowFullscreen(g_pc_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-    } else if (g_pc_settings.fullscreen == 2) {
-        SDL_SetWindowFullscreen(g_pc_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-    } else {
-        SDL_SetWindowFullscreen(g_pc_window, 0);
-        SDL_SetWindowSize(g_pc_window, g_pc_settings.window_width, g_pc_settings.window_height);
-        SDL_SetWindowPosition(g_pc_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+    int w = g_pc_settings.window_width;
+    int h = g_pc_settings.window_height;
+
+    switch (g_pc_settings.fullscreen) {
+        case 1: {
+            /* Exclusive fullscreen at the user's chosen resolution. SDL
+             * needs the display mode set before transitioning to
+             * SDL_WINDOW_FULLSCREEN or it'll just use the desktop mode. */
+            SDL_DisplayMode target = { 0 };
+            target.w = w;
+            target.h = h;
+            int display_idx = SDL_GetWindowDisplayIndex(g_pc_window);
+            if (display_idx < 0) display_idx = 0;
+            SDL_DisplayMode closest;
+            if (SDL_GetClosestDisplayMode(display_idx, &target, &closest)) {
+                SDL_SetWindowDisplayMode(g_pc_window, &closest);
+            }
+            SDL_SetWindowFullscreen(g_pc_window, SDL_WINDOW_FULLSCREEN);
+            break;
+        }
+        case 2: {
+            /* Borderless window at the user's chosen size, centred. Exit
+             * any fullscreen mode first (including FULLSCREEN_DESKTOP)
+             * so the resize sticks. */
+            SDL_SetWindowFullscreen(g_pc_window, 0);
+            SDL_SetWindowBordered(g_pc_window, SDL_FALSE);
+            SDL_SetWindowSize(g_pc_window, w, h);
+            SDL_SetWindowPosition(g_pc_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+            break;
+        }
+        case 0:
+        default: {
+            SDL_SetWindowFullscreen(g_pc_window, 0);
+            SDL_SetWindowBordered(g_pc_window, SDL_TRUE);
+            SDL_SetWindowSize(g_pc_window, w, h);
+            SDL_SetWindowPosition(g_pc_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+            break;
+        }
     }
 
     SDL_GL_SetSwapInterval(g_pc_settings.vsync);

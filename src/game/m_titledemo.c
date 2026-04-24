@@ -132,6 +132,17 @@ static void mTD_game_end_init(GAME_PLAY* play) {
 
 extern void title_demo_move(GAME_PLAY* play) {
     if (mEv_IsTitleDemo()) {
+#ifdef TARGET_PC
+        /* Hold the demo frame counter while the Options menu owns the
+         * screen. Otherwise demo is broken. */
+        {
+            extern int pc_settings_menu_active(void);
+            if (pc_settings_menu_active()) {
+                mPlib_SetData1_controller_data_for_title_demo(0, 0, 0.0f, 0.0f);
+                return;
+            }
+        }
+#endif
         set_player_demo_keydata(S_tdemo_frame);
         S_tdemo_frame++;
 
