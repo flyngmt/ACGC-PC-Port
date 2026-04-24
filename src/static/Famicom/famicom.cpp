@@ -3,6 +3,9 @@
 
 #ifdef TARGET_PC
 #include <stdio.h>
+#include <stdlib.h>
+#include <strings.h>
+#include <dirent.h>
 extern "C" {
     void pc_fixnes_init(unsigned char* ines_data, int ines_size);
     void pc_fixnes_set_input(unsigned char buttons);
@@ -35,6 +38,50 @@ static void pc_sync_prgram_to_bbramp() {
     if (!emuPrgRAM || !famicomCommon.bbramp) return;
     u32 copy_size = emuPrgRAMsize < KS_NES_BBRAM_SIZE ? emuPrgRAMsize : KS_NES_BBRAM_SIZE;
     memcpy(famicomCommon.bbramp, emuPrgRAM, copy_size);
+}
+
+/* Empty NES item: scans ./nes_roms/*.nes so the cartridge list is populated
+ * from a user folder instead of a GC memory card image. */
+#define PC_NES_ROMS_DIR "nes_roms"
+
+static int pc_nes_rom_cmp(const void* a, const void* b) {
+    return strcasecmp(*(const char* const*)a, *(const char* const*)b);
+}
+
+static int pc_nes_rom_scan(char*** out_names) {
+    *out_names = nullptr;
+    DIR* d = opendir(PC_NES_ROMS_DIR);
+    if (d == nullptr) return 0;
+    char** names = nullptr;
+    int count = 0;
+    int cap = 0;
+    for (struct dirent* e; (e = readdir(d)) != nullptr; ) {
+        size_t len = strlen(e->d_name);
+        if (len < 5 || strcasecmp(e->d_name + len - 4, ".nes") != 0) continue;
+        if (count == cap) {
+            cap = cap ? cap * 2 : 8;
+            names = (char**)realloc(names, cap * sizeof(char*));
+        }
+        names[count++] = strdup(e->d_name);
+    }
+    closedir(d);
+    if (count > 1) qsort(names, count, sizeof(char*), pc_nes_rom_cmp);
+    *out_names = names;
+    return count;
+}
+
+static void pc_nes_rom_free(char** names, int count) {
+    for (int i = 0; i < count; i++) free(names[i]);
+    free(names);
+}
+
+static void pc_nes_rom_copy_title(u8* dst, const char* filename) {
+    /* Filename without .nes extension, space-padded to MURA_GAME_NAME_SIZE. */
+    size_t len = strlen(filename);
+    if (len >= 4 && strcasecmp(filename + len - 4, ".nes") == 0) len -= 4;
+    if (len > MURA_GAME_NAME_SIZE) len = MURA_GAME_NAME_SIZE;
+    memset(dst, ' ', MURA_GAME_NAME_SIZE);
+    memcpy(dst, filename, len);
 }
 #endif
 
@@ -1226,6 +1273,83 @@ static s32 memcard_game_load(
     u8* chr_to_i8_bufp,
     size_t chr_to_i8_buf_size
 ) {
+#ifdef TARGET_PC
+    /* PC: open ./nes_roms/<idx>.nes and copy raw iNES bytes into nesromp.
+     * fixNES parses the iNES header itself in pc_fixnes_init. */
+    (void)chr_to_i8_bufp;
+    (void)chr_to_i8_buf_size;
+    (void)unused_save_data_start_ofs;
+    (void)memcard_save_comment;
+
+    char** names;
+    int count = pc_nes_rom_scan(&names);
+    if (rom_idx < 0 || rom_idx >= count) {
+        pc_nes_rom_free(names, count);
+        return CARD_RESULT_FATAL_ERROR;
+    }
+
+    char path[512];
+    snprintf(path, sizeof(path), "%s/%s", PC_NES_ROMS_DIR, names[rom_idx]);
+    FILE* f = fopen(path, "rb");
+    if (f == nullptr) {
+        pc_nes_rom_free(names, count);
+        return CARD_RESULT_FATAL_ERROR;
+    }
+    fseek(f, 0, SEEK_END);
+    long fsize = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
+    size_t rom_buf_size = my_getmemblocksize(nesromp);
+    if (fsize <= 16 || (size_t)fsize > rom_buf_size) {
+        fclose(f);
+        pc_nes_rom_free(names, count);
+        return CARD_RESULT_FATAL_ERROR;
+    }
+    if (fread(nesromp, 1, fsize, f) != (size_t)fsize) {
+        fclose(f);
+        pc_nes_rom_free(names, count);
+        return CARD_RESULT_FATAL_ERROR;
+    }
+    fclose(f);
+
+    nesinfo_data_size = (u32)fsize;
+
+    /* nesinfo_tag_process1 unconditionally dereferences nesinfo_tags_start
+     * before checking for a terminator, so hand it a minimal END tag. The
+     * caller frees this via my_free when resetting state. */
+    if (tags_pp != nullptr) {
+        u8* end_tag = (u8*)my_malloc(NESTAG_SIZE, 1);
+        if (end_tag == nullptr) {
+            pc_nes_rom_free(names, count);
+            return CARD_RESULT_FATAL_ERROR;
+        }
+        memcpy(end_tag, NESTAG_END, NESTAG_CMD_SIZE);
+        end_tag[NESTAG_CMD_SIZE] = 0;
+        *tags_pp = end_tag;
+    }
+
+    bzero(game_header, sizeof(MemcardGameHeader_t));
+    game_header->_00 = 'G';
+    game_header->_01 = 0;
+    pc_nes_rom_copy_title(game_header->mori_name, names[rom_idx]);
+    game_header->nesrom_size = 0;
+    game_header->nestags_size = NESTAG_SIZE; /* just the END tag */
+    game_header->flags0.has_comment_img = FALSE;
+    game_header->flags0.no_copy_flag = FALSE;
+    game_header->flags1.no_move_flag = FALSE;
+
+    if (mura_save_name != nullptr) {
+        memset(mura_save_name, 0, 32);
+        strncpy(mura_save_name, names[rom_idx], 31);
+    }
+    if (famicom_save_name != nullptr) {
+        memset(famicom_save_name, 0, 32);
+        strncpy(famicom_save_name, names[rom_idx], 31);
+    }
+
+    pc_nes_rom_free(names, count);
+    return CARD_RESULT_READY;
+#else
     s32 result;
     s32 chan;
     CARDFileInfo fileInfo;
@@ -1407,6 +1531,7 @@ exit:
     }
 
     return result;
+#endif
 }
 
 static s32 memcard_game_list(
@@ -1414,6 +1539,22 @@ static s32 memcard_game_list(
     char* namebufp,
     int namebuf_size
 ) {
+#ifdef TARGET_PC
+    /* Skip the GC memory card. */
+    char** names;
+    int count = pc_nes_rom_scan(&names);
+    *n_games = count;
+    if (namebufp != nullptr) {
+        int slots = namebuf_size / MURA_GAME_NAME_SIZE;
+        if (slots > count) slots = count;
+        for (int i = 0; i < slots; i++) {
+            pc_nes_rom_copy_title((u8*)namebufp, names[i]);
+            namebufp += MURA_GAME_NAME_SIZE;
+        }
+    }
+    pc_nes_rom_free(names, count);
+    return CARD_RESULT_READY;
+#else
     CARDFileInfo fileInfo;
     CARDStat cardStatus;
     s32 result;
@@ -1533,6 +1674,7 @@ exit:
     }
 
     return result;
+#endif
 }
 
 inline JKRFileFinder* getFirstFile(const char* dir) {
