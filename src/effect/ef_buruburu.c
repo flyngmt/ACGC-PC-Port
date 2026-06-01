@@ -50,7 +50,7 @@ static void eBR_ct(eEC_Effect_c* effect, GAME* game, void* ct_arg) {
 
 static void eBR_mv(eEC_Effect_c* effect, GAME* game) {
     eEC_CLIP->set_continious_env_proc(effect,8,8);
-    sAdo_OngenPos((u32) effect, 0x2D, &effect->position);
+    sAdo_OngenPos((uintptr_t) effect, 0x2D, &effect->position);
 }
 
 static void eBR_dw(eEC_Effect_c* effect, GAME* game) {

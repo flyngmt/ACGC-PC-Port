@@ -7,6 +7,7 @@
 #include "pc_texture_pack.h"
 #include "pc_gx_internal.h"
 #include "pc_settings.h"
+#include "pc_bc7.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -460,7 +461,6 @@ static GLuint load_dds_file(const char* filepath, int* out_w, int* out_h) {
 
         switch (dxgi_format) {
             case DXGI_FORMAT_BC7_UNORM:
-                if (!g_has_bc7) { fclose(f); return 0; }
                 gl_internal = GL_COMPRESSED_RGBA_BPTC_UNORM;
                 compressed = 1;
                 block_size = 16;
@@ -546,7 +546,37 @@ static GLuint load_dds_file(const char* filepath, int* out_w, int* out_h) {
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
 
-    if (compressed) {
+    if (compressed && gl_internal == GL_COMPRESSED_RGBA_BPTC_UNORM && !g_has_bc7) {
+        // macOS OpenGL doesn't support BC7, so it has to be decoded to RGBA
+        int num_pixels = (int)(dds_width * dds_height);
+        unsigned char* rgba = (unsigned char*)malloc(num_pixels * 4);
+        if (!rgba) { free(pixels); fclose(f); glDeleteTextures(1, &tex); return 0; }
+        int blocks_x = ((int)dds_width  + 3) / 4;
+        int blocks_y = ((int)dds_height + 3) / 4;
+        for (int by = 0; by < blocks_y; by++) {
+            for (int bx = 0; bx < blocks_x; bx++) {
+                const unsigned char* block = pixels + (by * blocks_x + bx) * 16;
+                unsigned char decoded[64];
+                pc_bc7_decomp_block(block, decoded);
+                int bw = ((int)dds_width  - bx * 4) < 4 ? (int)dds_width  - bx * 4 : 4;
+                int bh = ((int)dds_height - by * 4) < 4 ? (int)dds_height - by * 4 : 4;
+                for (int py = 0; py < bh; py++) {
+                    for (int px = 0; px < bw; px++) {
+                        int dst = ((by * 4 + py) * (int)dds_width + (bx * 4 + px)) * 4;
+                        int src = (py * 4 + px) * 4;
+                        rgba[dst+0] = decoded[src+0];
+                        rgba[dst+1] = decoded[src+1];
+                        rgba[dst+2] = decoded[src+2];
+                        rgba[dst+3] = decoded[src+3];
+                    }
+                }
+            }
+        }
+        free(pixels);
+        pixels = rgba;
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLsizei)dds_width, (GLsizei)dds_height,
+                     0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    } else if (compressed) {
         glCompressedTexImage2D(GL_TEXTURE_2D, 0, gl_internal,
                                (GLsizei)dds_width, (GLsizei)dds_height,
                                0, data_size, pixels);
@@ -557,6 +587,7 @@ static GLuint load_dds_file(const char* filepath, int* out_w, int* out_h) {
 
     GLenum err = glGetError();
     if (err != GL_NO_ERROR) {
+        fprintf(stderr, "[TexturePack] GL error 0x%X uploading %s\n", err, filepath);
         glDeleteTextures(1, &tex);
         free(pixels);
         return 0;

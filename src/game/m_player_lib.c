@@ -1039,7 +1039,7 @@ static int mPlib_Object_Exchange_keep_new(GAME_PLAY* play, s16 bank, u32 src, u3
     }
 
     if (obj_ex->bank_idx < (mSc_OBJECT_BANK_NUM - 1)) {
-        obj_ex->next_bank_ram_address = (char*)ALIGN_NEXT((u32)obj_ex->next_bank_ram_address + size, 32);
+        obj_ex->next_bank_ram_address = (char*)ALIGN_NEXT((uintptr_t)obj_ex->next_bank_ram_address + size, 32);
         obj_ex->bank_idx++;
     }
 
@@ -1072,7 +1072,7 @@ extern u32 mPlib_Get_PlayerTexRom_p(int idx) {
             org_idx = 0;
         }
 
-        return (u32)Now_Private->my_org[org_idx & 7].design.data;
+        return (uintptr_t)Now_Private->my_org[org_idx & 7].design.data;
     }
 }
 
@@ -1102,7 +1102,7 @@ extern u32 mPlib_Get_PlayerPalletRom_p(int idx) {
             org_idx = 0;
         }
 
-        return (u32)mNW_PaletteIdx2Palette(Now_Private->my_org[org_idx & 7].palette);
+        return (uintptr_t)mNW_PaletteIdx2Palette(Now_Private->my_org[org_idx & 7].palette);
     }
 }
 
@@ -1667,7 +1667,7 @@ extern void mPlib_request_main_demo_wait_from_submenu(ACTOR* speak_actor_p) {
     change_data_from_submenu_p->requested_index_pending = TRUE;
 
     req_demo_wait_p->umbrella_flag = FALSE;
-    req_demo_wait_p->label = (u32)speak_actor_p;
+    req_demo_wait_p->label = (uintptr_t)speak_actor_p;
 
     if (speak_actor_p != NULL) {
         mPlib_Set_able_force_speak_label(speak_actor_p);
@@ -1692,7 +1692,7 @@ extern int mPlib_Check_able_force_speak_label(GAME* game, ACTOR* label) {
 
 extern void mPlib_Set_able_force_speak_label(ACTOR* label) {
     if (Common_Get(player_actor_exists)) {
-        GET_PLAYER_ACTOR_NOW()->able_force_speak_label = (u32)label;
+        GET_PLAYER_ACTOR_NOW()->able_force_speak_label = (uintptr_t)label;
     }
 }
 
@@ -2617,7 +2617,7 @@ extern int mPlib_check_label_player_demo_wait(GAME* game, void* label) {
     if (mPlib_get_player_actor_main_index(game) == mPlayer_INDEX_DEMO_WAIT) {
         mPlayer_main_demo_wait_c* demo_wait_p = &GET_PLAYER_ACTOR_GAME(game)->main_data.demo_wait;
 
-        if (demo_wait_p->label == (u32)label) {
+        if (demo_wait_p->label == (uintptr_t)label) {
             return TRUE;
         }
     }
@@ -2792,11 +2792,11 @@ extern int mPlib_Check_StopNet(xyz_t* pos_p) {
     return GET_PLAYER_ACTOR_NOW()->Check_StopNet_proc(GET_PLAYER_ACTOR_NOW_ACTOR(), pos_p);
 }
 
-extern u32 mPlib_Get_item_net_catch_label(void) {
+extern uintptr_t mPlib_Get_item_net_catch_label(void) {
     return GET_PLAYER_ACTOR_NOW()->Get_item_net_catch_label_proc(GET_PLAYER_ACTOR_NOW_ACTOR());
 }
 
-extern int mPlib_Change_item_net_catch_label(u32 label, s8 type) {
+extern int mPlib_Change_item_net_catch_label(uintptr_t label, s8 type) {
     return GET_PLAYER_ACTOR_NOW()->Change_item_net_catch_label_proc(GET_PLAYER_ACTOR_NOW_ACTOR(), label, type);
 }
 

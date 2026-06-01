@@ -633,11 +633,11 @@ static void aGTT_bite(ACTOR* actorx, GAME* game) {
                 actorx->world.position.y = now_y;
             }
 
-            sAdo_OngenPos((u32)actorx, NA_SE_24, &actorx->world.position);
+            sAdo_OngenPos((uintptr_t)actorx, NA_SE_24, &actorx->world.position);
         } else {
             static f32 rr[] = { 6.0f, 7.0f, 8.0f, 8.0f, 9.0f, 10.0f, 15.0f, 15.0f };
             xyz_t pos;
-            
+
             pos = aGTT_pos_calc(uki->actor_class.world.position, game, uki->actor_class.world.angle.y, 8.0f, rr[gyo->size_type]);
             actorx->world.position.x = pos.x;
             actorx->world.position.z = pos.z;
@@ -646,7 +646,7 @@ static void aGTT_bite(ACTOR* actorx, GAME* game) {
             }
 
             aGTT_set_angle(actorx, uki->actor_class.world.angle.y);
-            sAdo_OngenPos((u32)actorx, NA_SE_24, &actorx->world.position);
+            sAdo_OngenPos((uintptr_t)actorx, NA_SE_24, &actorx->world.position);
             CLIP(gyo_clip)->hitcheck_gyoei_proc(&actorx->world.position, gyo->size_type);
 
             if (DECREMENT_TIMER(gyo->swork0) == 0) {

@@ -3,6 +3,9 @@
 
 #include "types.h"
 #include "string.h"
+#ifdef TARGET_PC
+#include <string.h>
+#endif
 #include "dolphin/gx.h"
 #include "dolphin/os.h"
 #include "JSystem/JUtility/TColor.h"

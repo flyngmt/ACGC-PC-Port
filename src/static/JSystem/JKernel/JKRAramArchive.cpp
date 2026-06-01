@@ -10,6 +10,7 @@
 #include "JSystem/JUtility/JUTAssertion.h"
 
 #ifdef TARGET_PC
+#include <stdlib.h>
 #include "pc_bswap.h"
 #define bswap32 pc_bswap32
 #define bswap16 pc_bswap16
@@ -35,14 +36,21 @@ JKRAramArchive::~JKRAramArchive() {
         if (mArcInfoBlock) {
             SDIFileEntry* fileEntries = mFileEntries;
             for (int i = 0; i < mArcInfoBlock->num_file_entries; i++) {
-                if (fileEntries->mData != nullptr) {
-                    JKRFreeToHeap(mHeap, fileEntries->mData);
+                if (getFileEntryData(fileEntries) != nullptr) {
+                    JKRFreeToHeap(mHeap, getFileEntryData(fileEntries));
                 }
                 fileEntries++;
             }
             JKRFreeToHeap(mHeap, mArcInfoBlock);
             mArcInfoBlock = nullptr;
         }
+
+#ifdef TARGET_PC
+        if (mFileEntryDataPtrs) {
+            free(mFileEntryDataPtrs);
+            mFileEntryDataPtrs = nullptr;
+        }
+#endif
 
         if (mDvdFile) {
             delete mDvdFile;
@@ -102,14 +110,21 @@ void JKRAramArchive::unmountFixed() {
     if (mArcInfoBlock) {
         SDIFileEntry* fileEntries = mFileEntries;
         for (int i = 0; i < mArcInfoBlock->num_file_entries; i++) {
-            if (fileEntries->mData != nullptr) {
-                JKRFreeToHeap(mHeap, fileEntries->mData);
+            if (getFileEntryData(fileEntries) != nullptr) {
+                JKRFreeToHeap(mHeap, getFileEntryData(fileEntries));
             }
             fileEntries++;
         }
         JKRFreeToHeap(mHeap, mArcInfoBlock);
         mArcInfoBlock = nullptr;
     }
+
+#ifdef TARGET_PC
+    if (mFileEntryDataPtrs) {
+        free(mFileEntryDataPtrs);
+        mFileEntryDataPtrs = nullptr;
+    }
+#endif
 
     if (mDvdFile)
         delete mDvdFile;
@@ -125,12 +140,15 @@ void JKRAramArchive::unmountFixed() {
 CW_FORCE_STRINGS(JKRAramArchive_cpp, __FILE__, "isMounted()", "mMountCount == 1")
 #endif
 
-bool JKRAramArchive::open(long entryNum) {
+bool JKRAramArchive::open(s32 entryNum) {
     mArcInfoBlock = nullptr;
     mDirectories = nullptr;
     mFileEntries = nullptr;
     mStrTable = nullptr;
     mBlock = nullptr;
+#ifdef TARGET_PC
+    mFileEntryDataPtrs = nullptr;
+#endif
 
     mDvdFile = new (JKRGetSystemHeap(), mMountDirection == MOUNT_DIRECTION_HEAD ? 4 : -4) JKRDvdFile(entryNum);
     if (mDvdFile == nullptr) {
@@ -206,6 +224,7 @@ bool JKRAramArchive::open(long entryNum) {
                 mFileEntries[i].mSize = bswap32(mFileEntries[i].mSize);
                 /* mData is a host pointer, don't swap */
             }
+            mFileEntryDataPtrs = (void**)calloc(mArcInfoBlock->num_file_entries > 0 ? mArcInfoBlock->num_file_entries : 1, sizeof(void*));
 #endif
 
             u32 aramSize = ALIGN_NEXT(mem->file_data_length, 32);
@@ -218,7 +237,7 @@ bool JKRAramArchive::open(long entryNum) {
                 OSReport("[PC] RARC: loading %u bytes of file data to ARAM at %u\n",
                          aramSize, mBlock->getAddress());
 #endif
-                JKRDvdToAram(entryNum, mBlock->getAddress(), EXPAND_SWITCH_DECOMPRESS,
+                JKRDvdToAram(entryNum, (uintptr_t)mBlock->getAddress(), EXPAND_SWITCH_DECOMPRESS,
                              mem->header_length + mem->file_data_offset, 0);
             }
         }
@@ -240,7 +259,7 @@ void* JKRAramArchive::fetchResource(SDIFileEntry* fileEntry, u32* pSize) {
     u32 sizeRef;
     u8* data;
 
-    if (fileEntry->mData) {
+    if (getFileEntryData(fileEntry)) {
         if (pSize)
             *pSize = fileEntry->mSize;
     } else {
@@ -250,10 +269,10 @@ void* JKRAramArchive::fetchResource(SDIFileEntry* fileEntry, u32* pSize) {
             fetchResource_subroutine(fileEntry->mDataOffset + addres, fileEntry->mSize, mHeap, compression, &data);
         if (pSize)
             *pSize = size;
-        fileEntry->mData = (void*)data;
+        setFileEntryData(fileEntry, (void*)data);
     }
 
-    return fileEntry->mData;
+    return getFileEntryData(fileEntry);
 }
 
 void* JKRAramArchive::fetchResource(void* data, u32 compressedSize, SDIFileEntry* fileEntry, u32* pSize,
@@ -263,8 +282,8 @@ void* JKRAramArchive::fetchResource(void* data, u32 compressedSize, SDIFileEntry
     if (fileSize > compressedSize) {
         fileSize = compressedSize;
     }
-    if (fileEntry->mData) {
-        JKRHeap::copyMemory(data, fileEntry->mData, fileSize);
+    if (getFileEntryData(fileEntry)) {
+        JKRHeap::copyMemory(data, getFileEntryData(fileEntry), fileSize);
     } else {
         int compression = JKRConvertAttrToCompressionType(fileEntry->mFlag >> 0x18);
         if (expandSwitch != EXPAND_SWITCH_DECOMPRESS)
@@ -280,7 +299,11 @@ void* JKRAramArchive::fetchResource(void* data, u32 compressedSize, SDIFileEntry
     return data;
 }
 
+#ifdef TARGET_PC
+uintptr_t JKRAramArchive::getAramAddress_Entry(SDIFileEntry* fileEntry) {
+#else
 u32 JKRAramArchive::getAramAddress_Entry(SDIFileEntry* fileEntry) {
+#endif
     JUT_ASSERT(isMounted());
 
     if (fileEntry == nullptr) {
@@ -289,12 +312,20 @@ u32 JKRAramArchive::getAramAddress_Entry(SDIFileEntry* fileEntry) {
     return fileEntry->mDataOffset + mBlock->getAddress();
 }
 
+#ifdef TARGET_PC
+uintptr_t JKRAramArchive::getAramAddress(u32 type, const char* file) {
+#else
 u32 JKRAramArchive::getAramAddress(u32 type, const char* file) {
+#endif
     SDIFileEntry* entry = findTypeResource(type, file);
     return getAramAddress_Entry(entry);
 }
 
+#ifdef TARGET_PC
+u32 JKRAramArchive::fetchResource_subroutine(uintptr_t srcAram, u32 size, u8* data, u32 expandSize, int compression) {
+#else
 u32 JKRAramArchive::fetchResource_subroutine(u32 srcAram, u32 size, u8* data, u32 expandSize, int compression) {
+#endif
     JUT_ASSERT((srcAram & 0x1f) == 0);
 
     u32 sizeRef;
@@ -319,7 +350,11 @@ u32 JKRAramArchive::fetchResource_subroutine(u32 srcAram, u32 size, u8* data, u3
     }
 }
 
+#ifdef TARGET_PC
+u32 JKRAramArchive::fetchResource_subroutine(uintptr_t srcAram, u32 size, JKRHeap* heap, int compression, u8** pBuf) {
+#else
 u32 JKRAramArchive::fetchResource_subroutine(u32 srcAram, u32 size, JKRHeap* heap, int compression, u8** pBuf) {
+#endif
     u32 resSize;
     u32 alignedSize = ALIGN_NEXT(size, 32);
 

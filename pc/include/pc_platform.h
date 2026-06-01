@@ -2,11 +2,7 @@
 #ifndef PC_PLATFORM_H
 #define PC_PLATFORM_H
 
-/* 32-bit required: decomp code (JSystem, emu64) casts pointers to u32 */
 #include <stdint.h>
-#if UINTPTR_MAX != 0xFFFFFFFFu
-#error "This project must be compiled as 32-bit (pointer size != 4 bytes)"
-#endif
 
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
@@ -29,7 +25,12 @@
 #define PC_SCREEN_HEIGHT  PC_GC_HEIGHT
 #define PC_WINDOW_TITLE   "Animal Crossing"
 
+#if UINTPTR_MAX > 0xFFFFFFFFu
+/* 64-bit: structs with pointer fields are larger, need more arena space */
+#define PC_MAIN_MEMORY_SIZE   (48 * 1024 * 1024)
+#else
 #define PC_MAIN_MEMORY_SIZE   (24 * 1024 * 1024)
+#endif
 #define PC_ARAM_SIZE          (16 * 1024 * 1024)
 #define PC_FIFO_SIZE          (256 * 1024)
 
@@ -52,11 +53,18 @@
 #include <windows.h>
 #undef near
 #undef far
+#elif defined(__APPLE__)
+#include <signal.h>
+#include <sys/mman.h>
+#include <dlfcn.h>
+#include <mach-o/dyld.h>
 #else
+#include <signal.h>
 #include <sys/mman.h>
 #include <dlfcn.h>
 #include <elf.h>
 #endif
+#include <setjmp.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -67,8 +75,8 @@ extern SDL_Window*   g_pc_window;
 extern SDL_GLContext  g_pc_gl_context;
 extern int           g_pc_running;
 extern int           g_pc_verbose;
-extern int           g_pc_frame_limit_override;
-extern int           g_pc_speedhack_enabled;
+extern int           g_pc_no_framelimit;
+extern int           g_pc_fast_forward;
 extern int           g_pc_time_override;
 extern int           g_pc_min_override;
 extern int           g_pc_sec_override;
@@ -97,9 +105,26 @@ void pc_platform_shutdown(void);
 void pc_platform_swap_buffers(void);
 int  pc_platform_poll_events(void);
 
+/* --- Crash protection (VEH + setjmp/longjmp) --- */
+void pc_crash_protection_init(void);
+void pc_crash_set_jmpbuf(jmp_buf* buf);  /* NULL to disable */
+uintptr_t pc_crash_get_addr(void);
+uintptr_t pc_crash_get_data_addr(void);
+
 /* EXE image range for seg2k0 pointer disambiguation (vs N64 segment addresses) */
-extern unsigned int pc_image_base;
-extern unsigned int pc_image_end;
+extern uintptr_t pc_image_base;
+extern uintptr_t pc_image_end;
+
+/* Compile-time type validation */
+#ifdef __cplusplus
+static_assert(sizeof(u32) == 4, "u32 must be 4 bytes");
+static_assert(sizeof(u16) == 2, "u16 must be 2 bytes");
+static_assert(sizeof(uintptr_t) == sizeof(void*), "uintptr_t must match pointer size");
+#else
+_Static_assert(sizeof(u32) == 4, "u32 must be 4 bytes");
+_Static_assert(sizeof(u16) == 2, "u16 must be 2 bytes");
+_Static_assert(sizeof(uintptr_t) == sizeof(void*), "uintptr_t must match pointer size");
+#endif
 
 /* --- Model viewer --- */
 extern int g_pc_model_viewer;

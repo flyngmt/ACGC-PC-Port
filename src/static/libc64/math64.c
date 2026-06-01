@@ -5,7 +5,7 @@ f32 fatan2(f32 x, f32 y) {
     return atan2(x, y);
 }
 
-f32 fsqrt(f32 x) {
+f32 game_fsqrt(f32 x) {
     return sqrtf(x);
 }
 

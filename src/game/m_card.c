@@ -625,7 +625,7 @@ static int mCD_write_comp_bg_read(mCD_bg_info_c* bg_info, s32 chan, s32* result,
                     bg_info->length = mCD_MEMCARD_SECTORSIZE;
                 }
 
-                bg_info->data = (void*)((u32)data + ofs);
+                bg_info->data = (void*)((uintptr_t)data + ofs);
                 bzero(*read_p, mCD_MEMCARD_SECTORSIZE);
                 *result = CARDReadAsync(&bg_info->fileInfo, *read_p, bg_info->length, bg_info->offset, NULL);
                 if (*result == CARD_RESULT_READY) {
@@ -666,7 +666,7 @@ static int mCD_write_comp_bg_write(mCD_bg_info_c* bg_info, s32 chan, s32* result
             } else {
                 bg_info->length = mCD_MEMCARD_SECTORSIZE;
             }
-            bg_info->data = (void*)((u32)data + ofs);
+            bg_info->data = (void*)((uintptr_t)data + ofs);
             bzero(*read_p, mCD_MEMCARD_SECTORSIZE);
 
             *result = CARDReadAsync(&bg_info->fileInfo, *read_p, bg_info->length, bg_info->offset, NULL);
@@ -825,7 +825,7 @@ static int mCD_read_fg(void* buf, const char* filename, s32 length, s32 offset, 
     void* workArea;
     int res = mCD_RESULT_ERROR;
 
-    if (buf != NULL && IS_ALIGNED((u32)buf, 32)) {
+    if (buf != NULL && IS_ALIGNED((uintptr_t)buf, 32)) {
         int card_res = mCD_check_card(result, mCD_MEMCARD_SECTORSIZE, chan);
 
         if (card_res == mCD_RESULT_SUCCESS) {

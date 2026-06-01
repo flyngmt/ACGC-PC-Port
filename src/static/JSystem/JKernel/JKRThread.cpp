@@ -14,8 +14,13 @@ JKRThread::JKRThread(u32 stackSize, int msgCount, int threadPrio) : mLink(this) 
     this->mStackSize = JKR_ALIGN32(stackSize);
     this->mStackMemory = JKRHeap::alloc(this->mStackSize, 32, this->mHeap);
     this->mThreadRecord = (OSThread*)JKRHeap::alloc(sizeof(OSThread), 32, this->mHeap);
+#ifdef TARGET_PC
+    OSCreateThread(this->mThreadRecord, &JKRThread::start, this, (void*)((uintptr_t)this->mStackMemory + this->mStackSize),
+                   this->mStackSize, threadPrio, OS_THREAD_ATTR_DETACH);
+#else
     OSCreateThread(this->mThreadRecord, &JKRThread::start, this, (void*)((u32)this->mStackMemory + this->mStackSize),
                    this->mStackSize, threadPrio, OS_THREAD_ATTR_DETACH);
+#endif
     this->mMesgCount = msgCount;
     this->mMesgBuffer = (OSMessage*)JKRHeap::alloc(mMesgCount * sizeof(OSMessage), 0, this->mHeap);
     OSInitMessageQueue(&this->mMesgQueue, this->mMesgBuffer, this->mMesgCount);
@@ -25,7 +30,11 @@ JKRThread::JKRThread(u32 stackSize, int msgCount, int threadPrio) : mLink(this) 
 JKRThread::JKRThread(OSThread* threadRecord, int msgCount) : mLink(this) {
     this->mHeap = nullptr;
     this->mThreadRecord = threadRecord;
+#ifdef TARGET_PC
+    this->mStackSize = (uintptr_t)threadRecord->stackEnd - (uintptr_t)threadRecord->stackBase;
+#else
     this->mStackSize = (u32)threadRecord->stackEnd - (u32)threadRecord->stackBase;
+#endif
     this->mStackMemory = threadRecord->stackBase;
     this->mMesgCount = msgCount;
     this->mMesgBuffer = (OSMessage*)JKRHeap::sSystemHeap->alloc(mMesgCount * sizeof(OSMessage), 4);

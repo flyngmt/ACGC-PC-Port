@@ -315,24 +315,17 @@ static void Kamakura_Indoor_Actor_move(ACTOR* actorx, GAME* game) {
     GAME_PLAY* play = (GAME_PLAY*)game;
     aKI_candle_ring_c* ring_p = k_indoor->candle_ring;
     aKI_candle_fire_c* fire_p = k_indoor->candle_fire;
-    u32 counter;
+    u32 counter = game->frame_counter;
     static u32 candle_ring_late_frame[] = { 0, 7 };
     static u32 candle_fire_late_frame[] = { 0, 6 };
     int i;
     s16 timer;
 
-    sAdo_OngenPos((u32)actorx, NA_SE_KOKORO_TOGURU, &k_indoor->mochi.pos);
-    k_indoor->anim_frame += (f32)game->graph->dt_num_60fps_frames;
-    while (k_indoor->anim_frame >= 1024.0f) {
-        k_indoor->anim_frame -= 1024.0f;
-    }
-    counter = (u32)k_indoor->anim_frame;
-
+    sAdo_OngenPos((uintptr_t)actorx, NA_SE_KOKORO_TOGURU, &k_indoor->mochi.pos);
     {
         static float dt_accum = 0.0f;
         if (graph_dt_period_elapsed(game, &dt_accum, 8.0f)) {
             xyz_t soba_yuge_pos = k_indoor->mochi.pos;
-
             soba_yuge_pos.y += 42.0f;
             eEC_CLIP->effect_make_proc(eEC_EFFECT_SOBA_YUGE, soba_yuge_pos, 1, 0, game, RSV_NO, 14, 1);
         }

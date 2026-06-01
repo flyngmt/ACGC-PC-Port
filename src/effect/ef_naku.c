@@ -57,7 +57,7 @@ static void eNaku_mv(eEC_Effect_c* effect, GAME* game) {
         }
     }
 
-    sAdo_OngenPos((u32)effect, 0x2E, &effect->position);
+    sAdo_OngenPos((uintptr_t)effect, 0x2E, &effect->position);
 }
 
 static void eNaku_dw(eEC_Effect_c* effect, GAME* game) {

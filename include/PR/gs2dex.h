@@ -108,7 +108,7 @@ typedef union {
   uObjBg_t        b;
   uObjScaleBg_t   s;
   long long int   force_structure_alignment;
-} uObjBg;
+} uObjBg ATTRIBUTE_ALIGN(8);
 
 /*---------------------------------------------------------------------------*
  *	2D Objects
@@ -136,7 +136,7 @@ typedef struct {
 typedef union {
   uObjSprite_t      s;
   long long int   force_structure_alignment;
-} uObjSprite;
+} uObjSprite ATTRIBUTE_ALIGN(8);
 
 /*---------------------------------------------------------------------------*
  *	2D Matrix
@@ -151,7 +151,7 @@ typedef struct {
 typedef union {
   uObjMtx_t	m;
   long long int force_structure_alignment;
-} uObjMtx;
+} uObjMtx ATTRIBUTE_ALIGN(8);
 
 typedef struct {
   s16   X, Y;           /* s10.2  */
@@ -162,7 +162,7 @@ typedef struct {
 typedef union {
   uObjSubMtx_t	m;
   long long int force_structure_alignment;
-} uObjSubMtx;
+} uObjSubMtx ATTRIBUTE_ALIGN(8);
 
 /*---------------------------------------------------------------------------*
  *	Loading into TMEM
@@ -218,7 +218,7 @@ typedef union {
   uObjTxtrTile_t       tile;
   uObjTxtrTLUT_t       tlut;
   long long int   force_structure_alignment;
-} uObjTxtr;
+} uObjTxtr ATTRIBUTE_ALIGN(8);
 
 /*---------------------------------------------------------------------------*
  *	Loading into TMEM & 2D Objects

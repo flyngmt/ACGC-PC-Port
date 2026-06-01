@@ -33,7 +33,11 @@ void Jac_SelfInitHeap(jaheap_*, u32, u32, u32);
 BOOL Jac_SelfAllocHeap(jaheap_*, jaheap_*, u32, u32);
 BOOL Jac_SetGroupHeap(jaheap_*, jaheap_*);
 void Jac_CutdownHeap(jaheap_*);
+#ifdef TARGET_PC
+void Jac_InitMotherHeap(jaheap_*, uintptr_t, u32, u8);
+#else
 void Jac_InitMotherHeap(jaheap_*, u32, u32, u8);
+#endif
 BOOL Jac_AllocHeap(jaheap_*, jaheap_*, u32);
 BOOL Jac_DeleteHeap(jaheap_*);
 void Jac_GarbageCollection_St(jaheap_*);

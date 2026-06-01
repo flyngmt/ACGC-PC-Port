@@ -888,7 +888,7 @@ typedef struct player_request_door_s {
     s16 angle_y;
     xyz_t player_pos;
     int type;
-    u32 label;
+    uintptr_t label;
 } mPlayer_request_door_c;
 
 typedef struct player_request_outdoor_s {
@@ -898,7 +898,7 @@ typedef struct player_request_outdoor_s {
 
 typedef struct player_request_demo_wait_s {
     int umbrella_flag;
-    u32 label;
+    uintptr_t label;
 } mPlayer_request_demo_wait_c;
 
 typedef struct player_request_demo_walk_s {
@@ -956,16 +956,16 @@ typedef struct player_request_shock_s {
 } mPlayer_request_shock_c;
 
 typedef struct player_request_push_snowball_s {
-    u32 label;
+    uintptr_t label;
     int wade_flag;
 } mPlayer_request_push_snowball_c;
 
 typedef struct player_request_stung_mosquito_s {
-    u32 label;
+    uintptr_t label;
 } mPlayer_request_stung_mosquito_c;
 
 typedef struct player_request_notice_mosquito_s {
-    u32 label;
+    uintptr_t label;
 } mPlayer_request_notice_mosquito_c;
 
 typedef struct player_request_switch_on_lighthouse_s {
@@ -1019,7 +1019,7 @@ typedef struct player_request_wade_s {
 typedef struct player_request_wade_snowball_s {
     int dir;
     xyz_t snowball_dist;
-    u32 label;
+    uintptr_t label;
 } mPlayer_request_wade_snowball_c;
 
 typedef struct player_request_push_s {
@@ -1515,7 +1515,7 @@ typedef struct player_main_wait_s {
 } mPlayer_main_wait_c;
 
 typedef struct player_main_door_s {
-    u32 label;
+    uintptr_t label;
 } mPlayer_main_door_c;
 
 typedef struct player_main_outdoor_s {
@@ -1756,7 +1756,7 @@ typedef struct player_main_putin_item_s {
 
 typedef struct player_main_demo_wait_s {
     int effect_id;
-    u32 label;
+    uintptr_t label;
 } mPlayer_main_demo_wait_c;
 
 typedef struct player_main_release_creature_s {
@@ -1888,7 +1888,7 @@ typedef struct player_main_change_netcloth_s {
 } mPlayer_main_change_cloth_c;
 
 typedef struct player_main_push_snowball_s {
-    u32 label;
+    uintptr_t label;
 } mPlayer_main_push_snowball_c;
 
 typedef struct player_main_complete_payment_s {
@@ -1902,11 +1902,11 @@ typedef struct player_main_fail_emu_s {
 } mPlayer_main_fail_emu_c;
 
 typedef struct player_main_stung_mosquito_s {
-    u32 label;
+    uintptr_t label;
 } mPlayer_main_stung_mosquito_c;
 
 typedef struct player_main_notice_mosquito_s {
-    u32 label;
+    uintptr_t label;
     f32 timer;
     int msg_mode;
 } mPlayer_main_notice_mosquito_c;
@@ -1924,7 +1924,7 @@ typedef struct player_main_wade_snowball_s {
     xyz_t end_pos;
     f32 timer;
     xyz_t snowball_dist;
-    u32 snowball_label;
+    uintptr_t snowball_label;
 } mPlayer_main_wade_snowball_c;
 
 typedef struct player_main_demo_geton_boat_wade_s {
@@ -2131,15 +2131,15 @@ struct player_actor_s {
     /* 0x0E68 */ int umbrella_state;
     /* 0x0E6C */ s8 unable_hand_item_in_demo;
     /* 0x0E6D */ s8 able_hand_all_item_in_demo;
-    /* 0x0E70 */ u32 item_net_catch_label;
+    /* 0x0E70 */ uintptr_t item_net_catch_label;
     /* 0x0E74 */ s8 item_net_catch_type;
     /* 0x0E75 */ s8 item_net_has_catch;
-    /* 0x0E78 */ u32 item_net_catch_label_request_table[mPlayer_NET_CATCH_TABLE_COUNT];
+    /* 0x0E78 */ uintptr_t item_net_catch_label_request_table[mPlayer_NET_CATCH_TABLE_COUNT];
     /* 0x0E98 */ s8 item_net_catch_type_request_table[mPlayer_NET_CATCH_TABLE_COUNT];
     /* 0x0EA0 */ xyz_t item_net_catch_pos_request_table[mPlayer_NET_CATCH_TABLE_COUNT];
     /* 0x0F00 */ f32 item_net_catch_radius_request_table[mPlayer_NET_CATCH_TABLE_COUNT];
     /* 0x0F20 */ int item_net_catch_request_use_count;
-    /* 0x0F24 */ u32 item_net_catch_label_request_force;
+    /* 0x0F24 */ uintptr_t item_net_catch_label_request_force;
     /* 0x0F28 */ s8 item_net_catch_type_request_force;
     /* 0x0F2C */ int item_net_catch_insect_idx;
 #if VERSION >= VER_GAFU01_00
@@ -2213,7 +2213,7 @@ struct player_actor_s {
     /* 0x121C */ u16 player_frame_counter;
     /* 0x121E */ s8 bee_chase_bgm_flag;
     /* 0x121F */ s8 status_for_bee;
-    /* 0x1220 */ u32 able_force_speak_label;
+    /* 0x1220 */ uintptr_t able_force_speak_label;
     /* 0x1224 */ int player_sunburn_rankup;
     /* 0x1228 */ int player_sunburn_rankdown;
     /* 0x122C */ s8 radio_exercise_command_ring_buffer[mPlayer_RADIO_EXERCISE_COMMAND_RING_BUFFER_SIZE];
@@ -2267,9 +2267,9 @@ struct player_actor_s {
     /* 0x12F8 */ int (*request_main_demo_get_golden_axe_wait_all_proc)(GAME*, int);
     /* 0x12FC */ int (*check_request_main_priority_proc)(GAME*, int);
     /* 0x1300 */ void* (*get_door_label_proc)(GAME*);
-    /* 0x1304 */ int (*Set_Item_net_catch_request_table_proc)(ACTOR*, GAME*, u32, s8, const xyz_t*, f32);
+    /* 0x1304 */ int (*Set_Item_net_catch_request_table_proc)(ACTOR*, GAME*, uintptr_t, s8, const xyz_t*, f32);
     /* 0x1308 */ f32 (*Get_Item_net_catch_swing_timer_proc)(ACTOR*, GAME*);
-    /* 0x130C */ int (*Set_Item_net_catch_request_force_proc)(ACTOR*, GAME*, u32, s8);
+    /* 0x130C */ int (*Set_Item_net_catch_request_force_proc)(ACTOR*, GAME*, uintptr_t, s8);
     /* 0x1310 */ void (*Set_force_position_angle_proc)(GAME*, const xyz_t*, const s_xyz*, u8);
     /* 0x1314 */ u8 (*Get_force_position_angle_proc)(GAME*, xyz_t*, s_xyz*);
     /* 0x1318 */ int (*Get_WadeEndPos_proc)(GAME*, xyz_t*);
@@ -2279,8 +2279,8 @@ struct player_actor_s {
     /* 0x1328 */ int (*check_able_change_camera_normal_index_proc)(ACTOR*);
     /* 0x132C */ int (*Check_able_force_speak_label_proc)(GAME*, void*);
     /* 0x1330 */ int (*check_cancel_request_change_proc_index_proc)(int);
-    /* 0x1334 */ u32 (*Get_item_net_catch_label_proc)(ACTOR*);
-    /* 0x1338 */ int (*Change_item_net_catch_label_proc)(ACTOR*, u32, s8);
+    /* 0x1334 */ uintptr_t (*Get_item_net_catch_label_proc)(ACTOR*);
+    /* 0x1338 */ int (*Change_item_net_catch_label_proc)(ACTOR*, uintptr_t, s8);
     /* 0x133C */ int (*Check_StopNet_proc)(ACTOR*, xyz_t*);
     /* 0x1340 */ int (*Check_HitAxe_proc)(ACTOR*, xyz_t*);
     /* 0x1344 */ int (*Check_VibUnit_OneFrame_proc)(ACTOR*, const xyz_t*);

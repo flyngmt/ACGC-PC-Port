@@ -1,4 +1,7 @@
 #include <libc/string.h>
+#ifdef TARGET_PC
+#include <string.h>
+#endif
 #include <dolphin/vi.h>
 #include "_mem.h"
 #include "JSystem/J2D/J2DGrafContext.h"

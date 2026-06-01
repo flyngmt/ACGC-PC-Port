@@ -81,19 +81,51 @@ s32 DVDConvertPathToEntrynum(const char* path) {
     return idx;
 }
 
-/* DVDFileInfo: 0x3C bytes. We store FILE* in the DVDCommandBlock area at offset 0x18. */
-/* For disc-image backed files, FILE* is set to sentinel DISC_SENTINEL,
- * and the disc offset is stored in startAddr (0x30). */
+/* DVDFileInfo field access — compute offsets from struct layout so they work on 64-bit.
+ * On GC (32-bit), DVDCommandBlock has 4-byte pointers → DVDFileInfo is 0x3C bytes.
+ * On 64-bit, pointers are 8 bytes → DVDCommandBlock grows, shifting all fields.
+ *
+ * DVDCommandBlock layout (see dolphin/dvd.h):
+ *   DVDCommandBlock* next, *prev;   // 2 pointers
+ *   u32 command, state, offset, length;  // 4 × u32
+ *   void* addr;                     // 1 pointer ← we store FILE* here
+ *   u32 currTransferSize, transferredSize; // 2 × u32
+ *   DVDDiskID* id;                  // 1 pointer
+ *   DVDCBCallback callback;         // 1 pointer (func ptr)
+ *   void* userData;                 // 1 pointer
+ *
+ * DVDFileInfo = { DVDCommandBlock cb; u32 startAddr; u32 length; DVDCallback callback; }
+ */
+#include <stddef.h>
+
+/* Mirror the struct layout locally to compute correct offsets without
+ * pulling in the full dolphin/dvd.h (which conflicts with our void* stubs). */
+typedef struct {
+    void* next; void* prev;          /* 2 ptrs */
+    u32 command; s32 state;
+    u32 offset_; u32 length_;
+    void* addr;                      /* FILE* stored here */
+    u32 currTransferSize; u32 transferredSize;
+    void* id; void (*callback_)(s32, void*); void* userData;
+} DVDCommandBlock_PC;
+
+typedef struct {
+    DVDCommandBlock_PC cb;
+    u32 startAddr;
+    u32 length;
+    void (*callback)(s32, void*);
+} DVDFileInfo_PC;
+
 #define DISC_SENTINEL ((FILE*)(uintptr_t)0xDEADC0DE)
 
 static FILE** dvd_fi_fp(void* fileInfo) {
-    return (FILE**)((u8*)fileInfo + 0x18);
+    return (FILE**)((u8*)fileInfo + offsetof(DVDFileInfo_PC, cb) + offsetof(DVDCommandBlock_PC, addr));
 }
 static u32* dvd_fi_length(void* fileInfo) {
-    return (u32*)((u8*)fileInfo + 0x34);
+    return (u32*)((u8*)fileInfo + offsetof(DVDFileInfo_PC, length));
 }
 static u32* dvd_fi_startAddr(void* fileInfo) {
-    return (u32*)((u8*)fileInfo + 0x30);
+    return (u32*)((u8*)fileInfo + offsetof(DVDFileInfo_PC, startAddr));
 }
 
 BOOL DVDFastOpen(s32 entrynum, void* fileInfo) {
@@ -107,7 +139,7 @@ BOOL DVDFastOpen(s32 entrynum, void* fileInfo) {
     if (pc_disc_is_open()) {
         u32 disc_off, disc_sz;
         if (pc_disc_find_file(path, &disc_off, &disc_sz)) {
-            memset(fileInfo, 0, 0x3C);
+            memset(fileInfo, 0, sizeof(DVDFileInfo_PC));
             *dvd_fi_fp(fileInfo) = DISC_SENTINEL;
             *dvd_fi_startAddr(fileInfo) = disc_off;
             *dvd_fi_length(fileInfo) = disc_sz;
@@ -137,7 +169,7 @@ BOOL DVDFastOpen(s32 entrynum, void* fileInfo) {
         len = (u32)ftell(fp);
         fseek(fp, 0, SEEK_SET);
 
-        memset(fileInfo, 0, 0x3C);
+        memset(fileInfo, 0, sizeof(DVDFileInfo_PC));
         *dvd_fi_fp(fileInfo) = fp;
         *dvd_fi_startAddr(fileInfo) = 0;
         *dvd_fi_length(fileInfo) = len;

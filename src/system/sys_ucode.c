@@ -1,9 +1,9 @@
 #include "sys_ucode.h"
 
-long long int gspF3DZEX2_NoN_PosLight_fifoTextStart[1];
-long long int gspF3DZEX2_NoN_PosLight_fifoDataStart[1];
-unsigned long long gspS2DEX2_fifoTextStart[1];
-unsigned long long gspS2DEX2_fifoDataStart[1];
+s64 gspF3DZEX2_NoN_PosLight_fifoTextStart[1];
+s64 gspF3DZEX2_NoN_PosLight_fifoDataStart[1];
+u64 gspS2DEX2_fifoTextStart[1];
+u64 gspS2DEX2_fifoDataStart[1];
 
 s64* poly_tbl[] = { gspF3DZEX2_NoN_PosLight_fifoTextStart, gspF3DZEX2_NoN_PosLight_fifoDataStart };
 

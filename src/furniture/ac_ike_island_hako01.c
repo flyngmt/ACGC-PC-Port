@@ -74,10 +74,10 @@ void fIIH_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data) {
     if (aFTR_CAN_PLAY_SE(ftr_actor)) {
         if (ftr_actor->dynamic_work_s[0] != 0) {
             if (keyf->frame_control.current_frame > 25.0f) {
-                sAdo_OngenPos((u32)ftr_actor, 0x52, &ftr_actor->position);
+                sAdo_OngenPos((uintptr_t)ftr_actor, 0x52, &ftr_actor->position);
             }
         } else if (keyf->frame_control.current_frame < 25.0f) {
-            sAdo_OngenPos((u32)ftr_actor, 0x52, &ftr_actor->position);
+            sAdo_OngenPos((uintptr_t)ftr_actor, 0x52, &ftr_actor->position);
         }
     }
 }
@@ -107,10 +107,10 @@ void fIIH_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data) {
     if (aFTR_CAN_PLAY_SE(ftr_actor)) {
         if (ftr_actor->dynamic_work_s[0] != 0) {
             if (keyf->frame_control.current_frame > 25.0f) {
-                sAdo_OngenPos((u32)ftr_actor, 0x52, &ftr_actor->position);
+                sAdo_OngenPos((uintptr_t)ftr_actor, 0x52, &ftr_actor->position);
             }
         } else if (keyf->frame_control.current_frame < 25.0f) {
-            sAdo_OngenPos((u32)ftr_actor, 0x52, &ftr_actor->position);
+            sAdo_OngenPos((uintptr_t)ftr_actor, 0x52, &ftr_actor->position);
         }
     }
     if (cKF_SkeletonInfo_R_play(keyf) == cKF_STATE_STOPPED) {

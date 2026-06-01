@@ -45,7 +45,7 @@ static void eSSHKR_ct(eEC_Effect_c* effect, GAME* game, void* ct_arg) {
 static void eSSHKR_mv(eEC_Effect_c* effect, GAME* game) {
     f32 scale;
 
-    sAdo_OngenPos((u32)effect, 14, &effect->position);
+    sAdo_OngenPos((uintptr_t)effect, 14, &effect->position);
 
     eEC_CLIP->set_continious_env_proc(effect, 22, 122);
 

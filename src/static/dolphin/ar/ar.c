@@ -226,9 +226,9 @@ static void __ARChecksize(void)
 	__DSPRegs[DSP_ARAM_SIZE]
 	    = ((__DSPRegs[DSP_ARAM_SIZE] & 0xFFFFFFC0) | ARAM_mode) | 0x20;
 
-	test_data  = (void*)ALIGN_NEXT((u32)test_data_pad, 0x20);
-	dummy_data = (void*)ALIGN_NEXT((u32)dummy_data_pad, 0x20);
-	buffer     = (void*)ALIGN_NEXT((u32)buffer_pad, 0x20);
+	test_data  = (void*)ALIGN_NEXT((uintptr_t)test_data_pad, 0x20);
+	dummy_data = (void*)ALIGN_NEXT((uintptr_t)dummy_data_pad, 0x20);
+	buffer     = (void*)ALIGN_NEXT((uintptr_t)buffer_pad, 0x20);
 	for (i = 0; i < 8; i++) {
 		test_data[i]  = 0xDEADBEEF;
 		dummy_data[i] = 0xBAD0BAD0;

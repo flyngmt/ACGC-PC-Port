@@ -71,7 +71,7 @@ static void eKG_mv(eEC_Effect_c* effect, GAME* game) {
     if (effect->state == eEC_STATE_FINISHED) {
         effect->effect_specific[4] = (u8)eEC_CLIP->calc_adjust_proc(7 - effect->timer, 0, 6, 255.0f, 0.0f);
     } else {
-        sAdo_OngenPos((u32)effect, 0x58, &effect->position);
+        sAdo_OngenPos((uintptr_t)effect, 0x58, &effect->position);
         effect->effect_specific[4] = 255;
     }
 }

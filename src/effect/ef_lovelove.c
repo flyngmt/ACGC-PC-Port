@@ -35,7 +35,7 @@ static void eLove_mv(eEC_Effect_c* effect, GAME* game) {
     u16 name;
 
     eEC_CLIP->set_continious_env_proc(effect, 52, 102);
-    sAdo_OngenPos((u32)effect, 14, &effect->position);
+    sAdo_OngenPos((uintptr_t)effect, 14, &effect->position);
 
     {
         effect->effect_specific[0] += (s16)((f32)game->graph->dt_num_60fps_frames * 100.0f);

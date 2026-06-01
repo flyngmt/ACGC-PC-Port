@@ -93,14 +93,7 @@ static void apply_setting(const char* key, const char* value) {
 }
 
 static void apply_frame_limit_setting(void) {
-    int max_fps;
-
-    if (g_pc_frame_limit_override >= 0) {
-        g_pc_settings.max_fps = g_pc_frame_limit_override;
-        g_pc_frame_limit_override = -1;
-    }
-
-    max_fps = g_pc_settings.max_fps;
+    int max_fps = g_pc_settings.max_fps;
 
     if (max_fps <= 0) {
         g_frame_limiter = 0;

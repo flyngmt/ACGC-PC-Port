@@ -10,7 +10,12 @@
  */
 #include "pc_platform.h"
 #include "pc_settings.h"
+#include "pc_audio_ptr.h"
 #include "jaudio_NES/audiothread.h"
+
+#if UINTPTR_MAX > 0xFFFFFFFFu
+uintptr_t pc_audio_ptr_base = 0;
+#endif
 
 #define PC_AUDIO_SAMPLE_RATE 32000
 
@@ -114,8 +119,8 @@ void AIInit(u8* stack) {
     }
 }
 
-void AIInitDMA(u32 addr, u32 size) {
-    s16* src = (s16*)(uintptr_t)addr;
+void AIInitDMA(uintptr_t addr, u32 size) {
+    s16* src = (s16*)addr;
     u32 n_samples = size / sizeof(s16);
     n_samples &= ~1u; /* whole stereo frames */
 

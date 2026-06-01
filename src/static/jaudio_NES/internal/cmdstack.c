@@ -10,7 +10,7 @@ JPorthead_ cmd_stay;
  * Address:	8000E300
  * Size:	000028
  */
-void Add_PortcmdOnce(u32* a1)
+void Add_PortcmdOnce(uintptr_t* a1)
 {
 	Add_Portcmd(&cmd_once, a1);
 }
@@ -44,7 +44,7 @@ int Set_Portcmd(int* a1, int a2, int a3)
  * Address:	8000E360
  * Size:	000078
  */
-BOOL Add_Portcmd(JPorthead_* port, u32* a2)
+BOOL Add_Portcmd(JPorthead_* port, uintptr_t* a2)
 {
 	BOOL interrupt = OSDisableInterrupts();
 
@@ -54,14 +54,14 @@ BOOL Add_Portcmd(JPorthead_* port, u32* a2)
 	}
 
 	if (port->_04) {
-		((int*)port->_04)[4] = (int)a2;
+		((uintptr_t*)port->_04)[4] = (uintptr_t)a2;
 	} else {
-		port->_00 = (int)a2;
+		port->_00 = (uintptr_t)a2;
 	}
 
-	port->_04 = (int)a2;
+	port->_04 = (uintptr_t)a2;
 	a2[4]     = 0;
-	a2[3]     = (int)port;
+	a2[3]     = (uintptr_t)port;
 	OSRestoreInterrupts(interrupt);
 	return TRUE;
 }
@@ -71,15 +71,15 @@ BOOL Add_Portcmd(JPorthead_* port, u32* a2)
  * Address:	8000E3E0
  * Size:	000040
  */
-static int Get_Portcmd(JPorthead_* port)
+static uintptr_t Get_Portcmd(JPorthead_* port)
 {
-	u32 a = port->_00;
+	uintptr_t a = port->_00;
 	if (a) {
-		port->_00 = ((int*)port->_00)[4];
+		port->_00 = ((uintptr_t*)port->_00)[4];
 		if (port->_00 == 0) {
 			port->_04 = 0;
 		}
-		((int*)a)[3] = 0;
+		((uintptr_t*)a)[3] = 0;
 	} else {
 		a = 0;
 	}
@@ -114,14 +114,14 @@ void Cancel_PortcmdStay(void)
  */
 int Jac_Portcmd_Proc_Once(JPorthead_* port)
 {
-	u32 p;
+	uintptr_t p;
 	while (1) {
 		p = Get_Portcmd(port);
 		if (!p) {
 			break;
 		}
 		// Ckit ahh moment unless someone figures out what type Get_Portcmd actually returns
-		((int (*)(int)) * (int*)(p + 0x14))(((int*)p)[6]);
+		((int (*)(uintptr_t)) * (uintptr_t*)(p + 5 * sizeof(uintptr_t)))(((uintptr_t*)p)[6]);
 	}
 	return 0;
 }
@@ -133,14 +133,14 @@ int Jac_Portcmd_Proc_Once(JPorthead_* port)
  */
 int Jac_Portcmd_Proc_Stay(JPorthead_* port)
 {
-	u32 p = port->_00;
+	uintptr_t p = port->_00;
 	while (1) {
 		if (!p) {
 			break;
 		}
-		((int (*)(int)) * (int*)(p + 0x14))(((int*)p)[6]);
+		((int (*)(uintptr_t)) * (uintptr_t*)(p + 5 * sizeof(uintptr_t)))(((uintptr_t*)p)[6]);
 
-		p = ((u32*)p)[4];
+		p = ((uintptr_t*)p)[4];
 	}
 	return 0;
 }

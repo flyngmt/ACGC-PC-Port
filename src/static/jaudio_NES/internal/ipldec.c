@@ -13,7 +13,7 @@ static u8 TASK_REMAIN;
  * Address:	80008A00
  * Size:	000070
  */
-static DSPTask* WriteTask(u8 target, u32 cmd, void* task, DSPCallback callback)
+static DSPTask* WriteTask(u8 target, uintptr_t cmd, void* task, DSPCallback callback)
 {
 	if (TASK_REMAIN == 4) {
 		return NULL;
@@ -96,7 +96,7 @@ void Jac_IPLDspSec(void)
  */
 void Jac_DSPcardDecodeAsync(void* task, void* cmd, DSPCallback callback)
 {
-	while (WriteTask(DSPTARGET_IPL, (u32)cmd, task, callback) == NULL) {
+	while (WriteTask(DSPTARGET_IPL, (uintptr_t)cmd, task, callback) == NULL) {
 		;
 	}
 }
@@ -108,5 +108,5 @@ void Jac_DSPcardDecodeAsync(void* task, void* cmd, DSPCallback callback)
  */
 void Jac_DSPagbDecodeAsync(void* task, void* cmd, DSPCallback callback)
 {
-	while (WriteTask(DSPTARGET_AGB, (u32)cmd, task, callback) == NULL) {}
+	while (WriteTask(DSPTARGET_AGB, (uintptr_t)cmd, task, callback) == NULL) {}
 }

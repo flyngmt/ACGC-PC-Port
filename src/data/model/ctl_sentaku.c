@@ -24,7 +24,7 @@ Vtx ctl_sentaku_v[] = {
 Gfx ctl_sentaku_taguT_model[] = {
 gsDPPipeSync(),
 gsDPSetCombineLERP(PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, 0, 0, 0, TEXEL0, PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, 0, 0, 0, TEXEL0),
-gsSPDisplayList(anime_1_txt + 0x30),
+gsSPDisplayList(anime_1_txt + 6 * sizeof(Gfx)),
 gsDPSetRenderMode(G_RM_XLU_SURF, G_RM_XLU_SURF2),
 gsDPSetTextureImage_Dolphin(G_IM_FMT_IA, G_IM_SIZ_8b, 32, 16, ctl_win_tagu3_tex),
 gsDPSetTile_Dolphin(G_DOLPHIN_TLUT_DEFAULT_MODE, 0, 0, GX_MIRROR, GX_MIRROR, 0, 0),

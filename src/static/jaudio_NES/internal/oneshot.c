@@ -219,7 +219,7 @@ static jc_* __Oneshot_Play_Start(jcs_* jcs, jc_* jc, u32 id)
 	jc->playId         = id;
 	jc->savedPlayId    = jc->playId;
 	jc->updateCallback = Jesus1Shot_Update;
-	jc->dspChannel     = AllocDSPchannel(0, (u32)jc);
+	jc->dspChannel     = AllocDSPchannel(0, (uintptr_t)jc);
 
 	if (jc->dspChannel == NULL) {
 		play = CheckLogicalChannel(jc);
@@ -236,7 +236,7 @@ static jc_* __Oneshot_Play_Start(jcs_* jcs, jc_* jc, u32 id)
 			return NULL;
 		}
 	} else if (play == FALSE) {
-		DeAllocDSPchannel(jc->dspChannel, (u32)jc);
+		DeAllocDSPchannel(jc->dspChannel, (uintptr_t)jc);
 		jc->dspChannel = NULL;
 		List_AddChannelTail(&jcs->freeChannels, jc);
 		return NULL;

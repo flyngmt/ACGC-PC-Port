@@ -27,16 +27,22 @@ class JKRAMCommand;
 
 class JKRAramBlock {
   public:
-    JKRAramBlock(u32 address, u32 size, u32 freeSize, u8 groupID, bool tempMemory);
+    JKRAramBlock(uintptr_t address, u32 size, u32 freeSize, u8 groupID, bool tempMemory);
 
     virtual ~JKRAramBlock();
 
     JKRAramBlock* allocHead(u32 size, u8 groupID, JKRAramHeap* heap);
     JKRAramBlock* allocTail(u32 size, u8 groupID, JKRAramHeap* heap);
 
+#ifdef TARGET_PC
+    uintptr_t getAddress() const {
+        return this->mAddress;
+    }
+#else
     u32 getAddress() const {
         return this->mAddress;
     }
+#endif
     u32 getSize() const {
         return this->mSize;
     }
@@ -51,7 +57,7 @@ class JKRAramBlock {
     }
 
     JSULink<JKRAramBlock> mLink;
-    u32 mAddress;
+    uintptr_t mAddress;
     u32 mSize;
     u32 mFreeSize;
     u8 mGroupID;
@@ -64,7 +70,7 @@ class JKRAramHeap : public JKRDisposer {
   public:
     enum EAllocMode { Head = 0, Tail = 1 };
 
-    JKRAramHeap(u32 baseAddress, u32 size);
+    JKRAramHeap(uintptr_t baseAddress, u32 size);
 
     virtual ~JKRAramHeap();
 
@@ -95,8 +101,8 @@ class JKRAramHeap : public JKRDisposer {
 
     OSMutex mMutex;
     JKRHeap* mHeap;
-    u32 mHeadAddress;
-    u32 mTailAddress;
+    uintptr_t mHeadAddress;
+    uintptr_t mTailAddress;
     u32 mSize;
     u8 mGroupID;
 
@@ -105,7 +111,11 @@ class JKRAramHeap : public JKRDisposer {
 
 class JKRAram : public JKRThread {
   public:
+#ifdef TARGET_PC
+    JKRAram(u32, u32, s32);
+#else
     JKRAram(u32, u32, long);
+#endif
 
     virtual ~JKRAram();  // _08
     virtual void* run(); // _0C
@@ -113,10 +123,18 @@ class JKRAram : public JKRThread {
     static bool checkOkAddress(u8* addr, u32 size, JKRAramBlock* block, u32 param_4);
     static void changeGroupIdIfNeed(u8* data, int groupId);
 
+#ifdef TARGET_PC
+    static JKRAram* create(u32, u32, s32, s32, s32);
+#else
     static JKRAram* create(u32, u32, long, long, long);
+#endif
+#ifdef TARGET_PC
+    static JKRAramBlock* mainRamToAram(u8*, uintptr_t, u32, JKRExpandSwitch, u32, JKRHeap*, int);
+#else
     static JKRAramBlock* mainRamToAram(u8*, u32, u32, JKRExpandSwitch, u32, JKRHeap*, int);
+#endif
     static JKRAramBlock* mainRamToAram(u8*, JKRAramBlock* block, u32, JKRExpandSwitch, u32, JKRHeap*, int);
-    static u8* aramToMainRam(u32, u8*, u32, JKRExpandSwitch, u32, JKRHeap*, int, u32*);
+    static u8* aramToMainRam(uintptr_t, u8*, u32, JKRExpandSwitch, u32, JKRHeap*, int, u32*);
     static u8* aramToMainRam(JKRAramBlock*, u8*, u32, u32, JKRExpandSwitch, u32, JKRHeap*, int, u32*);
 
     void aramSync(JKRAMCommand*, int);
@@ -155,11 +173,23 @@ class JKRAram : public JKRThread {
     static OSMessageQueue sMessageQueue;
     static JSUList<JKRAMCommand> sAramCommandList;
 
+#ifdef TARGET_PC
+    uintptr_t mAudioMemoryPtr;    // _7C
+#else
     u32 mAudioMemoryPtr;    // _7C
+#endif
     u32 mAudioMemorySize;   // _80
+#ifdef TARGET_PC
+    uintptr_t mGraphMemoryPtr;    // _84
+#else
     u32 mGraphMemoryPtr;    // _84
+#endif
     u32 mGraphMemorySize;   // _88
+#ifdef TARGET_PC
+    uintptr_t mUserMemoryPtr;     // _8C
+#else
     u32 mUserMemoryPtr;     // _8C
+#endif
     u32 mUserMemorySize;    // _90
     JKRAramHeap* mAramHeap; // _94
     u32 mStackArray[3];     // _98
@@ -167,7 +197,11 @@ class JKRAram : public JKRThread {
 
 class JKRAMCommand : public ARQRequest {
   public:
+#ifdef TARGET_PC
+    typedef void (*AMCommandCallback)(uintptr_t);
+#else
     typedef void (*AMCommandCallback)(u32);
+#endif
 
     JKRAMCommand();
     ~JKRAMCommand();
@@ -176,8 +210,13 @@ class JKRAMCommand : public ARQRequest {
     JSULink<JKRAMCommand> mLink30;
     s32 mDirection;
     u32 mLength;
+#ifdef TARGET_PC
+    uintptr_t mSource;
+    uintptr_t mDestination;
+#else
     u32 mSource;
     u32 mDestination;
+#endif
     JKRAramBlock* mAramBlock;
     u8 _54[4];
     AMCommandCallback mCallback;
@@ -204,6 +243,17 @@ class JKRAramCommand {
 
 class JKRAramPiece {
   public:
+#ifdef TARGET_PC
+    static JKRAMCommand* prepareCommand(int direction, uintptr_t source, uintptr_t destination, u32 length, JKRAramBlock* aramBlock,
+                                        JKRAMCommand::AMCommandCallback callback);
+    static void sendCommand(JKRAMCommand* cmd);
+    static JKRAMCommand* orderAsync(int direction, uintptr_t source, uintptr_t destination, u32 length, JKRAramBlock* aramBlock,
+                                    JKRAMCommand::AMCommandCallback callback);
+    static bool sync(JKRAMCommand* cmd, BOOL noBlock);
+    static bool orderSync(int direction, uintptr_t source, uintptr_t destination, u32 length, JKRAramBlock* aramBlock);
+    static void startDMA(JKRAMCommand* cmd);
+    static void doneDMA(uintptr_t arg);
+#else
     static JKRAMCommand* prepareCommand(int direction, u32 source, u32 destination, u32 length, JKRAramBlock* aramBlock,
                                         JKRAMCommand::AMCommandCallback callback);
     static void sendCommand(JKRAMCommand* cmd);
@@ -213,6 +263,7 @@ class JKRAramPiece {
     static bool orderSync(int direction, u32 source, u32 destination, u32 length, JKRAramBlock* aramBlock);
     static void startDMA(JKRAMCommand* cmd);
     static void doneDMA(u32 arg);
+#endif
 
     static OSMutex mMutex;
     static JSUList<JKRAMCommand> sAramPieceCommandList;
@@ -237,7 +288,7 @@ class JKRAramStreamCommand {
     JKRAramStreamCommand();
 
     ECommandType type;             // _00
-    u32 mAddress;                  // _04
+    uintptr_t mAddress;            // _04
     u32 mSize;                     // _08
     u32 _0C;                       // _0C
     JSUFileInputStream* mStream;   // _10
@@ -255,7 +306,11 @@ class JKRAramStreamCommand {
 
 class JKRAramStream : public JKRThread {
   public:
+#ifdef TARGET_PC
+    JKRAramStream(s32);
+#else
     JKRAramStream(long);
+#endif
 
     virtual ~JKRAramStream(); // _08
     virtual void* run();      // _0C
@@ -265,7 +320,11 @@ class JKRAramStream : public JKRThread {
     static u32 readFromAram();
     static s32 writeToAram(JKRAramStreamCommand*);
     static JKRAramStreamCommand* write_StreamToAram_Async(JSUFileInputStream*, JKRAramBlock*, u32, u32);
+#ifdef TARGET_PC
+    static JKRAramStreamCommand* write_StreamToAram_Async(JSUFileInputStream*, uintptr_t, u32, u32);
+#else
     static JKRAramStreamCommand* write_StreamToAram_Async(JSUFileInputStream*, u32, u32, u32);
+#endif
     static JKRAramStreamCommand* sync(JKRAramStreamCommand*, BOOL);
     static void setTransBuffer(u8*, u32, JKRHeap*);
 
@@ -289,13 +348,18 @@ inline void JKRFreeToAram(JKRAramBlock* block) {
     JKRAram::getAramHeap()->free(block);
 }
 
-inline u8* JKRAramToMainRam(u32 address, u8* buf, u32 bufSize, JKRExpandSwitch expandSwitch, u32 p5, JKRHeap* heap,
+inline u8* JKRAramToMainRam(uintptr_t address, u8* buf, u32 bufSize, JKRExpandSwitch expandSwitch, u32 p5, JKRHeap* heap,
                             int id, u32* pSize) {
     return JKRAram::aramToMainRam(address, buf, bufSize, expandSwitch, p5, heap, id, pSize);
 }
 
+#ifdef TARGET_PC
+inline JKRAramBlock* JKRMainRamToAram(u8* buf, uintptr_t bufSize, u32 alignedSize, JKRExpandSwitch expandSwitch, u32 fileSize,
+                                      JKRHeap* heap, int id, u32) {
+#else
 inline JKRAramBlock* JKRMainRamToAram(u8* buf, u32 bufSize, u32 alignedSize, JKRExpandSwitch expandSwitch, u32 fileSize,
                                       JKRHeap* heap, int id, u32) {
+#endif
     return JKRAram::mainRamToAram(buf, bufSize, alignedSize, expandSwitch, fileSize, heap, id);
 }
 
@@ -303,9 +367,15 @@ inline JKRAramStream* JKRCreateAramStreamManager(s32 priority) {
     return JKRAramStream::create(priority);
 }
 
+#ifdef TARGET_PC
+inline bool JKRAramPcs(int direction, uintptr_t source, uintptr_t destination, u32 length, JKRAramBlock* block) {
+    return JKRAramPiece::orderSync(direction, source, destination, length, block);
+}
+#else
 inline bool JKRAramPcs(int direction, u32 source, u32 destination, u32 length, JKRAramBlock* block) {
     return JKRAramPiece::orderSync(direction, source, destination, length, block);
 }
+#endif
 
 inline void JKRAramPcs_SendCommand(JKRAMCommand* cmd) {
     JKRAramPiece::sendCommand(cmd);

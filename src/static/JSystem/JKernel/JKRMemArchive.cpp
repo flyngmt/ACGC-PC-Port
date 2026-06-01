@@ -7,6 +7,10 @@
 #include "JSystem/JKernel/JKRDvdRipper.h"
 #include "JSystem/JUtility/JUTAssertion.h"
 
+#ifdef TARGET_PC
+#include <stdlib.h>
+#endif
+
 JKRMemArchive::JKRMemArchive() : JKRArchive() {
 }
 
@@ -40,6 +44,13 @@ JKRMemArchive::~JKRMemArchive() {
         if (mIsOpen && mArcHeader)
             JKRFreeToHeap(mHeap, mArcHeader);
 
+#ifdef TARGET_PC
+        if (mFileEntryDataPtrs) {
+            free(mFileEntryDataPtrs);
+            mFileEntryDataPtrs = nullptr;
+        }
+#endif
+
         sVolumeList.remove(&mFileLoaderLink);
         mIsMounted = false;
     }
@@ -63,6 +74,9 @@ bool JKRMemArchive::open(s32 entryNum, JKRArchive::EMountDirection mountDirectio
     mStrTable = nullptr;
     mIsOpen = false;
     mMountDirection = mountDirection;
+#ifdef TARGET_PC
+    mFileEntryDataPtrs = nullptr;
+#endif
 
     if (mMountDirection == JKRArchive::MOUNT_DIRECTION_HEAD) {
         u32 loadedSize;
@@ -84,7 +98,12 @@ bool JKRMemArchive::open(s32 entryNum, JKRArchive::EMountDirection mountDirectio
         mFileEntries = (SDIFileEntry*)((u8*)&mArcInfoBlock->num_nodes + mArcInfoBlock->file_entry_offset);
         mStrTable = (char*)((u8*)&mArcInfoBlock->num_nodes + mArcInfoBlock->string_table_offset);
 
+#ifdef TARGET_PC
+        mArchiveData = (u8*)((uintptr_t)mArcHeader + mArcHeader->header_length + mArcHeader->file_data_offset);
+        mFileEntryDataPtrs = (void**)calloc(mArcInfoBlock->num_file_entries > 0 ? mArcInfoBlock->num_file_entries : 1, sizeof(void*));
+#else
         mArchiveData = (u8*)((u32)mArcHeader + mArcHeader->header_length + mArcHeader->file_data_offset);
+#endif
         mIsOpen = true;
     }
 #if DEBUG
@@ -103,7 +122,12 @@ bool JKRMemArchive::open(void* buffer, u32 bufferSize, JKRMemBreakFlag flag) {
     mDirectories = (SDIDirEntry*)((u8*)&mArcInfoBlock->num_nodes + mArcInfoBlock->node_offset);
     mFileEntries = (SDIFileEntry*)((u8*)&mArcInfoBlock->num_nodes + mArcInfoBlock->file_entry_offset);
     mStrTable = (char*)((u8*)&mArcInfoBlock->num_nodes + mArcInfoBlock->string_table_offset);
+#ifdef TARGET_PC
+    mArchiveData = (u8*)(((uintptr_t)mArcHeader + mArcHeader->header_length) + mArcHeader->file_data_offset);
+    mFileEntryDataPtrs = (void**)calloc(mArcInfoBlock->num_file_entries > 0 ? mArcInfoBlock->num_file_entries : 1, sizeof(void*));
+#else
     mArchiveData = (u8*)(((u32)mArcHeader + mArcHeader->header_length) + mArcHeader->file_data_offset);
+#endif
     mIsOpen = (flag == MBF_1) ? true : false; // mIsOpen might be u8
     mHeap = JKRHeap::findFromRoot(buffer);
     mCompression = JKRCOMPRESSION_NONE;
@@ -113,13 +137,13 @@ bool JKRMemArchive::open(void* buffer, u32 bufferSize, JKRMemBreakFlag flag) {
 void* JKRMemArchive::fetchResource(SDIFileEntry* fileEntry, u32* resourceSize) {
     JUT_ASSERT(isMounted())
 
-    if (!fileEntry->mData)
-        fileEntry->mData = mArchiveData + fileEntry->mDataOffset;
+    if (!getFileEntryData(fileEntry))
+        setFileEntryData(fileEntry, mArchiveData + fileEntry->mDataOffset);
 
     if (resourceSize)
         *resourceSize = fileEntry->mSize;
 
-    return fileEntry->mData;
+    return getFileEntryData(fileEntry);
 }
 
 void* JKRMemArchive::fetchResource(void* buffer, u32 bufferSize, SDIFileEntry* fileEntry, u32* resourceSize,
@@ -132,8 +156,8 @@ void* JKRMemArchive::fetchResource(void* buffer, u32 bufferSize, SDIFileEntry* f
         srcLength = bufferSize;
     }
 
-    if (fileEntry->mData != nullptr) {
-        JKRHeap::copyMemory(buffer, fileEntry->mData, srcLength);
+    if (getFileEntryData(fileEntry) != nullptr) {
+        JKRHeap::copyMemory(buffer, getFileEntryData(fileEntry), srcLength);
     } else {
         int compression = JKRConvertAttrToCompressionType(fileEntry->getAttr());
         if (expandSwitch != EXPAND_SWITCH_DECOMPRESS)
@@ -162,8 +186,8 @@ void JKRMemArchive::removeResourceAll(void) {
     // first fileEntry will clear/remove the resource data.
     SDIFileEntry* fileEntry = mFileEntries;
     for (int i = 0; i < mArcInfoBlock->num_file_entries; i++) {
-        if (fileEntry->mData) {
-            fileEntry->mData = nullptr;
+        if (getFileEntryData(fileEntry)) {
+            setFileEntryData(fileEntry, nullptr);
         }
     }
 }
@@ -175,7 +199,7 @@ bool JKRMemArchive::removeResource(void* resource) {
     if (!fileEntry)
         return false;
 
-    fileEntry->mData = nullptr;
+    setFileEntryData(fileEntry, nullptr);
     return true;
 }
 

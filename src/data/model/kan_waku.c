@@ -54,7 +54,7 @@ Vtx kan_waku_v[] = {
 #endif
 
 Gfx kan_waku_w1T_model[] = {
-    gsSPDisplayList(anime_4_txt + 0x58),
+    gsSPDisplayList(anime_4_txt + 11 * sizeof(Gfx)),
     gsDPSetTextureImage_Dolphin(G_IM_FMT_IA, G_IM_SIZ_8b, 64, 64, kan_win_waku1b_tex),
     gsDPSetTile_Dolphin(G_DOLPHIN_TLUT_DEFAULT_MODE, 0, 0, GX_MIRROR, GX_MIRROR, 0, 0),
     gsSPVertex(kan_waku_v, 8, 0),
@@ -66,7 +66,7 @@ Gfx kan_waku_w1T_model[] = {
 };
 
 Gfx kan_waku_w2T_model[] = {
-    gsSPDisplayList(anime_4_txt + 0x58),
+    gsSPDisplayList(anime_4_txt + 11 * sizeof(Gfx)),
     gsDPSetTextureImage_Dolphin(G_IM_FMT_IA, G_IM_SIZ_8b, 64, 64, kan_win_waku3_tex),
     gsDPSetTile_Dolphin(G_DOLPHIN_TLUT_DEFAULT_MODE, 0, 0, GX_MIRROR, GX_MIRROR, 0, 0),
     gsSPVertex(&kan_waku_v[8], 4, 0),
@@ -75,7 +75,7 @@ Gfx kan_waku_w2T_model[] = {
 };
 
 Gfx kan_waku_w3T_model[] = {
-    gsSPDisplayList(anime_4_txt + 0x58),
+    gsSPDisplayList(anime_4_txt + 11 * sizeof(Gfx)),
     gsDPSetTextureImage_Dolphin(G_IM_FMT_IA, G_IM_SIZ_8b, 64, 64, kan_win_waku4_tex),
     gsDPSetTile_Dolphin(G_DOLPHIN_TLUT_DEFAULT_MODE, 0, 0, GX_MIRROR, GX_MIRROR, 0, 0),
     gsSPVertex(&kan_waku_v[12], 4, 0),
@@ -84,7 +84,7 @@ Gfx kan_waku_w3T_model[] = {
 };
 
 Gfx kan_waku_w4T_model[] = {
-    gsSPDisplayList(anime_4_txt + 0x58),
+    gsSPDisplayList(anime_4_txt + 11 * sizeof(Gfx)),
     gsDPSetTextureImage_Dolphin(G_IM_FMT_IA, G_IM_SIZ_8b, 64, 64, kan_win_waku5_tex),
     gsDPSetTile_Dolphin(G_DOLPHIN_TLUT_DEFAULT_MODE, 0, 0, GX_MIRROR, GX_MIRROR, 0, 0),
     gsSPVertex(&kan_waku_v[16], 4, 0),

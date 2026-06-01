@@ -628,7 +628,7 @@ class emu64 : public emu64_print {
     void texture_gen(int tile);
     void texture_matrix();
     void disp_matrix(MtxP mtx);
-    const char* segchk(u32 seg);
+    const char* segchk(uintptr_t seg);
     const char* combine_name(u32 param, u32 type);
     const char* combine_alpha(int param, int type);
     const char* combine_tev_color_name(u32 color_param);
@@ -639,7 +639,11 @@ class emu64 : public emu64_print {
     void print_combine(u64 combine);
     void print_combine_tev(u64 combine_tev);
     void print_guMtxXFM1F_dol2(MtxP mtx, GXProjectionType type, float x, float y, float z);
+#ifdef TARGET_PC
+    uintptr_t seg2k0(uintptr_t seg);
+#else
     u32 seg2k0(u32 seg);
+#endif
     void setup_texture_tile(int tile);
     void setup_1tri_2tri_1quad(unsigned int vtx_idx);
     void draw_1tri_2tri_1quad(unsigned int n_verts, ...);
@@ -740,6 +744,18 @@ private:
     /* 0x003C */ u32 cullDL_visible_obj_count;
     /* 0x0040 */ Gfx* gfx_p;
     /* 0x0048 */ Gfx gfx;
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+    /* On 64-bit, Gfx is 16 bytes (padded uintptr_t w1), but union view structs
+     * expect an 8-byte layout. This compact copy packs {w0, (u32)w1} so that
+     * existing casts to Gsettile*, Gsetcolor*, etc. read the correct bitfields. */
+    union {
+        struct { u32 w0; u32 w1; } words_compact;
+        /* Union views can be cast from &gfx_c */
+    } gfx_c;
+#define EMU64_GFX_COMPACT_PTR (&this->gfx_c)
+#else
+#define EMU64_GFX_COMPACT_PTR ((void*)&this->gfx)
+#endif
     /* 0x0050 */ u8 gfx_cmd;
     /* 0x0054 */ void* work_ptr;
     /* 0x0058 */ int end_dl;
@@ -747,8 +763,14 @@ private:
     /* 0x0060 */ ucode_info* ucode_info_p;
     /* 0x0064 */ int ucode_type; // maybe?
     /* 0x0068 */ int _0068;      /* ??? */
+#ifdef TARGET_PC
+    /* On PC, segments and DL_stack store full native pointers */
+    /* 0x006C */ uintptr_t segments[EMU64_NUM_SEGMENTS];
+    /*        */ uintptr_t DL_stack[DL_MAX_STACK_LEVEL];
+#else
     /* 0x006C */ u32 segments[EMU64_NUM_SEGMENTS];
     /* 0x00AC */ u32 DL_stack[DL_MAX_STACK_LEVEL];
+#endif
     /* 0x00F4 */ s8 DL_stack_level;
     /* 0x00F8 */ u32 othermode_high;
     /* 0x00FC */ u32 othermode_low;
@@ -765,6 +787,11 @@ private:
     /* 0x03F8 */ Gsettile_dolphin settile_dolphin_cmds[NUM_TILES];
     /* 0x0438 */ Gsettilesize_Dolphin settilesize_dolphin_cmds[NUM_TILES];
     /* 0x0478 */ Gsetimg_new now_setimg;
+#ifdef TARGET_PC
+    /* Resolved image address — stores the full native pointer from seg2k0,
+     * avoiding truncation through the 32-bit imgaddr bitfield. */
+    uintptr_t resolved_imgaddr;
+#endif
     /* 0x0480 */ u8 tex_edge_alpha;
 
     /* 0x0484 */ union {
@@ -809,7 +836,7 @@ private:
     /* 0x09E8 */ GXProjectionType projection_type;
     /* 0x09EC */ GC_Mtx perspective_mtx;
     /* 0x0A1C */ u32 _0A1C;
-    /* 0x0A20 */ u32 rdpHalf_1;
+    /* 0x0A20 */ uintptr_t rdpHalf_1;
     /* 0x0A24 */ EmuLight lights[NUM_LIGHTS];
     /* 0x0B64 */ u8 num_lights;
     /* 0x0B68 */ u32 lookatx_cnt;

@@ -52,33 +52,21 @@ void VIWaitForRetrace(void) {
     Uint64 t_after_swap = SDL_GetPerformanceCounter();
 
     Uint64 t_before_pace = SDL_GetPerformanceCounter();
-    {
-        extern int g_pc_nes_active;
-        int pace_frame = g_pc_nes_active || g_frame_limiter > 0;
-        int pace_us = 0;
-
-        if (g_pc_nes_active) {
-            pace_us = 16667;
-        } else if (g_frame_limiter > 0) {
-            pace_us = (int)((1.0 / (double)g_frame_limiter) * 1000000);
-        }
-
-        if (pace_frame) {
-            /* Timer-based pacing: sleep until 16ms per frame (~60 FPS).
-             * Audio production runs on a dedicated thread and is no longer
-             * tied to game frame timing. */
-            if (frame_start_time) {
-                Uint64 now = SDL_GetPerformanceCounter();
-                Uint64 elapsed_us = (now - frame_start_time) * 1000000 / perf_freq;
-                /* Spin for sub-ms precision. */
-                while (elapsed_us < (Uint64)pace_us) {
-                    Uint64 remain_us = (Uint64)pace_us - elapsed_us;
-                    if (remain_us > 2000) {
-                        SDL_Delay(1);
-                    }
-                    now = SDL_GetPerformanceCounter();
-                    elapsed_us = (now - frame_start_time) * 1000000 / perf_freq;
+    if (!g_pc_no_framelimit) {
+        /* Timer-based pacing: sleep until target frame time.
+         * Audio production runs on a dedicated thread and is no longer
+         * tied to game frame timing. */
+        Uint64 target_us = g_pc_fast_forward ? 8333 : 16667; /* 2x = 120Hz, 1x = 60Hz */
+        if (frame_start_time) {
+            Uint64 now = SDL_GetPerformanceCounter();
+            Uint64 elapsed_us = (now - frame_start_time) * 1000000 / perf_freq;
+            while (elapsed_us < target_us) {
+                Uint64 remain_us = target_us - elapsed_us;
+                if (remain_us > 2000) {
+                    SDL_Delay(1);
                 }
+                now = SDL_GetPerformanceCounter();
+                elapsed_us = (now - frame_start_time) * 1000000 / perf_freq;
             }
         }
     }
@@ -103,8 +91,9 @@ void VIWaitForRetrace(void) {
             Uint64 now = SDL_GetPerformanceCounter();
             double secs = (double)(now - fps_start) / (double)perf_freq;
             double fps = (double)fps_count / secs;
-            char title[64];
-            snprintf(title, sizeof(title), "Animal Crossing - %.1f FPS", fps);
+            char title[80];
+            snprintf(title, sizeof(title), "Animal Crossing - %.1f FPS%s", fps,
+                     g_pc_fast_forward ? " [2x]" : "");
             SDL_SetWindowTitle(g_pc_window, title);
             fps_start = now;
             fps_count = 0;

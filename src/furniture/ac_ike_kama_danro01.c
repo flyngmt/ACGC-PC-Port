@@ -11,7 +11,7 @@ static void fIKD_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* 
     }
 
     if(aFTR_CAN_PLAY_SE(ftr_actor)){
-        sAdo_OngenPos((u32)ftr_actor, 0x46, &ftr_actor->position);
+        sAdo_OngenPos((uintptr_t)ftr_actor, 0x46, &ftr_actor->position);
     }
 }
 static Gfx* fIKD_GetTwoTileGfx(int x0, int y0, int x1, int y1, GAME* game) { 

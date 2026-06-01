@@ -5,9 +5,16 @@
 /* On PC, we don't have MSL_C - use standard math */
 #include <math.h>
 #include <string.h>
+#ifdef __APPLE__
+#include <stdlib.h>  /* alloca() on macOS */
+#else
 #include <malloc.h>  /* for alloca() */
-/* Metrowerks __alloca is a compiler built-in; map to standard alloca on PC */
+#endif
+/* Metrowerks __alloca is a compiler built-in; map to standard alloca on PC.
+ * Skip on platforms where it's already a built-in or macro to avoid redefinition. */
+#ifndef __alloca
 #define __alloca alloca
+#endif
 /* Metrowerks __declspec(section "...") is not supported by GCC.
  * GCC defines __declspec as a builtin keyword, so we must #undef it first. */
 #undef __declspec
@@ -18,6 +25,16 @@
 
 #include <dolphin/types.h>
 #include "macros.h"
+
+#ifndef ATTRIBUTE_ALIGN
+#if defined(__MWERKS__) || defined(__GNUC__)
+#define ATTRIBUTE_ALIGN(num) __attribute__((aligned(num)))
+#elif defined(_MSC_VER)
+#define ATTRIBUTE_ALIGN(num)
+#else
+#error unknown compiler
+#endif
+#endif
 
 #define VER_GAFE01_00 0
 #define VER_GAFU01_00 1
@@ -36,20 +53,29 @@
 
 typedef signed char s8;
 typedef signed short s16;
+#ifdef TARGET_PC
+#include <stdint.h>
+typedef int32_t  s32;
+typedef uint32_t u32;
+typedef int32_t  s32_compat;
+typedef uint32_t u32_compat;
+typedef int64_t  s64 ATTRIBUTE_ALIGN(8);
+typedef uint64_t u64 ATTRIBUTE_ALIGN(8);
+#include <stddef.h>
+#else
 typedef signed long s32;
-typedef signed long long s64;
-typedef unsigned char u8;
-typedef unsigned short u16;
 typedef unsigned long u32;
-#ifndef TARGET_PC
+typedef signed long s32_compat;
+typedef unsigned long u32_compat;
 #ifndef _SIZE_T_DEF
 #define _SIZE_T_DEF
 typedef unsigned long size_t;
 #endif
-#else
-#include <stddef.h>
-#endif
+typedef signed long long s64;
 typedef unsigned long long u64;
+#endif
+typedef unsigned char u8;
+typedef unsigned short u16;
 typedef unsigned int uint;
 
 typedef volatile u8 vu8;
@@ -62,7 +88,11 @@ typedef volatile s32 vs32;
 typedef volatile s64 vs64;
 
 typedef float f32;
+#ifdef TARGET_PC
+typedef double f64 ATTRIBUTE_ALIGN(8);
+#else
 typedef double f64;
+#endif
 typedef volatile f32 vf32;
 typedef volatile f64 vf64;
 
@@ -82,7 +112,7 @@ typedef u32 unknown;
 #define NULL 0
 #endif
 #endif
-#ifndef __cplusplus
+#if !defined(__cplusplus) && !defined(nullptr)
 #define nullptr 0
 #endif
 
@@ -100,15 +130,6 @@ typedef u32 unknown;
 #define FLAG_ON(V, F) (((V) & (F)) == 0)
 #define FLAG_OFF(V, F) (((V) & (F)) != 0)
 
-#ifndef ATTRIBUTE_ALIGN
-#if defined(__MWERKS__) || defined(__GNUC__)
-#define ATTRIBUTE_ALIGN(num) __attribute__((aligned(num)))
-#elif defined(_MSC_VER)
-#define ATTRIBUTE_ALIGN(num)
-#else
-#error unknown compiler
-#endif
-#endif
 
 #define BUTTON_NONE 0x0000
 #define BUTTON_CRIGHT 0x0001

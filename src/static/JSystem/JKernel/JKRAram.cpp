@@ -34,7 +34,7 @@ OSMessage JKRAram::sMessageBuffer[4] = {
 OSMessageQueue JKRAram::sMessageQueue = { 0 };
 
 JKRAram::JKRAram(u32 bufSize, u32 graphSize, s32 priority) : JKRThread(0x4000, 0x10, priority) {
-    u32 aramBase = ARInit(mStackArray, ARRAY_COUNT(mStackArray));
+    uintptr_t aramBase = ARInit(mStackArray, ARRAY_COUNT(mStackArray));
     ARQInit();
 
     u32 aramSize = ARGetSize();
@@ -51,12 +51,12 @@ JKRAram::JKRAram(u32 bufSize, u32 graphSize, s32 priority) : JKRThread(0x4000, 0
     mGraphMemoryPtr = ARAlloc(mGraphMemorySize);
 
     if (mUserMemorySize != 0) { // ternary?
-        mUserMemoryPtr = ARAlloc(mUserMemorySize);
+        mUserMemoryPtr = (uintptr_t)ARAlloc(mUserMemorySize);
     } else {
-        mUserMemoryPtr = (u32)0;
+        mUserMemoryPtr = (uintptr_t)0;
     }
 
-    mAramHeap = new (JKRHeap::getSystemHeap(), 0) JKRAramHeap(mGraphMemoryPtr, mGraphMemorySize);
+    mAramHeap = new (JKRHeap::getSystemHeap(), 0) JKRAramHeap((uintptr_t)mGraphMemoryPtr, mGraphMemorySize);
 }
 
 JKRAram::~JKRAram() {
@@ -85,13 +85,17 @@ void* JKRAram::run() {
 }
 
 bool JKRAram::checkOkAddress(u8* addr, u32 size, JKRAramBlock* block, u32 blockSize) {
-    if (!IS_ALIGNED((u32)addr, 0x20) && !IS_ALIGNED(size, 0x20)) {
+#ifdef TARGET_PC
+    if (IS_NOT_ALIGNED((uintptr_t)addr, 0x20) || IS_NOT_ALIGNED(size, 0x20)) {
+#else
+    if (IS_NOT_ALIGNED((u32)addr, 0x20) || IS_NOT_ALIGNED(size, 0x20)) {
+#endif
         JPANIC(225, ":::address not 32Byte aligned.");
         return false;
     }
 
     if (block) {
-        if (!IS_ALIGNED(block->getAddress() + blockSize, 0x20)) {
+        if (IS_NOT_ALIGNED(block->getAddress() + blockSize, 0x20)) {
             JPANIC(234, ":::address not 32Byte aligned.");
             return false;
         }
@@ -107,16 +111,21 @@ void JKRAram::changeGroupIdIfNeed(u8* data, int groupId) {
     }
 }
 
+#ifdef TARGET_PC
+JKRAramBlock* JKRAram::mainRamToAram(u8* buf, uintptr_t address, u32 alignedSize, JKRExpandSwitch expandSwitch, u32 fileSize,
+                                     JKRHeap* heap, int id) {
+#else
 JKRAramBlock* JKRAram::mainRamToAram(u8* buf, u32 address, u32 alignedSize, JKRExpandSwitch expandSwitch, u32 fileSize,
                                      JKRHeap* heap, int id) {
+#endif
     JKRAramBlock* block = nullptr;
-    checkOkAddress(buf, address, nullptr, 0);
+    checkOkAddress(buf, (u32)address, nullptr, 0);
     if (expandSwitch == EXPAND_SWITCH_DECOMPRESS) {
         expandSwitch =
             (JKRCheckCompressed(buf) == JKRCOMPRESSION_NONE) ? EXPAND_SWITCH_DEFAULT : EXPAND_SWITCH_DECOMPRESS;
     }
     if (expandSwitch == EXPAND_SWITCH_DECOMPRESS) {
-        u32 expandSize = JKRCheckCompressed(buf) != JKRCOMPRESSION_NONE ? JKRDecompExpandSize(buf) : 0;
+        u32 expandSize = (JKRCheckCompressed(buf) != JKRCOMPRESSION_NONE) ? JKRDecompExpandSize(buf) : 0;
         if (fileSize == 0 || fileSize > expandSize) {
             fileSize = expandSize;
         }
@@ -126,7 +135,7 @@ JKRAramBlock* JKRAram::mainRamToAram(u8* buf, u32 address, u32 alignedSize, JKRE
                 return nullptr;
 
             block->newGroupID(decideAramGroupId(id));
-            address = block->getAddress();
+            address = (uintptr_t)block->getAddress();
         }
         if (alignedSize == 0 || alignedSize > expandSize)
             alignedSize = expandSize;
@@ -142,21 +151,29 @@ JKRAramBlock* JKRAram::mainRamToAram(u8* buf, u32 address, u32 alignedSize, JKRE
             block = nullptr;
         } else {
             JKRDecompress(buf, (u8*)allocatedMem, fileSize, 0);
+#ifdef TARGET_PC
+            JKRAramPcs(0, (uintptr_t)allocatedMem, address, alignedSize, block);
+#else
             JKRAramPcs(0, (u32)allocatedMem, address, alignedSize, block);
+#endif
             JKRFreeToHeap(heap, allocatedMem);
             block = block == nullptr ? (JKRAramBlock*)-1 : block;
         }
     } else {
         if (address == 0) {
             block = JKRAllocFromAram(alignedSize, JKRAramHeap::Head);
-            block->newGroupID(decideAramGroupId(id));
             if (block == nullptr)
                 return nullptr;
 
-            address = block->getAddress();
+            block->newGroupID(decideAramGroupId(id));
+            address = (uintptr_t)block->getAddress();
         }
 
+#ifdef TARGET_PC
+        JKRAramPcs(0, (uintptr_t)buf, address, alignedSize, block);
+#else
         JKRAramPcs(0, (u32)buf, address, alignedSize, block);
+#endif
         block = block == nullptr ? (JKRAramBlock*)-1 : block;
     }
     return block;
@@ -167,7 +184,7 @@ JKRAramBlock* JKRAram::mainRamToAram(u8* buf, JKRAramBlock* block, u32 alignedSi
     checkOkAddress(buf, 0, block, 0);
 
     if (block == nullptr) {
-        return mainRamToAram(buf, (u32)0, alignedSize, expandSwitch, fileSize, heap, id);
+        return mainRamToAram(buf, (uintptr_t)0, alignedSize, expandSwitch, fileSize, heap, id);
     }
 
     u32 blockSize = block->getSize();
@@ -178,11 +195,11 @@ JKRAramBlock* JKRAram::mainRamToAram(u8* buf, JKRAramBlock* block, u32 alignedSi
 
     alignedSize = alignedSize > blockSize ? blockSize : alignedSize;
 
-    return mainRamToAram(buf, block->getAddress(), alignedSize, expandSwitch, fileSize, heap, id);
+    return mainRamToAram(buf, (uintptr_t)block->getAddress(), alignedSize, expandSwitch, fileSize, heap, id);
 }
 
 // TODO: figure out name of parameter 5
-u8* JKRAram::aramToMainRam(u32 address, u8* buf, u32 srcSize, JKRExpandSwitch expandSwitch, u32 p5, JKRHeap* heap,
+u8* JKRAram::aramToMainRam(uintptr_t address, u8* buf, u32 srcSize, JKRExpandSwitch expandSwitch, u32 p5, JKRHeap* heap,
                            int id, u32* pSize) {
     int compression = JKRCOMPRESSION_NONE;
     if (pSize)
@@ -193,9 +210,9 @@ u8* JKRAram::aramToMainRam(u32 address, u8* buf, u32 srcSize, JKRExpandSwitch ex
     u32 expandSize;
     if (expandSwitch == EXPAND_SWITCH_DECOMPRESS) {
         u8 buffer[64];
-        u8* bufPtr = (u8*)ALIGN_NEXT((u32)buffer, 32);
-        JKRAramPcs(1, address, (u32)bufPtr, sizeof(buffer) / 2,
-                   nullptr); // probably change sizeof(buffer) / 2 to 32
+        u8* bufPtr = (u8*)ALIGN_NEXT((uintptr_t)buffer, 32);
+        JKRAramPcs(1, address, (uintptr_t)bufPtr, 32,
+                   nullptr);
         compression = JKRCheckCompressed(bufPtr);
         expandSize = JKRDecompExpandSize(bufPtr);
     }
@@ -211,7 +228,7 @@ u8* JKRAram::aramToMainRam(u32 address, u8* buf, u32 srcSize, JKRExpandSwitch ex
             return nullptr;
         else {
             changeGroupIdIfNeed(buf, id);
-            JKRDecompressFromAramToMainRam(address, buf, srcSize, expandSize, 0);
+            JKRDecompressFromAramToMainRam((uintptr_t)address, buf, srcSize, expandSize, 0);
             if (pSize) {
                 *pSize = expandSize;
             }
@@ -223,7 +240,7 @@ u8* JKRAram::aramToMainRam(u32 address, u8* buf, u32 srcSize, JKRExpandSwitch ex
         if (szpSpace == nullptr) {
             return nullptr;
         } else {
-            JKRAramPcs(1, address, (u32)szpSpace, srcSize, nullptr);
+            JKRAramPcs(1, address, (uintptr_t)szpSpace, srcSize, nullptr);
             if (p5 != 0 && p5 < expandSize)
                 expandSize = p5;
 
@@ -250,7 +267,7 @@ u8* JKRAram::aramToMainRam(u32 address, u8* buf, u32 srcSize, JKRExpandSwitch ex
             return nullptr;
         } else {
             changeGroupIdIfNeed(buf, id);
-            JKRAramPcs(1, address, (u32)buf, srcSize, nullptr);
+            JKRAramPcs(1, address, (uintptr_t)buf, srcSize, nullptr);
             if (pSize != nullptr) {
                 *pSize = srcSize;
             }
@@ -283,7 +300,7 @@ u8* JKRAram::aramToMainRam(JKRAramBlock* block, u8* buf, u32 bufSize, u32 aligne
         bufSize = freeSize - alignedBlockSize;
     }
 
-    return aramToMainRam(alignedBlockSize + block->getAddress(), buf, bufSize, expandSwitch, p6, heap, id, pSize);
+    return aramToMainRam((uintptr_t)alignedBlockSize + block->getAddress(), buf, bufSize, expandSwitch, p6, heap, id, pSize);
 }
 
 static OSMutex decompMutex;
@@ -296,7 +313,7 @@ static u8* refCurrent;
 static u32 srcOffset;
 static u32 transLeft;
 static u8* srcLimit;
-static u32 srcAddress;
+static uintptr_t srcAddress;
 static u32 fileOffset;
 static u32 readCount;
 static u32 maxDest;
@@ -312,7 +329,7 @@ void JKRAram::aramSync(JKRAMCommand*, int) {
     // JUT_REPORT_MSG("bad aramSync\n");
 }
 
-int JKRDecompressFromAramToMainRam(u32 src, void* dst, u32 srcLength, u32 dstLength, u32 offset) {
+int JKRDecompressFromAramToMainRam(uintptr_t src, void* dst, u32 srcLength, u32 dstLength, u32 offset) {
     szpBuf = (u8*)JKRAllocFromSysHeap(SZP_BUFFERSIZE, 32);
 
     JUT_ASSERT(szpBuf != 0);
@@ -456,7 +473,7 @@ static u8* firstSrcData() {
     u32 maxSize = (szpEnd - szpBuf);
     u32 transSize = MIN(transLeft, maxSize);
 
-    JKRAramPcs(1, srcAddress + srcOffset, (u32)buf, ALIGN_NEXT(transSize, 32), nullptr);
+    JKRAramPcs(1, srcAddress + srcOffset, (uintptr_t)buf, ALIGN_NEXT(transSize, 32), nullptr);
 
     srcOffset += transSize;
     transLeft -= transSize;
@@ -466,19 +483,27 @@ static u8* firstSrcData() {
 
 u8* nextSrcData(u8* current) {
     u8* dest;
+#ifdef TARGET_PC
+    u32 left = (uintptr_t)(szpEnd - current);
+#else
     u32 left = (u32)(szpEnd - current);
+#endif
     if (IS_NOT_ALIGNED(left, 0x20))
         dest = szpBuf + 0x20 - (left & (0x20 - 1));
     else
         dest = szpBuf;
 
     memcpy(dest, current, left);
+#ifdef TARGET_PC
+    u32 transSize = (uintptr_t)(szpEnd - (dest + left));
+#else
     u32 transSize = (u32)(szpEnd - (dest + left));
+#endif
     if (transSize > transLeft)
         transSize = transLeft;
     JUT_ASSERT(transSize > 0);
 
-    JKRAramPcs(1, (u32)(srcAddress + srcOffset), ((u32)dest + left), ALIGN_NEXT(transSize, 0x20), nullptr);
+    JKRAramPcs(1, (uintptr_t)(srcAddress + srcOffset), ((uintptr_t)dest + left), ALIGN_NEXT(transSize, 0x20), nullptr);
     srcOffset += transSize;
     transLeft -= transSize;
 

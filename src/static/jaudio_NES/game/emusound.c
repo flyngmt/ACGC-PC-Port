@@ -1559,18 +1559,17 @@ void HS_Event_Reset() {
 }
 
 void HS_Event_Update() {
-    //! TODO: this has to be wrong
-    typedef struct {
-        u8 a, b;
-    } tempBuf;
-    tempBuf message;
+    OSMessage msg;
 
-    while (1) {
-        // this should take a void** for message, and it fills out the OSMessage(which is a void*)
-        if (!OSReceiveMessage(&SoundQ, (OSMessage*)&message, 0)) {
+    while (TRUE) {
+        if (!OSReceiveMessage(&SoundQ, &msg, OS_MESSAGE_NOBLOCK)) {
             break;
         }
-        __Sound_Write_HVC(message.a, message.b);
+
+        /* Message format: (a - 0x4000) << 24 | b << 16 */
+        u16 a = ((uintptr_t)msg >> 24) & 0xFF;
+        u8 b = ((uintptr_t)msg >> 16) & 0xFF;
+        __Sound_Write_HVC(a, b);
     }
 }
 

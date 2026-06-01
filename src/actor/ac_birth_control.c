@@ -290,7 +290,6 @@ static void aBC_set_boat(BIRTH_CONTROL_ACTOR* birth_control, GAME_PLAY* play) {
 static void aBC_actor_move(ACTOR* actorx, GAME* game) {
   BIRTH_CONTROL_ACTOR* birth_control = (BIRTH_CONTROL_ACTOR*)actorx;
   GAME_PLAY* play = (GAME_PLAY*)game;
-
   if (Common_Get(bg_item_type) == 0) {
     birth_control->setup_actor_flag |= mFI_ActorisBorn() == TRUE;
     aBC_set_boat(birth_control, play);
@@ -299,7 +298,6 @@ static void aBC_actor_move(ACTOR* actorx, GAME* game) {
   if (mFI_ActorisBorn() == TRUE) {
     int bx = play->block_table.block_x;
     int bz = play->block_table.block_z;
-
     birth_control->move_actor_data = mFI_MoveActorListDma(bx, bz);
     mNpc_AddActor_inBlock(birth_control->move_actor_data, bx, bz);
 

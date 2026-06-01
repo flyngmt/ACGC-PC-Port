@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <inttypes.h>
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include "apu.h"
 #include "audio_fds.h"
 #include "audio.h"

@@ -5,5 +5,5 @@ void aFLS_actor_move(ACTOR* actor, GAME*) {
 
     pos.y += 40.0f;
 
-    sAdo_OngenPos((u32)actor, 12, &pos);
+    sAdo_OngenPos((uintptr_t)actor, 12, &pos);
 }

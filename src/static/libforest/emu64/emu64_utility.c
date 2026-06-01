@@ -5,32 +5,120 @@
 #include "MSL_C/w_math.h"
 
 #ifdef TARGET_PC
-static_assert(sizeof(void*) == sizeof(u32), "seg2k0 pointer resolution requires 32-bit pointers");
-
 /* Executable image range from pc_main.c — BSS/data can collide with N64 segments */
-extern "C" unsigned int pc_image_base;
-extern "C" unsigned int pc_image_end;
-extern "C" uintptr_t pc_gbi_unpack_runtime_ptr(unsigned int packed);
+extern "C" uintptr_t pc_image_base;
+extern "C" uintptr_t pc_image_end;
 
-u32 emu64::seg2k0(u32 segadr) {
-    uintptr_t odd_ptr = pc_gbi_unpack_runtime_ptr(segadr);
-    if (odd_ptr != 0) {
-        return (u32)odd_ptr;
+#if UINTPTR_MAX > 0xFFFFFFFFu
+#include "pc_gbi_ptr.h"
+
+/* === 64-bit seg2k0 ===
+ * On 64-bit, real PC pointers are always above 0x0FFFFFFF. N64 segment
+ * addresses are always 0x03XXXXXX-0x0FXXXXXX. However, truncated 64-bit
+ * pointers (low 32 bits of a real pointer stored in a u32 Gfx field) can
+ * fall ANYWHERE in the 32-bit range, including the segment address range.
+ *
+ * Strategy: first try segment resolution. If the segment base is 0 (unused
+ * segment), try recovering the full pointer from the truncated value using
+ * the known image/arena base addresses. */
+uintptr_t emu64::seg2k0(uintptr_t segadr) {
+    /* Full 64-bit pointer — already resolved */
+    if (segadr > 0xFFFFFFFFu) return segadr;
+    /* Zero — can't recover */
+    if (segadr == 0) return 0;
+
+    /* If the address is within the executable image, it's a native pointer */
+    if (segadr >= pc_image_base && segadr < pc_image_end) {
+        return segadr;
     }
 
-    /* Runtime GBI macros tag direct PC pointers in bit 0. Segment references
-       keep the low bit clear so they still resolve through the segment table. */
-    if ((segadr & 1) != 0) {
-        return segadr & ~1u;
+    /* Try N64 segment resolution first (0x03-0x0F range) */
+    if (segadr >= 0x03000000u && segadr <= 0x0FFFFFFFu) {
+        uintptr_t seg = (segadr >> 24) & 0xF;
+        uintptr_t offset = segadr & 0xFFFFFF;
+        if (this->segments[seg] != 0) {
+            this->resolved_addresses++;
+            return this->segments[seg] + offset;
+        }
+        /* Segment base is 0 — this might be a truncated PC pointer,
+         * not a real segment address. Fall through to recovery. */
     }
 
-    /* Addresses above the N64 segment range (upper nibble != 0) or below
-       the minimum segment address are definitely raw PC pointers. */
+    /* Try to recover a full 64-bit pointer from the truncated 32-bit value */
+    uintptr_t recovered = pc_gbi_recover_ptr((unsigned int)segadr);
+    if (recovered != segadr) {
+        /* Successfully recovered — this was a truncated pointer */
+        return recovered;
+    }
+
+    /* Unrecoverable — return as-is (may crash, handled by VEH/signal) */
+    return segadr;
+}
+#else
+/* === 32-bit seg2k0 ===
+ * On 32-bit, PC pointers can collide with N64 segment addresses (both in
+ * 0x03-0x0F range). On Windows/Linux, use VirtualQuery/mincore + page cache to
+ * disambiguate. On other platforms, rely on segment table and image range. */
+
+#if defined(_WIN32) || defined(__linux__)
+#ifndef _WIN32
+#include <sys/mman.h>
+#include <errno.h>
+#include <unistd.h>
+#endif
+
+/* Page-granularity cache for VirtualQuery/mincore results.
+ * Avoids repeated syscalls for addresses in the same page. */
+#define SEG2K0_PAGE_CACHE_SIZE 32
+static struct { u32 page; u8 committed; } seg2k0_page_cache[SEG2K0_PAGE_CACHE_SIZE];
+static int seg2k0_cache_next = 0;
+
+static int seg2k0_is_committed(u32 addr) {
+    static long page_size = 0;
+    if (page_size == 0) {
+#ifdef _WIN32
+        page_size = 4096;
+#else
+        page_size = sysconf(_SC_PAGESIZE);
+        if (page_size <= 0) page_size = 4096;
+#endif
+    }
+    u32 page = addr & ~(u32)(page_size - 1);
+    for (int i = 0; i < SEG2K0_PAGE_CACHE_SIZE; i++) {
+        if (seg2k0_page_cache[i].page == page) {
+            return seg2k0_page_cache[i].committed;
+        }
+    }
+    int committed = 0;
+#ifdef _WIN32
+    MEMORY_BASIC_INFORMATION mbi;
+    if (VirtualQuery((void*)(uintptr_t)addr, &mbi, sizeof(mbi)) > 0 && mbi.State == MEM_COMMIT) {
+        committed = 1;
+    }
+#else
+    /* Linux: use mincore to check if the page is mapped.
+     * mincore(2) returns 0 on success, and sets vec[0] to indicate if the page is resident.
+     * If the address is not mapped, it returns -1 with errno=ENOMEM. */
+    unsigned char vec[1];
+    if (mincore((void*)(uintptr_t)page, (size_t)page_size, vec) == 0) {
+        committed = 1;
+    } else if (errno != ENOMEM) {
+        /* Other error (e.g. invalid pointer) — assume not committed */
+        committed = 0;
+    }
+#endif
+    seg2k0_page_cache[seg2k0_cache_next].page = page;
+    seg2k0_page_cache[seg2k0_cache_next].committed = (u8)committed;
+    seg2k0_cache_next = (seg2k0_cache_next + 1) % SEG2K0_PAGE_CACHE_SIZE;
+    return (int)committed;
+}
+#endif /* _WIN32 || __linux__ */
+
+uintptr_t emu64::seg2k0(uintptr_t segadr) {
     if ((segadr >> 28) != 0 || segadr < 0x03000000) {
         return segadr;
     }
 
-    /* Check if address falls within the executable image (BSS/data/code). */
     if (segadr >= pc_image_base && segadr < pc_image_end) {
         return segadr;
     }
@@ -44,11 +132,39 @@ u32 emu64::seg2k0(u32 segadr) {
         return segadr;
     }
 
+    uintptr_t resolved = this->segments[seg] + offset;
+
+#if defined(_WIN32) || defined(__linux__)
+    /* Real N64 segment addresses come from GBI macros like SEGMENT_ADDR(seg, offset)
+       and always have small offsets (textures, matrices that are never > 512KB).
+       PC heap pointers that collide with the segment range have large "offsets"
+       (the low 24 bits of an arbitrary address). Use this to discriminate:
+       large offset + committed raw address = heap pointer, not segment ref.
+
+       This might be the last memory fix needed.
+       */
+
+    /* Large offset (> 512KB) with committed raw address = definitely a heap pointer,
+       not a real segment reference. N64 segments never have offsets this large. */
+    if (offset > 0x80000 && seg2k0_is_committed(segadr)) {
+        return segadr;
+    }
+
     /* Normal segment resolution path */
-    u32 resolved = base + offset;
+    if (seg2k0_is_committed((u32)resolved)) {
+        this->resolved_addresses++;
+        return resolved;
+    }
+
+    if (seg2k0_is_committed((u32)segadr)) {
+        return segadr;
+    }
+#endif /* _WIN32 || __linux__ */
+
     this->resolved_addresses++;
     return resolved;
 }
+#endif /* UINTPTR_MAX */
 #else
 u32 emu64::seg2k0(u32 segadr) {
     u32 k0;

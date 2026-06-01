@@ -34,6 +34,33 @@
  */
 #if defined(_LANGUAGE_C) || defined(_LANGUAGE_C_PLUS_PLUS) || defined(TARGET_PC)
 
+#ifdef TARGET_PC
+/* On PC, types are already defined by types.h / dolphin/types.h via stdint.h.
+ * Only define them here if they haven't been defined yet. */
+#include <stdint.h>
+#include <stddef.h>
+#ifndef _DOLPHIN_TYPES_H_
+typedef unsigned char       u8;
+typedef unsigned short      u16;
+typedef uint32_t            u32;
+typedef uint64_t            u64;
+typedef signed char         s8;
+typedef short               s16;
+typedef int32_t             s32;
+typedef int64_t             s64;
+typedef volatile unsigned char      vu8;
+typedef volatile unsigned short     vu16;
+typedef volatile uint32_t           vu32;
+typedef volatile uint64_t           vu64;
+typedef volatile signed char        vs8;
+typedef volatile short              vs16;
+typedef volatile int32_t            vs32;
+typedef volatile int64_t            vs64;
+typedef float   f32;
+typedef double  f64;
+#endif /* _DOLPHIN_TYPES_H_ */
+#else
+/* N64/GC original types */
 typedef unsigned char       u8;     /* unsigned  8-bit */
 typedef unsigned short      u16;    /* unsigned 16-bit */
 typedef unsigned long       u32;    /* unsigned 32-bit */
@@ -56,10 +83,9 @@ typedef volatile long long          vs64;   /* signed 64-bit */
 
 typedef float   f32;    /* single prec floating point */
 typedef double  f64;    /* double prec floating point */
+#endif /* TARGET_PC */
 
-#ifdef TARGET_PC
-#include <stddef.h>
-#else
+#ifndef TARGET_PC
 #if !defined(_SIZE_T) && !defined(_SIZE_T_) && !defined(_SIZE_T_DEF)
 #define _SIZE_T
 #define _SIZE_T_DEF         /* exeGCC size_t define label */

@@ -620,7 +620,7 @@ static void aGKK_bite(ACTOR* actorx, GAME* game) {
         actorx->world.position.z = pos.z;
 
         aGKK_set_angle(actorx, uki->actor_class.world.angle.y);
-        sAdo_OngenPos((u32)actorx, NA_SE_24, &actorx->world.position);
+        sAdo_OngenPos((uintptr_t)actorx, NA_SE_24, &actorx->world.position);
         CLIP(gyo_clip)->hitcheck_gyoei_proc(&actorx->world.position, gyo->size_type);
 
         if (DECREMENT_TIMER(gyo->swork0) == 0) {

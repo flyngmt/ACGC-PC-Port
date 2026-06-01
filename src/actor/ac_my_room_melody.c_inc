@@ -10,8 +10,8 @@ static void aMR_SoundMelody(FTR_ACTOR* ftr_actor, ACTOR* actorx, int idx) {
     if (ftr_actor->switch_changed_flag) {
         u8* melody_data = aMR_GetMelodyData(actorx);
 
-        sAdo_FurnitureInst((u32)ftr_actor, idx, melody_data, &ftr_actor->position);
+        sAdo_FurnitureInst((uintptr_t)ftr_actor, idx, melody_data, &ftr_actor->position);
     }
 
-    sAdo_FurnitureInstPos((u32)ftr_actor, &ftr_actor->position);
+    sAdo_FurnitureInstPos((uintptr_t)ftr_actor, &ftr_actor->position);
 }

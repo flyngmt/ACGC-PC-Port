@@ -167,7 +167,7 @@ seqp_* Jaq_HandleToSeq(u32 handle)
  * Address:	80014040
  * Size:	000368
  */
-static void Init_Track(seqp_* track, u32 dataAddress, seqp_* parent)
+static void Init_Track(seqp_* track, uintptr_t dataAddress, seqp_* parent)
 {
 	int i;
 
@@ -398,7 +398,7 @@ s32 Jaq_SetSeqData_Limit(seqp_* track, u8* param_2, u32 param_3, u32 param_4, u8
 	}
 	track->trackId = root;
 	track->flags   = 3;
-	Init_Track(track, (u32)puVar2, NULL);
+	Init_Track(track, (uintptr_t)puVar2, (seqp_*)NULL);
 	Jam_InitExtBuffer(&ROOT_OUTER[root]);
 	Jam_AssignExtBuffer(track, &ROOT_OUTER[root]);
 	Init_1shot(&track->parentController, param_5);
@@ -518,7 +518,7 @@ s32 Jaq_OpenTrack(seqp_* track, u32 flags, u32 source)
 	newChildTrack->dataSourceMode = track->dataSourceMode;
 	newChildTrack->flags          = trackFlags;
 
-	Init_Track(newChildTrack, source, track);
+	Init_Track(newChildTrack, (uintptr_t)source, track);
 
 	// Dev rolls "worst bit extraction method", asked to leave Nintendo EAD.
 	newChildTrack->isMuted = newChildTrack->parent->isMuted | ((newChildTrack->parent->childMuteMask & (1 << childIndex)) >> childIndex);

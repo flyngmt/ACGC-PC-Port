@@ -437,7 +437,7 @@ static void aAL_setupAction(ANIMAL_LOGO_ACTOR* actor, GAME* game, int action) {
     &aAL_back_fadein,
     &aAL_start_key_chk_start_wait,
 #ifdef PC_ENHANCEMENTS
-    &aAL_pc_game_start_wait,
+    (ANIMAL_LOGO_ACTION_PROC)&aAL_pc_game_start_wait,
 #else
     &aAL_game_start_wait,
 #endif
@@ -868,8 +868,6 @@ static void aAL_actor_draw(ACTOR* actor, GAME* game) {
       case aAL_ACTION_FADE_OUT_START:
       case aAL_ACTION_OUT:
 #ifdef PC_ENHANCEMENTS
-        { extern int g_pc_title_main_menu_visible;
-          g_pc_title_main_menu_visible = 1; }
         aAL_pc_menu_draw(logo_actor, game);
 #else
         aAL_press_start_draw(logo_actor, graph);

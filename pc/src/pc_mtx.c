@@ -8,13 +8,13 @@ typedef f32 (*MtxP)[4];
 
 typedef struct { f32 x, y, z; } Vec;
 
-typedef long long int Mtx_t[4][2];
+typedef s32 Mtx_t[4][4];
 typedef union {
     Mtx_t m;
-    long long int forc_align;
-} Mtx;
+    long long int force_structure_alignment;
+} Mtx ATTRIBUTE_ALIGN(8);
 
-#define FTOFIX32(x) (long)((x) * (float)0x00010000)
+#define FTOFIX32(x) (s32)((x) * (float)0x00010000)
 
 /* --- Dolphin PS* matrix functions (3x4 row-major) --- */
 
@@ -287,18 +287,18 @@ void guMtxIdentF(float mf[4][4]) {
 
 void guMtxF2L(float mf[4][4], Mtx* m) {
     int i, j;
-    int e1, e2;
-    int *ai, *af;
+    s32 e1, e2;
+    s32 *ai, *af;
 
-    ai = (int*)&m->m[0][0];
-    af = (int*)&m->m[2][0];
+    ai = (s32*)&m->m[0][0];
+    af = (s32*)&m->m[2][0];
 
     for (i = 0; i < 4; i++)
         for (j = 0; j < 2; j++) {
-            e1 = FTOFIX32(mf[i][j*2]);
-            e2 = FTOFIX32(mf[i][j*2+1]);
-            *(ai++) = (e1 & 0xffff0000) | ((e2 >> 16) & 0xffff);
-            *(af++) = ((e1 << 16) & 0xffff0000) | (e2 & 0xffff);
+            e1 = FTOFIX32(mf[i][j * 2]);
+            e2 = FTOFIX32(mf[i][j * 2 + 1]);
+            *(ai++) = (e1 & 0xffff0000) | ((u32)e2 >> 16);
+            *(af++) = (e1 << 16) | (e2 & 0xffff);
         }
 }
 

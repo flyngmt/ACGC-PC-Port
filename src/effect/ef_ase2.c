@@ -50,7 +50,7 @@ static void eAS2_ct(eEC_Effect_c* effect, GAME* game, void* ct_arg) {
 static void eAS2_mv(eEC_Effect_c* effect, GAME* game) {
     eEC_CLIP->set_continious_env_proc(effect, 26, 52);
     effect->effect_specific[0]++;
-    sAdo_OngenPos((u32)effect, 0x29, &effect->position);
+    sAdo_OngenPos((uintptr_t)effect, 0x29, &effect->position);
 }
 
 static void eAS2_dw(eEC_Effect_c* effect, GAME* game) {

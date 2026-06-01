@@ -34,7 +34,7 @@ static void eWU_ct(eEC_Effect_c* effect, GAME* game, void* ct_arg) {
 }
 
 static void eWU_mv(eEC_Effect_c* effect, GAME* game) {
-    sAdo_OngenPos((u32)effect, 15, &effect->position);
+    sAdo_OngenPos((uintptr_t)effect, 15, &effect->position);
     eEC_CLIP->set_continious_env_proc(effect, 24, 24);
 }
 

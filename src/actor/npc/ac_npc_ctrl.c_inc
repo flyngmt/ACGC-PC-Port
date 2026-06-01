@@ -644,8 +644,11 @@ static ACTOR* aNPC_get_actor_area_proc(size_t size, const char* actor_name, int 
     int* used = CLIP(npc_clip)->keep_actor_used;
     int i;
 
-    /* TARGET_PC struct fields (DT accumulators etc.) grow some NPC actor classes past the GC 0x9D0 slot */
-    if (size > 0xA40) {
+#ifdef TARGET_PC
+    if (size > 0xC00) {
+#else
+    if (size > 0x9D0) {
+#endif
         return NULL;
     }
 
@@ -695,7 +698,11 @@ static void aNPC_dma_draw_data_proc(aNPC_draw_data_c* draw_data_p, mActor_name_t
 #ifndef aNPC_NPC2
 typedef struct {
     u64 align;
-    u8 buf[0xA40]; /* PC: Increased from 0x9D0 */
+#ifdef TARGET_PC
+    u8 buf[0xC00]; /* 64-bit: NPC structs are larger due to pointer widening */
+#else
+    u8 buf[0x9D0];
+#endif
 } aNPC_actor_class_overlay_c;
 
 typedef struct {
@@ -730,7 +737,7 @@ static void aNPC_keep_actor_class(void) {
     int i;
 
     for (i = 0; i < 9; i++) {
-        *actor = (NPC_ACTOR*)ALIGN_NEXT((u32)aNPC_n_actor_cl_tbl[i].buf, 16);
+        *actor = (NPC_ACTOR*)ALIGN_NEXT((uintptr_t)aNPC_n_actor_cl_tbl[i].buf, 16);
         *used = FALSE;
 
         actor++;

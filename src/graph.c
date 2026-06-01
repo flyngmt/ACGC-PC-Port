@@ -131,7 +131,7 @@ int graph_dt_60hz_ticks(GAME* game, float* accum) {
     int max_ticks = 4;
 
 #ifdef TARGET_PC
-    if (g_pc_speedhack_enabled) {
+    if (g_pc_fast_forward) {
         max_ticks = (int)PC_SPEEDHACK_MULTIPLIER;
     }
 #endif
@@ -190,6 +190,7 @@ static void graph_task_set00(GRAPH* this) {
 #ifdef TARGET_PC
             {
                 extern int pc_emu64_frame_cmds, pc_emu64_frame_tri_cmds, pc_emu64_frame_vtx_cmds;
+                extern int pc_emu64_frame_dl_cmds, pc_emu64_frame_crashes;
                 extern int pc_gx_draw_call_count;
                 PC_DIAG(5, "emu64 stats: cmds=%d tri=%d vtx=%d gl_draws=%d\n",
                         pc_emu64_frame_cmds, pc_emu64_frame_tri_cmds, pc_emu64_frame_vtx_cmds,
@@ -437,7 +438,7 @@ extern void graph_proc(void* arg) {
             }
 
 #ifdef TARGET_PC
-            if (g_pc_speedhack_enabled) {
+            if (g_pc_fast_forward) {
                 dt_num_60fps_frames *= PC_SPEEDHACK_MULTIPLIER;
                 delta_time *= PC_SPEEDHACK_MULTIPLIER;
             }
