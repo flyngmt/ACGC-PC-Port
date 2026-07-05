@@ -13,6 +13,7 @@ PCSettings g_pc_settings = {
     .disable_resetti = 0,
     .nes_aspect = 1,
     .master_volume = 100,
+    .discord_client_id = "",
 };
 
 static const char* SETTINGS_FILE = "settings.ini";
@@ -48,7 +49,12 @@ static const char* DEFAULT_SETTINGS =
     "\n"
     "[Audio]\n"
     "# Master output volume as a percentage (0-100)\n"
-    "master_volume = 100\n";
+    "master_volume = 100\n"
+    "\n"
+    "[Discord]\n"
+    "# Discord Rich Presence: paste your Application's Client ID from\n"
+    "# https://discord.com/developers/applications to enable (leave blank to disable)\n"
+    "discord_client_id = \n";
 
 static const char* skip_ws(const char* s) {
     while (*s == ' ' || *s == '\t') s++;
@@ -89,6 +95,9 @@ static void apply_setting(const char* key, const char* value) {
         if (val == 0 || val == 1) g_pc_settings.nes_aspect = val;
     } else if (strcmp(key, "master_volume") == 0) {
         if (val >= 0 && val <= 100) g_pc_settings.master_volume = val;
+    } else if (strcmp(key, "discord_client_id") == 0) {
+        strncpy(g_pc_settings.discord_client_id, value, sizeof(g_pc_settings.discord_client_id) - 1);
+        g_pc_settings.discord_client_id[sizeof(g_pc_settings.discord_client_id) - 1] = '\0';
     }
 }
 
@@ -157,6 +166,11 @@ void pc_settings_save(void) {
     fprintf(f, "[Audio]\n");
     fprintf(f, "# Master output volume as a percentage (0-100)\n");
     fprintf(f, "master_volume = %d\n", g_pc_settings.master_volume);
+    fprintf(f, "\n");
+    fprintf(f, "[Discord]\n");
+    fprintf(f, "# Discord Rich Presence: paste your Application's Client ID from\n");
+    fprintf(f, "# https://discord.com/developers/applications to enable (leave blank to disable)\n");
+    fprintf(f, "discord_client_id = %s\n", g_pc_settings.discord_client_id);
     fclose(f);
     printf("[Settings] Saved %s\n", SETTINGS_FILE);
 }

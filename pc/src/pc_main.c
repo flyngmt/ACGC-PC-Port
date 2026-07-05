@@ -8,6 +8,7 @@
 #include "pc_disc.h"
 #include "pc_typing.h"
 #include "pc_pause_menu.h"
+#include "pc_discord.h"
 #include "m_kankyo.h"
 
 /* prefer discrete GPU on laptops */
@@ -158,6 +159,7 @@ int pc_platform_poll_events(void) {
     SDL_Event event;
 
     pc_typing_update();
+    pc_discord_update();
 
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
@@ -321,6 +323,7 @@ int main(int argc, char* argv[]) {
     pc_settings_load();
     pc_keybindings_load();
     pc_platform_init();
+    pc_discord_init();
     pc_disc_init();
     if (!pc_assets_init()) {
         const char* msg =
@@ -330,6 +333,7 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "[PC] %s\n", msg);
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
                                  "Animal Crossing - Missing ROM", msg, g_pc_window);
+        pc_discord_shutdown();
         pc_platform_shutdown();
         return 1;
     }
@@ -338,6 +342,7 @@ int main(int argc, char* argv[]) {
     boot_main(argc, (const char**)argv); /* full init → HotStartEntry → game loop */
 
     pc_disc_shutdown();
+    pc_discord_shutdown();
     pc_platform_shutdown();
     return 0;
 }

@@ -16,6 +16,7 @@ typedef struct {
     int disable_resetti;  /* 0=normal (Resetti appears on reset), 1=disable reset penalty */
     int nes_aspect;       /* NES emulator aspect: 0=fullscreen stretch, 1=4:3 pillarbox (default) */
     int master_volume;    /* Applied at the PC audio output, 0-100 (default 100) */
+    char discord_client_id[32]; /* Discord Application ID; empty disables Rich Presence */
 } PCSettings;
 
 #define PC_MAX_FPS_CAP 960
