@@ -333,6 +333,7 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "[PC] %s\n", msg);
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
                                  "Animal Crossing - Missing ROM", msg, g_pc_window);
+        pc_discord_shutdown();
         pc_platform_shutdown();
         return 1;
     }

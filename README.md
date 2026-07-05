@@ -102,7 +102,7 @@ Graphics settings are stored in `settings.ini` and can be edited manually or thr
 
 ## Discord Rich Presence
 
-Optional. To show your current town and location (e.g. "In the town of Foo" / "Inside Nook's Cranny") on your Discord profile, create a free Application at the [Discord Developer Portal](https://discord.com/developers/applications) and paste its Client ID into `discord_client_id` in `settings.ini`. Leave it blank to disable (default).
+Optional, Windows builds only for now. To show your current town and location (e.g. "In the town of Foo" / "Inside Nook's Cranny") on your Discord profile, create a free Application at the [Discord Developer Portal](https://discord.com/developers/applications) and paste its Client ID into `discord_client_id` in `settings.ini`. Leave it blank to disable (default).
 
 ## Texture Packs
 

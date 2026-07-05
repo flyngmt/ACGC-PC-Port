@@ -17,6 +17,7 @@
 #include "pc_discord.h"
 #include "pc_settings.h"
 #include "m_common_data.h"
+#include "m_font.h"
 #include "m_land.h"
 #include "m_scene_table.h"
 
@@ -25,15 +26,18 @@
 #define DISCORD_OP_HANDSHAKE 0
 #define DISCORD_OP_FRAME 1
 
-/* ~5s at 60fps: enough to feel live without spamming the pipe. */
-#define DISCORD_UPDATE_INTERVAL_FRAMES 300
+/* Enough to feel live without spamming the pipe (Discord rate-limits
+ * presence updates to roughly one per 15s anyway). */
+#define DISCORD_UPDATE_INTERVAL_MS 5000
 #define DISCORD_RECONNECT_DELAY_MS 5000
+
+/* Default when no save is loaded or the town has no printable name. */
+static const char DEFAULT_DETAILS[] = "Playing Animal Crossing";
 
 typedef struct {
     char details[128];
-    char state[128];
-    int has_state;
-    int version; /* bumped whenever details/state change */
+    char state[128]; /* "" = no state line */
+    int version;     /* bumped whenever details/state change */
 } pc_discord_presence_t;
 
 static SDL_Thread* s_thread = NULL;
@@ -45,9 +49,21 @@ static char s_client_id[32];
 static long long s_start_time = 0;
 static HANDLE s_pipe = INVALID_HANDLE_VALUE;
 
+/* Discord (or another RPC app) may hold any of discord-ipc-0..9; with
+ * multiple clients running (e.g. stable + Canary) the active one is often
+ * not on -0, so probe all ten. */
 static int pc_discord_connect(void) {
-    s_pipe = CreateFileA("\\\\.\\pipe\\discord-ipc-0", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-    return s_pipe != INVALID_HANDLE_VALUE;
+    char pipe_name[32];
+    int i;
+
+    for (i = 0; i <= 9; i++) {
+        snprintf(pipe_name, sizeof(pipe_name), "\\\\.\\pipe\\discord-ipc-%d", i);
+        s_pipe = CreateFileA(pipe_name, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+        if (s_pipe != INVALID_HANDLE_VALUE) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 static void pc_discord_disconnect(void) {
@@ -86,26 +102,38 @@ static void json_escape_append(char* out, size_t out_size, size_t* pos, const ch
     }
 }
 
-static int pc_discord_send_activity(const char* details, const char* state, int has_state) {
+/* snprintf returns the would-be length when it truncates; clamp so pos
+ * stays a valid offset and sizeof(json) - pos can't underflow. */
+static size_t clamp_pos(size_t pos, size_t size) {
+    return pos < size ? pos : size - 1;
+}
+
+/* state may be "" to omit the state line entirely. */
+static int pc_discord_send_activity(const char* details, const char* state) {
     char json[512];
     size_t pos;
 
-    pos = (size_t)snprintf(json, sizeof(json), "{\"cmd\":\"SET_ACTIVITY\",\"args\":{\"pid\":%lu,\"activity\":{\"details\":\"",
-                            (unsigned long)GetCurrentProcessId());
+    pos = (size_t)snprintf(json, sizeof(json),
+                           "{\"cmd\":\"SET_ACTIVITY\",\"args\":{\"pid\":%lu,\"activity\":{\"details\":\"",
+                           (unsigned long)GetCurrentProcessId());
+    pos = clamp_pos(pos, sizeof(json));
     json_escape_append(json, sizeof(json), &pos, details);
 
-    if (has_state) {
+    if (state[0] != '\0') {
         pos += (size_t)snprintf(json + pos, sizeof(json) - pos, "\",\"state\":\"");
+        pos = clamp_pos(pos, sizeof(json));
         json_escape_append(json, sizeof(json), &pos, state);
     }
 
     /* "game_icon" only renders if the Discord Application has a Rich Presence
      * art asset uploaded under that exact key (Developer Portal > Rich
      * Presence > Art Assets); otherwise Discord just drops it silently. */
-    pos += (size_t)snprintf(
-        json + pos, sizeof(json) - pos,
-        "\",\"timestamps\":{\"start\":%lld},\"assets\":{\"large_image\":\"game_icon\",\"large_text\":\"Animal Crossing\"}}},\"nonce\":\"1\"}",
-        s_start_time);
+    pos += (size_t)snprintf(json + pos, sizeof(json) - pos,
+                            "\",\"timestamps\":{\"start\":%lld},"
+                            "\"assets\":{\"large_image\":\"game_icon\",\"large_text\":\"Animal Crossing\"}}},"
+                            "\"nonce\":\"1\"}",
+                            s_start_time);
+    pos = clamp_pos(pos, sizeof(json));
 
     return pc_discord_send_frame(DISCORD_OP_FRAME, json, (int)pos);
 }
@@ -124,7 +152,8 @@ static int pc_discord_worker(void* data) {
     while (SDL_AtomicGet(&s_running)) {
         if (!connected) {
             Uint32 now = SDL_GetTicks();
-            if (now >= next_connect_attempt) {
+            /* signed diff is safe across the Uint32 tick wraparound */
+            if ((Sint32)(now - next_connect_attempt) >= 0) {
                 if (pc_discord_connect() && pc_discord_handshake()) {
                     connected = 1;
                     s_sent_version = -1; /* force a resend now that we're connected */
@@ -143,7 +172,7 @@ static int pc_discord_worker(void* data) {
             SDL_UnlockMutex(s_mutex);
 
             if (local.version != s_sent_version) {
-                if (!pc_discord_send_activity(local.details, local.state, local.has_state)) {
+                if (!pc_discord_send_activity(local.details, local.state)) {
                     if (g_pc_verbose) printf("[Discord] Lost connection to Discord\n");
                     pc_discord_disconnect();
                     connected = 0;
@@ -177,7 +206,7 @@ void pc_discord_init(void) {
     }
 
     memset(&s_desired, 0, sizeof(s_desired));
-    snprintf(s_desired.details, sizeof(s_desired.details), "Playing Animal Crossing");
+    snprintf(s_desired.details, sizeof(s_desired.details), "%s", DEFAULT_DETAILS);
 
     SDL_AtomicSet(&s_running, 1);
     s_thread = SDL_CreateThread(pc_discord_worker, "DiscordRPC", NULL);
@@ -187,11 +216,31 @@ void pc_discord_init(void) {
     }
 }
 
-/* Town names use the game's own font character codes, which only line up
- * with ASCII across these two ranges (checked against m_font.h); everything
- * else (accented letters, symbols) is dropped rather than shown wrong. */
-static int pc_discord_char_is_ascii(u8 c) {
-    return (c >= 32 && c <= 90) || (c >= 97 && c <= 122);
+/* Town names use the game's own font character codes. The 32..122 block
+ * mostly coincides with ASCII, but a handful of codes in it are game
+ * symbols or accented letters (see m_font.h): those map to a base letter
+ * where one exists and are dropped ('\0') otherwise. */
+static char pc_discord_font_to_ascii(u8 c) {
+    switch (c) {
+        case CHAR_ACUTE_a:
+        case CHAR_CIRCUMFLEX_a:
+        case CHAR_TILDE_a:
+        case CHAR_DIARESIS_a:
+        case CHAR_ANGSTROM_a:
+            return 'a';
+        case CHAR_TILDE:
+            return '~';
+        case CHAR_SYMBOL_HEART:
+        case CHAR_SYMBOL_MUSIC_NOTE:
+        case CHAR_SYMBOL_DROPLET:
+        case CHAR_SYMBOL_ANNOYED:
+            return '\0';
+        default:
+            if ((c >= CHAR_SPACE && c <= CHAR_UNDERSCORE) || (c >= CHAR_a && c <= CHAR_z)) {
+                return (char)c; /* these font codes coincide with ASCII */
+            }
+            return '\0';
+    }
 }
 
 static void pc_discord_get_town_name(char* out, size_t out_size) {
@@ -200,8 +249,9 @@ static void pc_discord_get_town_name(char* out, size_t out_size) {
     int i;
 
     for (i = 0; i < LAND_NAME_SIZE && len + 1 < out_size; i++) {
-        if (pc_discord_char_is_ascii(raw[i])) {
-            out[len++] = (char)raw[i];
+        char c = pc_discord_font_to_ascii(raw[i]);
+        if (c != '\0') {
+            out[len++] = c;
         }
     }
     while (len > 0 && out[len - 1] == ' ') len--;
@@ -239,43 +289,39 @@ static const char* pc_discord_location_for_scene(int scene_no) {
 }
 
 void pc_discord_update(void) {
-    static u32 frame = 0;
+    static Uint32 next_update = 0;
     char details[128];
-    char state[128];
-    int has_state = 0;
+    char state[128] = "";
+    Uint32 now;
 
     if (!s_mutex) return; /* not initialized (no client ID configured) */
 
-    frame++;
-    if (frame % DISCORD_UPDATE_INTERVAL_FRAMES != 0) return;
+    /* Wall-clock throttle (frame counting would scale with the FPS cap).
+     * next_update == 0 fires immediately on the first call; the signed
+     * diff is safe across the Uint32 tick wraparound. */
+    now = SDL_GetTicks();
+    if (next_update != 0 && (Sint32)(now - next_update) < 0) return;
+    next_update = now + DISCORD_UPDATE_INTERVAL_MS;
 
-    if (!pc_save_loaded) {
-        snprintf(details, sizeof(details), "Playing Animal Crossing");
-    } else {
+    snprintf(details, sizeof(details), "%s", DEFAULT_DETAILS);
+    if (pc_save_loaded) {
         char town[32];
         pc_discord_get_town_name(town, sizeof(town));
 
-        if (town[0] == '\0') {
-            snprintf(details, sizeof(details), "Playing Animal Crossing");
-        } else {
-            const char* loc;
+        if (town[0] != '\0') {
+            const char* loc = pc_discord_location_for_scene(Save_Get(scene_no));
 
             snprintf(details, sizeof(details), "In the town of %s", town);
-
-            loc = pc_discord_location_for_scene(Save_Get(scene_no));
             if (loc) {
                 snprintf(state, sizeof(state), "%s", loc);
-                has_state = 1;
             }
         }
     }
 
     SDL_LockMutex(s_mutex);
-    if (strcmp(s_desired.details, details) != 0 || s_desired.has_state != has_state ||
-        (has_state && strcmp(s_desired.state, state) != 0)) {
+    if (strcmp(s_desired.details, details) != 0 || strcmp(s_desired.state, state) != 0) {
         snprintf(s_desired.details, sizeof(s_desired.details), "%s", details);
-        s_desired.has_state = has_state;
-        if (has_state) snprintf(s_desired.state, sizeof(s_desired.state), "%s", state);
+        snprintf(s_desired.state, sizeof(s_desired.state), "%s", state);
         s_desired.version++;
     }
     SDL_UnlockMutex(s_mutex);
