@@ -10,6 +10,10 @@
 #include "m_diary.h"
 #include "dolphin/card.h"
 
+#ifndef CARD_NUM_CHANS
+#define CARD_NUM_CHANS 2
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

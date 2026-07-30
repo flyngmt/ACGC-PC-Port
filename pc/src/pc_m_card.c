@@ -25,6 +25,7 @@
 #include "sys_math.h"
 #include "zurumode.h"
 #include "pc_save_bswap.h"
+#include "pc_platform.h"
 #include "pc_settings.h"
 #include "m_cockroach.h"
 #include "m_all_grow_ovl.h"
@@ -43,18 +44,27 @@
 #endif
 #include <dolphin/os.h>  /* OSReport */
 
-/* --- Path constants --- */
-#define PC_CARD_A_DIR     "save/card_a"
-#define PC_CARD_B_DIR     "save/card_b"
-#define PC_GCI_FILENAME   "DobutsunomoriP_MURA.gci"
-#define PC_GCI_PATH       PC_CARD_A_DIR "/" PC_GCI_FILENAME
-#define PC_GCI_TMP_PATH   PC_CARD_A_DIR "/" PC_GCI_FILENAME ".tmp"
-#define PC_SAVE_DIR       "save"
+/* --- Save paths below the configured --user-dir --- */
+#define PC_SAVE_PATH_MAX 1024
+#define PC_GCI_FILENAME "DobutsunomoriP_MURA.gci"
 #define PC_SAVE_MAX_BACKUPS 3
+#define PC_CWD_CARD_A_GCI_PATH "save/card_a/" PC_GCI_FILENAME
+#define PC_CWD_CARD_A_PREFIXED_GCI_PATH "save/card_a/8P-GAFE-" PC_GCI_FILENAME
+#define PC_CWD_FLAT_GCI_PATH "save/" PC_GCI_FILENAME
 
-/* Legacy paths for migration from flat save/ layout */
-#define PC_GCI_PATH_LEGACY     "save/DobutsunomoriP_MURA.gci"
-#define PC_GCI_TMP_PATH_LEGACY "save/DobutsunomoriP_MURA.gci.tmp"
+static char l_pc_save_dir[PC_SAVE_PATH_MAX];
+static char l_pc_card_a_dir[PC_SAVE_PATH_MAX];
+static char l_pc_card_b_dir[PC_SAVE_PATH_MAX];
+static char l_pc_gci_path[PC_SAVE_PATH_MAX];
+static char l_pc_gci_tmp_path[PC_SAVE_PATH_MAX];
+static char l_pc_gci_path_legacy[PC_SAVE_PATH_MAX];
+
+#define PC_SAVE_DIR l_pc_save_dir
+#define PC_CARD_A_DIR l_pc_card_a_dir
+#define PC_CARD_B_DIR l_pc_card_b_dir
+#define PC_GCI_PATH l_pc_gci_path
+#define PC_GCI_TMP_PATH l_pc_gci_tmp_path
+#define PC_GCI_PATH_LEGACY l_pc_gci_path_legacy
 
 #define GCI_HEADER_SIZE      sizeof(CARDDir)        /* 64 bytes */
 #define GCI_FILE_DATA_SIZE   mCD_LAND_SAVE_SIZE     /* 0x72000 */
@@ -80,9 +90,9 @@ static union {
 } l_mcd_foreigner_file;
 
 static int l_mcd_keep_startCond = 0;
-static char l_card_b_gci_path[300] = {0};      /* Path to the Card B GCI file, if found */
+static char l_card_b_gci_path[PC_SAVE_PATH_MAX] = {0}; /* Path to the Card B GCI file, if found */
 
-/* External: scan card_b/ for valid AC GCI file (defined in pc_card.c) */
+/* Host-side GCI discovery retained by the Aurora platform glue. */
 extern int pc_card_scan_for_gci(int chan, char* out_path, int out_size);
 
 /* External: functions from decomp used in mCD_toNextLand */
@@ -202,7 +212,7 @@ static void put_be16(u8* dst, u16 val) {
 
 /* rotate backups: .bak3→delete, .bak2→.bak3, .bak1→.bak2, current→.bak1 */
 static void pc_save_rotate_backups(const char* base_path) {
-    char older[300], newer[300];
+    char older[PC_SAVE_PATH_MAX], newer[PC_SAVE_PATH_MAX];
     int i;
     struct stat st;
 
@@ -224,7 +234,26 @@ static void pc_save_rotate_backups(const char* base_path) {
     }
 }
 
+static void pc_save_paths_init(void) {
+    static int initialized = FALSE;
+    if (initialized) return;
+
+    if (!pc_platform_user_path("save", PC_SAVE_DIR, sizeof(l_pc_save_dir)) ||
+        !pc_platform_user_path("save/card_a", PC_CARD_A_DIR, sizeof(l_pc_card_a_dir)) ||
+        !pc_platform_user_path("save/card_b", PC_CARD_B_DIR, sizeof(l_pc_card_b_dir)) ||
+        !pc_platform_user_path("save/card_a/" PC_GCI_FILENAME, PC_GCI_PATH, sizeof(l_pc_gci_path)) ||
+        !pc_platform_user_path("save/card_a/" PC_GCI_FILENAME ".tmp", PC_GCI_TMP_PATH,
+                               sizeof(l_pc_gci_tmp_path)) ||
+        !pc_platform_user_path("save/" PC_GCI_FILENAME, PC_GCI_PATH_LEGACY,
+                               sizeof(l_pc_gci_path_legacy))) {
+        OSReport("[PC] Save path exceeds %d bytes\n", PC_SAVE_PATH_MAX);
+        return;
+    }
+    initialized = TRUE;
+}
+
 static void pc_ensure_save_dirs(void) {
+    pc_save_paths_init();
 #ifdef _WIN32
     _mkdir(PC_SAVE_DIR);
     _mkdir(PC_CARD_A_DIR);
@@ -292,6 +321,7 @@ static void pc_save_pre_write_side_effects(int save_mode) {
 }
 
 static int pc_save_write_gci(void) {
+    pc_save_paths_init();
     return pc_save_write_gci_to(PC_GCI_PATH, PC_GCI_TMP_PATH);
 }
 
@@ -432,7 +462,7 @@ static int pc_save_write_gci_to(const char* gci_path, const char* tmp_path) {
         OSReport("[PC] GCI save: rename '%s' -> '%s' failed, recovering...\n",
                  tmp_path, gci_path);
         {
-            char bak1[300];
+            char bak1[PC_SAVE_PATH_MAX];
             snprintf(bak1, sizeof(bak1), "%s.bak1", gci_path);
             rename(bak1, gci_path);
         }
@@ -641,52 +671,125 @@ static int pc_save_read_gci_to_keep(const char* path) {
     return TRUE;
 }
 
-/* Migrate legacy flat save/ layout to save/card_a/ */
+static int pc_save_is_gci_file(const char* path) {
+    FILE* fp;
+    u8 game_name[4];
+    struct stat st;
+
+    if (stat(path, &st) != 0 || st.st_size < (long)(GCI_HEADER_SIZE + GCI_FILE_DATA_SIZE)) {
+        return FALSE;
+    }
+
+    fp = fopen(path, "rb");
+    if (fp == NULL) {
+        return FALSE;
+    }
+    if (fread(game_name, sizeof(game_name), 1, fp) != 1) {
+        fclose(fp);
+        return FALSE;
+    }
+    fclose(fp);
+    return memcmp(game_name, "GAF", 3) == 0;
+}
+
+/* Copy through a sibling temporary file so an interrupted import cannot leave
+ * a partial save at the canonical path. The source is deliberately retained:
+ * it may be the user's only pre-Aurora copy. */
+static int pc_save_copy_gci_if_absent(const char* source, const char* destination) {
+    FILE* input;
+    FILE* output;
+    char import_path[PC_SAVE_PATH_MAX];
+    u8 buffer[64 * 1024];
+    size_t count;
+    int ok = TRUE;
+    struct stat st;
+
+    if (strcmp(source, destination) == 0 || stat(destination, &st) == 0 ||
+        !pc_save_is_gci_file(source)) {
+        return FALSE;
+    }
+    if (snprintf(import_path, sizeof(import_path), "%s.import", destination) >=
+        (int)sizeof(import_path)) {
+        return FALSE;
+    }
+
+    input = fopen(source, "rb");
+    if (input == NULL) {
+        return FALSE;
+    }
+    remove(import_path);
+    output = fopen(import_path, "wb");
+    if (output == NULL) {
+        fclose(input);
+        return FALSE;
+    }
+
+    while ((count = fread(buffer, 1, sizeof(buffer), input)) != 0) {
+        if (fwrite(buffer, 1, count, output) != count) {
+            ok = FALSE;
+            break;
+        }
+    }
+    if (ferror(input) || fflush(output) != 0 || fclose(output) != 0) {
+        ok = FALSE;
+    }
+    fclose(input);
+
+    if (!ok || stat(destination, &st) == 0 || rename(import_path, destination) != 0) {
+        remove(import_path);
+        return FALSE;
+    }
+
+    OSReport("[PC] Imported legacy save '%s' -> '%s' (source retained)\n",
+             source, destination);
+    return TRUE;
+}
+
+static void pc_save_copy_companions(const char* source, const char* destination) {
+    char source_path[PC_SAVE_PATH_MAX];
+    char destination_path[PC_SAVE_PATH_MAX];
+    int b;
+
+    for (b = 1; b <= PC_SAVE_MAX_BACKUPS; b++) {
+        snprintf(source_path, sizeof(source_path), "%s.bak%d", source, b);
+        snprintf(destination_path, sizeof(destination_path), "%s.bak%d", destination, b);
+        pc_save_copy_gci_if_absent(source_path, destination_path);
+    }
+
+    snprintf(source_path, sizeof(source_path), "%s.tmp", source);
+    pc_save_copy_gci_if_absent(source_path, PC_GCI_TMP_PATH);
+}
+
+/* Import both pre-card-directory and pre-user-directory layouts. */
 static void pc_save_migrate_legacy(void) {
-    struct stat st_legacy, st_new;
+    const char* sources[] = {
+        PC_GCI_PATH_LEGACY,
+        PC_CWD_CARD_A_GCI_PATH,
+        PC_CWD_CARD_A_PREFIXED_GCI_PATH,
+        PC_CWD_FLAT_GCI_PATH,
+    };
+    int i;
 
-    if (stat(PC_GCI_PATH_LEGACY, &st_legacy) == 0 &&
-        stat(PC_GCI_PATH, &st_new) != 0) {
-        int b;
-        OSReport("[PC] Migrating save from '%s' to '%s'\n", PC_GCI_PATH_LEGACY, PC_GCI_PATH);
-        pc_ensure_save_dirs();
-
-        /* Move main save */
-        remove(PC_GCI_PATH); /* in case it somehow exists */
-        rename(PC_GCI_PATH_LEGACY, PC_GCI_PATH);
-
-        /* Move backups */
-        for (b = 1; b <= PC_SAVE_MAX_BACKUPS; b++) {
-            char old_bak[300], new_bak[300];
-            snprintf(old_bak, sizeof(old_bak), "%s.bak%d", PC_GCI_PATH_LEGACY, b);
-            snprintf(new_bak, sizeof(new_bak), "%s.bak%d", PC_GCI_PATH, b);
-            remove(new_bak);
-            rename(old_bak, new_bak);
+    pc_ensure_save_dirs();
+    for (i = 0; i < (int)(sizeof(sources) / sizeof(sources[0])); i++) {
+        if (pc_save_copy_gci_if_absent(sources[i], PC_GCI_PATH)) {
+            pc_save_copy_companions(sources[i], PC_GCI_PATH);
+            break;
         }
-
-        /* Move temp file if orphaned */
-        {
-            char old_tmp[300];
-            snprintf(old_tmp, sizeof(old_tmp), "%s.tmp", PC_GCI_PATH_LEGACY);
-            remove(PC_GCI_TMP_PATH);
-            rename(old_tmp, PC_GCI_TMP_PATH);
-        }
-
-        OSReport("[PC] Migration complete\n");
     }
 }
 
 static int pc_save_scan_gci_dir(void) {
     /* Try common AC save filenames in card_a/ */
-    static const char* gci_names[] = {
-        PC_CARD_A_DIR "/DobutsunomoriP_MURA.gci",
-        PC_CARD_A_DIR "/8P-GAFE-DobutsunomoriP_MURA.gci",
-        NULL
-    };
+    char gci_names[2][PC_SAVE_PATH_MAX];
     int i;
     struct stat st;
 
-    for (i = 0; gci_names[i] != NULL; i++) {
+    pc_save_paths_init();
+    snprintf(gci_names[0], sizeof(gci_names[0]), "%s/%s", PC_CARD_A_DIR, PC_GCI_FILENAME);
+    snprintf(gci_names[1], sizeof(gci_names[1]), "%s/8P-GAFE-%s", PC_CARD_A_DIR, PC_GCI_FILENAME);
+
+    for (i = 0; i < 2; i++) {
         if (stat(gci_names[i], &st) == 0) {
             OSReport("[PC] GCI scan: found '%s'\n", gci_names[i]);
             if (pc_save_read_gci(gci_names[i])) {
@@ -697,7 +800,7 @@ static int pc_save_scan_gci_dir(void) {
 
     /* Also try dynamic scan of card_a/ for any GCI */
     {
-        char found_path[300];
+        char found_path[PC_SAVE_PATH_MAX];
         if (pc_card_scan_for_gci(0, found_path, sizeof(found_path))) {
             OSReport("[PC] GCI scan: found '%s' via directory scan\n", found_path);
             if (pc_save_read_gci(found_path)) {
@@ -713,6 +816,7 @@ static int pc_save_scan_gci_dir(void) {
  * memory card. */
 int pc_save_reload(void) {
     struct stat st;
+    pc_save_paths_init();
     if (!pc_save_loaded) return 0;
     if (stat(PC_GCI_PATH, &st) == 0) {
         return pc_save_read_gci(PC_GCI_PATH);
@@ -722,6 +826,7 @@ int pc_save_reload(void) {
 
 int pc_save_check_and_load(void) {
     struct stat st;
+    pc_save_paths_init();
     {
         char cwd[512];
         if (getcwd(cwd, sizeof(cwd))) {
@@ -758,7 +863,7 @@ int pc_save_check_and_load(void) {
         }
     }
     {
-        char bak_path[300];
+        char bak_path[PC_SAVE_PATH_MAX];
         int b;
         for (b = 1; b <= PC_SAVE_MAX_BACKUPS; b++) {
             snprintf(bak_path, sizeof(bak_path), "%s.bak%d", PC_GCI_PATH, b);
@@ -791,7 +896,7 @@ static int pc_card_b_find_town(void) {
 /* --- Memory card API implementation --- */
 
 void mCD_init_card(void) {
-    CARDInit();
+    CARDInit("GAFE", "01");
 }
 
 void mCD_InitAll(void) {
@@ -917,7 +1022,7 @@ int mCD_SaveHome_bg(int param_1, int* chan) {
 
     if (slot == mCD_SLOT_B && l_card_b_gci_path[0] != '\0') {
         /* Visiting Card B's town — save to Card B GCI */
-        char tmp_path[300];
+        char tmp_path[PC_SAVE_PATH_MAX];
         snprintf(tmp_path, sizeof(tmp_path), "%s.tmp", l_card_b_gci_path);
         result = pc_save_write_gci_to(l_card_b_gci_path, tmp_path);
         if (chan) *chan = mCD_SLOT_B;
@@ -1042,7 +1147,7 @@ int mCD_SaveStation_NextLand_bg(s32* chan) {
 
         /* Persist visited-town state to its Card B GCI. */
         if (l_card_b_gci_path[0] != '\0') {
-            char tmp_path[320];
+            char tmp_path[PC_SAVE_PATH_MAX];
             snprintf(tmp_path, sizeof(tmp_path), "%s.tmp", l_card_b_gci_path);
             if (!pc_save_write_gci_to(l_card_b_gci_path, tmp_path)) {
                 OSReport("[PC] SaveStation_NextLand(return): failed to save visited town\n");

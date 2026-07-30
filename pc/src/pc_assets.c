@@ -6,7 +6,7 @@
 #include "types.h"
 #include "PR/gbi.h"
 #include "pc_assets.h"
-#include "pc_disc.h"
+#include <dolphin/dvd.h>
 
 extern int g_pc_verbose;
 
@@ -15,6 +15,124 @@ enum { SWAP_NONE = 0, SWAP_U16 = 1, SWAP_VTX = 2, SWAP_U32 = 3 };
 
 static u8* g_rel_data = NULL;
 static u8* g_dol_data = NULL;
+
+static u32 aurora_read_be32(const u8* p) {
+    return ((u32)p[0] << 24) | ((u32)p[1] << 16) | ((u32)p[2] << 8) | p[3];
+}
+
+static u8* aurora_yaz0_decode(const u8* src, u32 src_size, u32* out_size) {
+    u32 decoded_size, src_pos = 16, dst_pos = 0;
+    u8* dst;
+    int bit;
+
+    if (src_size < 16 || memcmp(src, "Yaz0", 4) != 0) return NULL;
+    decoded_size = aurora_read_be32(src + 4);
+    dst = (u8*)malloc(decoded_size);
+    if (dst == NULL) return NULL;
+
+    while (dst_pos < decoded_size && src_pos < src_size) {
+        u8 flags = src[src_pos++];
+        for (bit = 7; bit >= 0 && dst_pos < decoded_size; --bit) {
+            if (src_pos >= src_size) break;
+            if (flags & (1 << bit)) {
+                dst[dst_pos++] = src[src_pos++];
+            } else {
+                u8 b1, b2;
+                u32 distance, length, copy_pos;
+                if (src_pos + 1 >= src_size) break;
+                b1 = src[src_pos++];
+                b2 = src[src_pos++];
+                distance = ((u32)(b1 & 0x0F) << 8) | b2;
+                if ((b1 >> 4) == 0) {
+                    if (src_pos >= src_size) break;
+                    length = (u32)src[src_pos++] + 0x12;
+                } else {
+                    length = (u32)(b1 >> 4) + 2;
+                }
+                if (distance >= dst_pos) {
+                    free(dst);
+                    return NULL;
+                }
+                copy_pos = dst_pos - distance - 1;
+                while (length-- != 0 && dst_pos < decoded_size) {
+                    dst[dst_pos++] = dst[copy_pos++];
+                }
+            }
+        }
+    }
+
+    if (dst_pos != decoded_size) {
+        free(dst);
+        return NULL;
+    }
+    *out_size = decoded_size;
+    return dst;
+}
+
+static u8* aurora_load_dvd_file(const char* path, u32* out_size) {
+    DVDFileInfo file_info;
+    u32 file_size, transfer_size;
+    u8* buffer;
+    s32 result;
+
+    if (!DVDOpen(path, &file_info)) return NULL;
+    file_size = file_info.length;
+    transfer_size = (file_size + 31u) & ~31u;
+    buffer = (u8*)aligned_alloc(32, transfer_size);
+    if (buffer == NULL) {
+        DVDClose(&file_info);
+        return NULL;
+    }
+    result = DVDReadPrio(&file_info, buffer, (s32)transfer_size, 0, 2);
+    DVDClose(&file_info);
+    if (result < (s32)file_size) {
+        free(buffer);
+        return NULL;
+    }
+    *out_size = file_size;
+    return buffer;
+}
+
+static int aurora_load_rom_images(void) {
+    const u8* mounted_dol;
+    s32 dol_size = 0;
+    u32 rel_size = 0;
+    u8* rel_raw;
+
+    mounted_dol = DVDGetDOLLocation(&dol_size);
+    if (mounted_dol == NULL || dol_size <= 0) return 0;
+    g_dol_data = (u8*)malloc((size_t)dol_size);
+    if (g_dol_data == NULL) return 0;
+    memcpy(g_dol_data, mounted_dol, (size_t)dol_size);
+
+    rel_raw = aurora_load_dvd_file("/foresta.rel.szs", &rel_size);
+    if (rel_raw == NULL) {
+        free(g_dol_data);
+        g_dol_data = NULL;
+        return 0;
+    }
+    if (rel_size >= 16 && memcmp(rel_raw, "Yaz0", 4) == 0) {
+        u32 decoded_size = 0;
+        g_rel_data = aurora_yaz0_decode(rel_raw, rel_size, &decoded_size);
+        free(rel_raw);
+        if (g_pc_verbose && g_rel_data != NULL) {
+            printf("[PC] Aurora DVD: DOL %d bytes, REL %u -> %u bytes\n",
+                   dol_size, rel_size, decoded_size);
+        }
+    } else {
+        g_rel_data = rel_raw;
+        if (g_pc_verbose) {
+            printf("[PC] Aurora DVD: DOL %d bytes, REL %u bytes\n", dol_size, rel_size);
+        }
+    }
+
+    if (g_rel_data == NULL) {
+        free(g_dol_data);
+        g_dol_data = NULL;
+        return 0;
+    }
+    return 1;
+}
 
 void pc_bswap_asset_u16(void* data, unsigned int size) {
     u16* p = (u16*)data;
@@ -29864,12 +29982,8 @@ int pc_assets_init(void) {
     int i, loaded = 0, failed = 0, rom_mode = 0;
     int total = (int)(sizeof(s_assets) / sizeof(s_assets[0]));
 
-    /* Try disc image (CISO/ISO/GCM) — pc_disc_init() already called from main */
-    if (pc_disc_is_open()) {
-        g_dol_data = pc_disc_extract_dol();
-        g_rel_data = pc_disc_extract_rel();
-        if (g_dol_data && g_rel_data) rom_mode = 1;
-    }
+    /* Aurora exposes the mounted RVZ/ISO's DOL and FST through its DVD layer. */
+    rom_mode = aurora_load_rom_images();
 
     /* Fall back to pre-extracted DOL + REL files */
     if (!rom_mode) {
