@@ -2,7 +2,7 @@
 #define APRINTF_H
 
 #include "types.h"
-// #include "va_args.h"
+#include <stdarg.h>
 
 #ifdef __cplusplus
 extern "C"{

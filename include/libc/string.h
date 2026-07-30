@@ -1,5 +1,5 @@
-#ifndef _STRING_H_
-#define _STRING_H_
+#ifndef ACGC_LIBC_STRING_H
+#define ACGC_LIBC_STRING_H
 
 #ifdef TARGET_PC
 #include_next <string.h>

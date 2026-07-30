@@ -520,7 +520,10 @@ static int aNPC_setupActor_proc(GAME_PLAY* play, mActor_name_t name, s8 idx, int
 
 #ifndef aNPC_NPC2
 #ifdef TARGET_PC
-#define aNPC_ACTOR_CLASS_SLOT_SIZE 0xA50
+/* LP64 expands pointer-bearing NPC subclasses beyond the base NPC_ACTOR.
+ * The largest compiled subclass currently needs 128 extra bytes; keep a
+ * further 128 bytes of headroom while retaining the runtime size guard. */
+#define aNPC_ACTOR_CLASS_SLOT_SIZE (sizeof(NPC_ACTOR) + 0x100)
 #else
 #define aNPC_ACTOR_CLASS_SLOT_SIZE 0x9D0
 #endif
@@ -747,7 +750,7 @@ static void aNPC_keep_actor_class(void) {
     int i;
 
     for (i = 0; i < 9; i++) {
-        *actor = (NPC_ACTOR*)ALIGN_NEXT((u32)aNPC_n_actor_cl_tbl[i].buf, 16);
+        *actor = (NPC_ACTOR*)ALIGN_NEXT((uintptr_t)aNPC_n_actor_cl_tbl[i].buf, 16);
         *used = FALSE;
 
         actor++;

@@ -7,7 +7,7 @@ static void aTR0_ctrl_engineer(ACTOR* actor, GAME* game) {
 
     if (ac_p == NULL) {
         if (CLIP(npc_clip)->setupActor_proc(play, SP_NPC_ENGINEER, -1, -1, -1, -1, -1, 0, 0) == TRUE) {
-            train0->arg3 = (int)Actor_info_fgName_search(&play->actor_info, SP_NPC_ENGINEER, ACTOR_PART_NPC);
+            train0->arg3 = (intptr_t)Actor_info_fgName_search(&play->actor_info, SP_NPC_ENGINEER, ACTOR_PART_NPC);
         }
     } else {
         ac_p->world.position.x = -40.0f + train0->actor_class.world.position.x;

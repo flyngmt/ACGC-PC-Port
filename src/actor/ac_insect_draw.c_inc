@@ -128,11 +128,11 @@ static void aINS_actor_draw(ACTOR* actorx, GAME* game) {
                     }
                     break;
                 default: {
-                    u32 label;
+                    mPlayer_label_t label;
 
                     alpha = insect->alpha0;
                     label = mPlib_Get_item_net_catch_label();
-                    if (label != (u32)insect && Camera2_CheckCullingMode() &&
+                    if (label != (mPlayer_label_t)insect && Camera2_CheckCullingMode() &&
                         Camera2_CheckEnterCullingArea(insect->tools_actor.actor_class.world.position.x,
                                                       insect->tools_actor.actor_class.world.position.z, 60.0f)) {
                         alpha = 0;

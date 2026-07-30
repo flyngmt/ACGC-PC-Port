@@ -226,12 +226,12 @@ static int mFAs_GetFieldGoodBlockNum_common(int* condition_num, int* block_x, in
     mFI_unit_c* dump_info;
     int trees;
 
-    // I have no idea... definitely fake match?
-    dump_info = (void*)(dump_unit.block_data = (void*)(effective_grass_num = grass_num = tree_num = set_bad_block = 0));
-    // grass_num = set_bad_block;
-    // effective_grass_num = set_bad_block;
-    // dump_unit.block_data = (void*)set_bad_block;
-    // dump_info = (void*)set_bad_block;
+    set_bad_block = 0;
+    tree_num = 0;
+    grass_num = 0;
+    effective_grass_num = 0;
+    dump_unit.block_data = NULL;
+    dump_info = NULL;
     perfect_block_num = 0;
     good_blocks = 0;
     dust_num = 0;
@@ -376,7 +376,8 @@ static int mFAs_GetDustNum(int* block_x, int* block_z) {
     mFI_unit_c dump_unit;
 
     dust_num = 0;
-    dump_unit.block_data = (void*)(set_bad_block = FALSE); // horrible hack
+    set_bad_block = FALSE;
+    dump_unit.block_data = NULL;
     fg_block_items = Save_GetPointer(fg[0][0]);
 
     if (mFI_CheckFieldData()) {

@@ -229,6 +229,10 @@ typedef struct insect_actor_s {
     int light_flag;
     s16 light_counter;
     s16 light_step;
+#ifdef TARGET_PC
+    /* The cockroach actor stores an item pointer in s32_work3 on GameCube. */
+    mActor_name_t* pc_item_p;
+#endif
 } aINS_INSECT_ACTOR;
 
 /* sizeof(aINS_CTRL_ACTOR) == 0x183C */

@@ -55,7 +55,7 @@ static void aTR0_actor_dt(ACTOR* actor, GAME* game) {
     engineer_p = (ACTOR*)train0->arg3;
     if (engineer_p != NULL) {
         Actor_delete(engineer_p);
-        train0->arg3 = (int)NULL;
+        train0->arg3 = (intptr_t)NULL;
     }
 
     cKF_SkeletonInfo_R_dt(&train0->keyframe);

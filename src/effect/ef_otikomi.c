@@ -82,11 +82,11 @@ static void eOMN_dw(eEC_Effect_c* effect, GAME* game) {
                 scale_y = eEL_CalcAdjust_F(t, 10.0f, 21.0f, 0.0f, 0.0135f);
                 alpha = 255;
                 alpha2 = 100;
-                sAdo_OngenPos((u32)effect, 0x59, &effect->position);
+                sAdo_OngenPos((JaudioObjectId)(uintptr_t)effect, 0x59, &effect->position);
                 break;
 
             case eEC_STATE_CONTINUOUS:
-                sAdo_OngenPos((u32)effect, 0x59, &effect->position);
+                sAdo_OngenPos((JaudioObjectId)(uintptr_t)effect, 0x59, &effect->position);
                 scale_m = 0.01f;
                 alpha = 255;
                 scale_y = 0.0135f;

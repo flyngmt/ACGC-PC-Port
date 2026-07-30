@@ -19,18 +19,8 @@ extern "C" {
 #endif
 #endif
 
-#ifndef _GBI_RUNTIME_PTR_HELPERS
-#define _GBI_RUNTIME_PTR_HELPERS
-_GBI_STATIC_ASSERT(sizeof(void*) == sizeof(unsigned int), "GBI pointer packing requires 32-bit pointers");
-
-unsigned int pc_gbi_pack_runtime_ptr(uintptr_t addr, int is_ptr, const char* expr, const char* file, int line);
-uintptr_t pc_gbi_unpack_runtime_ptr(unsigned int packed);
-#endif
-
-#define _GBI_STATIC_PTR(s) (unsigned int)(uintptr_t)(s)
-#define _GBI_IS_RUNTIME_PTR_EXPR(s) (__builtin_classify_type(s) == 5 || __builtin_classify_type(s) == 14)
-#define _GBI_RUNTIME_PTR(s) \
-    pc_gbi_pack_runtime_ptr((uintptr_t)(s), _GBI_IS_RUNTIME_PTR_EXPR(s), #s, __FILE__, __LINE__)
+#define _GBI_STATIC_PTR(s) 0u, (uintptr_t)(s)
+#define _GBI_RUNTIME_PTR(s) (unsigned int)(uintptr_t)(s)
 #else
 #define _GBI_STATIC_PTR(s) (unsigned int)(s)
 #define _GBI_RUNTIME_PTR(s) (unsigned int)(s)
@@ -364,13 +354,16 @@ typedef struct {
     unsigned int xh:12;
     unsigned int tile:3;
     unsigned int pad1:5;
-    unsigned int pad2:32;
+    /* Each following command occupies a native 16-byte Gfx slot on PC:
+     * skip the upper half/padding of this slot and the next command's w0. */
+    unsigned int pad2[3];
     unsigned int t:16;
     unsigned int s:16;
-    unsigned int pad3:32;
+    unsigned int pad3[3];
     unsigned int dtdy:16;
     unsigned int dsdx:16;
 } Gtexrect2;
+_GBI_STATIC_ASSERT(sizeof(Gtexrect2) == 40, "PC texture rectangles must span three native Gfx command payloads");
 #else
 typedef struct {
     unsigned int cmd:8;
@@ -449,8 +442,11 @@ typedef struct {
     unsigned int siz:2;
     unsigned int fmt:3;
     int cmd:8;
-    unsigned int imgaddr:32;
+    u32 raw_imgaddr;
+    uintptr_t imgaddr;
 } Gsetimg2;
+_GBI_STATIC_ASSERT(offsetof(Gsetimg2, raw_imgaddr) == 4, "Gsetimg2 raw address must remain word 1");
+_GBI_STATIC_ASSERT(offsetof(Gsetimg2, imgaddr) == 8, "Gsetimg2 native address must be aligned");
 #else
 typedef struct {
     int cmd:8;
@@ -476,8 +472,13 @@ typedef struct {
     unsigned int pad0:2;
     unsigned int type:2;
     int cmd:8;
-    unsigned int tlut_addr:32;
+    u32 raw_tlut_addr;
+    uintptr_t tlut_addr;
 } Gloadtlut_dolphin;
+_GBI_STATIC_ASSERT(offsetof(Gloadtlut_dolphin, raw_tlut_addr) == 4,
+                   "Gloadtlut raw address must remain word 1");
+_GBI_STATIC_ASSERT(offsetof(Gloadtlut_dolphin, tlut_addr) == 8,
+                   "Gloadtlut native address must be aligned");
 #else
 typedef struct {
     int cmd:8;
@@ -625,8 +626,11 @@ typedef struct Gnoop {
     unsigned int param0: 16;
     unsigned int tag: 8;
     unsigned int cmd: 8;
-    unsigned int param1;
+    u32 raw_param1;
+    uintptr_t param1;
 } Gnoop;
+_GBI_STATIC_ASSERT(offsetof(Gnoop, raw_param1) == 4, "Gnoop raw parameter must remain word 1");
+_GBI_STATIC_ASSERT(offsetof(Gnoop, param1) == 8, "Gnoop native parameter must be aligned");
 #else
 typedef struct Gnoop {
     unsigned int cmd: 8;
@@ -1049,12 +1053,12 @@ typedef struct {
 do { \
   Gfx* _g = (Gfx*)(pkt); \
   _g->words.w0 = (u32)(_SHIFTL(cmd, 24, 8) | _SHIFTL(tag, 16, 8) | _SHIFTL(param, 0, 16)); \
-  _g->words.w1 = (u32)(extra); \
+  _GBI_SET_POINTER(_g, extra); \
 } while(0)
 
 #define gsDPParam2(cmd, tag, param, extra) \
 {{ \
-	_SHIFTL(cmd, 24, 8) | _SHIFTL(tag, 16, 8) | _SHIFTL(param, 0, 16), extra \
+	_SHIFTL(cmd, 24, 8) | _SHIFTL(tag, 16, 8) | _SHIFTL(param, 0, 16), _GBI_STATIC_PTR(extra) \
 }}
 
 #define gDPNoOpTag2(tag, param, extra) gDPParam2(G_NOOP, tag, param, extra)
@@ -1098,7 +1102,7 @@ do { \
 do { \
     Gfx* _g = (Gfx*)(pkt); \
     _g->words.w0 = _SHIFTL(G_LOADTLUT, 24, 8) | _SHIFTL(G_TLUT_DOLPHIN, 22, 2) | _SHIFTL(name, 16, 4) | _SHIFTL(unk, 14, 2) | _SHIFTL(count, 0, 14); \
-    _g->words.w1 = _GBI_RUNTIME_PTR(addr); \
+    _GBI_SET_POINTER(_g, addr); \
 } while (0)
 
 #define gsDPLoadTLUT_Dolphin(name, count, unk, addr) \
@@ -1124,7 +1128,7 @@ do { \
     Gfx* _gfx = (Gfx*)(pkt); \
     _gfx->words.w0 = _SHIFTL(G_SETTIMG, 24, 8) | _SHIFTL(fmt, 21, 3) | _SHIFTL(siz, 19, 2) | _SHIFTL(1, 18, 1) | \
         _SHIFTL((h/4)-1, 10, 8) | _SHIFTL((w-1), 0, 10); \
-    _gfx->words.w1 = _GBI_RUNTIME_PTR(img); \
+    _GBI_SET_POINTER(_gfx, img); \
 }}
 
 #define gDPSetTile_Dolphin(pkt, d_fmt, tile, tlut_name, wrap_s, wrap_t, shift_s, shift_t) \

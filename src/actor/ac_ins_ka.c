@@ -271,7 +271,7 @@ static void aIKA_setupAction(aINS_INSECT_ACTOR* insect, int action, GAME* game) 
 static void aIKA_actor_move(ACTOR* actorx, GAME* game) {
     aINS_INSECT_ACTOR* insect = (aINS_INSECT_ACTOR*)actorx;
     GAME_PLAY* play = (GAME_PLAY*)game;
-    u32 label;
+    mPlayer_label_t label;
 
     if (mPlib_get_player_actor_main_index(game) != mPlayer_INDEX_PUTAWAY_NET && insect->action != aIKA_ACTION_ATTACK) {
         aIKA_anime_proc(insect, game);
@@ -281,11 +281,11 @@ static void aIKA_actor_move(ACTOR* actorx, GAME* game) {
     }
 
     label = mPlib_Get_item_net_catch_label();
-    if (label == (u32)actorx) {
+    if (label == (mPlayer_label_t)actorx) {
         aIKA_setupAction(insect, aIKA_ACTION_LET_ESCAPE, game);
     } else {
         if (insect->action != aIKA_ACTION_ATTACK) {
-            sAdo_OngenPos((u32)actorx, NA_SE_KA_BUZZ, &actorx->world.position);
+            sAdo_OngenPos((JaudioObjectId)(uintptr_t)actorx, NA_SE_KA_BUZZ, &actorx->world.position);
         }
 
         if (insect->insect_flags.bit_3 == TRUE && insect->insect_flags.bit_2 == FALSE &&

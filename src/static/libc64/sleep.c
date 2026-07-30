@@ -1,7 +1,7 @@
 #include "libc64/sleep.h"
+#include "libultra/osMesg.h"
 #include "libultra/os_timer.h"
 #include "dolphin/os/OSAlarm.h"
-#include "dolphin/os/OSTimer.h"
 #include "dolphin/os/OSThread.h"
 
 void csleep(OSTime c) {
@@ -15,7 +15,7 @@ void csleep(OSTime c) {
 }
 
 #ifndef TARGET_PC
-/* On PC, msleep is provided by pc_os.c using SDL_Delay */
+/* On PC, the Aurora platform glue provides msleep. */
 void msleep(u32 ms) {
     csleep(OSMillisecondsToTicks((u64)ms));
 }

@@ -321,7 +321,7 @@ static void Kamakura_Indoor_Actor_move(ACTOR* actorx, GAME* game) {
     int i;
     s16 timer;
 
-    sAdo_OngenPos((u32)actorx, NA_SE_KOKORO_TOGURU, &k_indoor->mochi.pos);
+    sAdo_OngenPos((JaudioObjectId)(uintptr_t)actorx, NA_SE_KOKORO_TOGURU, &k_indoor->mochi.pos);
     k_indoor->anim_frame += (f32)game->graph->dt_num_60fps_frames;
     while (k_indoor->anim_frame >= 1024.0f) {
         k_indoor->anim_frame -= 1024.0f;

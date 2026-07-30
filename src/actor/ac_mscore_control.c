@@ -74,7 +74,8 @@ static void aMSC_menu_open_wait(MSCORE_CONTROL_ACTOR* mscore_ctrl, GAME_PLAY* pl
                 }
 
                 mMld_GetMelody(mscore_ctrl->melody);
-                mSM_open_submenu_new2(submenu, mSM_OVL_MSCORE, 0, 0, mscore_ctrl, (int)mscore_ctrl->melody);
+                mSM_open_submenu_new2(submenu, mSM_OVL_MSCORE, 0, 0, mscore_ctrl,
+                                      (mSM_param3_t)(uintptr_t)mscore_ctrl->melody);
                 player->a_btn_pressed = FALSE;
                 player->a_btn_triggers_submenu = TRUE;
                 aMSC_setupAction(mscore_ctrl, aMSC_ACT_MENU_CLOSE_WAIT);
@@ -271,7 +272,8 @@ static void aMSC_force_menu_open_wait(MSCORE_CONTROL_ACTOR* mscore_ctrl, GAME_PL
         if (player != NULL) {
             Submenu* submenu = &play->submenu;
 
-            mSM_open_submenu_new2(submenu, mSM_OVL_MSCORE, 0, 0, mscore_ctrl, (int)mscore_ctrl->melody);
+            mSM_open_submenu_new2(submenu, mSM_OVL_MSCORE, 0, 0, mscore_ctrl,
+                                  (mSM_param3_t)(uintptr_t)mscore_ctrl->melody);
             player->a_btn_pressed = FALSE;
             player->a_btn_triggers_submenu = TRUE;
             aMSC_setupAction(mscore_ctrl, aMSC_ACT_MENU_CLOSE_WAIT);

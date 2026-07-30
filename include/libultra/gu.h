@@ -21,14 +21,14 @@ extern "C" {
 
 void guMtxIdentF(float mf[4][4]);
 
-inline void guTranslateF(float m[4][4], float x, float y, float z){
+static inline void guTranslateF(float m[4][4], float x, float y, float z){
     guMtxIdentF(m);
     m[3][0] = x;
     m[3][1] = y;
     m[3][2] = z;
 }
 
-inline void guScaleF(float mf[4][4], float x, float y, float z) {
+static inline void guScaleF(float mf[4][4], float x, float y, float z) {
     guMtxIdentF(mf);
     mf[0][0] = x;
     mf[1][1] = y;

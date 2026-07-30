@@ -162,7 +162,7 @@ static int Player_actor_Item_CheckLocalCapture_forNet(const xyz_t* net_top_col, 
     return TRUE;
 }
 
-static int Player_actor_CheckCaptureForce_forNet(ACTOR* actor, u32* label_req, s8* type_req) {
+static int Player_actor_CheckCaptureForce_forNet(ACTOR* actor, mPlayer_label_t* label_req, s8* type_req) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
 
     if (player->item_net_catch_label_request_force != 0) {
@@ -175,10 +175,10 @@ static int Player_actor_CheckCaptureForce_forNet(ACTOR* actor, u32* label_req, s
     }
 }
 
-static int Player_actor_CheckCapture_forNet(ACTOR* actor, u32* label_req, s8* type_req) {
+static int Player_actor_CheckCapture_forNet(ACTOR* actor, mPlayer_label_t* label_req, s8* type_req) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
     int catch_num;
-    u32* req_label_table;
+    mPlayer_label_t* req_label_table;
     s8* type_table;
     xyz_t* catch_pos_table;
     f32* rad_req;
@@ -240,9 +240,9 @@ static int Player_actor_CatchSomethingCheck_common(ACTOR* actor, f32 frame) {
 
     if (player->keyframe0.frame_control.current_frame > frame) {
         mPlayer_main_swing_net_c* main_swing = &player->main_data.swing_net;
-        u32 label;
+        mPlayer_label_t label;
         s8 type;
-        u32 pl_label = player->item_net_catch_label;
+        mPlayer_label_t pl_label = player->item_net_catch_label;
 
         main_swing->swing_timer += 0.5f * (f32)gamePT->graph->dt_num_60fps_frames;
 
@@ -281,7 +281,7 @@ static int Player_actor_CatchSomethingCheck_Swing_net(ACTOR* actor) {
 static void Player_actor_CorrectSomething_Swing_net(ACTOR* actor) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
     xyz_t* pos = &player->net_pos;
-    u32 label = player->item_net_catch_label;
+    mPlayer_label_t label = player->item_net_catch_label;
 
     if (label != 0 && player->item_net_catch_type == 0) {
         ((ACTOR*)label)->drawn = FALSE;
@@ -343,8 +343,8 @@ static void Player_actor_request_proc_index_fromSwing_net(ACTOR* actor, GAME* ga
 static void Player_actor_main_Swing_net(ACTOR* actor, GAME* game) {
     int end_flag;
     f32 frame_calc;
-    u32 label;
-    int hit_check = Player_actor_HitBGCheck_Swing_net(actor, game, (ACTOR**)&label);
+    ACTOR* label;
+    int hit_check = Player_actor_HitBGCheck_Swing_net(actor, game, &label);
     int check_type = Player_actor_CatchSomethingCheck_Swing_net(actor);
 
     Player_actor_CorrectSomething_Swing_net(actor);
@@ -357,5 +357,5 @@ static void Player_actor_main_Swing_net(ACTOR* actor, GAME* game) {
     Player_actor_ObjCheck_Swing_net(actor, game);
     Player_actor_BGcheck_Swing_net(actor);
     Player_actor_Item_main(actor, game);
-    Player_actor_request_proc_index_fromSwing_net(actor, game, end_flag, hit_check, check_type, (ACTOR*)label);
+    Player_actor_request_proc_index_fromSwing_net(actor, game, end_flag, hit_check, check_type, label);
 }

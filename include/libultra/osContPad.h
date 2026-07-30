@@ -66,8 +66,6 @@ typedef struct {
     /* 0x03 */ s8 stick_y;
     /* 0x04 */ u8 errno;
 } OSContPad;
-/* Restore errno macro */
-#include <errno.h>
 #else
 
 typedef struct {

@@ -3,11 +3,18 @@
 
 #ifdef TARGET_PC
 /* On PC, we don't have MSL_C - use standard math */
+#include <limits.h>
 #include <math.h>
 #include <string.h>
-#include <malloc.h>  /* for alloca() */
+#if defined(_MSC_VER)
+#include <malloc.h>
+#else
+#include <alloca.h>
+#endif
 /* Metrowerks __alloca is a compiler built-in; map to standard alloca on PC */
+#ifndef __alloca
 #define __alloca alloca
+#endif
 /* Metrowerks __declspec(section "...") is not supported by GCC.
  * GCC defines __declspec as a builtin keyword, so we must #undef it first. */
 #undef __declspec
@@ -34,6 +41,7 @@
 #define FRAMERATE_SELECT(f60, f50) (f60)
 #endif
 
+#ifndef TARGET_PC
 typedef signed char s8;
 typedef signed short s16;
 typedef signed long s32;
@@ -41,6 +49,7 @@ typedef signed long long s64;
 typedef unsigned char u8;
 typedef unsigned short u16;
 typedef unsigned long u32;
+#endif
 #ifndef TARGET_PC
 #ifndef _SIZE_T_DEF
 #define _SIZE_T_DEF
@@ -49,9 +58,12 @@ typedef unsigned long size_t;
 #else
 #include <stddef.h>
 #endif
+#ifndef TARGET_PC
 typedef unsigned long long u64;
+#endif
 typedef unsigned int uint;
 
+#ifndef TARGET_PC
 typedef volatile u8 vu8;
 typedef volatile u16 vu16;
 typedef volatile u32 vu32;
@@ -67,6 +79,7 @@ typedef volatile f32 vf32;
 typedef volatile f64 vf64;
 
 typedef int BOOL;
+#endif
 
 // Pointer to unknown, to be determined at a later date.
 typedef void* unkptr;
@@ -83,7 +96,9 @@ typedef u32 unknown;
 #endif
 #endif
 #ifndef __cplusplus
+#ifndef nullptr
 #define nullptr 0
+#endif
 #endif
 
 // #ifdef __MWERKS__

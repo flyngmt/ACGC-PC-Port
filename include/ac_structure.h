@@ -13,6 +13,7 @@ extern "C" {
 
 #ifdef TARGET_PC
 #define aSTR_ACTOR_TBL_COUNT 32
+#define aSTR_ACTOR_CLASS_SLOT_SIZE 0x400
 #else
 #define aSTR_ACTOR_TBL_COUNT 9
 #endif
@@ -211,9 +212,11 @@ struct actor_structure_s {
 
     /* general purpose members with unique usage between structure actors */
     /* 0x2B8 */ int arg0;
-    /* 0x2BC */ int arg1;
+    /* 0x2BC */
+    intptr_t arg1; /* Some structure actors use this slot as a native pointer. */
     /* 0x2C0 */ int arg2;
-    /* 0x2C4 */ int arg3;
+    /* 0x2C4 */
+    intptr_t arg3; /* Some structure actors use this slot as a native pointer. */
 
     /* general purpose float members with unique usage between structure actors*/
     /* 0x2C8 */ f32 arg0_f;

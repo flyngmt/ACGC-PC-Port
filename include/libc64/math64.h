@@ -24,7 +24,7 @@ f32 fatan2(f32, f32);
 f32 fsqrt(f32);
 f32 facos(f32);
 #else
-/* PC stubs - these will be implemented in pc_mtx.c */
+/* PC implementations are supplied by Aurora's Dolphin matrix library. */
 s16 sins(u16);
 s16 coss(u16);
 f32 fatan2(f32, f32);

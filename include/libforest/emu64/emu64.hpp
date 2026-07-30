@@ -7,7 +7,9 @@
 #include "MSL_C/printf.h"
 #include "libforest/gbi_extensions.h"
 #include "libforest/emu64/texture_cache.h"
+#ifndef TARGET_PC
 #include "dolphin/os/__ppc_eabi_init.h"
+#endif
 #include "dolphin/gx.h"
 #include "dolphin/mtx.h"
 #include "sys_ucode.h"
@@ -135,7 +137,13 @@ namespace std {
 typedef va_list __tag_va_List;
 }
 
-float fastcast_float(register unsigned char* s) {
+#ifdef TARGET_PC
+#define EMU64_REGISTER
+#else
+#define EMU64_REGISTER register
+#endif
+
+float fastcast_float(EMU64_REGISTER unsigned char* s) {
 #ifdef TARGET_PC
     return (float)(*s);
 #else
@@ -151,7 +159,7 @@ float fastcast_float(register unsigned char* s) {
 #endif
 }
 
-float fastcast_float(register unsigned short* s) {
+float fastcast_float(EMU64_REGISTER unsigned short* s) {
 #ifdef TARGET_PC
     return (float)(*s);
 #else
@@ -167,7 +175,7 @@ float fastcast_float(register unsigned short* s) {
 #endif
 }
 
-float fastcast_float(register signed char* s) {
+float fastcast_float(EMU64_REGISTER signed char* s) {
 #ifdef TARGET_PC
     return (float)(*s);
 #else
@@ -183,7 +191,7 @@ float fastcast_float(register signed char* s) {
 #endif
 }
 
-float fastcast_float(register short* s) {
+float fastcast_float(EMU64_REGISTER short* s) {
 #ifdef TARGET_PC
     return (float)(*s);
 #else
@@ -198,6 +206,8 @@ float fastcast_float(register short* s) {
     return f;
 #endif
 }
+
+#undef EMU64_REGISTER
 
 #define number(n) ARRAY_COUNT(n)
 
@@ -628,7 +638,7 @@ class emu64 : public emu64_print {
     void texture_gen(int tile);
     void texture_matrix();
     void disp_matrix(MtxP mtx);
-    const char* segchk(u32 seg);
+    const char* segchk(uintptr_t seg);
     const char* combine_name(u32 param, u32 type);
     const char* combine_alpha(int param, int type);
     const char* combine_tev_color_name(u32 color_param);
@@ -639,7 +649,7 @@ class emu64 : public emu64_print {
     void print_combine(u64 combine);
     void print_combine_tev(u64 combine_tev);
     void print_guMtxXFM1F_dol2(MtxP mtx, GXProjectionType type, float x, float y, float z);
-    u32 seg2k0(u32 seg);
+    uintptr_t seg2k0(uintptr_t seg);
     void setup_texture_tile(int tile);
     void setup_1tri_2tri_1quad(unsigned int vtx_idx);
     void draw_1tri_2tri_1quad(unsigned int n_verts, ...);
@@ -747,8 +757,8 @@ private:
     /* 0x0060 */ ucode_info* ucode_info_p;
     /* 0x0064 */ int ucode_type; // maybe?
     /* 0x0068 */ int _0068;      /* ??? */
-    /* 0x006C */ u32 segments[EMU64_NUM_SEGMENTS];
-    /* 0x00AC */ u32 DL_stack[DL_MAX_STACK_LEVEL];
+    /* 0x006C */ uintptr_t segments[EMU64_NUM_SEGMENTS];
+    /* 0x00AC */ uintptr_t DL_stack[DL_MAX_STACK_LEVEL];
     /* 0x00F4 */ s8 DL_stack_level;
     /* 0x00F8 */ u32 othermode_high;
     /* 0x00FC */ u32 othermode_low;
@@ -809,7 +819,7 @@ private:
     /* 0x09E8 */ GXProjectionType projection_type;
     /* 0x09EC */ GC_Mtx perspective_mtx;
     /* 0x0A1C */ u32 _0A1C;
-    /* 0x0A20 */ u32 rdpHalf_1;
+    /* 0x0A20 */ uintptr_t rdpHalf_1;
     /* 0x0A24 */ EmuLight lights[NUM_LIGHTS];
     /* 0x0B64 */ u8 num_lights;
     /* 0x0B68 */ u32 lookatx_cnt;

@@ -361,12 +361,16 @@ extern void debug_hayakawa_move(pad_t* pad) {
             switch (GETREG(HREG, HREG_STATE_ARGS_START)) {
                 /* Load */
                 case 1: {
+#ifndef TARGET_PC
                     SETREG(HREG, 83, *(u8*)(GETREG(HREG, 82) * 0x100000 - 0x80000000));
+#endif
                 } break;
 
                 /* Store */
                 case 2: {
+#ifndef TARGET_PC
                     *(u8*)(GETREG(HREG, 82) * 0x100000 - 0x80000000) = (u8)GETREG(HREG, 83);
+#endif
                 } break;
             }
         } break;

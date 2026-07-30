@@ -29,31 +29,24 @@
 #endif
 
 #ifdef TARGET_PC
-#ifndef _GBI_RUNTIME_PTR_HELPERS
-#define _GBI_RUNTIME_PTR_HELPERS
-_GBI_STATIC_ASSERT(sizeof(void*) == sizeof(unsigned int), "GBI pointer packing requires 32-bit pointers");
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-unsigned int pc_gbi_pack_runtime_ptr(uintptr_t addr, int is_ptr, const char* expr, const char* file, int line);
-uintptr_t pc_gbi_unpack_runtime_ptr(unsigned int packed);
-#ifdef __cplusplus
-}
-#endif
-#endif
-
-/* GCC GNU extension: pointer-to-integer cast in static initializers.
-   Safe on 32-bit where sizeof(void*) == sizeof(unsigned int). */
+/* Pointer commands keep the original low 32-bit word for command overlays and
+   place the full native address in an aligned sidecar field. */
 #ifndef _GBI_STATIC_PTR
-#define _GBI_STATIC_PTR(s) (unsigned int)(uintptr_t)(s)
+#define _GBI_STATIC_PTR(s) 0u, (uintptr_t)(s)
 #endif
-/* Runtime display-list commands tag real PC pointers in bit 0. N64 segmented
-   addresses are integer expressions and are left unchanged. */
 #ifndef _GBI_RUNTIME_PTR
-#define _GBI_IS_RUNTIME_PTR_EXPR(s) (__builtin_classify_type(s) == 5 || __builtin_classify_type(s) == 14)
-#define _GBI_RUNTIME_PTR(s) \
-    pc_gbi_pack_runtime_ptr((uintptr_t)(s), _GBI_IS_RUNTIME_PTR_EXPR(s), #s, __FILE__, __LINE__)
+#define _GBI_RUNTIME_PTR(s) (unsigned int)(uintptr_t)(s)
+#endif
+#ifndef _GBI_SET_POINTER
+#define _GBI_SET_POINTER(command, pointer) do {                         \
+	(command)->words.w1 = (unsigned int)(uintptr_t)(pointer);         \
+	(command)->words.address = (uintptr_t)(pointer);                  \
+} while (0)
+#endif
+#ifndef _GBI_GET_POINTER
+#define _GBI_GET_POINTER(command)                                      \
+	((command)->words.address != 0 ? (command)->words.address          \
+	                               : (uintptr_t)(command)->words.w1)
 #endif
 #else
 #ifndef _GBI_STATIC_PTR
@@ -61,6 +54,13 @@ uintptr_t pc_gbi_unpack_runtime_ptr(unsigned int packed);
 #endif
 #ifndef _GBI_RUNTIME_PTR
 #define _GBI_RUNTIME_PTR(s) (unsigned int)(s)
+#endif
+#ifndef _GBI_SET_POINTER
+#define _GBI_SET_POINTER(command, pointer) \
+	((command)->words.w1 = (unsigned int)(pointer))
+#endif
+#ifndef _GBI_GET_POINTER
+#define _GBI_GET_POINTER(command) ((unsigned int)(command)->words.w1)
 #endif
 #endif
 
@@ -1174,12 +1174,22 @@ typedef struct {
  * First 8 words are integer portion of the 4x4 matrix
  * Last 8 words are the fraction portion of the 4x4 matrix
  */
-typedef long	Mtx_t[4][4];
+#ifdef TARGET_PC
+/* N64 `long` is 32-bit.  LP64 hosts otherwise double the matrix storage and
+ * make the fixed-point integer/fraction halves land at the wrong offsets. */
+typedef s32 Mtx_t[4][4];
+#else
+typedef long Mtx_t[4][4];
+#endif
 
 typedef union {
     Mtx_t		m;
     long long int	force_structure_alignment;
 } Mtx;
+
+#ifdef TARGET_PC
+_GBI_STATIC_ASSERT(sizeof(Mtx) == 64, "N64 Mtx ABI must remain 64 bytes");
+#endif
 
 /*
  * Viewport
@@ -1727,7 +1737,7 @@ typedef struct {
 		unsigned int	prim_min_level:8;
 		unsigned int	pad:8;
 		int		cmd:8;
-		unsigned long	color;
+		u32		color;
 } Gsetcolor;
 #else
 typedef struct {
@@ -1886,7 +1896,19 @@ typedef struct {
 typedef struct {
 	unsigned int w0;
 	unsigned int w1;
+#ifdef TARGET_PC
+	uintptr_t address;
+#endif
 } Gwords;
+
+#ifdef TARGET_PC
+_GBI_STATIC_ASSERT(offsetof(Gsetcolor, color) == offsetof(Gwords, w1),
+                   "Gsetcolor payload must overlay the low 32 bits of Gwords::w1");
+_GBI_STATIC_ASSERT(sizeof(((Gsetcolor*)0)->color) == sizeof(u32),
+                   "N64 color command payload must remain 32 bits");
+_GBI_STATIC_ASSERT(offsetof(Gwords, address) == 8,
+                   "native GBI address sidecar must be naturally aligned");
+#endif
 
 /*
  * This union is the fundamental type of the display list.
@@ -1914,6 +1936,10 @@ typedef union {
         long long int	force_structure_alignment;
 } Gfx;
 
+#ifdef TARGET_PC
+_GBI_STATIC_ASSERT(sizeof(Gfx) == 16, "PC Gfx slots must preserve the native-pointer command ABI");
+#endif
+
 /*
  * Macros to assemble the graphics display list
  */
@@ -1926,7 +1952,7 @@ typedef union {
 	Gfx *_g = (Gfx *)(pkt);						\
 									\
 	_g->words.w0 = _SHIFTL((c), 24, 8) | _SHIFTL((l), 0, 24);	\
-	_g->words.w1 = _GBI_RUNTIME_PTR(s);				\
+	_GBI_SET_POINTER(_g, s);					\
 }
 
 #define	gsDma0p(c, s, l)						\
@@ -1940,7 +1966,7 @@ typedef union {
 									\
 	_g->words.w0 = (_SHIFTL((c), 24, 8) | _SHIFTL((p), 16, 8) |	\
 			_SHIFTL((l), 0, 16));				\
-	_g->words.w1 = _GBI_RUNTIME_PTR(s);				\
+	_GBI_SET_POINTER(_g, s);					\
 }
 
 #define	gsDma1p(c, s, l, p)						\
@@ -1955,7 +1981,7 @@ typedef union {
 	Gfx *_g = (Gfx *)(pkt);						\
 	_g->words.w0 = (_SHIFTL((c),24,8)|_SHIFTL(((len)-1)/8,19,5)|	\
 			_SHIFTL((ofs)/8,8,8)|_SHIFTL((idx),0,8));	\
-	_g->words.w1 = _GBI_RUNTIME_PTR(adrs);				\
+	_GBI_SET_POINTER(_g, adrs);					\
 }
 #define	gsDma2p(c, adrs, len, idx, ofs)					\
 {{									\
@@ -1992,7 +2018,7 @@ typedef union {
 	Gfx *_g = (Gfx *)(pkt);						\
 	_g->words.w0 =							\
 	  _SHIFTL(G_VTX,24,8)|_SHIFTL((n),12,8)|_SHIFTL((v0)+(n),1,7);	\
-	_g->words.w1 = _GBI_RUNTIME_PTR(v);				\
+	_GBI_SET_POINTER(_g, v);					\
 }
 # define	gsSPVertex(v, n, v0)					\
 {{									\
@@ -2104,7 +2130,7 @@ typedef union {
 									\
 	_g->words.w0 = (_SHIFTL((c), 24, 8)  | _SHIFTL((p0), 8, 16) |	\
 			_SHIFTL((p1), 0, 8));				\
-	_g->words.w1 = (unsigned int) (dat);				\
+	_GBI_SET_POINTER(_g, dat);						\
 }
 
 #define	gsImmp21(c, p0, p1, dat)					\
@@ -2407,7 +2433,7 @@ typedef union {
 #endif
 
 #define gSPSegment(pkt, segment, base)					\
-	gMoveWd(pkt, G_MW_SEGMENT, (segment)*4, _GBI_RUNTIME_PTR(base))
+	gMoveWd(pkt, G_MW_SEGMENT, (segment)*4, base)
 #define gsSPSegment(segment, base)					\
 	gsMoveWd(    G_MW_SEGMENT, (segment)*4, base)
 
@@ -2549,7 +2575,7 @@ typedef union {
 {									\
 	Gfx *_g = (Gfx *)(pkt);						\
 	_g->words.w0 = _SHIFTL(G_RDPHALF_1,24,8);			\
-	_g->words.w1 = _GBI_RUNTIME_PTR(dl);				\
+	_GBI_SET_POINTER(_g, dl);					\
 	_g = (Gfx *)(pkt);						\
 	_g->words.w0 = (_SHIFTL(G_BRANCH_Z,24,8)|			\
 		        _SHIFTL((vtx)*5,12,12)|_SHIFTL((vtx)*2,0,12));	\
@@ -2578,7 +2604,7 @@ typedef union {
 {									\
 	Gfx *_g = (Gfx *)(pkt);						\
 	_g->words.w0 = _SHIFTL(G_RDPHALF_1,24,8);			\
-	_g->words.w1 = _GBI_RUNTIME_PTR(dl);				\
+	_GBI_SET_POINTER(_g, dl);					\
 	_g = (Gfx *)(pkt);						\
 	_g->words.w0 = (_SHIFTL(G_BRANCH_Z,24,8)|			\
 		        _SHIFTL((vtx)*5,12,12)|_SHIFTL((vtx)*2,0,12));	\
@@ -2601,11 +2627,11 @@ typedef union {
 {									\
 	Gfx *_g = (Gfx *)(pkt);						\
 	_g->words.w0 = _SHIFTL(G_RDPHALF_1,24,8);			\
-	_g->words.w1 = _GBI_RUNTIME_PTR(uc_dstart);			\
+	_GBI_SET_POINTER(_g, uc_dstart);				\
 	_g = (Gfx *)(pkt);						\
 	_g->words.w0 = (_SHIFTL(G_LOAD_UCODE,24,8)|			\
 			_SHIFTL((int)(uc_dsize)-1,0,16));		\
-	_g->words.w1 = _GBI_RUNTIME_PTR(uc_start);			\
+	_GBI_SET_POINTER(_g, uc_start);				\
 }
 
 #define	gsSPLoadUcodeEx(uc_start, uc_dstart, uc_dsize)			\
@@ -2637,7 +2663,7 @@ typedef union {
 	Gfx *_g = (Gfx *)(pkt);						\
 	_g->words.w0 = _SHIFTL(G_DMA_IO,24,8)|_SHIFTL((flag),23,1)|	\
 	  _SHIFTL((dmem)/8,13,10)|_SHIFTL((size)-1,0,12);		\
-	_g->words.w1 = _GBI_RUNTIME_PTR(dram);				\
+	_GBI_SET_POINTER(_g, dram);					\
 }
 
 #define	gsSPDma_io(flag, dmem, dram, size)				\
@@ -3217,14 +3243,14 @@ typedef union {
 									\
 	_g->words.w0 = _SHIFTL(cmd, 24, 8) | _SHIFTL(fmt, 21, 3) |	\
 		       _SHIFTL(siz, 19, 2) | _SHIFTL((width)-1, 0, 12);	\
-	_g->words.w1 = _GBI_RUNTIME_PTR(i);				\
+	_GBI_SET_POINTER(_g, i);					\
 }
 
 #define	gsSetImage(cmd, fmt, siz, width, i)				\
 {{									\
 	_SHIFTL(cmd, 24, 8) | _SHIFTL(fmt, 21, 3) |			\
 	_SHIFTL(siz, 19, 2) | _SHIFTL((width)-1, 0, 12),		\
-	(unsigned int)(i)						\
+	_GBI_STATIC_PTR(i)						\
 }}
 
 #define	gDPSetColorImage(pkt, f, s, w, i)	gSetImage(pkt, G_SETCIMG, f, s, w, i)

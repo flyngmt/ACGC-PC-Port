@@ -255,7 +255,7 @@ static void Light_list_buf_delete(Light_list* light) {
     if (light != NULL) {
         light_list_buf.current--;
         light->info = NULL;
-        light_list_buf.idx = (light - light_list_buf.lights) / (int)(sizeof(Light_list));
+        light_list_buf.idx = (int)(light - light_list_buf.lights);
     }
 }
 

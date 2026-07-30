@@ -9,7 +9,7 @@ static void fTSW_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* 
     }
 
     if (aFTR_CAN_PLAY_SE(ftr_actor)) {
-        sAdo_OngenPos((u32)ftr_actor, 0x54, &ftr_actor->position);
+        sAdo_OngenPos((JaudioObjectId)(uintptr_t)ftr_actor, 0x54, &ftr_actor->position);
 
         if (graph_dt_period_elapsed(game, &ftr_actor->dynamic_work_f[0], 8.0f)) {
             xyz_t effect_pos = ftr_actor->position;

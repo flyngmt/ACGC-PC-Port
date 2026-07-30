@@ -114,7 +114,7 @@ typedef struct BI2Debug {
 } BI2Debug;
 
 #ifdef TARGET_PC
-/* PC port: these are regular variables defined in pc_misc.c / pc_os.c */
+/* PC port: Aurora/platform glue exposes these as regular variables. */
 extern u32 __OSPhysicalMemSize;
 extern volatile int __OSTVMode;
 extern void *__gUnkThread1;
@@ -160,7 +160,7 @@ u32 OSUncachedToPhysical(void *ucaddr);
 void *OSCachedToUncached(void *caddr);
 void *OSUncachedToCached(void *ucaddr);
 #ifdef TARGET_PC
-/* On PC, address translation goes through functions in pc_os.c
+/* On PC, address translation goes through Aurora platform functions
  * that map physical addresses relative to our simulated 24MB arena. */
 /* Do NOT define macros - let the function declarations above be used */
 #elif !DEBUG

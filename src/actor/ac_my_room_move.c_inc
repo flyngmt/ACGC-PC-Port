@@ -2964,7 +2964,8 @@ static void My_Room_Actor_move(ACTOR* actorx, GAME* game) {
 
             if (my_room->bgm_info.md_no != BGM_SPORTSFAIR_AEROBICS) {
                 mBGMPsComp_MDPlayerPos_param_set(&md_ftr_actor->position, md_angle,
-                                                 aMR_Fname2ConpoIndex(md_ftr_actor->name), (u32)md_ftr_actor);
+                                                 aMR_Fname2ConpoIndex(md_ftr_actor->name),
+                                                 (JaudioObjectId)(uintptr_t)md_ftr_actor);
             }
         }
     }

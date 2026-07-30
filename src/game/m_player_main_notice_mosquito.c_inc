@@ -1,4 +1,4 @@
-static int Player_actor_request_main_notice_mosquito(GAME* game, u32 label, int prio) {
+static int Player_actor_request_main_notice_mosquito(GAME* game, mPlayer_label_t label, int prio) {
     if (Player_actor_check_request_main_able(game, mPlayer_INDEX_NOTICE_MOSQUITO, prio)) {
         PLAYER_ACTOR* player = GET_PLAYER_ACTOR_GAME(game);
         mPlayer_request_notice_mosquito_c* req_notice_mosquito_p = &player->requested_main_index_data.notice_mosquito;

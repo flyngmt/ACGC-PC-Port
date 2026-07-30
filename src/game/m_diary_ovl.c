@@ -910,7 +910,7 @@ static void mDI_set_dl(Submenu* submenu, GAME* game, mSM_MenuInfo_c* menu_info) 
     f32 pos_x = menu_info->position[0];
     f32 pos_y = menu_info->position[1];
 
-    mDI_set_frame_dl(graph, menu_info, diary_ovl, pos_x, pos_y, menu_info->data3);
+    mDI_set_frame_dl(graph, menu_info, diary_ovl, pos_x, pos_y, (int)menu_info->data3);
     submenu->overlay->set_char_matrix_proc(graph);
     mDI_set_character(submenu, game, menu_info, pos_x, pos_y);
 

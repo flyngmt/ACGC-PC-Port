@@ -14,6 +14,8 @@ extern "C" {
 
 typedef struct submenu_s Submenu;
 
+typedef intptr_t mSM_param3_t;
+
 #define mSM_MAP_BUTTON BUTTON_X
 #define mSM_INV_BUTTON_0 BUTTON_START
 #define mSM_INV_BUTTON_1 BUTTON_Y
@@ -176,7 +178,7 @@ struct submenu_s {
     /* 0x010 */ int param0;
     /* 0x014 */ int param1;
     /* 0x018 */ void* param2;
-    /* 0x01C */ int param3;
+    /* 0x01C */ mSM_param3_t param3;
 
     /* 0x020 */ int wait_timer;
 
@@ -218,7 +220,7 @@ extern void mSM_submenu_ct(Submenu* submenu);
 extern void mSM_submenu_dt(Submenu* submenu);
 extern void mSM_open_submenu(Submenu* submenu, int type, int arg0, int arg1);
 extern void mSM_open_submenu_new(Submenu* submenu, int type, int arg0, int arg1, void* arg2);
-extern void mSM_open_submenu_new2(Submenu* submenu, int type, int arg0, int arg1, void* arg2, int arg3);
+extern void mSM_open_submenu_new2(Submenu* submenu, int type, int arg0, int arg1, void* arg2, mSM_param3_t arg3);
 extern void mSM_submenu_ctrl(GAME_PLAY* play);
 extern void mSM_submenu_move(Submenu* submenu);
 extern void mSM_submenu_draw(Submenu* submenu, GAME* game);

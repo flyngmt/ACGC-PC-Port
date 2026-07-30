@@ -899,21 +899,21 @@ static void Museum_Insect_RefreshPosSounds(MUSEUM_INSECT_ACTOR* actor, GAME* gam
 
     insect = &actor->privInsects[aINS_INSECT_TYPE_COCKROACH];
     if ((insect->_8C & 1) && insect->_72 == 0 && insect->_40 > 0.0f) {
-        sAdo_OngenPos((u32)insect, 0xa8, &insect->_1C);
+        sAdo_OngenPos((JaudioObjectId)(uintptr_t)insect, 0xa8, &insect->_1C);
     }
 
     insect = &actor->privInsects[aINS_INSECT_TYPE_MOSQUITO];
     if ((insect->_8C & 1) && search_position_distanceXZ(&insect->_1C, &player_pos) < 300.0f) {
-        sAdo_OngenPos((u32)insect, 0xcf, &insect->_1C);
+        sAdo_OngenPos((JaudioObjectId)(uintptr_t)insect, 0xcf, &insect->_1C);
     }
 
     insect = &actor->privInsects[aINS_INSECT_TYPE_MOLE_CRICKET];
     if (insect->_8C & 1) {
         dist = search_position_distance(&insect->_1C, &player_pos);
         if (insect->_04 == okera_dig_wait_process && dist < 200.0f) {
-            sAdo_OngenPos((u32)insect, 68, &insect->_1C);
+            sAdo_OngenPos((JaudioObjectId)(uintptr_t)insect, 68, &insect->_1C);
         } else if (insect->_04 == okera_dig_up_process && dist < 200.0f) {
-            sAdo_OngenPos((u32)insect, 69, &insect->_1C);
+            sAdo_OngenPos((JaudioObjectId)(uintptr_t)insect, 69, &insect->_1C);
         }
     }
 
@@ -924,7 +924,7 @@ static void Museum_Insect_RefreshPosSounds(MUSEUM_INSECT_ACTOR* actor, GAME* gam
             insect = &actor->privInsects[i];
             if ((insect->_8C & 1) && insect->_8E && insect->_78 == 1 && insect->_72 == insect->_74 &&
                 search_position_distance(&insect->_1C, &player_pos) < 200.0f) {
-                sAdo_OngenPos((u32)insect, semi_sound_data[i - aINS_INSECT_TYPE_ROBUST_CICADA], &insect->_1C);
+                sAdo_OngenPos((JaudioObjectId)(uintptr_t)insect, semi_sound_data[i - aINS_INSECT_TYPE_ROBUST_CICADA], &insect->_1C);
             }
         }
 
@@ -934,7 +934,7 @@ static void Museum_Insect_RefreshPosSounds(MUSEUM_INSECT_ACTOR* actor, GAME* gam
                 ((insect->_04 != minsect_batta_silent_process && insect->_8E) ||
                  (insect->_04 == minsect_batta_silent_process && insect->_8E == 0)) &&
                 search_position_distanceXZ(&insect->_1C, &player_pos) < 200.0f) {
-                sAdo_OngenPos((u32)insect, batta_sound_data[i - aINS_INSECT_TYPE_CRICKET], &insect->_1C);
+                sAdo_OngenPos((JaudioObjectId)(uintptr_t)insect, batta_sound_data[i - aINS_INSECT_TYPE_CRICKET], &insect->_1C);
             }
         }
     }

@@ -3,7 +3,7 @@ extern void JC_JUTFader_delete(void* fader) {
 }
 
 extern void* JC_JUTFader_new(int ul_x, int ul_y, int br_x, int br_y, u32* color) {
-    return new JUTFader(ul_x, ul_y, br_x, br_y, JUtility::TColor(*(GXColor*)color));
+    return JKR_NEW JUTFader(ul_x, ul_y, br_x, br_y, JUtility::TColor(*(GXColor*)color));
 }
 
 // @unused (necessary for virtual function emmission)
@@ -47,7 +47,7 @@ extern void JC_J2DOrthoGraph_delete(void* orthograph) {
 }
 
 extern void* JC_J2DOrthoGraph_new() {
-    return new J2DOrthoGraph();
+    return JKR_NEW J2DOrthoGraph();
 }
 
 extern void JC_J2DOrthoGraph_setPort(void* orthograph) {
@@ -370,7 +370,8 @@ extern void* JC__JKRMountArchive(const char* path, int mount_mode, void* heap, i
 }
 
 extern CSDIFileEntry* JC__JKRGetResourceEntry_byName(u32 root_name, const char* res_name, void* archive) {
-    return JKRGetResourceEntry_byName(root_name, res_name, reinterpret_cast<JKRArchive*>(archive));
+    return static_cast<CSDIFileEntry*>(
+        JKRGetResourceEntry_byName(root_name, res_name, reinterpret_cast<JKRArchive*>(archive)));
 }
 
 extern void JC_JKRAramHeap_dump(void* heap) {
@@ -386,7 +387,7 @@ extern void JC_JKRAramArchive_delete(void* aram_archive) {
 }
 
 extern void* JC_JKRAramArchive_new() {
-    return new JKRAramArchive();
+    return JKR_NEW JKRAramArchive();
 }
 
 extern BOOL JC__JKRMountFixedAramArchive(void* aram_archive, const char* file) {

@@ -15,7 +15,8 @@ typedef double f64;
 
 typedef char *Ptr;
 #ifndef TARGET_PC
-typedef unsigned int uintptr_t; // Manually added
+typedef u32 uintptr_t; // Manually added
+typedef int intptr_t; // Manually added
 #else
 #include <stdint.h>
 #endif

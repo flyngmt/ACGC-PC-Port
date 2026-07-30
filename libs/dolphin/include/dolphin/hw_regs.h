@@ -2,7 +2,7 @@
 #define _DOLPHIN_HW_REGS_H_
 
 #ifdef TARGET_PC
-/* PC port: hardware registers are regular arrays defined in pc_misc.c */
+/* Host builds declare register symbols instead of mapping console addresses. */
 extern volatile u16 __VIRegs[59];
 extern volatile u32 __PIRegs[12];
 extern volatile u16 __MEMRegs[64];

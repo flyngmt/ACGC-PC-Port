@@ -1,6 +1,7 @@
 #ifndef JSYSWRAPPER_H
 #define JSYSWRAPPER_H
 
+#include <stdarg.h>
 #include "dolphin/pad.h"
 #include "types.h"
 #include "JSystem/JKernel/JKREnum.h"

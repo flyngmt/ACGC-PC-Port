@@ -2,6 +2,9 @@
 #define GFXPRINT_H
 
 #include "types.h"
+#ifdef TARGET_PC
+#include <stdarg.h>
+#endif
 #include "libu64/u64types.h"
 #include "PR/mbi.h"
 // #include "va_args.h"

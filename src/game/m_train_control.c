@@ -49,8 +49,8 @@ static void mTRC_KishaStatusLevel(GAME_PLAY* play, f32 speed, xyz_t pos) {
     xyz_t mic_pos;
     u16 unsigned_angle;
     u16 unsigned_angle2;
-    u32 ongen;
-    u32 ongen2;
+    JaudioObjectId ongen;
+    JaudioObjectId ongen2;
 
     mTRC_SetMicPos(play, &mic_pos);
 
@@ -68,8 +68,8 @@ static void mTRC_KishaStatusLevel(GAME_PLAY* play, f32 speed, xyz_t pos) {
     distance2 = sqrtf(SQ(x) + SQ(y) + SQ(z));
     unsigned_angle2 = (int)angle;
 
-    ongen = (u32)Common_GetPointer(train_coming_flag);
-    ongen2 = (u32)Common_GetPointer(train_exists_flag);
+    ongen = (JaudioObjectId)(uintptr_t)Common_GetPointer(train_coming_flag);
+    ongen2 = (JaudioObjectId)(uintptr_t)Common_GetPointer(train_exists_flag);
     sAdos_KishaStatusLevel(speed, ongen, distance, unsigned_angle,
                            ongen2, distance2, unsigned_angle2);
 }

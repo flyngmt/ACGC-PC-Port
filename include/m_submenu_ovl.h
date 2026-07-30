@@ -113,7 +113,7 @@ typedef struct submenu_menu_info_s {
     int data0;
     int data1;
     void* data2;
-    int data3;
+    mSM_param3_t data3;
 } mSM_MenuInfo_c;
 
 typedef void (*mSM_HAND_MOVE_FUNC)(Submenu*);

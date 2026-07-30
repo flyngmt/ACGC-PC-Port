@@ -20,6 +20,63 @@
 #include "m_common_data.h"
 #ifdef TARGET_PC
 #include "pc_platform.h"
+
+typedef enum mAc_pc_actor_alloc_kind {
+    mAc_PC_ACTOR_ALLOC_NONE,
+    mAc_PC_ACTOR_ALLOC_ZELDA,
+    mAc_PC_ACTOR_ALLOC_NPC,
+    mAc_PC_ACTOR_ALLOC_STRUCTURE,
+} mAc_pc_actor_alloc_kind;
+
+typedef struct mAc_pc_actor_alloc_record_c {
+    ACTOR* actor;
+    mAc_pc_actor_alloc_kind kind;
+} mAc_pc_actor_alloc_record_c;
+
+/*
+ * npc_id is mutable actor state, so it cannot reliably identify the allocator
+ * at destruction time.  This is especially important on PC, where actors may
+ * temporarily fall back to the Zelda arena while their pool clip is absent.
+ */
+static mAc_pc_actor_alloc_record_c mAc_pc_actor_alloc_records[mAc_MAX_ACTORS + 1];
+
+static void mAc_pc_record_actor_alloc(ACTOR* actor, mAc_pc_actor_alloc_kind kind) {
+    int free_idx = -1;
+    int i;
+
+    for (i = 0; i < ARRAY_COUNT(mAc_pc_actor_alloc_records); i++) {
+        if (mAc_pc_actor_alloc_records[i].actor == actor) {
+            OSPanic(__FILE__, __LINE__, "PC actor storage allocated while still live");
+            return;
+        }
+        if (free_idx < 0 && mAc_pc_actor_alloc_records[i].actor == NULL) {
+            free_idx = i;
+        }
+    }
+
+    if (free_idx >= 0) {
+        mAc_pc_actor_alloc_records[free_idx].actor = actor;
+        mAc_pc_actor_alloc_records[free_idx].kind = kind;
+    } else {
+        OSPanic(__FILE__, __LINE__, "PC actor allocation registry is full");
+    }
+}
+
+static mAc_pc_actor_alloc_kind mAc_pc_take_actor_alloc(ACTOR* actor) {
+    int i;
+
+    for (i = 0; i < ARRAY_COUNT(mAc_pc_actor_alloc_records); i++) {
+        if (mAc_pc_actor_alloc_records[i].actor == actor) {
+            mAc_pc_actor_alloc_kind kind = mAc_pc_actor_alloc_records[i].kind;
+            mAc_pc_actor_alloc_records[i].actor = NULL;
+            mAc_pc_actor_alloc_records[i].kind = mAc_PC_ACTOR_ALLOC_NONE;
+            return kind;
+        }
+    }
+
+    return mAc_PC_ACTOR_ALLOC_NONE;
+}
+
 #endif
 
 #ifdef MUST_MATCH
@@ -290,13 +347,12 @@ extern int Actor_draw_actor_no_culling_check2(ACTOR* actor, xyz_t* camera_pos, f
 
     if (-actor->cull_radius < camera_pos->z && camera_pos->z < actor->cull_distance + actor->cull_radius) {
         f32 m = camera_w < 1.0f ? 1.0f : 1.0f / camera_w;
-#ifdef PC_ENHANCEMENTS
+#ifdef TARGET_PC
         /* Widescreen hor+ widens the rendered frustum.  The projection matrix
          * used to compute camera_pos is the original 4:3 one, so the NDC X
          * edge (1.0) is too narrow.  Extend by the aspect ratio correction. */
-        f32 x_edge = (f32)g_pc_window_w / (f32)g_pc_window_h
-                   / ((f32)PC_GC_WIDTH / (f32)PC_GC_HEIGHT);
-        if (x_edge < 1.0f) x_edge = 1.0f;
+        f32 aspect_factor = pc_widescreen_get_aspect_factor();
+        f32 x_edge = aspect_factor < 1.0f ? 1.0f / aspect_factor : 1.0f;
 #else
         f32 x_edge = 1.0f;
 #endif
@@ -652,7 +708,11 @@ static int Actor_data_bank_regist_check(int* bank_id, ACTOR_PROFILE* profile, AC
 }
 
 static int Actor_malloc_actor_class(ACTOR** actor_pp, ACTOR_PROFILE* profile, ACTOR_DLFTBL* dlftbl, const char* name,
-                                    mActor_name_t id) {
+                                    mActor_name_t id
+#ifdef TARGET_PC
+                                    , mAc_pc_actor_alloc_kind* alloc_kind
+#endif
+                                    ) {
     aNPC_draw_data_c draw_data;
 
     switch (ITEM_NAME_GET_TYPE(id)) {
@@ -661,10 +721,14 @@ static int Actor_malloc_actor_class(ACTOR** actor_pp, ACTOR_PROFILE* profile, AC
 #ifdef TARGET_PC
             if (CLIP(npc_clip) == NULL) {
                 *actor_pp = (ACTOR*)zelda_malloc(profile->class_size);
+                *alloc_kind = mAc_PC_ACTOR_ALLOC_ZELDA;
                 break;
             }
 #endif
             *actor_pp = CLIP(npc_clip)->get_actor_area_proc(profile->class_size, name, 1);
+#ifdef TARGET_PC
+            *alloc_kind = mAc_PC_ACTOR_ALLOC_NPC;
+#endif
             (*Common_Get(clip).npc_clip->dma_draw_data_proc)(&draw_data, id); // leftover?
             break;
         }
@@ -673,15 +737,25 @@ static int Actor_malloc_actor_class(ACTOR** actor_pp, ACTOR_PROFILE* profile, AC
 #ifdef TARGET_PC
             if (Common_Get(clip).structure_clip == NULL) {
                 *actor_pp = (ACTOR*)zelda_malloc(profile->class_size);
+                *alloc_kind = mAc_PC_ACTOR_ALLOC_ZELDA;
                 break;
+            }
+            if (profile->class_size > aSTR_ACTOR_CLASS_SLOT_SIZE) {
+                OSPanic(__FILE__, __LINE__, "Structure actor exceeds the PC pool slot");
             }
 #endif
             *actor_pp = (ACTOR*)((*Common_Get(clip).structure_clip->get_actor_area_proc)());
+#ifdef TARGET_PC
+            *alloc_kind = mAc_PC_ACTOR_ALLOC_STRUCTURE;
+#endif
             break;
         }
 
         default: {
             *actor_pp = (ACTOR*)zelda_malloc(profile->class_size);
+#ifdef TARGET_PC
+            *alloc_kind = mAc_PC_ACTOR_ALLOC_ZELDA;
+#endif
             break;
         }
     }
@@ -733,6 +807,9 @@ extern ACTOR* Actor_info_make_actor(Actor_info* actor_info, GAME* game, s16 prof
     ACTOR_PROFILE* profile;
     ACTOR_DLFTBL* dlftbl;
     mAc_overlay_info_c overlay_info; /* Required to be a struct, stubbed in GC */
+#ifdef TARGET_PC
+    mAc_pc_actor_alloc_kind alloc_kind = mAc_PC_ACTOR_ALLOC_NONE;
+#endif
 
     play = (GAME_PLAY*)game;
     dlftbl = actor_dlftbls + profile_no;
@@ -752,10 +829,17 @@ extern ACTOR* Actor_info_make_actor(Actor_info* actor_info, GAME* game, s16 prof
         return NULL;
     }
 
-    if (Actor_malloc_actor_class(&actor, profile, dlftbl, overlay_info.actor_name, name_id) == FALSE) {
+    if (Actor_malloc_actor_class(&actor, profile, dlftbl, overlay_info.actor_name, name_id
+#ifdef TARGET_PC
+                                 , &alloc_kind
+#endif
+                                 ) == FALSE) {
         return NULL;
     }
 
+#ifdef TARGET_PC
+    mAc_pc_record_actor_alloc(actor, alloc_kind);
+#endif
     dlftbl->num_actors++;
     Actor_init_actor_class(actor, profile, dlftbl, play, data_bank_idx, x, y, z, rot_x, rot_y, rot_z, block_x, block_z,
                            move_actor_list_idx, name_id, arg);
@@ -860,11 +944,37 @@ extern ACTOR* Actor_info_delete(Actor_info* actor_info, ACTOR* actor, GAME* game
     mActor_name_t name_id = actor->npc_id;
     ACTOR_DLFTBL* dlftbl = actor->dlftbl;
     ACTOR* next_actor;
+#ifdef TARGET_PC
+    mAc_pc_actor_alloc_kind alloc_kind = mAc_pc_take_actor_alloc(actor);
+#endif
 
     restore_fgdata_one(actor, (GAME_PLAY*)game);
     Actor_dt(actor, game);
     next_actor = Actor_info_part_delete(actor_info, actor);
 
+#ifdef TARGET_PC
+    switch (alloc_kind) {
+        case mAc_PC_ACTOR_ALLOC_NPC:
+            if (Common_Get(clip).npc_clip != NULL) {
+                (*Common_Get(clip).npc_clip->free_actor_area_proc)(actor);
+            }
+            break;
+
+        case mAc_PC_ACTOR_ALLOC_STRUCTURE:
+            if (Common_Get(clip).structure_clip != NULL) {
+                (*Common_Get(clip).structure_clip->free_actor_area_proc)((STRUCTURE_ACTOR*)actor);
+            }
+            break;
+
+        case mAc_PC_ACTOR_ALLOC_ZELDA:
+            zelda_free(actor);
+            break;
+
+        default:
+            OSPanic(__FILE__, __LINE__, "Missing PC actor allocation record");
+            break;
+    }
+#else
     switch (ITEM_NAME_GET_TYPE(name_id)) {
         case NAME_TYPE_SPNPC:
         case NAME_TYPE_NPC: {
@@ -882,6 +992,7 @@ extern ACTOR* Actor_info_delete(Actor_info* actor_info, ACTOR* actor, GAME* game
             break;
         }
     }
+#endif
 
     if (dlftbl->ram_start == NULL) {
         dlftbl->num_actors--;

@@ -43,7 +43,7 @@ void fNNB_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data) {
 
     if (ftr_actor->dynamic_work_s[0] == 1) {
         if (aFTR_CAN_PLAY_SE(ftr_actor)) {
-            sAdo_OngenPos((u32)ftr_actor, 0x50, &ftr_actor->position);
+            sAdo_OngenPos((JaudioObjectId)(uintptr_t)ftr_actor, 0x50, &ftr_actor->position);
             int ticks = graph_dt_60hz_ticks(game, &ftr_actor->dynamic_work_f[0]);
             int t;
             for (t = 0; t < ticks; t++) {

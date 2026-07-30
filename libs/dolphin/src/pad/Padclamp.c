@@ -19,7 +19,7 @@ static PADClampRegion ClampRegion = {
 	180,
 
 #ifdef TARGET_PC
-	// Stick deadzone comes from the configurable setting in pc_pad.c
+	// Aurora normalizes the host stick before this original SDK clamp.
 	// Left stick
 	0,
 	72,
