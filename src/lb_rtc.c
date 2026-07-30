@@ -47,6 +47,15 @@
 #include "types.h"
 #include "dolphin/os.h"
 
+#ifdef TARGET_PC
+extern int g_pc_time_override;
+extern int g_pc_min_override;
+extern int g_pc_sec_override;
+extern int g_pc_date_month;
+extern int g_pc_date_day;
+extern int g_pc_date_year;
+#endif
+
 static BOOL l_lbRTC_isInitial = TRUE;
 static lbRTC_time_c l_lbRTC_Time;
 static BOOL l_lbRTC_IsSampled;
@@ -151,6 +160,25 @@ static void lbRTC_GetGameTime(lbRTC_time_c* time) {
   t += Save_Get(time_delta);
 
   OSTicksToCalendarTime(t, &ctime);
+#ifdef TARGET_PC
+  /* The retired PC OS shim applied these command-line overrides while
+   * constructing its synthetic hardware clock. Aurora owns OSGetTime, so
+   * apply them at the game's RTC boundary and normalize weekday/year-day via
+   * the SDK calendar conversion. */
+  if (g_pc_date_month > 0) {
+    ctime.mon = g_pc_date_month - 1;
+    ctime.mday = g_pc_date_day;
+    if (g_pc_date_year > 0) {
+      ctime.year = g_pc_date_year;
+    }
+  }
+  if (g_pc_time_override >= 0) ctime.hour = g_pc_time_override;
+  if (g_pc_min_override >= 0) ctime.min = g_pc_min_override;
+  if (g_pc_sec_override >= 0) ctime.sec = g_pc_sec_override;
+  if (g_pc_date_month > 0 || g_pc_time_override >= 0) {
+    OSTicksToCalendarTime(OSCalendarTimeToTicks(&ctime), &ctime);
+  }
+#endif
   lbRTC_CalenderTimeToRTCTime(&ctime, time);
 }
 

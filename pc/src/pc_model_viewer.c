@@ -6,14 +6,12 @@
  *   Fish (39) - museum fish skeleton models with swimming animation
  *
  * Controls:
- *   Tab        - cycle category (Structures -> NPCs -> Fish -> wrap)
- *   LShift     - next model within category
- *   Space      - prev model (alias: A button)
- *   LCtrl      - prev model
- *   WASD       - orbit camera
- *   I/K        - zoom in/out
- *   J/L        - pan left/right
- *   Enter      - toggle animation pause
+ *   X          - cycle category (Structures -> NPCs -> Fish -> wrap)
+ *   B / A      - next / previous model within category
+ *   Left stick - orbit camera
+ *   D-pad U/D  - zoom in/out
+ *   D-pad L/R  - pan left/right
+ *   Start      - toggle animation pause
  *   
  *   Note: File is starting to get annoyingly long, consider refactoring if I end up adding more features.
  *
@@ -30,14 +28,11 @@
 #include "ac_npc.h"
 #include "PR/mbi.h"
 #include "dolphin/gx/GXFrameBuffer.h"
+#include "dolphin/vi.h"
 #include "libultra/libultra.h"
 #include "libforest/gbi_extensions.h"
 
 #include <math.h>
-
-int g_pc_model_viewer = 0;
-int g_pc_model_viewer_start = 0;
-int g_pc_model_viewer_no_cull = 0;
 
 /* STRUCTURE MODEL TABLE */
 
@@ -363,12 +358,12 @@ static const char* s_fish_names[FISH_COUNT] = {
 #define CAM_DEFAULT_ANGLE_Y 4.71238898f    /* 3PI/2 */
 #define CAM_ORBIT_SPEED     0.03f
 
-static const f32 s_cam_dist[MV_CAT_NUM]       = { 20000.0f, 500.0f,  300.0f  };
-static const f32 s_cam_center_y[MV_CAT_NUM]   = { 3000.0f,  200.0f,  50.0f   };
-static const f32 s_cam_min_dist[MV_CAT_NUM]   = { 500.0f,   50.0f,   30.0f   };
-static const f32 s_cam_max_dist[MV_CAT_NUM]   = { 50000.0f, 5000.0f, 3000.0f };
-static const f32 s_cam_zoom_speed[MV_CAT_NUM] = { 200.0f,   5.0f,    3.0f    };
-static const f32 s_cam_pan_speed[MV_CAT_NUM]  = { 100.0f,   5.0f,    3.0f    };
+static const f32 s_cam_dist[MV_CAT_NUM]       = { 30000.0f, 170.0f, 60.0f   };
+static const f32 s_cam_center_y[MV_CAT_NUM]   = { 3000.0f,  25.0f,  0.0f    };
+static const f32 s_cam_min_dist[MV_CAT_NUM]   = { 500.0f,   40.0f,  5.0f    };
+static const f32 s_cam_max_dist[MV_CAT_NUM]   = { 80000.0f, 2000.0f, 500.0f };
+static const f32 s_cam_zoom_speed[MV_CAT_NUM] = { 300.0f,   2.0f,   1.0f   };
+static const f32 s_cam_pan_speed[MV_CAT_NUM]  = { 100.0f,   2.0f,   1.0f   };
 
 /* CATEGORY HELPERS */
 
@@ -418,7 +413,8 @@ static void mv_update_title(GAME_MODEL_VIEWER* mv) {
     int count = mv_cat_count(cat);
     snprintf(title, sizeof(title), "Model Viewer [%s %d/%d] %s",
              mv_cat_name(cat), idx + 1, count, mv_model_name(cat, idx));
-    SDL_SetWindowTitle(g_pc_window, title);
+    VISetWindowTitle(title);
+    OSReport("[ModelViewer] %s\n", title);
 }
 
 static void mv_reset_camera(GAME_MODEL_VIEWER* mv) {
@@ -487,23 +483,17 @@ static void mv_handle_input(GAME_MODEL_VIEWER* mv) {
     int count = mv_cat_count(cat);
     int changed_model = 0;
 
-    /* Tab = cycle category */
-    {
-        const Uint8* keys = SDL_GetKeyboardState(NULL);
-        static int tab_prev = 0;
-        int tab_now = keys[SDL_SCANCODE_TAB];
-        if (tab_now && !tab_prev) {
-            mv->category = (cat + 1) % MV_CAT_NUM;
-            cat = mv->category;
-            count = mv_cat_count(cat);
-            /* Force re-init */
-            mv->initialized_cat = -1;
-            mv_reset_camera(mv);
-        }
-        tab_prev = tab_now;
+    /* X = cycle category */
+    if (chkTrigger(BUTTON_X)) {
+        mv->category = (cat + 1) % MV_CAT_NUM;
+        cat = mv->category;
+        count = mv_cat_count(cat);
+        /* Force re-init */
+        mv->initialized_cat = -1;
+        mv_reset_camera(mv);
     }
 
-    /* LShift = next model (B button also works) */
+    /* B = next model */
     if (chkTrigger(BUTTON_B)) {
         mv->cat_index[cat]++;
         if (mv->cat_index[cat] >= count) mv->cat_index[cat] = 0;
@@ -511,7 +501,7 @@ static void mv_handle_input(GAME_MODEL_VIEWER* mv) {
         changed_model = 1;
     }
 
-    /* Space/A = prev model */
+    /* A = previous model */
     if (chkTrigger(BUTTON_A)) {
         mv->cat_index[cat]--;
         if (mv->cat_index[cat] < 0) mv->cat_index[cat] = count - 1;
@@ -519,21 +509,7 @@ static void mv_handle_input(GAME_MODEL_VIEWER* mv) {
         changed_model = 1;
     }
 
-    /* LCtrl = prev model */
-    {
-        const Uint8* keys = SDL_GetKeyboardState(NULL);
-        static int ctrl_prev = 0;
-        int ctrl_now = keys[SDL_SCANCODE_LCTRL];
-        if (ctrl_now && !ctrl_prev) {
-            mv->cat_index[cat]--;
-            if (mv->cat_index[cat] < 0) mv->cat_index[cat] = count - 1;
-            if (cat == MV_CAT_FISH) mv->cat_index[cat] = mv_fish_skip_null(mv->cat_index[cat], -1);
-            changed_model = 1;
-        }
-        ctrl_prev = ctrl_now;
-    }
-
-    /* Enter = toggle animation pause */
+    /* Start = toggle animation pause */
     if (chkTrigger(BUTTON_START)) {
         mv->anim_paused ^= 1;
     }
@@ -880,12 +856,12 @@ void pc_model_viewer_init(GAME* game) {
 
     mv_reset_camera(mv);
 
-    printf("[ModelViewer] Initialized: Structures=%d, NPCs=%d, Fish=%d\n",
-           STRUCTURE_COUNT, NPC_COUNT, FISH_COUNT);
+    OSReport("[ModelViewer] Initialized: Structures=%d, NPCs=%d, Fish=%d\n",
+             STRUCTURE_COUNT, NPC_COUNT, FISH_COUNT);
 }
 
 void pc_model_viewer_cleanup(GAME* game) {
     (void)game;
     g_pc_model_viewer_no_cull = 0;
-    SDL_SetWindowTitle(g_pc_window, PC_WINDOW_TITLE);
+    VISetWindowTitle(PC_WINDOW_TITLE);
 }

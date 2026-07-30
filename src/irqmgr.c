@@ -142,7 +142,7 @@ static void irqmgr_Main(void* arg) {
 
   while (TRUE) {
     osRecvMesg(&this->_msgQueue, &msg, 1);
-    switch ((u32)msg) {
+    switch ((uintptr_t)msg) {
       case IRQ_RETRACE_MSG:
         irqmgr_HandleRetrace();
         break;

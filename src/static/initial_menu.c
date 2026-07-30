@@ -401,7 +401,7 @@ extern void proc(void* arg) {
     }
   } while (!proc_done);
 
-  osSendMesg(&statusQ, (OSMessage)msg, OS_MESSAGE_NOBLOCK); // signal done
+  osSendMesg(&statusQ, (OSMessage)(uintptr_t)msg, OS_MESSAGE_NOBLOCK); // signal done
 }
 
 static void* my_alloc(size_t size) {
@@ -413,6 +413,15 @@ static void my_free(void* ptr) {
 }
 
 extern void initial_menu_init() {
+#ifdef AURORA
+  /* Cocoa event pumping and Aurora frame submission belong to the main
+   * thread. The GC boot menu owns a second rendering thread, so skip that
+   * short-lived progressive-scan UI while keeping the surrounding fades. */
+  Thread_p = NULL;
+  initialMenuStack = NULL;
+  JC_JFWDisplay_startFadeIn(JC_JFWDisplay_getManager(), 32);
+  return;
+#endif
   Thread_p = (OSThread*)my_alloc(sizeof(OSThread));
   initialMenuStack = my_alloc(INITIAL_MENU_STACK_SIZE);
   if (Thread_p == NULL || initialMenuStack == NULL) {
@@ -425,7 +434,8 @@ extern void initial_menu_init() {
   else {
     osCreateMesgQueue(&commandQ, commandMsgBuf, 2);
     osCreateMesgQueue(&statusQ, statusMsgBuf, 1);
-    osCreateThread2(Thread_p, 1, &proc, NULL, (void*)((int)initialMenuStack + INITIAL_MENU_STACK_SIZE), INITIAL_MENU_STACK_SIZE, 1);
+    osCreateThread2(Thread_p, 1, &proc, NULL,
+                    (void*)((uintptr_t)initialMenuStack + INITIAL_MENU_STACK_SIZE), INITIAL_MENU_STACK_SIZE, 1);
     osStartThread(Thread_p);
     JC_JFWDisplay_startFadeIn(JC_JFWDisplay_getManager(), 32);
     osSendMesg(&commandQ, (OSMessage)INITIAL_MENU_OSMESG_INIT_DONE, OS_MESSAGE_NOBLOCK);

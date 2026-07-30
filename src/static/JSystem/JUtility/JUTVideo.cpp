@@ -11,7 +11,7 @@ bool sDrawWaiting;
 
 JUTVideo* JUTVideo::createManager(const GXRenderModeObj* renderModeObj) {
     if (sManager == nullptr) {
-        sManager = new JUTVideo(renderModeObj);
+        sManager = JKR_NEW JUTVideo(renderModeObj);
     }
     return sManager;
 }
@@ -158,7 +158,7 @@ void JUTVideo::postRetraceProc(u32 p1) {
         sManager->mPostRetraceCallback(p1);
     }
     u32 retraceCount = VIGetRetraceCount();
-    OSSendMessage(&sManager->mMessageQueue, (void*)retraceCount, OS_MESSAGE_NOBLOCK);
+    OSSendMessage(&sManager->mMessageQueue, (void*)(uintptr_t)retraceCount, OS_MESSAGE_NOBLOCK);
 }
 
 void JUTVideo::setRenderMode(const GXRenderModeObj* newRenderModeObj) {

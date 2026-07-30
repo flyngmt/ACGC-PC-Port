@@ -24,7 +24,7 @@ JUTDbPrint* JUTDbPrint::start(JUTFont* font, JKRHeap* heap) {
         if (!heap) {
             heap = JKRHeap::getCurrentHeap();
         }
-        sDebugPrint = new JUTDbPrint(font, heap);
+        sDebugPrint = JKR_NEW JUTDbPrint(font, heap);
     }
     return sDebugPrint;
 }

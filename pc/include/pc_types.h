@@ -6,6 +6,9 @@
  * Included automatically via pc_platform.h.
  */
 
+#ifdef TARGET_PC
+#include <dolphin/types.h>
+#else
 typedef unsigned char      u8;
 typedef unsigned short     u16;
 typedef unsigned long      u32;
@@ -17,6 +20,7 @@ typedef signed long long   s64;
 typedef float              f32;
 typedef double             f64;
 typedef int                BOOL;
+#endif
 
 #ifndef TRUE
 #define TRUE 1

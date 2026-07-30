@@ -3,6 +3,8 @@
 #include <dolphin/base/PPCArch.h>
 #include <dolphin/gx.h>
 #include <dolphin/os.h>
+#include <dolphin/vi.h>
+#include <stdlib.h>
 
 #include "MSL_C/printf.h"
 #include "libc/string.h"
@@ -153,6 +155,10 @@ void JUTException::showFloat(OSContext* context) {
     }
 
     sConsole->print("-------------------------------- FPR\n");
+#ifdef AURORA
+    (void)context;
+    sConsole->print("Native host register context unavailable.\n");
+#else
     for (int i = 0; i < 10; i++) {
         showFloatSub(i, context->fpr[i]);
         sConsole->print(" ");
@@ -165,10 +171,19 @@ void JUTException::showFloat(OSContext* context) {
     sConsole->print(" ");
     showFloatSub(21, context->fpr[21]);
     sConsole->print("\n");
+#endif
 }
 
 bool JUTException::searchPartialModule(u32 address, u32* module_id, u32* section_id, u32* section_offset,
                                        u32* name_offset) {
+#ifdef AURORA
+    (void)address;
+    (void)module_id;
+    (void)section_id;
+    (void)section_offset;
+    (void)name_offset;
+    return false;
+#else
     if (!address) {
         return false;
     }
@@ -195,6 +210,7 @@ bool JUTException::searchPartialModule(u32 address, u32* module_id, u32* section
     }
 
     return false;
+#endif
 }
 
 void search_name_part(u8* src, u8* dst, int dst_length) {
@@ -226,6 +242,10 @@ void JUTException::showStack(OSContext* context) {
     u32 i;
     u32* stackPointer;
     sConsole->print("-------------------------------- TRACE\n");
+#ifdef AURORA
+    (void)context;
+    sConsole->print("Native host stack context unavailable.\n");
+#else
     sConsole->print_f("Address:   BackChain   LR save\n");
 
     for (i = 0, stackPointer = (u32*)context->gpr[1];
@@ -242,6 +262,7 @@ void JUTException::showStack(OSContext* context) {
         waitTime(mPrintWaitTime1);
         stackPointer = (u32*)stackPointer[0];
     }
+#endif
 }
 
 void JUTException::showMainInfo(u16 error, OSContext* context, u32 dsisr, u32 dar) {
@@ -250,7 +271,11 @@ void JUTException::showMainInfo(u16 error, OSContext* context, u32 dsisr, u32 da
     }
 
     sConsole->print_f("CONTEXT:%08XH  (%s EXCEPTION)\n", context, sCpuExpName[error]);
+#ifdef AURORA
+    sConsole->print("Native host CPU status registers unavailable.\n");
+#else
     sConsole->print_f("SRR0:   %08XH   SRR1:%08XH\n", context->srr0, context->srr1);
+#endif
     sConsole->print_f("DSISR:  %08XH   DAR: %08XH\n", dsisr, dar);
 }
 
@@ -260,11 +285,16 @@ void JUTException::showGPR(OSContext* context) {
     }
 
     sConsole->print("-------------------------------- GPR\n");
+#ifdef AURORA
+    (void)context;
+    sConsole->print("Native host register context unavailable.\n");
+#else
     for (int i = 0; i < 10; i++) {
         sConsole->print_f("R%02d:%08XH  R%02d:%08XH  R%02d:%08XH\n", i, context->gpr[i], i + 11, context->gpr[i + 11],
                           i + 22, context->gpr[i + 22]);
     }
     sConsole->print_f("R%02d:%08XH  R%02d:%08XH\n", 10, context->gpr[10], 21, context->gpr[21]);
+#endif
 }
 
 bool JUTException::showMapInfo_subroutine(u32 address, bool begin_with_newline) {
@@ -285,7 +315,7 @@ bool JUTException::showMapInfo_subroutine(u32 address, bool begin_with_newline) 
 
     bool result = searchPartialModule(address, &module_id, &section_id, &section_offset, &name_offset);
     if (result == true) {
-        search_name_part((u8*)name_offset, name_part, 32);
+        search_name_part((u8*)(uintptr_t)name_offset, name_part, 32);
         sConsole->print_f("%s %s:%x section:%d\n", new_line, name_part, section_offset, section_id);
         begin_with_newline = false;
     }
@@ -321,6 +351,11 @@ void JUTException::showGPRMap(OSContext* context) {
     bool found_address_register = false;
     sConsole->print("-------------------------------- GPRMAP\n");
 
+#ifdef AURORA
+    (void)context;
+    sConsole->print("Native host register map unavailable.\n");
+    return;
+#else
     for (int i = 0; i < 31; i++) {
         u32 address = context->gpr[i];
 
@@ -339,6 +374,7 @@ void JUTException::showGPRMap(OSContext* context) {
     if (!found_address_register) {
         sConsole->print("  no register which seem to address.\n");
     }
+#endif
 }
 
 void JUTException::printDebugInfo(JUTException::EInfoPage page, OSError error, OSContext* context, u32 param_3,
@@ -590,7 +626,7 @@ void JUTException::printContext(OSError error, OSContext* context, u32 dsisr, u3
     }
 }
 
-void JUTException::waitTime(s32 timeout_ms) {
+void JUTException::waitTime(long timeout_ms) {
     if (timeout_ms) {
         OSTime start_time = OSGetTime();
         OSTime ms;
@@ -610,8 +646,9 @@ void JUTException::createFB() {
     u32 pixel_count = width * height;
     u32 size = pixel_count * 2;
 
-    void* begin = (void*)ALIGN_PREV((u32)end - size, 32);
-    void* object = (void*)ALIGN_PREV((s32)begin - sizeof(JUTExternalFB), 32);
+    void* begin = reinterpret_cast<void*>(ALIGN_PREV(reinterpret_cast<uintptr_t>(end) - size, 32));
+    void* object =
+        reinterpret_cast<void*>(ALIGN_PREV(reinterpret_cast<uintptr_t>(begin) - sizeof(JUTExternalFB), 32));
     JUTExternalFB* fb = new (object) JUTExternalFB(renderMode, GX_GM_1_7, begin, size);
 
     mDirectPrint->changeFrameBuffer(object);
@@ -667,11 +704,11 @@ void JUTException::appendMapFile(const char* path) {
         }
     }
 
-    JUTExMapFile* mapFile = new JUTExMapFile((char*)path);
+    JUTExMapFile* mapFile = JKR_NEW JUTExMapFile((char*)path);
     sMapFileList.append(&mapFile->mLink);
 }
 
-bool JUTException::queryMapAddress(char* mapPath, u32 address, s32 section_id, u32* out_addr, u32* out_size,
+bool JUTException::queryMapAddress(char* mapPath, u32 address, long section_id, u32* out_addr, u32* out_size,
                                    char* out_line, u32 line_length, bool print, bool begin_with_newline) {
     if (mapPath) {
         char buffer[80];
@@ -691,7 +728,7 @@ bool JUTException::queryMapAddress(char* mapPath, u32 address, s32 section_id, u
     return false;
 }
 
-bool JUTException::queryMapAddress_single(char* mapPath, u32 address, s32 section_id, u32* out_addr, u32* out_size,
+bool JUTException::queryMapAddress_single(char* mapPath, u32 address, long section_id, u32* out_addr, u32* out_size,
                                           char* out_line, u32 line_length, bool print, bool begin_with_newline) {
     /* fake match on TP debug? */
     if (!mapPath) {

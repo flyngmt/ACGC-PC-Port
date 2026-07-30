@@ -1059,6 +1059,8 @@ extern int dvderr_draw() {
   dvderr_move();
 
   if (this->now_error >= DVDERR_COVER_OPEN) {
+    /* Under Aurora this function is called only from the main graph loop. The
+     * console boot menu's secondary rendering thread is disabled at startup. */
     dvderr_mtx_set();
     JW_BeginFrame();
     this->gfx_p = this->gfx;
@@ -1086,7 +1088,6 @@ extern void dvderr_init() {
   this->draw_proc = &dvderr_move_wait;
   this->now_error = DVDERR_NONE;
   this->next_error = DVDERR_NONE;
-
   guOrtho(&this->ortho, -160.0f, 160.0f, -120.0f, 120.0f, -800.0f, 800.0f, 1.0f); /* TODO: N64 screen size macros (float) */
   guLookAt(&this->projection, 0.0f, 0.0f, 400.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 }

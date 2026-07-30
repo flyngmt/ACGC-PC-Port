@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "dolphin/os/OSTime.h"
-#include "dolphin/os/OSTimer.h"
+#include "libultra/os_timer.h"
 #include "dolphin/os/OSMessage.h"
 
 #ifdef __cplusplus

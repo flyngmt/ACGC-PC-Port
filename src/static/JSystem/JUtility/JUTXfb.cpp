@@ -49,7 +49,7 @@ void JUTXfb::delXfb(int xfbIdx) {
 JUTXfb* JUTXfb::createManager(const GXRenderModeObj* rmode, JKRHeap* heap, JUTXfb::EXfbNumber number) {
     JUT_CONFIRM_MESSAGE(sManager == 0);
     if (sManager == nullptr) {
-        sManager = new JUTXfb(rmode, heap, number);
+        sManager = JKR_NEW JUTXfb(rmode, heap, number);
     }
     return sManager;
 }

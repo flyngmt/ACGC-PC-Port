@@ -20,6 +20,11 @@ JUTResFont::JUTResFont(const ResFONT* resource, JKRHeap* heap) {
 }
 
 JUTResFont::~JUTResFont() {
+#ifdef TARGET_PC
+    if (_44 != -1) {
+        GXDestroyTexObj(&_24);
+    }
+#endif
     if (mValid) {
         deleteMemBlocks_ResFont();
         initialize_state();
@@ -56,6 +61,11 @@ bool JUTResFont::initiate(const ResFONT* resource, JKRHeap* heap) {
 bool JUTResFont::protected_initiate(const ResFONT* resource, JKRHeap* heap) {
     void** blocks;
 
+#ifdef TARGET_PC
+    if (_44 != -1) {
+        GXDestroyTexObj(&_24);
+    }
+#endif
     deleteMemBlocks_ResFont();
     initialize_state();
     JUTFont::initialize_state();
@@ -435,11 +445,28 @@ void JUTResFont::loadImage(int code, GXTexMapID id) {
     mHeight = cellRow * mGlyphBlocks[i]->mCellHeight;
 
     if (pageIdx != _44 || i != _66) {
+#ifdef TARGET_PC
+        const void* image = &mGlyphBlocks[i]->mData[pageIdx * mGlyphBlocks[i]->mTextureSize];
+
+        if (_44 != -1 && i == _66) {
+            /* Pages in one glyph block share their descriptor. Keep Aurora's
+             * texture-object identity and invalidate only its image data. */
+            GXInitTexObjData(&_24, image);
+        } else {
+            if (_44 != -1) {
+                GXDestroyTexObj(&_24);
+            }
+            GXInitTexObj(&_24, image, mGlyphBlocks[i]->mTextureWidth, mGlyphBlocks[i]->mTextureHeight,
+                         (GXTexFmt)mGlyphBlocks[i]->mTextureFormat, GX_CLAMP, GX_CLAMP, 0);
+            GXInitTexObjLOD(&_24, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, 0U, 0U, GX_ANISO_1);
+        }
+#else
         GXInitTexObj(&_24, &mGlyphBlocks[i]->mData[pageIdx * mGlyphBlocks[i]->mTextureSize],
                      mGlyphBlocks[i]->mTextureWidth, mGlyphBlocks[i]->mTextureHeight,
                      (GXTexFmt)mGlyphBlocks[i]->mTextureFormat, GX_CLAMP, GX_CLAMP, 0);
 
         GXInitTexObjLOD(&_24, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, 0U, 0U, GX_ANISO_1);
+#endif
         _44 = pageIdx;
         _66 = i;
     }

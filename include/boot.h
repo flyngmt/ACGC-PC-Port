@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "dolphin/os/OSModule.h"
-#include "dolphin/os/OSLink.h"
+#include "dolphin/os/OSModule.h"
 #include "dolphin/os/OSTime.h"
 
 #ifdef __cplusplus

@@ -140,6 +140,14 @@ void* soundArenaAlloc(size_t size) { return nullptr; }
  * @return s32 success
  */
 s32 search_partial_address(u32 addr, u32* module_id, u32* section_idx, u32* section_addr, u32* module_name_ofs) {
+#ifdef TARGET_PC
+  (void)addr;
+  (void)module_id;
+  (void)section_idx;
+  (void)section_addr;
+  (void)module_name_ofs;
+  return -1; /* REL modules are not loaded by the statically linked PC build. */
+#else
   u32 section_size;
   OSModuleHeader* module_p;
   u32 section;
@@ -181,6 +189,7 @@ s32 search_partial_address(u32 addr, u32* module_id, u32* section_idx, u32* sect
   }
 
   return -1; /* failed */
+#endif
 }
 
 /**
@@ -230,7 +239,7 @@ extern void UnLink(OSModuleHeader* module) {
   if (module != nullptr) {
     if (module->epilog != 0) {
       OSReport("エピローグ開始\n"); /* epilog start */
-      ((void (*)())module->epilog)();
+      ((void (*)())(uintptr_t)module->epilog)();
       OSReport("エピローグ完了\n"); /* epilog complete */
     }
 
@@ -298,7 +307,7 @@ OSModuleHeader* LoadLink(const char* module_name) {
     }
         
     OSLink(&module->info, bss);
-    ((void (*)())module->prolog)();
+    ((void (*)())(uintptr_t)module->prolog)();
     return module;
   }
 
@@ -577,13 +586,17 @@ int main(int argc, const char** argv) {
     PAD_BUTTON_START
   };
 
+#ifndef TARGET_PC
   u32 var1;
   OSThread* var2;
+#endif
   void* start;
   void* end;
   DVDDiskID* diskId;
+#ifndef TARGET_PC
   u32* base;
   u32* basenext;
+#endif
 
   ReconfigBATs();
   if (fakemain_check) {
@@ -612,7 +625,8 @@ int main(int argc, const char** argv) {
   OSInit();
   OSInitAlarm();
 
-  /* Initialize stack */
+#ifndef TARGET_PC
+  /* Fill the unused console stack. Host threads do not expose this layout. */
   var1 = ((u32)OSGetStackPointer() - 0x100);
   var2 = OSGetCurrentThread();
   base = (u32*)var1;
@@ -623,6 +637,7 @@ int main(int argc, const char** argv) {
       memset(basenext, 0xfd, (u32)base - (u32)basenext);
     }
   }
+#endif
 
   /* Reset N64 NMI buffer*/
   bzero(osAppNMIBuffer, 16 * sizeof(s32));
@@ -777,7 +792,7 @@ int main(int argc, const char** argv) {
   mFM_InitActableEndian();
   pc_bswap_u8_tlut_palettes();
   pc_bswap_house_pos_list();
-  OSReport("[PC] boot: entering HotStartEntry loop (entry=%08x)...\n", (u32)HotStartEntry);
+  OSReport("[PC] boot: entering HotStartEntry loop (entry=%p)...\n", (void*)HotStartEntry);
 #endif
   while (HotStartEntry != nullptr) {
     OSReport("ホットスタート(%08x)\n", HotStartEntry);

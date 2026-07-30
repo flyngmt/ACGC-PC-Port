@@ -1,6 +1,7 @@
 #include <dolphin/os.h>
 
 #include "MSL_C/printf.h"
+#include "JSystem/JKernel/JKRHeap.h"
 #include "JSystem/JUtility/JUTDirectPrint.h"
 
 JUTDirectPrint* JUTDirectPrint::sDirectPrint;
@@ -11,7 +12,7 @@ JUTDirectPrint::JUTDirectPrint() {
 
 JUTDirectPrint* JUTDirectPrint::start() {
     if (!sDirectPrint) {
-        sDirectPrint = new JUTDirectPrint();
+        sDirectPrint = JKR_NEW JUTDirectPrint();
     }
 
     return sDirectPrint;

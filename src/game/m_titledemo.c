@@ -229,18 +229,6 @@ static void mTD_game_end_init(GAME_PLAY* play) {
 
 extern void title_demo_move(GAME_PLAY* play) {
     if (mEv_IsTitleDemo()) {
-#ifdef TARGET_PC
-        /* Hold the demo while the Options overlay owns the screen: neither
-         * advance time nor feed recorded input, so the villager parks and
-         * the wipe-to-next-demo cutoff stays paused too. */
-        {
-            extern int pc_settings_menu_active(void);
-            if (pc_settings_menu_active()) {
-                mPlib_SetData1_controller_data_for_title_demo(0, 0, 0.0f, 0.0f);
-                return;
-            }
-        }
-#endif
         float delta_time = play->game.graph->dt;
 
         set_player_demo_keydata_hold(delta_time);

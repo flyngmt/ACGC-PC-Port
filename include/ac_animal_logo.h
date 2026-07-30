@@ -61,15 +61,7 @@ struct actor_animal_logo_s {
   float title_timer;
   int titledemo_no;
 
-#ifdef PC_ENHANCEMENTS
-  int pc_menu_sel;         /* 0=Start Game, 1=Options */
-  int pc_options_open;     /* options sub-menu visible */
-  int pc_options_sel;      /* highlighted option (unused for now) */
-  float pc_cursor_cooldown;  /* stick debounce timer */
-  int pc_unused[2];
-#else
   int unused_56C[6];
-#endif
 };
 
 enum {

@@ -1,5 +1,11 @@
 #include "JSystem/J2D/J2DGrafContext.h"
 
+#ifdef TARGET_PC
+#include "pc_platform.h"
+#else
+#define pc_widescreen_set_projection GXSetProjection
+#endif
+
 J2DOrthoGraph::J2DOrthoGraph() : J2DGrafContext(0.0f, 0.0f, 0.0f, 0.0f) {
     setLookat();
 }
@@ -15,7 +21,7 @@ J2DOrthoGraph::J2DOrthoGraph(f32 left, f32 top, f32 right, f32 bottom, f32 near,
 void J2DOrthoGraph::setPort() {
     J2DGrafContext::setPort();
     C_MTXOrtho(mMtx44, mOrtho.i.y, 0.5f + mOrtho.f.y, mOrtho.i.x, mOrtho.f.x, mNear, mFar);
-    GXSetProjection(mMtx44, GX_ORTHOGRAPHIC);
+    pc_widescreen_set_projection(mMtx44, GX_ORTHOGRAPHIC);
 }
 
 void J2DOrthoGraph::setOrtho(const JGeometry::TBox2f& bounds, f32 far, f32 near) {

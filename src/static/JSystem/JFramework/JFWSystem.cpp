@@ -126,14 +126,14 @@ void JFWSystem::init() {
     JKRAram::create(CSetUpParam::aramAudioBufSize, CSetUpParam::aramGraphBufSize, CSetUpParam::streamPriority,
                     CSetUpParam::decompPriority, CSetUpParam::aPiecePriority);
 
-    mainThread = new JKRThread(OSGetCurrentThread(), 4);
+    mainThread = JKR_NEW JKRThread(OSGetCurrentThread(), 4);
     JUTVideo::createManager(CSetUpParam::renderMode);
     JUTCreateFifo(CSetUpParam::fifoBufSize);
     JUTGamePad::init();
     JUTDirectPrint* directPrint = JUTDirectPrint::start();
     JUTAssertion::create();
     JUTException::create(directPrint);
-    systemFont = new JUTResFont(CSetUpParam::systemFontRes, nullptr);
+    systemFont = JKR_NEW JUTResFont(CSetUpParam::systemFontRes, nullptr);
     debugPrint = JUTDbPrint::start(nullptr, nullptr);
     debugPrint->changeFont(systemFont);
     systemConsoleManager = JUTConsoleManager::createManager(nullptr);

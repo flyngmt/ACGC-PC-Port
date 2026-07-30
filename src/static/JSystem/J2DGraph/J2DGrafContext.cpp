@@ -1,6 +1,12 @@
 #include "JSystem/J2D/J2DGrafContext.h"
 #include "MSL_C/math.h"
 
+#ifdef TARGET_PC
+#include "pc_platform.h"
+#else
+#define pc_widescreen_set_viewport GXSetViewport
+#endif
+
 J2DGrafContext::J2DGrafContext(f32 left, f32 top, f32 right, f32 bottom)
     : mBounds(left, top, left + right, top + bottom), mScissorBounds(left, top, left + right, top + bottom) {
     JUtility::TColor color(-1);
@@ -12,7 +18,8 @@ void J2DGrafContext::setPort() {
     setScissor();
     setup2D();
 
-    GXSetViewport(mBounds.i.x, mBounds.i.y, mBounds.f.x - mBounds.i.x, mBounds.f.y - mBounds.i.y, 0.0f, 1.0f);
+    pc_widescreen_set_viewport(mBounds.i.x, mBounds.i.y, mBounds.f.x - mBounds.i.x,
+                               mBounds.f.y - mBounds.i.y, 0.0f, 1.0f);
 }
 
 void J2DGrafContext::setup2D() {

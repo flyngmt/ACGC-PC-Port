@@ -6,6 +6,7 @@
 
 #ifdef TARGET_PC
 #include "dolphin/pad.h"
+#include "dolphin/vi.h"
 #endif
 
 static int frame = 0;
@@ -313,7 +314,6 @@ extern void padmgr_RequestPadData_NonLock(pad_t* pad, int flag) {
    (XOR of same button state = 0), producing zero triggers. The once-per-frame guard
    is in padmgr_RequestPadData to skip redundant calls entirely. */
 extern u32 pc_frame_counter; /* incremented in VIWaitForRetrace */
-
 static void padmgr_UpdatePC(void) {
     PADStatus pad_status[MAXCONTROLLERS];
     int i;
@@ -333,22 +333,38 @@ static void padmgr_UpdatePC(void) {
     for (i = 0; i < MAXCONTROLLERS; i++) {
         u16 gc = pad_status[i].button;
         u16 n64 = 0;
-        if (gc & 0x0100) n64 |= 0x8000; /* A */
-        if (gc & 0x0200) n64 |= 0x4000; /* B */
-        if (gc & 0x0400) n64 |= 0x0040; /* X */
-        if (gc & 0x0800) n64 |= 0x0080; /* Y */
-        if (gc & 0x1000) n64 |= 0x1000; /* START */
-        if (gc & 0x0010) n64 |= 0x2000; /* Z */
-        if (gc & 0x0020) n64 |= 0x0010; /* R */
-        if (gc & 0x0040) n64 |= 0x0020; /* L */
-        if (gc & 0x0008) n64 |= 0x0800; /* D-Up */
-        if (gc & 0x0004) n64 |= 0x0400; /* D-Down */
-        if (gc & 0x0001) n64 |= 0x0200; /* D-Left */
-        if (gc & 0x0002) n64 |= 0x0100; /* D-Right */
-        if (pad_status[i].substickX >= 29)  n64 |= 0x0001; /* C-Right */
-        if (pad_status[i].substickX <= -29) n64 |= 0x0002; /* C-Left */
-        if (pad_status[i].substickY >= 29)  n64 |= 0x0008; /* C-Up */
-        if (pad_status[i].substickY <= -29) n64 |= 0x0004; /* C-Down */
+        if (gc & 0x0100)
+            n64 |= 0x8000; /* A */
+        if (gc & 0x0200)
+            n64 |= 0x4000; /* B */
+        if (gc & 0x0400)
+            n64 |= 0x0040; /* X */
+        if (gc & 0x0800)
+            n64 |= 0x0080; /* Y */
+        if (gc & 0x1000)
+            n64 |= 0x1000; /* START */
+        if (gc & 0x0010)
+            n64 |= 0x2000; /* Z */
+        if (gc & 0x0020)
+            n64 |= 0x0010; /* R */
+        if (gc & 0x0040)
+            n64 |= 0x0020; /* L */
+        if (gc & 0x0008)
+            n64 |= 0x0800; /* D-Up */
+        if (gc & 0x0004)
+            n64 |= 0x0400; /* D-Down */
+        if (gc & 0x0001)
+            n64 |= 0x0200; /* D-Left */
+        if (gc & 0x0002)
+            n64 |= 0x0100; /* D-Right */
+        if (pad_status[i].substickX >= 29)
+            n64 |= 0x0001; /* C-Right */
+        if (pad_status[i].substickX <= -29)
+            n64 |= 0x0002; /* C-Left */
+        if (pad_status[i].substickY >= 29)
+            n64 |= 0x0008; /* C-Up */
+        if (pad_status[i].substickY <= -29)
+            n64 |= 0x0004; /* C-Down */
         this->cur_pads[i].button = n64;
         this->cur_pads[i].stick_x = pad_status[i].stickX;
         this->cur_pads[i].stick_y = pad_status[i].stickY;
@@ -365,10 +381,15 @@ static void padmgr_UpdatePC(void) {
              * out. Buttons reliably go to 0 on release. */
             int any_button = 0;
             for (i = 0; i < MAXCONTROLLERS; i++) {
-                if (this->cur_pads[i].button != 0) { any_button = 1; break; }
+                if (this->cur_pads[i].button != 0) {
+                    any_button = 1;
+                    break;
+                }
             }
-            if (any_button) suppress = 1;
-            else            g_pc_pause_input_drain = 0;
+            if (any_button)
+                suppress = 1;
+            else
+                g_pc_pause_input_drain = 0;
         }
         if (suppress) {
             for (i = 0; i < MAXCONTROLLERS; i++) {

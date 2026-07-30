@@ -59,12 +59,16 @@ extern void mainproc(void* val) {
 #endif
     padmgr_Create(&l_serialMsgQ, 7, 15, padmgrStack + PADMGR_STACK_SIZE, PADMGR_STACK_SIZE);
 
+#ifndef TARGET_PC
     osCreateThread2(&graphThread, 4, graph_proc, val, graphStack + GRAPH_STACK_SIZE, GRAPH_STACK_SIZE, 8);
+#endif
 
     JW_BeginFrame();
     JW_EndFrame();
 
+#ifndef TARGET_PC
     osStartThread(&graphThread);
+#endif
     osSetThreadPri(NULL, 5);
 
 #ifdef TARGET_PC
@@ -96,11 +100,7 @@ extern void mainproc(void* val) {
     OSReport("[PC] mainproc: calling graph_proc directly (single-threaded)...\n");
     graph_proc(val);
     OSReport("[PC] mainproc: graph_proc returned\n");
-    {
-        extern void pc_platform_shutdown(void);
-        pc_platform_shutdown();
-        exit(0);
-    }
+    return;
 #else
     do {
         msg = NULL;

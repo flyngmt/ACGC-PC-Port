@@ -21,13 +21,6 @@
 #include "m_font.h"
 #include "libultra/libultra.h"
 #include "m_flashrom.h"
-#ifdef PC_ENHANCEMENTS
-#include "pc_settings.h"
-#include "pc_settings_menu.h"
-#include "pc_menu_util.h"
-#include "main.h"
-#include <stdio.h>
-#endif
 
 #define G_CC_TITLE PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, PRIMITIVE, 0, TEXEL0, 0
 #define G_CC_TM 0, 0, 0, PRIMITIVE, 0, 0, 0, TEXEL0
@@ -123,12 +116,6 @@ static void aAL_actor_ct(ACTOR* actor, GAME* game) {
 
 static void aAL_actor_dt(ACTOR* actor, GAME* game) {
   ANIMAL_LOGO_ACTOR* logo_actor = (ANIMAL_LOGO_ACTOR*)actor;
-
-#ifdef TARGET_PC
-  /* Stop blocking pause once the title actor is gone. */
-  { extern int g_pc_title_main_menu_visible;
-    g_pc_title_main_menu_visible = 0; }
-#endif
 
   if (Common_Get(clip.animal_logo_clip) != NULL) {
     zelda_free(Common_Get(clip.animal_logo_clip));
@@ -334,99 +321,6 @@ static void aAL_fade_out_start_wait_init(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
   actor->press_start_opacity = 255.0f;
 }
 
-#ifdef PC_ENHANCEMENTS
-static void aAL_pc_game_start_wait(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
-  GAME_PLAY* play = (GAME_PLAY*)game;
-  f32 dt = (f32)game->graph->dt_num_60fps_frames;
-  u16 on_btn = gamePT->pads[PAD0].on.button;
-  s8 stick_y = gamePT->pads[PAD0].now.stick_y;
-
-  /* No blinking — full opacity for menu */
-  actor->press_start_opacity = 255.0f;
-
-  if (play->fb_fade_type == FADE_TYPE_SELECT_END) {
-    aAL_setupAction(actor, game, aAL_ACTION_6);
-    return;
-  }
-
-  /* Debounce */
-  if (actor->pc_cursor_cooldown > 0.0f) {
-    actor->pc_cursor_cooldown -= dt;
-    if (actor->pc_cursor_cooldown < 0.0f) {
-      actor->pc_cursor_cooldown = 0.0f;
-    }
-  }
-
-  if (actor->pc_options_open) {
-    s8 stick_x = gamePT->pads[PAD0].now.stick_x;
-
-    /* Keybinding capture is fed raw SDL events by pc_main; pad-derived nav
-     * must stand down until the just-pressed input is released. */
-    if (pc_settings_menu_capture_blocking()) {
-      return;
-    }
-
-    /* Drive the shared settings menu. It returns 0 when the user picks
-     * Back from the main settings page, which we treat as "close". */
-    if (actor->pc_cursor_cooldown <= 0.0f) {
-      if (on_btn & BUTTON_A || on_btn & BUTTON_START) {
-        if (!pc_settings_menu_confirm()) actor->pc_options_open = 0;
-        actor->pc_cursor_cooldown = 10.0f;
-      } else if (on_btn & BUTTON_B) {
-        if (!pc_settings_menu_cancel()) actor->pc_options_open = 0;
-        actor->pc_cursor_cooldown = 10.0f;
-      } else if (stick_y > 30 || (on_btn & BUTTON_DUP)) {
-        pc_settings_menu_nav_up();   actor->pc_cursor_cooldown = 8.0f;
-      } else if (stick_y < -30 || (on_btn & BUTTON_DDOWN)) {
-        pc_settings_menu_nav_down(); actor->pc_cursor_cooldown = 8.0f;
-      } else if (stick_x > 30 || (on_btn & BUTTON_DRIGHT)) {
-        pc_settings_menu_nav_right(); actor->pc_cursor_cooldown = 8.0f;
-      } else if (stick_x < -30 || (on_btn & BUTTON_DLEFT)) {
-        pc_settings_menu_nav_left(); actor->pc_cursor_cooldown = 8.0f;
-      }
-    }
-    return;
-  }
-
-  /* Main menu navigation (3 items: Start / Options / Quit) */
-  if (actor->pc_cursor_cooldown <= 0.0f) {
-    if (stick_y > 30 || (on_btn & BUTTON_DUP)) {
-      if (actor->pc_menu_sel > 0) {
-        actor->pc_menu_sel--;
-        actor->pc_cursor_cooldown = 10.0f;
-      }
-    } else if (stick_y < -30 || (on_btn & BUTTON_DDOWN)) {
-      if (actor->pc_menu_sel < 2) {
-        actor->pc_menu_sel++;
-        actor->pc_cursor_cooldown = 10.0f;
-      }
-    }
-  }
-
-  /* Select */
-  if (on_btn & (BUTTON_A | BUTTON_START)) {
-    switch (actor->pc_menu_sel) {
-      case 0: /* Start Game */
-        if (mLd_CheckStartFlag() == TRUE &&
-            aAL_wipe_end_check(game) == TRUE &&
-            mTD_tdemo_button_ok_check()) {
-          aAL_setupAction(actor, game, aAL_ACTION_FADE_OUT_START);
-        }
-        break;
-      case 1: /* Options */
-        actor->pc_options_open = 1;
-        actor->pc_cursor_cooldown = 10.0f;
-        pc_settings_menu_enter();
-        break;
-      case 2: /* Quit Game */
-        g_pc_running = 0;
-        actor->pc_cursor_cooldown = 10.0f;
-        break;
-    }
-  }
-}
-#endif
-
 static void aAL_setupAction(ANIMAL_LOGO_ACTOR* actor, GAME* game, int action) {
   static const ANIMAL_LOGO_ACTION_PROC init_proc[aAL_ACTION_NUM] = {
     &aAL_logo_in_init,
@@ -442,11 +336,7 @@ static void aAL_setupAction(ANIMAL_LOGO_ACTOR* actor, GAME* game, int action) {
     &aAL_logo_in,
     &aAL_back_fadein,
     &aAL_start_key_chk_start_wait,
-#ifdef PC_ENHANCEMENTS
-    &aAL_pc_game_start_wait,
-#else
     &aAL_game_start_wait,
-#endif
     &aAL_fade_out_start_wait,
     (ANIMAL_LOGO_ACTION_PROC)&none_proc1,
     (ANIMAL_LOGO_ACTION_PROC)&none_proc1
@@ -772,74 +662,11 @@ static void aAL_title_draw(GAME* game, ANIMAL_LOGO_ACTOR* actor) {
   Matrix_pull();
 }
 
-#ifdef PC_ENHANCEMENTS
-static void aAL_pc_menu_draw(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
-  GRAPH* graph = game->graph;
-  int td = actor->titledemo_no;
-
-  /* pc_text_draw emits modelview-transformed verts, but title_draw left the
-   * modelview transformed; reset it to identity first. */
-  {
-    Gfx* gfx;
-    OPEN_DISP(graph);
-    gfx = NOW_FONT_DISP;
-    gSPMatrix(gfx++, &Mtx_clear, G_MTX_MODELVIEW | G_MTX_LOAD | G_MTX_NOPUSH);
-    SET_FONT_DISP(gfx);
-    CLOSE_DISP(graph);
-  }
-
-  static const u32 sel_r[5] = { 255, 255, 255, 120, 165 };
-  static const u32 sel_g[5] = {  90, 135, 100, 205, 245 };
-  static const u32 sel_b[5] = {  30,   0, 255, 245,   0 };
-  static const u32 dim_r[5] = {  70,  60,  60,  40,  40 };
-  static const u32 dim_g[5] = {  40,  50,  40,  50,  50 };
-  static const u32 dim_b[5] = {  40,  30,  60,  70,  60 };
-
-  static const char* const labels[3] = { "Start Game", "Options", "Quit Game" }; // me when const
-
-  f32 y_base = 135.0f;
-  f32 line_h = 18.0f;
-  int sel = actor->pc_menu_sel;
-
-  /* Hide the title's main menu items while the Options overlay is open, else
-   * Start/Options/Quit bleed through the dimmed backdrop. */
-  if (!actor->pc_options_open) {
-    for (int i = 0; i < 3; i++) {
-      int on = (sel == i);
-      pc_menu_draw_centered(game, labels[i], y_base + i * line_h,
-        on ? sel_r[td] : dim_r[td],
-        on ? sel_g[td] : dim_g[td],
-        on ? sel_b[td] : dim_b[td],
-        on ? 255 : 220,
-        on ? PC_MENU_SCALE_SELECTED : 1.0f);
-    }
-  }
-
-  /* Options sub-menu, shared with the in-game pause menu. */
-  if (actor->pc_options_open) {
-    pc_settings_menu_tick();
-    pc_settings_menu_draw(game, /*with_dim_backdrop=*/1);
-    /* The shared module may close itself from inside (Back from
-     * settings, or the res-confirm timer snapping back). */
-    if (!pc_settings_menu_active()) {
-      actor->pc_options_open = 0;
-    }
-  }
-}
-#endif
-
 static int aAL_draw_log_counter = 0;
 static void aAL_actor_draw(ACTOR* actor, GAME* game) {
   ANIMAL_LOGO_ACTOR* logo_actor = (ANIMAL_LOGO_ACTOR*)actor;
   GRAPH* graph = game->graph;
   int pad_connected = padmgr_isConnectedController(PAD0);
-
-#ifdef TARGET_PC
-  /* Default each frame to "menu not visible". The menu-draw branch below
-   * sets it back to 1 if it actually runs. Cleared on actor cleanup. */
-  { extern int g_pc_title_main_menu_visible;
-    g_pc_title_main_menu_visible = 0; }
-#endif
 
 #ifdef TARGET_PC
   { extern int g_pc_verbose; if (g_pc_verbose && (aAL_draw_log_counter % 60) == 0) {
@@ -873,13 +700,7 @@ static void aAL_actor_draw(ACTOR* actor, GAME* game) {
       case aAL_ACTION_GAME_START:
       case aAL_ACTION_FADE_OUT_START:
       case aAL_ACTION_OUT:
-#ifdef PC_ENHANCEMENTS
-        { extern int g_pc_title_main_menu_visible;
-          g_pc_title_main_menu_visible = 1; }
-        aAL_pc_menu_draw(logo_actor, game);
-#else
         aAL_press_start_draw(logo_actor, graph);
-#endif
         break;
     }
   }
