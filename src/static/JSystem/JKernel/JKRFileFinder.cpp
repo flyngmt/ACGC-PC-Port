@@ -6,8 +6,8 @@ JKRArcFinder::JKRArcFinder(JKRArchive* archive, long startindex, long entries) :
     mArchive = archive;
 
     mIsAvailable = entries > 0;
-    mStartIndex = startindex;
-    mEndIndex = startindex + entries - 1;
+    mStartIndex = (u32)startindex;
+    mEndIndex = (u32)(startindex + entries - 1);
     mNextIndex = mStartIndex;
 
     findNextFile();

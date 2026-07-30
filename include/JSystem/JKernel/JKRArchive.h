@@ -12,8 +12,15 @@
 #define JKRARCHIVE_ATTR_COMPRESSION 0x04
 #define JKRARCHIVE_ATTR_YAY0 0x80
 
-inline u32 read_big_endian_u32(void* ptr) {
-    u8* uptr = (u8*)ptr;
+typedef uintptr_t JKRArchiveDataAddress;
+
+inline u16 read_big_endian_u16(const void* ptr) {
+    const u8* uptr = (const u8*)ptr;
+    return ((u16)uptr[0] << 8) | (u16)uptr[1];
+}
+
+inline u32 read_big_endian_u32(const void* ptr) {
+    const u8* uptr = (const u8*)ptr;
     return ((u32)uptr[0] << 0x18) | ((u32)uptr[1] << 0x10) | ((u32)uptr[2] << 8) | (u32)uptr[3];
 }
 
@@ -230,6 +237,13 @@ class JKRArchive : public JKRFileLoader {
     static u32 sCurrentDirID;
 
   protected:
+#ifdef TARGET_PC
+    static bool decodeBigEndianRarcHeader(const void* rawHeader, u32 rawSize, SArcHeader* header);
+    bool convertBigEndianRarcMetadata(const void* rawInfo, u32 rawInfoSize, u32 fileDataSize,
+                                      const void* memoryPart, u32 memoryPartSize,
+                                      JKRArchiveDataAddress* nativeMemoryPart, int alignment);
+#endif
+
     // _00     = VTBL
     // _00-_38 = JKRFileLoader
     JKRHeap* mHeap;                  // _38
@@ -292,7 +306,7 @@ struct JKRCompArchive : public JKRArchive {
 
     // _00     = VTBL
     // _00-_5C = JKRArchive
-    u32 _60;                 // _60
+    JKRArchiveDataAddress _60; // _60
     JKRAramBlock* mAramPart; // _64
     u32 _68;                 // _68
     JKRFile* mDvdFile;       // _6C

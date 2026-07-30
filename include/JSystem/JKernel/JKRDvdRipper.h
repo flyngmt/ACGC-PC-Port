@@ -48,7 +48,7 @@ class JKRDvdRipper {
 
 inline void* JKRDvdToMainRam(long entryNum, u8* dst, JKRExpandSwitch expandSwitch, u32 fileSize, JKRHeap* heap,
                              JKRDvdRipper::EAllocDirection allocDirection, u32 startOffset, int* pCompression) {
-    return JKRDvdRipper::loadToMainRAM(entryNum, dst, expandSwitch, fileSize, heap, allocDirection, startOffset,
+    return JKRDvdRipper::loadToMainRAM((s32)entryNum, dst, expandSwitch, fileSize, heap, allocDirection, startOffset,
                                        pCompression);
 }
 

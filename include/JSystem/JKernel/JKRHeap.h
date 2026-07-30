@@ -7,6 +7,10 @@
 #include "types.h"
 
 #ifdef __cplusplus
+#ifdef TARGET_PC
+#include <new>
+#endif
+
 typedef void JKRHeapErrorHandler(void*, u32, int);
 
 class JKRHeap : public JKRDisposer {
@@ -134,7 +138,7 @@ class JKRHeap : public JKRDisposer {
     u32 getMaxAllocatableSize(int alignment);
     JKRHeap* find(void*) const;        // 0x80084640
     JKRHeap* findAllHeap(void*) const; // 0x8008492c
-    void dispose_subroutine(u32 begin, u32 end);
+    void dispose_subroutine(uintptr_t begin, uintptr_t end);
     bool dispose(void*, u32);   // 0x80084b9c
     void dispose(void*, void*); // 0x80084c2c
     void dispose();             // 0x80084cb8
@@ -311,19 +315,38 @@ inline void JKRFreeToSysHeap(void* buf) {
 
 void JKRDefaultMemoryErrorRoutine(void*, u32, int);
 
+#ifdef TARGET_PC
+/* Keep JSystem allocations distinct from the host C++ runtime.  Aurora uses
+ * ordinary new/delete during static initialization, before a JKR heap exists.
+ * This tagged overload follows Dusklight's host-side JSystem convention. */
+enum class JKRHeapToken {
+    Dummy,
+};
+
+#define JKR_NEW new (JKRHeapToken::Dummy)
+
+void* operator new(size_t, JKRHeapToken) noexcept;
+void* operator new[](size_t, JKRHeapToken) noexcept;
+#else
+#define JKR_NEW new
 void* operator new(size_t);
+#endif
 void* operator new(size_t, s32);
 void* operator new(size_t, JKRHeap*, int);
+#ifndef TARGET_PC
 inline void* operator new(size_t, void* buf) {
     return buf;
 } // i believe this is actually part of MSL_C?
+#endif
 
+#ifndef TARGET_PC
 void* operator new[](size_t);
+#endif
 void* operator new[](size_t, s32);
 void* operator new[](size_t, JKRHeap*, int);
 
-void operator delete(void*);
-void operator delete[](void*);
+void operator delete(void*) noexcept;
+void operator delete[](void*) noexcept;
 
 #endif
 #endif // !JKRHEAP_H

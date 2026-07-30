@@ -48,7 +48,7 @@ void* JKRDvdRipper::loadToMainRAM(JKRDvdFile* file, u8* buf, JKRExpandSwitch exp
 
     if (expandSwitch == EXPAND_SWITCH_DECOMPRESS) {
         u8 buffer[64];
-        u8* aligned_buf = (u8*)ALIGN_NEXT((u32)buffer, 32);
+        u8* aligned_buf = (u8*)ALIGN_NEXT((uintptr_t)buffer, 32);
         while (true) {
             if (DVDReadPrio(file->getFileInfo(), aligned_buf, 32, 0, 2) >= 0) {
                 break;
@@ -105,7 +105,7 @@ void* JKRDvdRipper::loadToMainRAM(JKRDvdFile* file, u8* buf, JKRExpandSwitch exp
 
         if (offset != 0) {
             u8 buffer[64];
-            u8* aligned_buf = (u8*)ALIGN_NEXT((u32)buffer, 32);
+            u8* aligned_buf = (u8*)ALIGN_NEXT((uintptr_t)buffer, 32);
             while (true) {
                 if (DVDReadPrio(file->getFileInfo(), aligned_buf, 32, offset, 2) >= 0) {
                     break;
@@ -402,16 +402,9 @@ static u8* nextSrcData(u8* nowData) {
         if (DVDReadPrio(srcFile->getFileInfo(), (dst + size), n_size, srcOffset, 2) >= 0) {
             break;
         }
-        // Oopsies, forgot to call the function
-#ifndef FIXES
-        if (JKRDvdRipper::isErrorRetry == false) {
-            return nullptr;
-        }
-#else
         if (JKRDvdRipper::isErrorRetry() == false) {
             return nullptr;
         }
-#endif
 
         VIWaitForRetrace();
     }

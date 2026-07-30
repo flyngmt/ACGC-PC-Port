@@ -18,8 +18,8 @@ struct JUTVideo {
 
     static JUTVideo* createManager(const GXRenderModeObj*);
     static void destroyManager();
-    static void preRetraceProc(unsigned long);
-    static void postRetraceProc(unsigned long);
+    static void preRetraceProc(u32);
+    static void postRetraceProc(u32);
     static void drawDoneCallback();
 
     u32 getEfbHeight() const {

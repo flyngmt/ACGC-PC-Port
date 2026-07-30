@@ -8,7 +8,7 @@
 #include "JSystem/JSystem.h"
 #include "JSystem/JUtility/JUTAssertion.h"
 
-JKRCompArchive::JKRCompArchive(long entryNum, EMountDirection mountDirection) : JKRArchive(entryNum, MOUNT_COMP) {
+JKRCompArchive::JKRCompArchive(s32 entryNum, EMountDirection mountDirection) : JKRArchive(entryNum, MOUNT_COMP) {
     mMountDirection = mountDirection;
     if (!open(entryNum)) {
         return;
@@ -51,7 +51,198 @@ JKRCompArchive::~JKRCompArchive() {
     mIsMounted = false;
 }
 
-bool JKRCompArchive::open(long entryNum) {
+bool JKRCompArchive::open(s32 entryNum) {
+#ifdef TARGET_PC
+    mArcInfoBlock = nullptr;
+    _60 = 0;
+    mAramPart = nullptr;
+    _68 = 0;
+    mSizeOfMemPart = 0;
+    mSizeOfAramPart = 0;
+    _78 = 0;
+    mDirectories = nullptr;
+    mFileEntries = nullptr;
+    mStrTable = nullptr;
+
+    mDvdFile = new (JKRGetSystemHeap(), 0) JKRDvdFile(entryNum);
+    if (mDvdFile == nullptr) {
+        mMountMode = 0;
+        return false;
+    }
+
+    SArcHeader* rawHeader = (SArcHeader*)JKRAllocFromSysHeap(32, -32);
+    SArcHeader header;
+    if (rawHeader == nullptr) {
+        mMountMode = 0;
+    } else {
+        if (JKRDvdToMainRam(entryNum, (u8*)rawHeader, EXPAND_SWITCH_DECOMPRESS, 32, nullptr,
+                            JKRDvdRipper::ALLOC_DIR_TOP, 0, &mCompression) == nullptr ||
+            !decodeBigEndianRarcHeader(rawHeader, 32, &header)) {
+            OSReport("[PC] Invalid composite RARC header\n");
+            mMountMode = 0;
+        }
+    }
+
+    u8* rawInfoAndMemory = nullptr;
+    u8* expandedArchive = nullptr;
+    if (mMountMode != 0) {
+        mSizeOfMemPart = header._14;
+        mSizeOfAramPart = header._18;
+        if ((mSizeOfMemPart & 31) != 0 || (mSizeOfAramPart & 31) != 0 ||
+            mSizeOfMemPart > header.file_data_length ||
+            mSizeOfAramPart > header.file_data_length - mSizeOfMemPart) {
+            OSReport("[PC] Invalid composite RARC partitions\n");
+            mMountMode = 0;
+        }
+    }
+
+    const int alignment = mMountDirection == MOUNT_DIRECTION_HEAD ? 32 : -32;
+    const u8* rawInfo = nullptr;
+    const u8* memoryPart = nullptr;
+    if (mMountMode != 0) {
+        switch (mCompression) {
+            case JKRCOMPRESSION_NONE:
+            case JKRCOMPRESSION_YAZ0: {
+                const u32 loadSize = header.file_data_offset + mSizeOfMemPart;
+                rawInfoAndMemory = (u8*)JKRAllocFromHeap(mHeap, loadSize, alignment);
+                if (rawInfoAndMemory == nullptr) {
+                    mMountMode = 0;
+                    break;
+                }
+                if (JKRDvdToMainRam(entryNum, rawInfoAndMemory, EXPAND_SWITCH_DECOMPRESS, loadSize, nullptr,
+                                    JKRDvdRipper::ALLOC_DIR_TOP, header.header_length, nullptr) == nullptr) {
+                    mMountMode = 0;
+                    break;
+                }
+                rawInfo = rawInfoAndMemory;
+                memoryPart = rawInfoAndMemory + header.file_data_offset;
+                break;
+            }
+            case JKRCOMPRESSION_YAY0: {
+                const u32 compressedSize = ALIGN_NEXT(mDvdFile->getFileSize(), 32);
+                u8* compressed = (u8*)JKRAllocFromSysHeap(compressedSize, 32);
+                const u32 expandedSize = ALIGN_NEXT(header.file_length, 32);
+                expandedArchive = (u8*)JKRAllocFromHeap(mHeap, expandedSize, alignment);
+                if (compressed == nullptr || expandedArchive == nullptr) {
+                    if (compressed != nullptr) {
+                        JKRFreeToSysHeap(compressed);
+                    }
+                    mMountMode = 0;
+                    break;
+                }
+                if (JKRDvdToMainRam(entryNum, compressed, EXPAND_SWITCH_NONE, compressedSize, nullptr,
+                                    JKRDvdRipper::ALLOC_DIR_TOP, 0, nullptr) == nullptr) {
+                    JKRFreeToSysHeap(compressed);
+                    mMountMode = 0;
+                    break;
+                }
+                JKRDecompress(compressed, expandedArchive, expandedSize, 0);
+                JKRFreeToSysHeap(compressed);
+                rawInfo = expandedArchive + header.header_length;
+                memoryPart = rawInfo + header.file_data_offset;
+                break;
+            }
+            default:
+                mMountMode = 0;
+                break;
+        }
+    }
+
+    if (mMountMode != 0 &&
+        !convertBigEndianRarcMetadata(rawInfo, header.file_data_offset, header.file_data_length,
+                                      memoryPart, mSizeOfMemPart, &_60, alignment)) {
+        OSReport("[PC] Invalid composite RARC metadata\n");
+        mMountMode = 0;
+    }
+
+    if (mMountMode != 0) {
+        u32 partitionCounts[3] = {};
+        bool partitionsValid = true;
+        const u32 aramEnd = mSizeOfMemPart + mSizeOfAramPart;
+        for (u32 i = 0; partitionsValid && i < mArcInfoBlock->num_file_entries; i++) {
+            const SDIFileEntry& file = mFileEntries[i];
+            const u32 flags = file.mFlag >> 24;
+            if ((flags & 0x02) != 0) {
+                continue;
+            }
+
+            const u32 location = flags & 0x70;
+            if (location == 0x10) {
+                partitionCounts[0]++;
+                partitionsValid = file.mDataOffset <= mSizeOfMemPart &&
+                                  file.mSize <= mSizeOfMemPart - file.mDataOffset;
+            } else if (location == 0x20) {
+                partitionCounts[1]++;
+                partitionsValid = file.mDataOffset >= mSizeOfMemPart &&
+                                  file.mDataOffset <= aramEnd &&
+                                  file.mSize <= aramEnd - file.mDataOffset;
+            } else if (location == 0x40) {
+                partitionCounts[2]++;
+                partitionsValid = file.mDataOffset >= aramEnd &&
+                                  file.mDataOffset <= header.file_data_length &&
+                                  file.mSize <= header.file_data_length - file.mDataOffset;
+            } else {
+                partitionsValid = false;
+            }
+
+            if (!partitionsValid) {
+                OSReport("[PC] Invalid composite RARC file partition: index=%u flags=%02x offset=%u size=%u\n",
+                         i, flags, file.mDataOffset, file.mSize);
+            }
+        }
+        if (!partitionsValid) {
+            mMountMode = 0;
+        } else {
+            OSReport("[PC] Composite RARC partitions: memory=%u ARAM=%u DVD=%u\n",
+                     partitionCounts[0], partitionCounts[1], partitionCounts[2]);
+        }
+    }
+
+    if (mMountMode != 0 && mSizeOfAramPart != 0) {
+        mAramPart = JKRAllocFromAram(mSizeOfAramPart, JKRAramHeap::Head);
+        if (mAramPart == nullptr) {
+            mMountMode = 0;
+        } else if (mCompression == JKRCOMPRESSION_YAY0) {
+            JKRMainRamToAram(expandedArchive + header.header_length + header.file_data_offset + mSizeOfMemPart,
+                             mAramPart->getAddress(), mSizeOfAramPart, EXPAND_SWITCH_DEFAULT, 0,
+                             nullptr, -1, (u32)0);
+        } else {
+            JKRDvdToAram(entryNum, mAramPart->getAddress(), EXPAND_SWITCH_DECOMPRESS,
+                         header.header_length + header.file_data_offset + mSizeOfMemPart, 0);
+        }
+    }
+
+    if (mMountMode != 0) {
+        _68 = header.header_length + header.file_data_offset;
+    }
+    if (rawInfoAndMemory != nullptr) {
+        JKRFreeToHeap(mHeap, rawInfoAndMemory);
+    }
+    if (expandedArchive != nullptr) {
+        JKRFreeToHeap(mHeap, expandedArchive);
+    }
+    if (rawHeader != nullptr) {
+        JKRFreeToSysHeap(rawHeader);
+    }
+
+    if (mMountMode == 0) {
+        if (mArcInfoBlock != nullptr) {
+            JKRFreeToHeap(mHeap, mArcInfoBlock);
+            mArcInfoBlock = nullptr;
+        }
+        if (mAramPart != nullptr) {
+            delete mAramPart;
+            mAramPart = nullptr;
+        }
+        if (mDvdFile != nullptr) {
+            delete mDvdFile;
+            mDvdFile = nullptr;
+        }
+        JREPORTF(":::[%s: %d] Cannot alloc memory in mounting CompArchive\n", __FILE__, 567);
+        return false;
+    }
+    return true;
+#else
     mArcInfoBlock = nullptr;
     _60 = 0;
     mAramPart = nullptr;
@@ -95,7 +286,7 @@ bool JKRCompArchive::open(long entryNum) {
                     JKRDvdToMainRam(entryNum, (u8*)mArcInfoBlock, EXPAND_SWITCH_DECOMPRESS,
                                     (u32)arcHeader->file_data_offset + mSizeOfMemPart, nullptr,
                                     JKRDvdRipper::ALLOC_DIR_TOP, 0x20, nullptr);
-                    _60 = (u32)mArcInfoBlock + arcHeader->file_data_offset;
+                    _60 = (uintptr_t)mArcInfoBlock + arcHeader->file_data_offset;
 
                     if (mSizeOfAramPart != 0) {
                         mAramPart = JKRAllocFromAram(mSizeOfAramPart, JKRAramHeap::Head);
@@ -108,9 +299,9 @@ bool JKRCompArchive::open(long entryNum) {
                                      arcHeader->header_length + arcHeader->file_data_offset + mSizeOfMemPart, 0);
                     }
 
-                    mDirectories = (SDIDirEntry*)((u32)mArcInfoBlock + mArcInfoBlock->node_offset);
-                    mFileEntries = (SDIFileEntry*)((u32)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
-                    mStrTable = (const char*)((u32)mArcInfoBlock + mArcInfoBlock->string_table_offset);
+                    mDirectories = (SDIDirEntry*)((uintptr_t)mArcInfoBlock + mArcInfoBlock->node_offset);
+                    mFileEntries = (SDIFileEntry*)((uintptr_t)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
+                    mStrTable = (const char*)((uintptr_t)mArcInfoBlock + mArcInfoBlock->string_table_offset);
                     _68 = arcHeader->header_length + arcHeader->file_data_offset;
                 }
                 break;
@@ -144,7 +335,7 @@ bool JKRCompArchive::open(long entryNum) {
                             // header
                             JKRHeap::copyMemory((u8*)mArcInfoBlock, arcHeader + 1,
                                                 (arcHeader->file_data_offset + mSizeOfMemPart));
-                            _60 = (u32)mArcInfoBlock + arcHeader->file_data_offset;
+                            _60 = (uintptr_t)mArcInfoBlock + arcHeader->file_data_offset;
                             if (mSizeOfAramPart != 0) {
                                 mAramPart = JKRAllocFromAram(mSizeOfAramPart, JKRAramHeap::Head);
                                 if (mAramPart == nullptr) {
@@ -159,9 +350,9 @@ bool JKRCompArchive::open(long entryNum) {
                         }
                     }
                 }
-                mDirectories = (SDIDirEntry*)((u32)mArcInfoBlock + mArcInfoBlock->node_offset);
-                mFileEntries = (SDIFileEntry*)((u32)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
-                mStrTable = (const char*)((u32)mArcInfoBlock + mArcInfoBlock->string_table_offset);
+                mDirectories = (SDIDirEntry*)((uintptr_t)mArcInfoBlock + mArcInfoBlock->node_offset);
+                mFileEntries = (SDIFileEntry*)((uintptr_t)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
+                mStrTable = (const char*)((uintptr_t)mArcInfoBlock + mArcInfoBlock->string_table_offset);
                 _68 = arcHeader->header_length + arcHeader->file_data_offset;
                 break;
         }
@@ -178,6 +369,7 @@ bool JKRCompArchive::open(long entryNum) {
         }
     }
     return mMountMode != 0;
+#endif
 }
 
 void* JKRCompArchive::fetchResource(SDIFileEntry* fileEntry, u32* pSize) {

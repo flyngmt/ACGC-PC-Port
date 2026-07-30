@@ -9,12 +9,6 @@
 #include "JSystem/JSystem.h"
 #include "JSystem/JUtility/JUTAssertion.h"
 
-#ifdef TARGET_PC
-#include "pc_bswap.h"
-#define bswap32 pc_bswap32
-#define bswap16 pc_bswap16
-#endif
-
 JKRAramArchive::JKRAramArchive() : JKRArchive() {
 }
 
@@ -125,7 +119,7 @@ void JKRAramArchive::unmountFixed() {
 CW_FORCE_STRINGS(JKRAramArchive_cpp, __FILE__, "isMounted()", "mMountCount == 1")
 #endif
 
-bool JKRAramArchive::open(long entryNum) {
+bool JKRAramArchive::open(s32 entryNum) {
     mArcInfoBlock = nullptr;
     mDirectories = nullptr;
     mFileEntries = nullptr;
@@ -140,94 +134,89 @@ bool JKRAramArchive::open(long entryNum) {
 
     // NOTE: a different struct is used here for sure, unfortunately i can't get
     // any hits on this address, so gonna leave it like this for now
-    SArcHeader* mem = (SArcHeader*)JKRAllocFromSysHeap(32, -32);
-    if (mem == nullptr) {
+    SArcHeader* rawHeader = (SArcHeader*)JKRAllocFromSysHeap(32, -32);
+    if (rawHeader == nullptr) {
         mMountMode = 0;
     } else {
-        JKRDvdToMainRam(entryNum, (u8*)mem, EXPAND_SWITCH_DECOMPRESS, 32, nullptr, JKRDvdRipper::ALLOC_DIR_TOP, 0,
-                        &mCompression);
-
-#ifdef TARGET_PC
-        /* Byte-swap SArcHeader from big-endian to little-endian */
-        mem->signature = bswap32(mem->signature);
-        mem->file_length = bswap32(mem->file_length);
-        mem->header_length = bswap32(mem->header_length);
-        mem->file_data_offset = bswap32(mem->file_data_offset);
-        mem->file_data_length = bswap32(mem->file_data_length);
-        mem->_14 = bswap32(mem->_14);
-        mem->_18 = bswap32(mem->_18);
-        mem->_1C = bswap32(mem->_1C);
-        OSReport("[PC] RARC header: sig=%08x len=%u hdrlen=%u dataoff=%u datalen=%u\n",
-                 mem->signature, mem->file_length, mem->header_length,
-                 mem->file_data_offset, mem->file_data_length);
-#endif
-
-        int alignment = mMountDirection == MOUNT_DIRECTION_HEAD ? 32 : -32;
-        u32 alignedSize = ALIGN_NEXT(mem->file_data_offset, 32);
-        mArcInfoBlock = (SArcDataInfo*)JKRAllocFromHeap(mHeap, alignedSize, alignment);
-        if (mArcInfoBlock == nullptr) {
+        if (JKRDvdToMainRam(entryNum, (u8*)rawHeader, EXPAND_SWITCH_DECOMPRESS, 32, nullptr,
+                            JKRDvdRipper::ALLOC_DIR_TOP, 0, &mCompression) == nullptr) {
             mMountMode = 0;
-        } else {
-            JKRDvdToMainRam(entryNum, (u8*)mArcInfoBlock, EXPAND_SWITCH_DECOMPRESS, alignedSize, nullptr,
-                            JKRDvdRipper::ALLOC_DIR_TOP, 32, nullptr);
+        }
 
 #ifdef TARGET_PC
-            /* Byte-swap SArcDataInfo from big-endian */
-            mArcInfoBlock->num_nodes = bswap32(mArcInfoBlock->num_nodes);
-            mArcInfoBlock->node_offset = bswap32(mArcInfoBlock->node_offset);
-            mArcInfoBlock->num_file_entries = bswap32(mArcInfoBlock->num_file_entries);
-            mArcInfoBlock->file_entry_offset = bswap32(mArcInfoBlock->file_entry_offset);
-            mArcInfoBlock->string_table_length = bswap32(mArcInfoBlock->string_table_length);
-            mArcInfoBlock->string_table_offset = bswap32(mArcInfoBlock->string_table_offset);
-            mArcInfoBlock->nextFreeFileID = bswap16(mArcInfoBlock->nextFreeFileID);
-            OSReport("[PC] RARC info: nodes=%u files=%u\n",
-                     mArcInfoBlock->num_nodes, mArcInfoBlock->num_file_entries);
+        SArcHeader nativeHeader;
+        SArcHeader* header = &nativeHeader;
+        if (mMountMode != 0 && !decodeBigEndianRarcHeader(rawHeader, 32, header)) {
+            OSReport("[PC] Invalid RARC header\n");
+            mMountMode = 0;
+        }
+#else
+        SArcHeader* header = rawHeader;
 #endif
 
-            mDirectories = (SDIDirEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->node_offset);
-            mFileEntries = (SDIFileEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
-            mStrTable = (const char*)((u8*)mArcInfoBlock + mArcInfoBlock->string_table_offset);
-
-#ifdef TARGET_PC
-            /* Byte-swap directory entries */
-            for (u32 i = 0; i < mArcInfoBlock->num_nodes; i++) {
-                mDirectories[i].mType = bswap32(mDirectories[i].mType);
-                mDirectories[i].mOffset = bswap32(mDirectories[i].mOffset);
-                mDirectories[i]._08 = bswap16(mDirectories[i]._08);
-                mDirectories[i].mNum = bswap16(mDirectories[i].mNum);
-                mDirectories[i].mFirstIdx = bswap32(mDirectories[i].mFirstIdx);
-            }
-            /* Byte-swap file entries */
-            for (u32 i = 0; i < mArcInfoBlock->num_file_entries; i++) {
-                mFileEntries[i].mFileID = bswap16(mFileEntries[i].mFileID);
-                mFileEntries[i].mHash = bswap16(mFileEntries[i].mHash);
-                mFileEntries[i].mFlag = bswap32(mFileEntries[i].mFlag);
-                mFileEntries[i].mDataOffset = bswap32(mFileEntries[i].mDataOffset);
-                mFileEntries[i].mSize = bswap32(mFileEntries[i].mSize);
-                /* mData is a host pointer, don't swap */
-            }
-#endif
-
-            u32 aramSize = ALIGN_NEXT(mem->file_data_length, 32);
-            mBlock = JKRAllocFromAram(aramSize,
-                                      mMountDirection == MOUNT_DIRECTION_HEAD ? JKRAramHeap::Head : JKRAramHeap::Tail);
-            if (mBlock == nullptr) {
+        if (mMountMode != 0) {
+            int alignment = mMountDirection == MOUNT_DIRECTION_HEAD ? 32 : -32;
+            u32 alignedSize = ALIGN_NEXT(header->file_data_offset, 32);
+            SArcDataInfo* rawInfo = (SArcDataInfo*)JKRAllocFromHeap(mHeap, alignedSize, alignment);
+            if (rawInfo == nullptr) {
                 mMountMode = 0;
             } else {
+                if (JKRDvdToMainRam(entryNum, (u8*)rawInfo, EXPAND_SWITCH_DECOMPRESS, alignedSize, nullptr,
+                                    JKRDvdRipper::ALLOC_DIR_TOP, header->header_length, nullptr) == nullptr) {
+                    mMountMode = 0;
+                }
+
 #ifdef TARGET_PC
-                OSReport("[PC] RARC: loading %u bytes of file data to ARAM at %u\n",
-                         aramSize, mBlock->getAddress());
+                if (mMountMode != 0 && !convertBigEndianRarcMetadata(rawInfo, header->file_data_offset,
+                                                  header->file_data_length, nullptr, 0, nullptr, alignment)) {
+                    OSReport("[PC] Invalid RARC metadata layout\n");
+                    mMountMode = 0;
+                }
+                JKRFreeToHeap(mHeap, rawInfo);
+#else
+                mArcInfoBlock = rawInfo;
+                mDirectories = (SDIDirEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->node_offset);
+                mFileEntries = (SDIFileEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
+                mStrTable = (const char*)((u8*)mArcInfoBlock + mArcInfoBlock->string_table_offset);
 #endif
-                JKRDvdToAram(entryNum, mBlock->getAddress(), EXPAND_SWITCH_DECOMPRESS,
-                             mem->header_length + mem->file_data_offset, 0);
+
+                if (mMountMode != 0) {
+                    u32 aramSize = ALIGN_NEXT(header->file_data_length, 32);
+                    mBlock = JKRAllocFromAram(
+                        aramSize, mMountDirection == MOUNT_DIRECTION_HEAD ? JKRAramHeap::Head : JKRAramHeap::Tail);
+                    if (mBlock == nullptr) {
+                        mMountMode = 0;
+                    } else {
+#ifdef TARGET_PC
+                        OSReport("[PC] RARC: loading %u bytes of file data to ARAM at %u\n",
+                                 aramSize, mBlock->getAddress());
+#endif
+                        JKRDvdToAram(entryNum, mBlock->getAddress(), EXPAND_SWITCH_DECOMPRESS,
+                                     header->header_length + header->file_data_offset, 0);
+                    }
+                }
             }
         }
     }
 cleanup:
-    if (mem != nullptr) {
-        JKRFreeToSysHeap(mem);
+    if (rawHeader != nullptr) {
+        JKRFreeToSysHeap(rawHeader);
     }
     if (mMountMode == 0) {
+#ifdef TARGET_PC
+        if (mArcInfoBlock != nullptr) {
+            JKRFreeToHeap(mHeap, mArcInfoBlock);
+            mArcInfoBlock = nullptr;
+        }
+        if (mBlock != nullptr) {
+            delete mBlock;
+            mBlock = nullptr;
+        }
+        if (mDvdFile != nullptr) {
+            delete mDvdFile;
+            mDvdFile = nullptr;
+        }
+#endif
         JREPORTF(":::[%s: %d] Cannot alloc memory\n", __FILE__,
                  415); // TODO: macro
     }

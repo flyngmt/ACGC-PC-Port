@@ -49,7 +49,7 @@ JKRDvdArchive::~JKRDvdArchive() {
 CW_FORCE_STRINGS(JKRDvdArchive_cpp, __FILE__, "isMounted()", "mMountCount == 1")
 #endif
 
-bool JKRDvdArchive::open(long entryNum) {
+bool JKRDvdArchive::open(s32 entryNum) {
     mArcInfoBlock = nullptr;
     _60 = 0;
     mDirectories = nullptr;
@@ -61,35 +61,69 @@ bool JKRDvdArchive::open(long entryNum) {
         mMountMode = 0;
         return 0;
     }
-    SDIFileEntry* mem = (SDIFileEntry*)JKRAllocFromSysHeap(32, 32); // NOTE: unconfirmed if this struct was used here
-    if (mem == nullptr) {
+    SArcHeader* rawHeader = (SArcHeader*)JKRAllocFromSysHeap(32, 32);
+    if (rawHeader == nullptr) {
         mMountMode = 0;
     } else {
-        JKRDvdToMainRam(entryNum, (u8*)mem, EXPAND_SWITCH_DECOMPRESS, 32, nullptr, JKRDvdRipper::ALLOC_DIR_TOP, 0,
-                        &mCompression);
-        int alignment = mMountDirection == MOUNT_DIRECTION_HEAD ? 32 : -32;
-
-        mArcInfoBlock = (SArcDataInfo*)JKRAllocFromHeap(mHeap, mem->mSize, alignment);
-        if (mArcInfoBlock == nullptr) {
+        if (JKRDvdToMainRam(entryNum, (u8*)rawHeader, EXPAND_SWITCH_DECOMPRESS, 32, nullptr,
+                            JKRDvdRipper::ALLOC_DIR_TOP, 0, &mCompression) == nullptr) {
             mMountMode = 0;
-        } else {
-            JKRDvdToMainRam(entryNum, (u8*)mArcInfoBlock, EXPAND_SWITCH_DECOMPRESS, mem->mSize, nullptr,
-                            JKRDvdRipper::ALLOC_DIR_TOP, 32, nullptr);
+        }
 
-            mDirectories = (SDIDirEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->node_offset);
-            mFileEntries = (SDIFileEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
-            mStrTable = (const char*)((u8*)mArcInfoBlock + mArcInfoBlock->string_table_offset);
-            _60 = mem->mDataOffset + mem->mSize; // End of data offset?
+#ifdef TARGET_PC
+        SArcHeader nativeHeader;
+        SArcHeader* header = &nativeHeader;
+        if (mMountMode != 0 && !decodeBigEndianRarcHeader(rawHeader, 32, header)) {
+            OSReport("[PC] Invalid DVD RARC header\n");
+            mMountMode = 0;
+        }
+#else
+        SArcHeader* header = rawHeader;
+#endif
+
+        if (mMountMode != 0) {
+            int alignment = mMountDirection == MOUNT_DIRECTION_HEAD ? 32 : -32;
+            const u32 rawInfoSize = header->file_data_offset;
+            SArcDataInfo* rawInfo = (SArcDataInfo*)JKRAllocFromHeap(mHeap, rawInfoSize, alignment);
+            if (rawInfo == nullptr) {
+                mMountMode = 0;
+            } else {
+                if (JKRDvdToMainRam(entryNum, (u8*)rawInfo, EXPAND_SWITCH_DECOMPRESS, rawInfoSize, nullptr,
+                                    JKRDvdRipper::ALLOC_DIR_TOP, header->header_length, nullptr) == nullptr) {
+                    mMountMode = 0;
+                }
+#ifdef TARGET_PC
+                if (mMountMode != 0 && !convertBigEndianRarcMetadata(rawInfo, rawInfoSize, header->file_data_length,
+                                                  nullptr, 0, nullptr, alignment)) {
+                    OSReport("[PC] Invalid DVD RARC metadata\n");
+                    mMountMode = 0;
+                }
+                JKRFreeToHeap(mHeap, rawInfo);
+#else
+                mArcInfoBlock = rawInfo;
+                mDirectories = (SDIDirEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->node_offset);
+                mFileEntries = (SDIFileEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
+                mStrTable = (const char*)((u8*)mArcInfoBlock + mArcInfoBlock->string_table_offset);
+#endif
+                _60 = header->header_length + header->file_data_offset;
+            }
         }
     }
 cleanup:
-    if (mem != nullptr) {
-        JKRFreeToSysHeap(mem);
+    if (rawHeader != nullptr) {
+        JKRFreeToSysHeap(rawHeader);
     }
     if (mMountMode == 0) {
+#ifdef TARGET_PC
+        if (mArcInfoBlock != nullptr) {
+            JKRFreeToHeap(mHeap, mArcInfoBlock);
+            mArcInfoBlock = nullptr;
+        }
+#endif
         JREPORTF(":::Cannot alloc memory [%s][%d]\n", __FILE__, 397); // Macro?
         if (mDvdFile != nullptr) {
             delete mDvdFile;
+            mDvdFile = nullptr;
         }
     }
     return mMountMode != 0;
@@ -144,7 +178,7 @@ void* JKRDvdArchive::fetchResource(void* data, u32 compressedSize, SDIFileEntry*
     return data;
 }
 
-u32 JKRDvdArchive::fetchResource_subroutine(long entryNum, u32 offset, u32 size, u8* data, u32 expandSize,
+u32 JKRDvdArchive::fetchResource_subroutine(s32 entryNum, u32 offset, u32 size, u8* data, u32 expandSize,
                                             int fileCompression, int archiveCompression) {
     u32 prevAlignedSize, alignedSize;
 
@@ -199,7 +233,7 @@ u32 JKRDvdArchive::fetchResource_subroutine(long entryNum, u32 offset, u32 size,
     return 0;
 }
 
-u32 JKRDvdArchive::fetchResource_subroutine(long entryNum, u32 offset, u32 size, JKRHeap* heap, int fileCompression,
+u32 JKRDvdArchive::fetchResource_subroutine(s32 entryNum, u32 offset, u32 size, JKRHeap* heap, int fileCompression,
                                             int archiveCompression, u8** pBuf) {
     u32 alignedSize = ALIGN_NEXT(size, 32);
 

@@ -82,7 +82,7 @@ JKRArchive* JKRArchive::mount(const char* path, EMountMode mode, JKRHeap* heap, 
 }
 
 JKRArchive* JKRArchive::mount(void* p1, JKRHeap* heap, EMountDirection mountDirection) {
-    JKRArchive* archive = check_mount_already((s32)p1, heap);
+    JKRArchive* archive = check_mount_already((s32)(uintptr_t)p1, heap);
     if (archive != nullptr) {
         return archive;
     }
@@ -132,7 +132,7 @@ bool JKRArchive::becomeCurrent(const char* path) {
     bool result = (entry != nullptr);
     if (result) {
         sCurrentVolume = this;
-        sCurrentDirID = (entry - mDirectories);
+        sCurrentDirID = (u32)(entry - mDirectories);
     }
     return result;
 }

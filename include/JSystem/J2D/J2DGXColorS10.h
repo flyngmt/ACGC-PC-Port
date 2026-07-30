@@ -39,7 +39,7 @@ struct J2DGXColorS10 : public GXColorS10 {
     inline operator u64() const {
         return toUInt64();
     }
-    inline u32 toUInt64() const {
+    inline u64 toUInt64() const {
         return *(u64*)&r;
     }
 

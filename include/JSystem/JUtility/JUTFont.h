@@ -58,7 +58,7 @@ struct JUTFont {
     f32 drawString_size_scale(f32, f32, f32, f32, const char*, u32, bool);
 
     void drawString(int posX, int posY, const char* str, bool visible) {
-        drawString_size(posX, posY, str, strlen(str), visible);
+        drawString_size(posX, posY, str, (u32)strlen(str), visible);
     }
 
     void drawString_size(int posX, int posY, const char* str, u32 len, bool visible) {
@@ -66,7 +66,7 @@ struct JUTFont {
     }
 
     void drawString_scale(f32 posX, f32 posY, f32 width, f32 height, const char* str, bool visible) {
-        drawString_size_scale(posX, posY, width, height, str, strlen(str), visible);
+        drawString_size_scale(posX, posY, width, height, str, (u32)strlen(str), visible);
     }
 
     int getWidth(int i_no) const {
@@ -340,7 +340,7 @@ struct JUTCacheFont : public JUTResFont {
     JUTCacheFont(const ResFONT*, u32, JKRHeap*);
 
     virtual ~JUTCacheFont();                  // _08
-    virtual void loadImage(int, _GXTexMapID); // _44
+    virtual void loadImage(int, GXTexMapID); // _44
     virtual void setBlock();                  // _48
 
     bool allocArea(void*, u32, JKRHeap*);

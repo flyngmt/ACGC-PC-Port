@@ -25,15 +25,15 @@ int JSUFileInputStream::seekPos(s32 offset, JSUStreamSeekFrom from) {
     int pos = this->mPosition;
 
     switch (from) {
-        case SEEK_SET:
+        case JSU_SEEK_SET:
             this->mPosition = offset;
             break;
 
-        case SEEK_END:
+        case JSU_SEEK_END:
             this->mPosition = ((JKRFile*)this->mObject)->getFileSize() - offset;
             break;
 
-        case SEEK_CUR:
+        case JSU_SEEK_CUR:
             this->mPosition = pos + offset;
             break;
     }

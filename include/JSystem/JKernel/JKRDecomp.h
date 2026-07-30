@@ -22,7 +22,7 @@
 #define SZP_GETBACKOFS(buf) (((*((u8*)buf) & 0xF) << 8) | (*(((u8*)buf) + 1)))
 #define SZP_GETCOUNT(buf) (*((u16*)buf) >> 12)
 
-typedef void DecompCallback(u32);
+typedef void DecompCallback(JKRAramCallbackArg);
 
 class JKRDecompCommand {
   public:

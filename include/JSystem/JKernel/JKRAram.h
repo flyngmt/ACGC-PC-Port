@@ -21,6 +21,9 @@
 #define ARAMPIECE_DONE_NONE 1
 #define ARAMPIECE_DONE_DECOMPRESS 2
 
+typedef uintptr_t JKRAramAddress;
+typedef uintptr_t JKRAramCallbackArg;
+
 class JKRAramHeap;
 class JKRDecompCommand;
 class JKRAMCommand;
@@ -105,7 +108,7 @@ class JKRAramHeap : public JKRDisposer {
 
 class JKRAram : public JKRThread {
   public:
-    JKRAram(u32, u32, long);
+    JKRAram(u32, u32, s32);
 
     virtual ~JKRAram();  // _08
     virtual void* run(); // _0C
@@ -113,7 +116,7 @@ class JKRAram : public JKRThread {
     static bool checkOkAddress(u8* addr, u32 size, JKRAramBlock* block, u32 param_4);
     static void changeGroupIdIfNeed(u8* data, int groupId);
 
-    static JKRAram* create(u32, u32, long, long, long);
+    static JKRAram* create(u32, u32, s32, s32, s32);
     static JKRAramBlock* mainRamToAram(u8*, u32, u32, JKRExpandSwitch, u32, JKRHeap*, int);
     static JKRAramBlock* mainRamToAram(u8*, JKRAramBlock* block, u32, JKRExpandSwitch, u32, JKRHeap*, int);
     static u8* aramToMainRam(u32, u8*, u32, JKRExpandSwitch, u32, JKRHeap*, int, u32*);
@@ -167,7 +170,7 @@ class JKRAram : public JKRThread {
 
 class JKRAMCommand : public ARQRequest {
   public:
-    typedef void (*AMCommandCallback)(u32);
+    typedef void (*AMCommandCallback)(JKRAramCallbackArg);
 
     JKRAMCommand();
     ~JKRAMCommand();
@@ -176,8 +179,8 @@ class JKRAMCommand : public ARQRequest {
     JSULink<JKRAMCommand> mLink30;
     s32 mDirection;
     u32 mLength;
-    u32 mSource;
-    u32 mDestination;
+    JKRAramAddress mSource;
+    JKRAramAddress mDestination;
     JKRAramBlock* mAramBlock;
     u8 _54[4];
     AMCommandCallback mCallback;
@@ -204,15 +207,15 @@ class JKRAramCommand {
 
 class JKRAramPiece {
   public:
-    static JKRAMCommand* prepareCommand(int direction, u32 source, u32 destination, u32 length, JKRAramBlock* aramBlock,
+    static JKRAMCommand* prepareCommand(int direction, JKRAramAddress source, JKRAramAddress destination, u32 length, JKRAramBlock* aramBlock,
                                         JKRAMCommand::AMCommandCallback callback);
     static void sendCommand(JKRAMCommand* cmd);
-    static JKRAMCommand* orderAsync(int direction, u32 source, u32 destination, u32 length, JKRAramBlock* aramBlock,
+    static JKRAMCommand* orderAsync(int direction, JKRAramAddress source, JKRAramAddress destination, u32 length, JKRAramBlock* aramBlock,
                                     JKRAMCommand::AMCommandCallback callback);
     static bool sync(JKRAMCommand* cmd, BOOL noBlock);
-    static bool orderSync(int direction, u32 source, u32 destination, u32 length, JKRAramBlock* aramBlock);
+    static bool orderSync(int direction, JKRAramAddress source, JKRAramAddress destination, u32 length, JKRAramBlock* aramBlock);
     static void startDMA(JKRAMCommand* cmd);
-    static void doneDMA(u32 arg);
+    static void doneDMA(JKRAramCallbackArg arg);
 
     static OSMutex mMutex;
     static JSUList<JKRAMCommand> sAramPieceCommandList;
@@ -255,7 +258,7 @@ class JKRAramStreamCommand {
 
 class JKRAramStream : public JKRThread {
   public:
-    JKRAramStream(long);
+    JKRAramStream(s32);
 
     virtual ~JKRAramStream(); // _08
     virtual void* run();      // _0C
@@ -303,7 +306,7 @@ inline JKRAramStream* JKRCreateAramStreamManager(s32 priority) {
     return JKRAramStream::create(priority);
 }
 
-inline bool JKRAramPcs(int direction, u32 source, u32 destination, u32 length, JKRAramBlock* block) {
+inline bool JKRAramPcs(int direction, JKRAramAddress source, JKRAramAddress destination, u32 length, JKRAramBlock* block) {
     return JKRAramPiece::orderSync(direction, source, destination, length, block);
 }
 

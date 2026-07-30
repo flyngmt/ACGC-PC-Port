@@ -50,7 +50,7 @@ void* JKRDecomp::run() {
                 break;
             }
 
-            cmd->mCallback((u32)cmd);
+            cmd->mCallback((JKRAramCallbackArg)cmd);
         }
 
         if (cmd->pMesgQueue1C != nullptr) {
