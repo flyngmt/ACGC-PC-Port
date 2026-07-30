@@ -53,13 +53,16 @@ add_compile_definitions(
     _LANGUAGE_C    # Required for N64 GBI/ultratypes headers
 )
 
-# Common compiler flags (applied to all sources):
-# the decomp depends on -fno-strict-aliasing/-fwrapv semantics and the
-# PC layer uses GCC builtins.
-add_compile_options(
-    -fno-strict-aliasing
-    -fwrapv
-)
+# Common compiler flags (applied to all sources). GCC and Clang need explicit
+# flags for the decomp's type-punning and signed-overflow assumptions. MSVC has
+# no equivalent switches and does not perform GCC-style type-based alias
+# analysis, so do not pass the GNU options to cl.exe.
+if (NOT CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    add_compile_options(
+        -fno-strict-aliasing
+        -fwrapv
+    )
+endif ()
 
 # =============================================================================
 # Include paths
@@ -289,9 +292,16 @@ set(FIXNES_SOURCES
 )
 # fixNES compile flags: optimize for performance (third-party code, no decomp UB),
 # enable inlining (critical for cycle-by-cycle emulation), lower APU frequency
+if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    set(FIXNES_COMPILE_OPTIONS "/w;/O2")
+    set(PC_NES_COMPILE_OPTIONS "/W4;/O2;/wd4100")
+else ()
+    set(FIXNES_COMPILE_OPTIONS "-w;-O2")
+    set(PC_NES_COMPILE_OPTIONS "-Wall;-Wextra;-O2;-Wno-unused-parameter")
+endif ()
 set_source_files_properties(${FIXNES_SOURCES}
     PROPERTIES
-    COMPILE_OPTIONS "-w;-O2"
+    COMPILE_OPTIONS "${FIXNES_COMPILE_OPTIONS}"
     COMPILE_DEFINITIONS "COL_TEX_BSWAP;COL_GL_BSWAP;DO_INLINE_ATTRIBS=1"
 )
 # Also optimize the fixNES wrapper (frame loop is hot)
@@ -300,7 +310,7 @@ set_source_files_properties(${FIXNES_SOURCES}
 # their own .c files where -O2 + DO_INLINE_ATTRIBS is set.
 set_source_files_properties(${PC_ROOT}/src/pc_nes_fixnes.c
     PROPERTIES
-    COMPILE_OPTIONS "-Wall;-Wextra;-O2;-Wno-unused-parameter"
+    COMPILE_OPTIONS "${PC_NES_COMPILE_OPTIONS}"
     COMPILE_DEFINITIONS ""
 )
 
@@ -336,12 +346,16 @@ set_source_files_properties(
 # =============================================================================
 # Per-source warning settings
 # =============================================================================
-# Decomp code: suppress all warnings (fires heavily on decompiled code)
-set(DECOMP_WARN_FLAGS "-w;-fpermissive")
-if (CMAKE_C_COMPILER_ID MATCHES "Clang")
-    # Modern Clang diagnoses the decomp's original bare returns in non-void C
-    # functions as errors even with -w. Metrowerks accepted these sources.
-    list(APPEND DECOMP_WARN_FLAGS "-Wno-return-mismatch" "-Wno-implicit-int")
+# Decomp code: suppress all warnings (fires heavily on decompiled code).
+if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    set(DECOMP_WARN_FLAGS "/w;$<$<COMPILE_LANGUAGE:CXX>:/permissive>")
+else ()
+    set(DECOMP_WARN_FLAGS "-w;-fpermissive")
+    if (CMAKE_C_COMPILER_ID MATCHES "Clang")
+        # Modern Clang diagnoses the decomp's original bare returns in non-void C
+        # functions as errors even with -w. Metrowerks accepted these sources.
+        list(APPEND DECOMP_WARN_FLAGS "-Wno-return-mismatch" "-Wno-implicit-int")
+    endif ()
 endif ()
 set_source_files_properties(${GAME_C_SOURCES} ${GAME_CXX_SOURCES}
     PROPERTIES COMPILE_OPTIONS "${DECOMP_WARN_FLAGS}"
@@ -352,17 +366,25 @@ set(PC_C_SOURCES ${PC_SOURCES})
 list(FILTER PC_C_SOURCES EXCLUDE REGEX "\\.cpp$")
 set(PC_CXX_SOURCES ${PC_SOURCES})
 list(FILTER PC_CXX_SOURCES INCLUDE REGEX "\\.cpp$")
-# Note: -Wno-comment/-Wno-unused-function/-Wno-builtin-declaration-mismatch suppress
-# warnings from decomp headers (types.h, gfxprint.h, OSRtc.h, libultra.h) that we can't modify.
-set(PC_WARN_SUPPRESS "-Wno-unused-parameter;-Wno-sign-compare;-Wno-comment;-Wno-unused-function")
-if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    list(APPEND PC_WARN_SUPPRESS "-Wno-builtin-declaration-mismatch")
+# The suppressions cover warnings from decomp headers (types.h, gfxprint.h,
+# OSRtc.h, libultra.h) that we can't modify. Use /W4 rather than /Wall on MSVC:
+# the latter enables every off-by-default compiler warning.
+if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    set(PC_C_WARN_FLAGS "/W4;/wd4018;/wd4100;/wd4138;/wd4505")
+    set(PC_CXX_WARN_FLAGS "${PC_C_WARN_FLAGS};/permissive")
+else ()
+    set(PC_WARN_SUPPRESS "-Wno-unused-parameter;-Wno-sign-compare;-Wno-comment;-Wno-unused-function")
+    if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+        list(APPEND PC_WARN_SUPPRESS "-Wno-builtin-declaration-mismatch")
+    endif ()
+    set(PC_C_WARN_FLAGS "-Wall;-Wextra;${PC_WARN_SUPPRESS}")
+    set(PC_CXX_WARN_FLAGS "${PC_C_WARN_FLAGS};-fpermissive")
 endif ()
 set_source_files_properties(${PC_C_SOURCES}
-    PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra;${PC_WARN_SUPPRESS}"
+    PROPERTIES COMPILE_OPTIONS "${PC_C_WARN_FLAGS}"
 )
 set_source_files_properties(${PC_CXX_SOURCES}
-    PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra;${PC_WARN_SUPPRESS};-fpermissive"
+    PROPERTIES COMPILE_OPTIONS "${PC_CXX_WARN_FLAGS}"
 )
 
 # =============================================================================
