@@ -2,7 +2,7 @@
 #define _STDARG_H_
 
 #ifdef TARGET_PC
-#include_next <stdarg.h>
+#include <stdarg.h>
 #else
 
 #ifdef __cplusplus

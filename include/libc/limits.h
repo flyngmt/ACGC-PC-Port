@@ -2,7 +2,7 @@
 #define _LIMITS_H_
 
 #ifdef TARGET_PC
-#include_next <limits.h>
+#include <limits.h>
 #else
 
 #define CHAR_BIT 8

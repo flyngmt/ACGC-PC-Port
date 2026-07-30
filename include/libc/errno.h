@@ -2,7 +2,7 @@
 #define _ERRNO_H_
 
 #ifdef TARGET_PC
-#include_next <errno.h>
+#include <errno.h>
 #else
 
 #define ERANGE 32

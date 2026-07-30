@@ -4,7 +4,7 @@
 #ifdef TARGET_PC
 /* Undefine our guard so GCC's stddef.h doesn't skip itself */
 #undef _STDDEF_H_
-#include_next <stddef.h>
+#include <stddef.h>
 /* Re-define it to prevent re-entry of this file */
 #define _STDDEF_H_
 #define membersize(type, member) (sizeof(((type*)0)->member))

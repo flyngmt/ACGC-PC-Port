@@ -4,7 +4,7 @@
 #ifdef TARGET_PC
 /* Undef guard since MinGW-w64 math.h uses the same _MATH_H_ guard name */
 #undef _MATH_H_
-#include_next <math.h>
+#include <math.h>
 #define _MATH_H_
 #else
 

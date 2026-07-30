@@ -70,9 +70,9 @@ endif ()
 include_directories(
     ${DECOMP_ROOT}/include
     # NOTE: Do NOT add ${DECOMP_ROOT}/include/libc here!
-    # Having both include/ and include/libc/ in the path breaks #include_next
-    # chains in the decomp's shadow headers (e.g. libc/string.h). Without it,
-    # #include "string.h" etc. resolve directly to system headers on PC.
+    # Having both include/ and include/libc/ in the path makes the decomp's
+    # shadow headers (e.g. libc/string.h) resolve their system-header handoff
+    # back to themselves. With only include/, <string.h> reaches the toolchain.
     ${DECOMP_ROOT}/src
     # Project root needed for includes like "src/actor/npc/event/file.c_inc"
     ${DECOMP_ROOT}

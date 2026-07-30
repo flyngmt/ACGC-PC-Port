@@ -2,7 +2,7 @@
 #define _ASSERT_H_
 
 #ifdef TARGET_PC
-#include_next <assert.h>
+#include <assert.h>
 #else
 
 #if __STDC_VERSION__ >= 201112L

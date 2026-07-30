@@ -2,7 +2,7 @@
 #define _STDINT_H_
 
 #ifdef TARGET_PC
-#include_next <stdint.h>
+#include <stdint.h>
 #else
 
 typedef unsigned long int uintptr_t;

@@ -2,7 +2,7 @@
 #define _STDIO_H_
 
 #ifdef TARGET_PC
-#include_next <stdio.h>
+#include <stdio.h>
 #else
 
 #include <stdarg.h>

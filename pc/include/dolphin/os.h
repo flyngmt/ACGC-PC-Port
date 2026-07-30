@@ -1,7 +1,7 @@
 #ifndef ACGC_PC_DOLPHIN_OS_H
 #define ACGC_PC_DOLPHIN_OS_H
 
-#include_next <dolphin/os.h>
+#include <extern/aurora/include/dolphin/os.h>
 
 #ifndef OS_CONSOLE_DEV_MASK
 #define OS_CONSOLE_DEV_MASK OS_CONSOLE_DEVELOPMENT

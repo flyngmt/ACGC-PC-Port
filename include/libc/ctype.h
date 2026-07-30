@@ -2,7 +2,7 @@
 #define _DOLPHIN_LIBC_CTYPE_H_
 
 #ifdef TARGET_PC
-#include_next <ctype.h>
+#include <ctype.h>
 #else
 
 #ifdef __cplusplus

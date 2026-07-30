@@ -2,7 +2,7 @@
 #define ACGC_LIBC_STRING_H
 
 #ifdef TARGET_PC
-#include_next <string.h>
+#include <string.h>
 #else
 
 #include <stddef.h>

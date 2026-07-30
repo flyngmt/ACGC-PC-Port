@@ -2,7 +2,7 @@
 #define _WCHAR_H_
 
 #ifdef TARGET_PC
-#include_next <wchar.h>
+#include <wchar.h>
 #else
 
 #include <stdio.h>

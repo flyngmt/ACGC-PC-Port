@@ -7,7 +7,7 @@
  * expose the aliases used by this game's matching SDK headers.
  */
 #define Mtx AuroraMtx
-#include_next <dolphin/mtx.h>
+#include <extern/aurora/include/dolphin/mtx.h>
 #undef Mtx
 
 typedef AuroraMtx Mtx34;
