@@ -6,7 +6,7 @@
 #include "jaudio_NES/memory.h"
 
 ALHeap aram_hp;
-u8* JAC_ARAM_DMA_BUFFER_TOP = nullptr;
+u32 JAC_ARAM_DMA_BUFFER_TOP = 0;
 static u32 AUDIO_ARAM_TOP = 0;
 static u32 CARD_SECURITY_BUFFER = 0;
 static u32 init_load_size = 0;
@@ -27,7 +27,7 @@ extern u32 GetNeosRomTop(void) {
 }
 
 extern u32 GetNeosRom_PreLoaded(void) {
-    DVDT_DRAMtoARAM(0, (u32)init_load_addr, AUDIO_ARAM_TOP, init_load_size, nullptr, nullptr);
+    DVDT_DRAMtoARAM(0, (Jac_DVDAddress)init_load_addr, AUDIO_ARAM_TOP, init_load_size, nullptr, nullptr);
     return init_load_size;
 }
 
@@ -37,17 +37,17 @@ extern u32 SetPreCopy_NeosRom(u8* load_addr, u32 load_size, BOOL cut_flag) {
     init_cut_flag = cut_flag;
 }
 
-extern void mesg_finishcall(u32 mq) {
-    Z_osSendMesg((OSMesgQueue*)mq, NULL, OS_MESSAGE_NOBLOCK);
+extern void mesg_finishcall(Jac_DVDOwner mq) {
+    Z_osSendMesg((OSMesgQueue*)(uintptr_t)mq, NULL, OS_MESSAGE_NOBLOCK);
 }
 
-extern BOOL ARAMStartDMAmesg(u32 dir, u32 dramAddr, u32 aramAddr, u32 size, s32 unused, OSMesgQueue* mq) {
+extern BOOL ARAMStartDMAmesg(u32 dir, Jac_DVDAddress dramAddr, u32 aramAddr, u32 size, s32 unused, OSMesgQueue* mq) {
     aramAddr += AUDIO_ARAM_TOP;
 
     if (dir == DUMMYROM_ARAM_TO_DRAM) {
-        DVDT_ARAMtoDRAM((u32)mq, dramAddr, aramAddr, size, nullptr, &mesg_finishcall);
+        DVDT_ARAMtoDRAM((Jac_DVDOwner)(uintptr_t)mq, dramAddr, aramAddr, size, nullptr, &mesg_finishcall);
     } else {
-        DVDT_DRAMtoARAM((u32)mq, dramAddr, aramAddr, size, nullptr, &mesg_finishcall);
+        DVDT_DRAMtoARAM((Jac_DVDOwner)(uintptr_t)mq, dramAddr, aramAddr, size, nullptr, &mesg_finishcall);
     }
 
     return FALSE;
@@ -58,7 +58,7 @@ extern void Jac_SetAudioARAMSize(u32 size) {
 }
 
 extern void* ARAllocFull(u32* outSize) {
-    u32 freeSize = aram_hp.length - ((int)aram_hp.current - (int)aram_hp.base);
+    u32 freeSize = aram_hp.length - (u32)(aram_hp.current - aram_hp.base);
     void* alloc = Nas_HeapAlloc(&aram_hp, freeSize - 32);
     *outSize = freeSize - 32;
     return alloc;
@@ -85,9 +85,9 @@ extern void Jac_InitARAM(u32 loadAudiorom) {
 
     CARD_SECURITY_BUFFER = 0x40;
     audiorom_size += AUDIO_ARAM_TOP;
-    JAC_ARAM_DMA_BUFFER_TOP = (u8*)audiorom_size;
+    JAC_ARAM_DMA_BUFFER_TOP = audiorom_size;
     audiorom_size += AUDIO_ARAM_HEAP_SIZE;
-    Nas_HeapInit(&aram_hp, (u8*)audiorom_size, aram_size - audiorom_size);
+    Nas_HeapInit(&aram_hp, (u8*)(uintptr_t)audiorom_size, aram_size - audiorom_size);
 
     /* Probably leftovers from some debug print statement */
     (void)audiorom_size;

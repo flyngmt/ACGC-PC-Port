@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-extern s32 OverwriteBank(s32 type, s32 bankId, s32 idx, s32 voicetable);
+extern s32 OverwriteBank(s32 type, s32 bankId, s32 idx, void* voicetable);
 extern channel* Nas_AllocationOnRequest(note* n);
 
 extern wtstr* NoteToVoice(voicetable* voicetbl, s32 note);

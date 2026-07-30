@@ -896,7 +896,7 @@ BOOL StopLogicalChannel(jc_* jc)
 	jc->dspChannel->_06 = 0;
 	DSP_PlayStop(jc->dspChannel->buffer_idx);
 	DSP_FlushChannel(jc->dspChannel->buffer_idx);
-	DeAllocDSPchannel(jc->dspChannel, (u32)jc);
+	DeAllocDSPchannel(jc->dspChannel, (JacDspOwner)(uintptr_t)jc);
 	jc->dspChannel = NULL;
 	return TRUE;
 }
@@ -1043,7 +1043,7 @@ void __Entry_WaitChannel(u8 a)
 	while (cur_waits != 0) {
 		jc = waitp[cur_top];
 		if (jc) {
-			ch = AllocDSPchannel(0, (u32)jc);
+			ch = AllocDSPchannel(0, (JacDspOwner)(uintptr_t)jc);
 			if (ch == NULL) {
 				break;
 			}

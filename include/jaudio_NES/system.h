@@ -15,7 +15,7 @@ typedef enum SET_EXT_POINTER_TYPE {
 } SET_EXT_POINTER_TYPE;
 
 typedef s32 (*Na_DmaProc)(OSPiHandle* handle, OSIoMesg* mb, s32 direction);
-typedef s32 (*Na_SyncProc)(u8* param0, s32 param1);
+typedef uintptr_t (*Na_SyncProc)(u8* param0, s32 param1);
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,7 +23,8 @@ extern "C" {
 
 extern void* Nas_WaveDmaCallBack(u32 device_addr, u32 size, s32 arg2, u8* waveload_idx, s32 medium);
 extern void Nas_InitAudio(u64* acmdBuf, s32 acmdBufSize);
-extern void Nas_FastCopy(u8* SrcAddr, u8* DestAdd, size_t Length, s32 medium);
+/* SrcAddr is a serialized/device address for non-RAM media, not a host pointer. */
+extern void Nas_FastCopy(uintptr_t SrcAddr, u8* DestAdd, size_t Length, s32 medium);
 extern void Nas_FastDiskCopy(u8* SrcAddr, u8* DestAdd, size_t Length, s32 medium);
 extern s32 Nas_StartMySeq(s32 group, s32 seq, s32 arg);
 extern s32 Nas_StartSeq_Skip(s32 group, s32 seq, s32 skip_ticks);

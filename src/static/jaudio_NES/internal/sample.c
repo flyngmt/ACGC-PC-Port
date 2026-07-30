@@ -29,13 +29,13 @@ extern void Jac_bcopyfast(u32* src, u32* dest, u32 size) {
     }
 }
 
-extern void Jac_bcopy(void* src, void* dest, s32 size) {
+extern void Jac_bcopy(void* src, void* dest, size_t size) {
 #ifdef TARGET_PC
     /* N64 RSP bcopy must be overlap-safe (delay lines, ring buffers, DMEM slides).
        The original forward-only copy corrupts overlapping regions (dst > src),
        causing audible pops on one channel at frame boundaries. */
     if (size > 0) {
-        memmove(dest, src, (size_t)size);
+        memmove(dest, src, size);
     }
 #else
     u8 alignedSrc, alignedDst;
@@ -48,7 +48,7 @@ extern void Jac_bcopy(void* src, void* dest, s32 size) {
     alignedSrc = (reinterpret_cast<u32>(bsrc) & 0x03);
     alignedDst = (reinterpret_cast<u32>(bdest) & 0x03);
     if ((alignedSrc) == (alignedDst) && (size & 0x0f) == 0) {
-        Jac_bcopyfast((u32*)src, (u32*)dest, size);
+        Jac_bcopyfast((u32*)src, (u32*)dest, (u32)size);
     } else if ((alignedSrc) == (alignedDst) && (size >= 16)) {
         if ((alignedSrc) != 0) {
             for (alignedSrc = 4 - alignedSrc; (alignedSrc) != 0; alignedSrc--) {

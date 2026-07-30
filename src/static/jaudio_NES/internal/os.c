@@ -4,8 +4,8 @@
 #include "jaudio_NES/sample.h"
 
 #ifdef TARGET_PC
-#include <SDL.h>
-static SDL_mutex* z_mq_mutex = NULL;
+#include <SDL3/SDL.h>
+static SDL_Mutex* z_mq_mutex = NULL;
 
 void pc_audio_mq_init(void) {
     if (!z_mq_mutex) z_mq_mutex = SDL_CreateMutex();
@@ -89,9 +89,6 @@ extern s32 Z_osRecvMesg(OSMesgQueue* mq, OSMesg* msg, s32 flags) {
     }
 
     if (mq->validCount == 0) {
-        if (msg != NULL) {
-            *msg = NULL;
-        }
 #ifdef TARGET_PC
         if (z_mq_mutex) SDL_UnlockMutex(z_mq_mutex);
 #endif
@@ -117,7 +114,7 @@ extern s32 Z_osRecvMesg(OSMesgQueue* mq, OSMesg* msg, s32 flags) {
 }
 
 extern s32 Z_osEPiStartDma(OSPiHandle* handler, OSIoMesg* msg, s32 dir) {
-    ARAMStartDMAmesg(1, (uintptr_t)msg->dramAddr, msg->devAddr, msg->size, 0, msg->hdr.retQueue);
+    ARAMStartDMAmesg(1, (uintptr_t)msg->dramAddr, (u32)msg->devAddr, (u32)msg->size, 0, msg->hdr.retQueue);
     return 0;
 }
 

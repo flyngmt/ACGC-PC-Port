@@ -86,11 +86,11 @@ int Bank_GetInstKeymap(Inst_* inst, u8 param_2)
  * Address:	8000D0A0
  * Size:	000090
  */
-int Bank_GetInstVmap(Inst_* inst, u8 param_2, u8 param_3)
+Vmap_* Bank_GetInstVmap(Inst_* inst, u8 param_2, u8 param_3)
 {
 
 	if (!inst) {
-		return 0;
+		return NULL;
 	}
 
 	int instIndex = Bank_GetInstKeymap(inst, param_2);
@@ -100,14 +100,14 @@ int Bank_GetInstVmap(Inst_* inst, u8 param_2, u8 param_3)
 		for (u32 i = 0; i < key->mVelocityCount; i++) {
 			Vmap_* vmap = key->mVelocities[i];
 			if (param_3 <= vmap->mBaseVelocity) {
-				return (int)vmap;
+				return vmap;
 			}
 		}
 
-		return 0;
+		return NULL;
 	}
 
-	return instIndex;
+	return NULL;
 }
 
 /*

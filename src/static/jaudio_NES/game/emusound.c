@@ -1579,7 +1579,7 @@ void HS_Event_Write(u16 a, u8 b) {
         a = (a - 0xf40);
     }
 
-    OSSendMessage(&SoundQ, (OSMessage)((a - 0x4000) << 0x18 | b << 0x10), 0);
+    OSSendMessage(&SoundQ, (OSMessage)(uintptr_t)((a - 0x4000) << 0x18 | b << 0x10), 0);
     switch (a & 0xff) {
         case 3: {
             DUMMY_ACTIVE[0] = 2;

@@ -4,6 +4,7 @@
 #include "types.h"
 #include "game_h.h"
 #include "m_lib.h"
+#include "jaudio_NES/identity.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,7 +51,7 @@ extern void mBGMPsComp_volume_boat_end();
 extern void mBGMPsComp_pause(int state);
 extern void mBGMPsComp_MDPlayerPos_make();
 extern void mBGMPsComp_MDPlayerPos_delete();
-extern void mBGMPsComp_MDPlayerPos_param_set(const xyz_t* pos, u16 angle, u16 md_type, u32 ongen_no);
+extern void mBGMPsComp_MDPlayerPos_param_set(const xyz_t* pos, u16 angle, u16 md_type, JaudioObjectId ongen_no);
 extern void mBGMPsComp_scene_mode(u8 mode);
 extern void mBGMPsComp_museum_status(u8 status);
 extern int mBGMPsComp_execute_bgm_num_get();

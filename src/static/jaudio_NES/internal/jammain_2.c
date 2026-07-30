@@ -1392,7 +1392,7 @@ void Jam_UpdateTrackAll(seqp_* track)
  * Address:	80010E00
  * Size:	00000C
  */
-static void OSf32tos8(register f32* in, volatile register s8* out)
+static void OSf32tos8(f32* in, volatile s8* out)
 {
     *out = __OSf32tos8(*in);
 }
@@ -2550,7 +2550,7 @@ static u32 Cmd_Printf()
 {
 	char fmtStr[0x80];
 	u8 fmtFlags[4];
-	u32 fmtParms[4];
+	uintptr_t fmtParms[4];
 	size_t fmtCount;
 	size_t i;
 
@@ -2612,13 +2612,13 @@ static u32 Cmd_Printf()
 	for (i = 0; i < fmtCount; ++i) {
 		fmtParms[i] = __ByteRead(SEQ_P);
 		if (fmtFlags[i] == 2) {
-			fmtParms[i] = (u32)Jam_OfsToAddr(SEQ_P, fmtParms[i]);
+			fmtParms[i] = (uintptr_t)Jam_OfsToAddr(SEQ_P, (u32)fmtParms[i]);
 		// } else if (fmtFlags[i] == 5) {
 		// 	fmtParms[i] = SEQ_P->trackId;
 		}
         
         if (fmtFlags[i] >= 3) {
-			fmtParms[i] = __ExchangeRegisterValue(SEQ_P, fmtParms[i]);
+			fmtParms[i] = __ExchangeRegisterValue(SEQ_P, (u32)fmtParms[i]);
 		}
 	}
 	// A restoration of this command's functionality can be enabled below:

@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "audio_defs.h"
+#include "jaudio_NES/identity.h"
 #include "m_lib.h"
 
 #ifdef __cplusplus
@@ -78,7 +79,7 @@ extern u8 sAdo_MessageSpeedGet();
 extern void sAdo_SysLevStop(u8 id);
 extern void sAdo_SysLevStart(u8 id);
 
-extern void sAdo_OngenPos(u32 p1, u8 p2, const xyz_t* pos);
+extern void sAdo_OngenPos(JaudioObjectId p1, u8 p2, const xyz_t* pos);
 extern void sAdo_OngenTrgStart(u16 id, const xyz_t* pos);
 
 extern void sAdo_SetOutMode(u8 mode);
@@ -86,24 +87,24 @@ extern void sAdo_SetVoiceMode(u8 mode);
 
 extern void sAdo_FloorTrgStart(u8 id, const xyz_t* pos);
 
-extern void sAdo_RhythmStart(u32 id, s8 type, s8 wait);
-extern void sAdo_RhythmStop(u32 id);
+extern void sAdo_RhythmStart(JaudioObjectId id, s8 type, s8 wait);
+extern void sAdo_RhythmStop(JaudioObjectId id);
 extern void sAdo_RhythmAllStop();
 
-extern void sAdo_FurnitureInst(u32 id, u8 inst, u8* melody, const xyz_t* pos);
+extern void sAdo_FurnitureInst(JaudioObjectId id, u8 inst, u8* melody, const xyz_t* pos);
 extern void sAdo_Pause(u8 mode);
 
-extern f32 sAdo_GetRhythmAnimCounter(u32 id);
-extern s8 sAdo_GetRhythmDelay(u32 id);
+extern f32 sAdo_GetRhythmAnimCounter(JaudioObjectId id);
+extern s8 sAdo_GetRhythmDelay(JaudioObjectId id);
 extern void sAdo_GetRhythmInfo(TempoBeat_c* rhythm);
 extern void sAdo_SetRhythmInfo(TempoBeat_c* rhythm);
 
 extern s8 sAdo_InstCountGet();
 
-extern void sAdo_RhythmPos(u32 id, u8 haniwa_id, const xyz_t* pos);
+extern void sAdo_RhythmPos(JaudioObjectId id, u8 haniwa_id, const xyz_t* pos);
 
 extern void sAdo_SpecChange(int spec);
-extern void sAdo_MDPlayerPos(const xyz_t* pos, u16 s1, u16 s2, u32 p);
+extern void sAdo_MDPlayerPos(const xyz_t* pos, u16 s1, u16 s2, JaudioObjectId p);
 
 extern void sAdo_BGMVolume(f32 f, u16 volume);
 extern void sAdo_BgmCrossfadeStart(u8 b);
@@ -115,7 +116,7 @@ extern int sAdo_SubGameOK();
 extern void sAdo_Tenki(u8 mode);
 
 extern void sAdos_KishaStatusTrg(u8 state);
-extern void sAdos_KishaStatusLevel(f32 speed, u32 ongenNum1, f32 distance1, u16 angle1, u32 ongenNum2,
+extern void sAdos_KishaStatusLevel(f32 speed, JaudioObjectId ongenNum1, f32 distance1, u16 angle1, JaudioObjectId ongenNum2,
                                    f32 distance2, u16 angle2);
 
 extern int sAdos_GetRadioCounter(Radio_c* radio);
@@ -141,9 +142,9 @@ extern u16 sAdo_Get_WalkLabel(int type);
 extern u16 sAdo_Get_KokeruLabel(int type);
 
 extern void sAdo_SceneMode(u8 mode);
-extern u8 sAdo_RoomIncectPos(u32 f, u8 u, const xyz_t* pos);
+extern u8 sAdo_RoomIncectPos(JaudioObjectId f, u8 u, const xyz_t* pos);
 
-extern void sAdo_FurnitureInstPos(u32 id, const xyz_t* pos);
+extern void sAdo_FurnitureInstPos(JaudioObjectId id, const xyz_t* pos);
 extern void sAdo_Set_ongenpos_refuse_fg(int state);
 
 extern int sAdo_GameframeEnd_Check();

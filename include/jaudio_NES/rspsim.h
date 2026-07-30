@@ -10,8 +10,8 @@
 extern "C" {
 #endif
 
-extern s32 RspStart(u32* pTaskCmds, s32 allTasks);
-extern void RspStart2(u32* pTaskCmds, s32 allTasks, s32 mode);
+extern s32 RspStart(void* pTaskCmds, s32 allTasks);
+extern void RspStart2(void* pTaskCmds, s32 allTasks, s32 mode);
 
 #ifdef __cplusplus
 }

@@ -650,9 +650,11 @@ struct note_ {
     /* 0x80 */ link link;
 };
 
+typedef uintptr_t NaLoadAddress;
+
 /* sizeof(Bgloadreq) == 0x14 */
 typedef struct Bgloadreq_ {
-    /* 0x00 */ u32 end_and_medium_key;
+    /* 0x00 */ NaLoadAddress end_and_medium_key;
     /* 0x04 */ smzwavetable* sample;
     /* 0x08 */ u8* ram_addr;
     /* 0x0C */ u32 encoded_info;
@@ -665,7 +667,7 @@ typedef struct Bgload_ {
     /* 0x01 */ s8 delay;
     /* 0x02 */ s8 medium;
     /* 0x04 */ u8* ram_addr;
-    /* 0x08 */ u32 current_device_addr;
+    /* 0x08 */ NaLoadAddress current_device_addr;
     /* 0x0C */ u8* current_ram_addr;
     /* 0x10 */ size_t bytes_remaining;
     /* 0x14 */ size_t chunk_size;
@@ -683,7 +685,7 @@ typedef struct lpscache_ {
     /* 0x01 */ u8 seq_or_bank_id;
     /* 0x02 */ u16 inst_id;
     /* 0x04 */ s32 unk_medium_param;
-    /* 0x08 */ u32 current_device_addr;
+    /* 0x08 */ NaLoadAddress current_device_addr;
     /* 0x0C */ u8* current_ram_addr;
     /* 0x10 */ u8* ram_addr;
     /* 0x14 */ s32 status;

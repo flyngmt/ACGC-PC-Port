@@ -3,13 +3,14 @@
 
 #include "types.h"
 #include "jaudio_NES/audiostruct.h"
+#include "jaudio_NES/dvdthread.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 extern u32 Neos_Update(s16* dst);
-extern void ImageLoaded(u32 param);
+extern void ImageLoaded(Jac_DVDOwner param);
 extern BOOL Neos_CheckBoot(void);
 extern void* neosproc(void* param);
 

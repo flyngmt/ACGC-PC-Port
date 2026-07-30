@@ -9,7 +9,7 @@
 #endif
 
 static s32 current_sub_track = 0;
-u32 na_melody_id_hist[2];
+JaudioObjectId na_melody_id_hist[2];
 
 // clang-format off
 static const s32 melody_seq_size[] = {
@@ -623,8 +623,8 @@ static void Na_MelodyStart(u16 voice, s16 subTrack, const u8* pData);
 
 extern void Na_MelodyInit(void) {
     current_sub_track = 0;
-    na_melody_id_hist[0] = 0xFFFFFFFF;
-    na_melody_id_hist[1] = 0xFFFFFFFF;
+    na_melody_id_hist[0] = ~(JaudioObjectId)0;
+    na_melody_id_hist[1] = ~(JaudioObjectId)0;
 }
 
 extern void Na_Inst(u16 inst, u8* pData) {
@@ -665,10 +665,10 @@ static void Na_MelodyStart(u16 voice, s16 subTrack, const u8* pData) {
     ArcHeader* seq_header = AG.seq_header;
     size_t seq_size = melody_seq_size[voice];
     int medium = seq_header->entries[seq_idx].medium;
-    src = (u8*)seq_header->entries[seq_idx].addr + melody_seq_offset[voice];
+    src = (u8*)(uintptr_t)seq_header->entries[seq_idx].addr + melody_seq_offset[voice];
     // clang-format off
     Nas_FastCopy(
-        src,        /* Voice melody data is broken up in single sequence */
+        (uintptr_t)src, /* Voice melody data is broken up in single sequence */
         dst,        /* Destination buffer */
         seq_size,   /* melody sequence size */
         medium      /* medium (always cart in AC?) */
@@ -687,7 +687,7 @@ static void Na_MelodyStart(u16 voice, s16 subTrack, const u8* pData) {
 #endif
     }
 
-    Nap_SetS32(NA_MAKE_COMMAND(0x10, 0x00, subTrack, 0x00), (u64)pData);
+    Nap_SetPointer(NA_MAKE_COMMAND(0x10, 0x00, subTrack, 0x00), (uintptr_t)pData);
     Nap_SetS8(NA_MAKE_COMMAND(0x06, 0x00, subTrack, 0x02), voice);
     Nap_SetS8(NA_MAKE_COMMAND(0x06, 0x00, subTrack, 0x00), 0);
 }
@@ -708,7 +708,7 @@ extern s16 Na_MelodyGetSubTrackNum(s16 inst) {
     }
 }
 
-extern void Na_FurnitureInst(u32 id, u8 inst, u8* melody, u16 angle, f32 dist) {
+extern void Na_FurnitureInst(JaudioObjectId id, u8 inst, u8* melody, u16 angle, f32 dist) {
     s32 sub_track;
 
     if (id == na_melody_id_hist[current_sub_track]) {
@@ -730,7 +730,7 @@ extern void Na_FurnitureInst(u32 id, u8 inst, u8* melody, u16 angle, f32 dist) {
     u8 pan = angle2pan(angle, dist);
     f32 vol = distance2vol(dist);
 
-    Nap_SetS32(NA_MAKE_COMMAND(0x10, 0x02, sub_track, 0x00), (u64)melody);
+    Nap_SetPointer(NA_MAKE_COMMAND(0x10, 0x02, sub_track, 0x00), (uintptr_t)melody);
     Nap_SetS8(NA_MAKE_COMMAND(0x06, 0x02, sub_track, 0x02), inst);
     Nap_SetS8(NA_MAKE_COMMAND(0x06, 0x02, sub_track, 0x00), 0);
     Nap_SetF32(NA_MAKE_COMMAND(0x01, 0x02, sub_track, 0x00), vol);

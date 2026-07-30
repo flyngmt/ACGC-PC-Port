@@ -181,7 +181,7 @@ typedef struct bgm_ps_comp_md_player_pos_s {
     xyz_t pos;
     u16 angle;
     u16 md_type_no;
-    u32 ongen_no;
+    JaudioObjectId ongen_no;
 } mBGMPsComp_MDPlayerPos;
 
 #define mBGM_BGMPs_NUM 14
@@ -2349,7 +2349,7 @@ extern void mBGMPsComp_MDPlayerPos_delete() {
     M_bgm.ps_comp.md.delete_flag = TRUE;
 }
 
-extern void mBGMPsComp_MDPlayerPos_param_set(const xyz_t* pos, u16 angle, u16 md_type, u32 ongen_no) {
+extern void mBGMPsComp_MDPlayerPos_param_set(const xyz_t* pos, u16 angle, u16 md_type, JaudioObjectId ongen_no) {
     mBGMPsComp* ps_comp = &M_bgm.ps_comp;
 
     xyz_t_move(&ps_comp->md.pos, pos);

@@ -140,6 +140,18 @@ static void EffecterInit_Perc(jc_* jc, Pmap_* pmap, u16 id)
 	jc->panMatrices[3].values[1] = 0.0f;
 
 	// PERC instruments only have rand and not osc
+#ifdef TARGET_PC
+	PercKeymap_* key = (PercKeymap_*)pmap;
+	Rand_* effects[2] = { key->_08, key->_0C };
+	for (u32 i = 0; i < 2; i++) {
+		if (effects[i]) {
+			f32 r = Bank_RandToOfs(effects[i]);
+			__DoEffect(jc, effects[i]->id, r);
+		}
+
+		jc->mOscillators[i] = NULL;
+	}
+#else
     Pmap_* map;
 	for (u32 i = 0; i < 2; i++) {
 		 map = (Pmap_*)((int*)pmap + i + 2);
@@ -151,6 +163,7 @@ static void EffecterInit_Perc(jc_* jc, Pmap_* pmap, u16 id)
 
 		jc->mOscillators[i] = NULL;
 	}
+#endif
 	jc->mOscillators[0]      = &PERC_ENV;
 	jc->mOscBuffers[0].state = TRUE;
 	Bank_OscToOfs(jc->mOscillators[0], &jc->mOscBuffers[0]);
@@ -219,7 +232,7 @@ static jc_* __Oneshot_Play_Start(jcs_* jcs, jc_* jc, u32 id)
 	jc->playId         = id;
 	jc->savedPlayId    = jc->playId;
 	jc->updateCallback = Jesus1Shot_Update;
-	jc->dspChannel     = AllocDSPchannel(0, (u32)jc);
+	jc->dspChannel     = AllocDSPchannel(0, (JacDspOwner)(uintptr_t)jc);
 
 	if (jc->dspChannel == NULL) {
 		play = CheckLogicalChannel(jc);
@@ -236,7 +249,7 @@ static jc_* __Oneshot_Play_Start(jcs_* jcs, jc_* jc, u32 id)
 			return NULL;
 		}
 	} else if (play == FALSE) {
-		DeAllocDSPchannel(jc->dspChannel, (u32)jc);
+		DeAllocDSPchannel(jc->dspChannel, (JacDspOwner)(uintptr_t)jc);
 		jc->dspChannel = NULL;
 		List_AddChannelTail(&jcs->freeChannels, jc);
 		return NULL;
@@ -251,9 +264,9 @@ static jc_* __Oneshot_Play_Start(jcs_* jcs, jc_* jc, u32 id)
  * Address:	800156E0
  * Size:	000154
  */
-static jc_* __Oneshot_GetLogicalChannel(jcs_* jcs, CtrlWave_* wave)
+static jc_* __Oneshot_GetLogicalChannel(jcs_* jcs, WaveID_* wave)
 {
-	if (wave && wave->_0C == NULL) {
+    if (wave && wave->heap.startAddress == 0) {
 		return FALSE;
 	}
 
@@ -291,8 +304,8 @@ static jc_* __Oneshot_GetLogicalChannel(jcs_* jcs, CtrlWave_* wave)
 	}
 	Channel_Init(chan);
 	if (wave) {
-		chan->waveData        = (Wave_*)wave->_34;
-		chan->_14             = wave->_0C;
+		chan->waveData        = wave->data;
+		chan->_14             = wave->heap.startAddress;
 		chan->logicalChanType = 0;
 	}
 	chan->_18 = 0;
@@ -338,7 +351,7 @@ Inst_* InstRead(u32 a1, u32 a2)
  */
 Vmap_* VmapRead(Inst_* inst, u8 a1, u8 a2)
 {
-	Vmap_* map = (Vmap_*)Bank_GetInstVmap(inst, a1, a2);
+	Vmap_* map = Bank_GetInstVmap(inst, a1, a2);
 	return !map ? NULL : map;
 }
 
@@ -882,7 +895,7 @@ jc_* Play_1shot(jcs_* jcs, SOUNDID_ sound, u32 id)
 		return NULL;
 	}
 
-	chan = __Oneshot_GetLogicalChannel(jcs, (CtrlWave_*)wave);
+	chan = __Oneshot_GetLogicalChannel(jcs, wave);
 	if (chan == NULL) {
 		return NULL;
 	}
@@ -971,7 +984,7 @@ jc_* Play_1shot_Perc(jcs_* jcs, SOUNDID_ sound, u32 id)
 		return NULL;
 	}
 
-	chan = __Oneshot_GetLogicalChannel(jcs, (CtrlWave_*)wave);
+	chan = __Oneshot_GetLogicalChannel(jcs, wave);
 	if (chan == NULL) {
 		return NULL;
 	}

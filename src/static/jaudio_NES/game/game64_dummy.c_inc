@@ -165,13 +165,13 @@ u8 NIN_WAVE[] ATTRIBUTE_ALIGN(32) = {
     0xff, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
-void __OK(u32 a) {
+void __OK(Jac_DVDOwner a) {
     (void)a;
     int r31 = Jaq_SetSeqData(0, NIN_SEQ, 0x60, 0);
     int unused1 = Jaq_StartSeq((u8)r31);
 }
 
-u32 bootsound_ptr;
+uintptr_t bootsound_ptr;
 u32 bootsound_size;
 
 u32 dummy_callback(char* a, u32 b, u32 c, u32* d, jaheap_* e) {
@@ -200,7 +200,7 @@ extern int Bank_Regist(void*, u32);
 }
 #endif
 
-void BootSound(u32 a, u32 b) {
+void BootSound(uintptr_t a, u32 b) {
     bootsound_ptr = a;
     bootsound_size = b;
     Bank_Init();

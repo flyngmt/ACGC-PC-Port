@@ -22,7 +22,7 @@ extern void* Nas_SzCacheCheck(s32 type, s32 cache_type, s32 id);
 extern void Nas_SzStayDelete(s32 type);
 extern void Nas_SzHeapReset(u32 fix_size);
 
-extern void Nas_SetDelayLineParam(s32 delayIdx, s32 param_type, s32 param_value, s32 init);
+extern void Nas_SetDelayLineParam(s32 delayIdx, s32 param_type, intptr_t param_value, s32 init);
 
 extern void Nas_SetBPFilter(s16* filter, s32 lowpass_cutoff, s32 highpass_cutoff);
 

@@ -82,9 +82,13 @@ struct Vmap_ {
  * @note Size: 0x10.
  */
 struct InstKeymap_ {
-	u8 mBaseKey;           // _00
-	u32 mVelocityCount;    // _04
+	u8 mBaseKey;        // _00
+	u32 mVelocityCount; // _04
+#ifdef TARGET_PC
+	Vmap_** mVelocities;
+#else
 	Vmap_* mVelocities[2]; // _08
+#endif
 };
 
 /**
@@ -93,12 +97,21 @@ struct InstKeymap_ {
  * @note Size: 0x18.
  */
 struct PercKeymap_ {
-	f32 mPitch;            // _00
-	f32 mVolume;           // _04
-	void* _08;             // _08, pointer type unknown, but gets hit by PTconvert in Bank_Test
-	void* _0C;             // _0C, pointer type unknown, but gets hit by PTconvert in Bank_Test
-	int mVelocityCount;    // _10
+	f32 mPitch;         // _00
+	f32 mVolume;        // _04
+#ifdef TARGET_PC
+	Rand_* _08;         // _08, first random effect
+	Rand_* _0C;         // _0C, second random effect
+#else
+	void* _08;          // _08, pointer type unknown, but gets hit by PTconvert in Bank_Test
+	void* _0C;          // _0C, pointer type unknown, but gets hit by PTconvert in Bank_Test
+#endif
+	int mVelocityCount; // _10
+#ifdef TARGET_PC
+	Vmap_** mVelocities;
+#else
 	Vmap_* mVelocities[2]; // _14
+#endif
 };
 
 struct Sense_ {
@@ -143,14 +156,22 @@ struct Inst_ {
 	Osc_* mOscillators[2];       // _10
 	Rand_* mEffects[2];          // _18
 	Sense_* mSensors[2];         // _20
-	int mKeyRegionCount;         // _28
+	int mKeyRegionCount; // _28
+#ifdef TARGET_PC
+	InstKeymap_** mKeyRegions;
+#else
 	InstKeymap_* mKeyRegions[5]; // _2C
+#endif
 };
 
 struct Voice_ {
-	u8 _00[0x8];  // _00, unknown
-	int size;     // _08, count of whatever's at 0xC
+	u8 _00[0x8]; // _00, unknown
+	int size;    // _08, count of whatever's at 0xC
+#ifdef TARGET_PC
+	void** _0C;
+#else
 	void* _0C[1]; // _0C, unsure of length of array or type
+#endif
 };
 
 struct Perc_ {
