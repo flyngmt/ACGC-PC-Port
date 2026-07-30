@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <inttypes.h>
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <math.h>
 #include "audio_vrc7.h"
 #include "audio.h"

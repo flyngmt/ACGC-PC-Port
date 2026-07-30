@@ -107,14 +107,14 @@ bool mapperInitFDS(uint8_t *fdsFile, bool fdsSideB, uint8_t *prgRAM, uint32_t pr
 	rewind(f);
 	if(fsize != 0x2000)
 	{
-		printf("disksys.rom has a wrong size, is %i bytes, should be 8192 bytes!\n", fsize);
+		printf("disksys.rom has a wrong size, is %zu bytes, should be 8192 bytes!\n", fsize);
 		fclose(f);
 		return false;
 	}
 	fread(fdsBIOS, 1, 0x2000, f);
 	fclose(f);
 	memInitGetSetPointers(); //pre-set get8/set8
-	fdsinit(fdsBIOS, fsize, fdsFile, fdsSideB, prgRAM, prgRAMsize);
+	fdsinit(fdsBIOS, (uint32_t)fsize, fdsFile, fdsSideB, prgRAM, prgRAMsize);
 	uint32_t addr;
 	//common CHR RAM for FDS
 	for(addr = 0; addr < 0x4000; addr++)

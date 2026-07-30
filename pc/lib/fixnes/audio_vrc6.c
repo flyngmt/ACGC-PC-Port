@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <inttypes.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include "audio_vrc6.h"
 #include "audio.h"
 #include "mapper.h"

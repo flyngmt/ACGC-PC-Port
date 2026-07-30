@@ -4,7 +4,7 @@
  * MIT License. Stripped of GLUT/OpenAL, adapted as a library with
  * init/frame/render/cleanup API for the game's famicom.cpp integration.
  *
- * Produces a 256x240 RGB565 framebuffer uploaded as a GL texture.
+ * Produces a 256x240 RGB565 framebuffer for the host presenter.
  * Audio samples are pushed to the game's audio system via AIInitDMA. */
 
 #include <stdio.h>
@@ -31,22 +31,13 @@
 #undef BUTTON_LEFT
 #undef BUTTON_RIGHT
 
-/* Now include GL via SDL2 (avoid pc_platform.h which pulls in game types.h) */
-#include <SDL2/SDL.h>
-#include <glad/gl.h>
+#include <dolphin/gx.h>
+#include <dolphin/mtx.h>
+
 #include "fm2play.h"
 #include "audio.h"
-
-/* From pc_gx.c — restore game's GL state after NES emulation */
-extern void pc_gx_restore_after_nes(void);
-extern void pc_gx_draw_pending(void);
-
-/* Externed directly (not via headers) to avoid fixNES symbol clashes. */
-extern int g_pc_window_w;
-extern int g_pc_window_h;
-extern int pc_settings_get_nes_aspect(void);
-extern int g_pc_profile_enabled;
-extern void pc_profiler_add_count_texture_bind_slow(void);
+#include "pc_platform.h"
+#include "pc_settings.h"
 
 /* ======================================================================
  * Global variables required by fixNES modules (normally in main.c)
@@ -87,83 +78,108 @@ extern bool ppuMapper5;
 extern uint8_t inValReads[8];
 
 /* Audio output to game engine */
-extern void AIInitDMA(uint32_t addr, uint32_t size);
+extern void AIInitDMA(uintptr_t addr, uint32_t size);
 
-/* ======================================================================
- * GL rendering state
- * ====================================================================== */
-static GLuint fixnes_shader = 0;
-static GLuint fixnes_vao = 0;
-static GLuint fixnes_vbo = 0;
-static GLuint fixnes_texture = 0;
-static GLint fixnes_tex_uniform = -1;
 static int fixnes_initialized = 0;
 
-static GLuint fixnes_compile_shader(GLenum type, const char *src) {
-    GLuint s = glCreateShader(type);
-    glShaderSource(s, 1, &src, NULL);
-    glCompileShader(s);
-    GLint ok;
-    glGetShaderiv(s, GL_COMPILE_STATUS, &ok);
-    if (!ok) {
-        char buf[512];
-        glGetShaderInfoLog(s, sizeof(buf), NULL, buf);
-        printf("[fixNES] Shader error: %s\n", buf);
+/* fixNES writes a linear BGR565 framebuffer (COL_TEX_BSWAP). Aurora's PC
+ * texture format accepts linear RGBA8 directly, so expand once here rather
+ * than tiling RGB565 only for Aurora to decode it again. */
+#define FIXNES_PRESENT_WIDTH 256
+#define FIXNES_PRESENT_HEIGHT 224
+#define FIXNES_SOURCE_TOP 8
+#define FIXNES_GX_TEXTURE_SIZE (FIXNES_PRESENT_WIDTH * FIXNES_PRESENT_HEIGHT * 4)
+
+static uint8_t fixnes_gx_texture[FIXNES_GX_TEXTURE_SIZE] ATTRIBUTE_ALIGN(32);
+static GXTexObj fixnes_tex_obj;
+static int fixnes_tex_obj_initialized = 0;
+
+static void fixnes_convert_frame(const uint16_t *fb) {
+    uint8_t *dst = fixnes_gx_texture;
+
+    for (int y = 0; y < FIXNES_PRESENT_HEIGHT; y++) {
+        const uint16_t *src = fb + (y + FIXNES_SOURCE_TOP) * VISIBLE_DOTS;
+        for (int x = 0; x < FIXNES_PRESENT_WIDTH; x++) {
+            const uint16_t bgr565 = src[x];
+            *dst++ = (uint8_t)(((bgr565 & 0x001F) * 255) / 31);
+            *dst++ = (uint8_t)((((bgr565 >> 5) & 0x003F) * 255) / 63);
+            *dst++ = (uint8_t)((((bgr565 >> 11) & 0x001F) * 255) / 31);
+            *dst++ = 255;
+        }
     }
-    return s;
 }
 
-static void fixnes_init_gl(void) {
-    const char *vs =
-        "#version 330 core\n"
-        "layout(location=0) in vec2 pos;\n"
-        "layout(location=1) in vec2 uv;\n"
-        "out vec2 v_uv;\n"
-        "void main() { gl_Position = vec4(pos, 0, 1); v_uv = uv; }\n";
-    const char *fs =
-        "#version 330 core\n"
-        "in vec2 v_uv;\n"
-        "out vec4 fragColor;\n"
-        "uniform sampler2D tex;\n"
-        "void main() { fragColor = texture(tex, v_uv); }\n";
+static void fixnes_set_projection(int pillarbox) {
+    Mtx44 projection;
+    AuroraMtx identity;
 
-    GLuint v = fixnes_compile_shader(GL_VERTEX_SHADER, vs);
-    GLuint f = fixnes_compile_shader(GL_FRAGMENT_SHADER, fs);
-    fixnes_shader = glCreateProgram();
-    glAttachShader(fixnes_shader, v);
-    glAttachShader(fixnes_shader, f);
-    glLinkProgram(fixnes_shader);
-    glDeleteShader(v);
-    glDeleteShader(f);
+    C_MTXOrtho(projection, 1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 10.0f);
+    C_MTXIdentity(identity);
+    g_pc_widescreen_stretch = pillarbox ? 2 : 1;
+    pc_widescreen_set_projection(projection, GX_ORTHOGRAPHIC);
+    GXLoadPosMtxImm(identity, GX_PNMTX0);
+    GXSetCurrentMtx(GX_PNMTX0);
+}
 
-    float quad[] = {
-        -1, -1,  0, 1,
-         1, -1,  1, 1,
-         1,  1,  1, 0,
-        -1, -1,  0, 1,
-         1,  1,  1, 0,
-        -1,  1,  0, 0,
-    };
-    glGenVertexArrays(1, &fixnes_vao);
-    glGenBuffers(1, &fixnes_vbo);
-    glBindVertexArray(fixnes_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, fixnes_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quad), quad, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 16, (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 16, (void*)8);
-    glBindVertexArray(0);
+static void fixnes_draw_black_background(void) {
+    fixnes_set_projection(0);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    GXSetNumTevStages(1);
+    GXSetNumIndStages(0);
+    GXSetTevDirect(GX_TEVSTAGE0);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+    GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+    GXSetChanCtrl(GX_COLOR0A0, GX_FALSE, GX_SRC_REG, GX_SRC_VTX,
+                  GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_S8, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXPosition3s8(-1, 1, -5);
+    GXColor4u8(0, 0, 0, 255);
+    GXPosition3s8(1, 1, -5);
+    GXColor4u8(0, 0, 0, 255);
+    GXPosition3s8(1, -1, -5);
+    GXColor4u8(0, 0, 0, 255);
+    GXPosition3s8(-1, -1, -5);
+    GXColor4u8(0, 0, 0, 255);
+    GXEnd();
+}
 
-    fixnes_tex_uniform = glGetUniformLocation(fixnes_shader, "tex");
-
-    glGenTextures(1, &fixnes_texture);
-    glBindTexture(GL_TEXTURE_2D, fixnes_texture);
-    if (g_pc_profile_enabled) pc_profiler_add_count_texture_bind_slow();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+static void fixnes_draw_texture(void) {
+    fixnes_set_projection(g_pc_settings.nes_aspect != 0);
+    GXSetNumChans(0);
+    GXSetNumTexGens(1);
+    GXSetNumTevStages(1);
+    GXSetNumIndStages(0);
+    GXSetTevDirect(GX_TEVSTAGE0);
+    GXSetTevSwapModeTable(GX_TEV_SWAP0, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_ALPHA);
+    GXSetTevSwapMode(GX_TEVSTAGE0, GX_TEV_SWAP0, GX_TEV_SWAP0);
+    GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0,
+                      GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+    GXSetTexCoordScaleManually(GX_TEXCOORD0, GX_FALSE, 0, 0);
+    GXSetTexCoordBias(GX_TEXCOORD0, GX_FALSE, GX_FALSE);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
+    GXSetTevOp(GX_TEVSTAGE0, GX_REPLACE);
+    GXLoadTexObj(&fixnes_tex_obj, GX_TEXMAP0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_S8, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_S8, 0);
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXPosition3s8(-1, 1, -5);
+    GXTexCoord2s8(0, 0);
+    GXPosition3s8(1, 1, -5);
+    GXTexCoord2s8(1, 0);
+    GXPosition3s8(1, -1, -5);
+    GXTexCoord2s8(1, 1);
+    GXPosition3s8(-1, -1, -5);
+    GXTexCoord2s8(0, 1);
+    GXEnd();
 }
 
 /* ======================================================================
@@ -205,7 +221,7 @@ static void fixnes_capture_audio(void) {
     }
 
     if (fixnes_audio_pos > 0) {
-        AIInitDMA((uint32_t)(uintptr_t)fixnes_audio_buf, fixnes_audio_pos * 4);
+        AIInitDMA((uintptr_t)fixnes_audio_buf, fixnes_audio_pos * 4);
     }
 }
 
@@ -311,6 +327,7 @@ void pc_fixnes_init(uint8_t *ines_data, int ines_size) {
     fixnes_initialized = 1;
 
     memset(textureImage, 0, sizeof(textureImage));
+    memset(fixnes_gx_texture, 0, sizeof(fixnes_gx_texture));
     fixnes_audio_pos = 0;
 }
 
@@ -381,57 +398,43 @@ void pc_fixnes_cleanup(void) {
 
     fixnes_initialized = 0;
 
-    /* Restore game's GL state — NES emulator used its own shader/VAO */
-    pc_gx_restore_after_nes();
+    if (fixnes_tex_obj_initialized) {
+        GXDestroyTexObj(&fixnes_tex_obj);
+        fixnes_tex_obj_initialized = 0;
+    }
+
+}
+
+int pc_fixnes_is_initialized(void) {
+    return fixnes_initialized;
 }
 
 void pc_fixnes_render_frame(uint16_t *fb) {
-    pc_gx_draw_pending(); /* NES uses its own GL pipeline */
-    if (!fixnes_shader) fixnes_init_gl();
+    if (!fixnes_initialized) return;
+    if (!fb) fb = textureImage;
 
-    /* Upload framebuffer — fixNES outputs RGB565 with COL_TEX_BSWAP
-     * (R in low bits) — upload with GL_UNSIGNED_SHORT_5_6_5_REV.
-     * Skip top 8 rows (often garbage), show 224 lines. */
-    glBindTexture(GL_TEXTURE_2D, fixnes_texture);
-    if (g_pc_profile_enabled) pc_profiler_add_count_texture_bind_slow();
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 256, 224, 0,
-                 GL_RGB, GL_UNSIGNED_SHORT_5_6_5_REV, fb + 256 * 8);
-
-    /* 0 = stretch to window, 1 = centered 4:3 with pillar/letterbox. */
-    int win_w = g_pc_window_w;
-    int win_h = g_pc_window_h;
-    int vp_w, vp_h, vp_x, vp_y;
-    if (pc_settings_get_nes_aspect() == 0) {
-        vp_w = win_w; vp_h = win_h; vp_x = 0; vp_y = 0;
-    } else if (win_w * 3 > win_h * 4) {
-        vp_h = win_h;
-        vp_w = (win_h * 4) / 3;
-        vp_x = (win_w - vp_w) / 2;
-        vp_y = 0;
+    fixnes_convert_frame(fb);
+    if (!fixnes_tex_obj_initialized) {
+        GXInitTexObj(&fixnes_tex_obj, fixnes_gx_texture,
+                     FIXNES_PRESENT_WIDTH, FIXNES_PRESENT_HEIGHT,
+                     GX_TF_RGBA8_PC, GX_CLAMP, GX_CLAMP, GX_FALSE);
+        GXInitTexObjLOD(&fixnes_tex_obj, GX_NEAR, GX_NEAR,
+                        0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+        fixnes_tex_obj_initialized = 1;
     } else {
-        vp_w = win_w;
-        vp_h = (win_w * 3) / 4;
-        vp_x = 0;
-        vp_y = (win_h - vp_h) / 2;
+        GXInitTexObjData(&fixnes_tex_obj, fixnes_gx_texture);
     }
 
-    /* Clear full window first so the bars are black, not stale pixels. */
-    glDisable(GL_SCISSOR_TEST);
-    glViewport(0, 0, win_w, win_h);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    GXSetScissor(0, 0, PC_GC_WIDTH, PC_GC_HEIGHT);
+    pc_widescreen_set_viewport(0.0f, 0.0f, (float)PC_GC_WIDTH, (float)PC_GC_HEIGHT, 0.0f, 1.0f);
+    GXSetClipMode(GX_CLIP_ENABLE);
+    GXSetColorUpdate(GX_TRUE);
+    GXSetCullMode(GX_CULL_NONE);
+    GXSetZCompLoc(GX_TRUE);
+    GXSetZMode(GX_FALSE, GX_ALWAYS, GX_FALSE);
+    GXSetBlendMode(GX_BM_NONE, GX_BL_ONE, GX_BL_ZERO, GX_LO_COPY);
+    GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_OR, GX_ALWAYS, 0);
 
-    glViewport(vp_x, vp_y, vp_w, vp_h);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_BLEND);
-    glUseProgram(fixnes_shader);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, fixnes_texture);
-    if (g_pc_profile_enabled) pc_profiler_add_count_texture_bind_slow();
-    glUniform1i(fixnes_tex_uniform, 0);
-    glBindVertexArray(fixnes_vao);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glBindVertexArray(0);
-
-    glViewport(0, 0, win_w, win_h);
+    fixnes_draw_black_background();
+    fixnes_draw_texture();
 }
