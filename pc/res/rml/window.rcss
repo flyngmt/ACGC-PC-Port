@@ -1,0 +1,592 @@
+*, *:before, *:after {
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    padding: 64dp;
+    font-family: "ACGC UI";
+    font-weight: normal;
+    font-style: normal;
+    font-size: 15dp;
+    color: #ECFDF5;
+}
+
+b {
+    font-weight: bold;
+}
+
+window {
+    display: flex;
+    flex-flow: column;
+    position: relative;
+    height: 100%;
+    width: 100%;
+    max-width: 1088dp;
+    max-height: 768dp;
+    margin: auto;
+    border-radius: 20dp;
+    overflow: hidden;
+    border: 1dp rgba(255, 255, 255, 35%);
+    /* glass(<bezel> <refraction> <specular> <tint> <saturation> <profile> <dome>) */
+    backdrop-filter: blur(6dp) glass(15dp 50dp 0.3 rgba(20, 22, 26, 25%) 1.15 0.15 0.01);
+    box-shadow: 0 6dp 26dp 2dp rgba(0, 0, 0, 60%);
+    filter: opacity(0);
+    transform: scale(0.9);
+    transform-origin: center;
+    transition: filter transform 0.2s cubic-in-out;
+}
+
+window.small {
+    height: auto;
+    width: auto;
+}
+
+window.modal {
+    max-width: 640dp;
+}
+
+window[open] {
+    filter: opacity(1);
+    transform: scale(1);
+}
+
+@media (max-height: 640dp) {
+    body {
+        padding: 16dp;
+    }
+    window {
+        box-shadow: none;
+    }
+}
+
+window tab-bar {
+    flex: 0 0 64dp;
+    height: 64dp;
+    background-color: rgba(217, 217, 217, 10%);
+}
+
+window content {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+window content pane {
+    display: flex;
+    flex-flow: column;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
+    padding: 24dp;
+    padding-bottom: 0dp;
+    gap: 8dp;
+    overflow: hidden auto;
+    font-size: 20dp;
+}
+
+window content pane:not(:last-of-type) {
+    border-right: 2dp rgba(217, 217, 217, 10%);
+}
+
+window content pane > * {
+    flex: 0 0 auto;
+}
+
+window content pane:last-of-type > div {
+    line-height: 1.625;
+}
+
+.data-folder-current {
+    display: block;
+    font-size: 16dp;
+    color: rgba(224, 219, 200, 65%);
+}
+
+window content pane > spacer {
+    display: block;
+    /* Completes the 24dp bottom inset after the pane's 8dp gap. */
+    flex: 0 0 16dp;
+    height: 16dp;
+    pointer-events: none;
+}
+
+scrollbarvertical {
+    width: 8dp;
+    margin: 4dp 4dp 4dp 0;
+}
+
+scrollbarvertical sliderarrowdec,
+scrollbarvertical sliderarrowinc {
+    width: 0;
+    height: 0;
+}
+
+scrollbarvertical slidertrack {
+    width: 8dp;
+}
+
+scrollbarvertical sliderbar {
+    width: 8dp;
+    min-height: 24dp;
+    background-color: rgba(224, 219, 200, 45%);
+    border-radius: 2dp;
+    transition: background-color 0.2s cubic-in-out;
+}
+
+scrollbarvertical sliderbar:hover,
+scrollbarvertical sliderbar:active {
+    background-color: rgba(16, 185, 129, 80%);
+}
+
+scrollbarhorizontal {
+    height: 0;
+}
+
+scrollbarhorizontal sliderarrowdec,
+scrollbarhorizontal sliderarrowinc {
+    width: 0;
+    height: 0;
+}
+
+scrollbarhorizontal slidertrack,
+scrollbarhorizontal sliderbar {
+    width: 0;
+    height: 0;
+}
+
+.section-heading {
+    font-family: "ACGC UI";
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 22dp;
+    opacity: 0.5;
+}
+
+.section-heading:not(:first-of-type) {
+    padding-top: 12dp;
+}
+
+button {
+    text-align: center;
+    background-color: rgba(17, 16, 10, 50%);
+    opacity: 0.9;
+    padding: 8dp 16dp;
+    border-radius: 14dp;
+    box-shadow: rgba(217, 217, 217, 10%) 0 0 0 1dp;
+    font-size: 20dp;
+    transition: background-color 0.1s linear-in-out, opacity 0.1s linear-in-out;
+    cursor: pointer;
+    focus: auto;
+    font-weight: 500;
+}
+
+button:not(:disabled):hover,
+button:not(:disabled):focus-visible {
+    background-color: rgba(4, 120, 87, 20%);
+    box-shadow: #10B981 0 0 0 2dp;
+}
+
+button:not(:disabled):selected {
+    opacity: 1;
+    background-color: rgba(4, 120, 87, 40%);
+}
+
+button:not(:disabled):active {
+    opacity: 1;
+    background-color: rgba(4, 120, 87, 40%);
+    box-shadow: #10B981 0 0 0 2dp;
+}
+
+button:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+button.modal-btn {
+    flex: 1 1 0;
+    text-align: center;
+}
+
+select-button {
+    display: flex;
+    align-items: center;
+    gap: 8dp;
+    background-color: rgba(17, 16, 10, 50%);
+    opacity: 0.9;
+    padding: 8dp 16dp;
+    border-radius: 14dp;
+    box-shadow: rgba(217, 217, 217, 10%) 0 0 0 1dp;
+    transition: background-color 0.1s linear-in-out, opacity 0.1s linear-in-out;
+    cursor: pointer;
+    focus: auto;
+}
+
+select-button:not(:disabled):hover,
+select-button:not(:disabled):focus-visible {
+    background-color: rgba(4, 120, 87, 20%);
+    box-shadow: #10B981 0 0 0 2dp;
+}
+
+select-button:not(:disabled):selected {
+    opacity: 1;
+    background-color: rgba(4, 120, 87, 40%);
+}
+
+select-button:not(:disabled):active {
+    opacity: 1;
+    background-color: rgba(4, 120, 87, 40%);
+    box-shadow: #10B981 0 0 0 2dp;
+}
+
+select-button:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+select-button key {
+    font-family: "ACGC UI";
+    font-weight: bold;
+    font-size: 18dp;
+    text-transform: uppercase;
+    flex: 0 1 auto;
+}
+
+select-button value {
+    flex: 1 1 auto;
+    text-align: right;
+    font-size: 20dp;
+}
+
+select-button value.modified {
+    font-weight: 600;
+}
+
+select-button input {
+    text-align: right;
+    font-size: 20dp;
+}
+
+icon {
+    width: 1em;
+    height: 1em;
+    font-family: "ACGC UI";
+    font-weight: normal;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+icon.warning {
+    decorator: text("&#xe002;" center center);
+}
+
+icon.error {
+    decorator: text("&#xe000;" center center);
+}
+
+icon.verifying {
+    decorator: text("&#xe8b5;" center center);
+}
+
+icon.celebration {
+    decorator: text("&#xea65;" center center);
+}
+
+icon.question-mark {
+    decorator: text("&#xeb8b;" center center);
+}
+
+progress {
+    display: block;
+    width: 100%;
+    height: 6dp;
+    border-radius: 3dp;
+    background-color: rgba(255, 255, 255, 10%);
+    margin: 6dp 0 2dp 0;
+}
+
+progress.progress-done fill {
+    background-color: #44aa22;
+    border-radius: 3dp;
+}
+
+progress.progress-ongoing fill {
+    background-color: #2255bb;
+    border-radius: 3dp;
+}
+
+progress.progress-bronze fill {
+    background-color: #a8652c;
+    border-radius: 3dp;
+}
+
+progress.progress-silver fill {
+    background-color: #97a3ad;
+    border-radius: 3dp;
+}
+
+progress.progress-gold fill {
+    background-color: #d4a72c;
+    border-radius: 3dp;
+}
+
+progress.progress-platinum fill {
+    background-color: #5fd3c8;
+    border-radius: 3dp;
+}
+
+progress.progress-leaf fill {
+    background-color: #5fbf46;
+    border-radius: 3dp;
+}
+
+progress.progress-bud fill {
+    background-color: #e2739b;
+    border-radius: 3dp;
+}
+
+progress.progress-flower fill {
+    background-color: #f2e4d0;
+    border-radius: 3dp;
+}
+
+.achievement-total {
+    position: absolute;
+    top: 0;
+    right: 64dp;
+    height: 64dp;
+    line-height: 64dp;
+    font-family: "ACGC UI";
+    font-weight: 700;
+    font-size: 16dp;
+    color: rgba(224, 219, 200, 55%);
+    pointer-events: none;
+}
+
+.achievement-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10dp;
+    padding: 12dp 0;
+    border-bottom: 1dp rgba(146, 135, 91, 30%);
+}
+
+.achievement-info {
+    display: block;
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.achievement-header {
+    display: flex;
+    align-items: center;
+}
+
+.achievement-name {
+    flex: 1;
+    font-weight: bold;
+}
+
+.achievement-name.unlocked {
+    color: #C2A42D;
+}
+
+.achievement-badge {
+    font-size: 14dp;
+    opacity: 0.7;
+}
+
+.achievement-badge.unlocked {
+    color: #44cc55;
+    opacity: 1;
+}
+
+.achievement-badge.locked {
+    color: #cc4444;
+    opacity: 1;
+}
+
+.achievement-name.hidden {
+    color: rgba(224, 219, 200, 50%);
+}
+
+.achievement-badge.hidden {
+    color: rgba(224, 219, 200, 50%);
+    opacity: 1;
+}
+
+.achievement-badge.tier-bronze {
+    color: #c07a3a;
+    opacity: 1;
+}
+
+.achievement-badge.tier-silver {
+    color: #b4bec8;
+    opacity: 1;
+}
+
+.achievement-badge.tier-gold {
+    color: #e0b33c;
+    opacity: 1;
+}
+
+.achievement-badge.tier-platinum {
+    color: #7fe3d8;
+    opacity: 1;
+}
+
+.achievement-badge.tier-leaf {
+    color: #77cf5e;
+    opacity: 1;
+}
+
+.achievement-badge.tier-bud {
+    color: #ec87ab;
+    opacity: 1;
+}
+
+.achievement-badge.tier-flower {
+    color: #f2e4d0;
+    opacity: 1;
+}
+
+.achievement-desc {
+    display: block;
+    color: rgba(224, 219, 200, 55%);
+    font-size: 16dp;
+    margin: 4dp 0 0 0;
+}
+
+.achievement-progress {
+    display: block;
+    font-size: 13dp;
+    color: rgba(224, 219, 200, 45%);
+}
+
+button.achievement-clear {
+    flex: 0 0 auto;
+    align-self: center;
+    font-size: 14dp;
+    padding: 2dp 8dp;
+    opacity: 0.45;
+}
+
+.modal-dialog {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24dp;
+    gap: 20dp;
+    flex: 0 1 auto;
+    width: 100%;
+    text-align: left;
+    font-effect: glow(0dp 4dp 0dp 4dp black);
+}
+
+window.modal.danger {
+    border: 2dp #852221;
+}
+
+.modal-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    flex: 0 0 auto;
+    gap: 16dp;
+}
+
+.modal-header icon {
+    font-size: 24dp;
+}
+
+.modal-title {
+    display: block;
+    font-family: "ACGC UI";
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 18dp;
+    flex: 1 1 auto;
+}
+
+window.modal.danger .modal-title,
+window.modal.danger .modal-header icon {
+    color: #B3261E;
+}
+
+.modal-body {
+    display: block;
+    width: 100%;
+    flex: 0 1 auto;
+    min-width: 0;
+    font-size: 20dp;
+    color: #FFFFFF;
+    font-weight: normal;
+}
+
+.modal-body span.tip {
+    font-size: 14dp;
+    color: #92875B;
+}
+
+.verification-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 10dp;
+    width: 100%;
+}
+
+.verification-file {
+    display: block;
+    font-size: 17dp;
+    color: #FFFFFF;
+}
+
+progress.verification-progress-bar {
+    height: 8dp;
+    margin: 2dp 0 0 0;
+}
+
+.verification-detail {
+    display: block;
+    font-size: 14dp;
+    color: rgba(224, 219, 200, 65%);
+}
+
+.preset-grid {
+    display: flex;
+    flex-direction: row;
+    gap: 20dp;
+    flex: 0 1 auto;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.preset-col {
+    display: flex;
+    flex-flow: column;
+    gap: 12dp;
+    flex: 1 1 0;
+}
+
+.preset-desc {
+    display: block;
+    font-size: 16dp;
+    text-align: center;
+}
+
+.modal-actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 12dp;
+    width: 100%;
+    flex: 0 0 auto;
+    padding-top: 4dp;
+}

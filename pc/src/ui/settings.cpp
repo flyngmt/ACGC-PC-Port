@@ -1,0 +1,284 @@
+#include "acgc/ui/settings.hpp"
+
+#include "acgc/settings.hpp"
+#include "acgc/texture_replacements.hpp"
+#include "acgc/ui/bool_button.hpp"
+#include "acgc/ui/controller_config.hpp"
+#include "acgc/ui/number_button.hpp"
+#include "acgc/ui/pane.hpp"
+
+#include <aurora/gfx.h>
+#include "extern/aurora/lib/window.hpp"
+
+#include <array>
+#include <string>
+#include <utility>
+
+extern "C" int g_pc_frame_limit_override;
+
+namespace acgc::ui {
+namespace {
+
+template <typename T>
+bool modified(const ConfigVar<T>& variable)
+{
+    return variable.value() != variable.default_value();
+}
+
+void persist(bool refreshGameplay = false)
+{
+    apply_runtime_settings(refreshGameplay);
+    save_settings();
+}
+
+template <typename Callback>
+void add_bool(Pane& left, Pane& right, ConfigVar<bool>& variable, Rml::String label,
+              Rml::String help, Callback onChange)
+{
+    left.register_control(
+        left.add_child<BoolButton>(BoolButton::Props{
+            .key = std::move(label),
+            .getValue = [&variable] { return variable.value(); },
+            .setValue = [&variable, onChange = std::move(onChange)](bool value) {
+                variable.set_value(value);
+                onChange(value);
+                persist();
+            },
+            .isModified = [&variable] { return modified(variable); },
+        }),
+        right, [help = std::move(help)](Pane& pane) { pane.add_rml(help); });
+}
+
+void add_bool(Pane& left, Pane& right, ConfigVar<bool>& variable, Rml::String label, Rml::String help)
+{
+    add_bool(left, right, variable, std::move(label), std::move(help), [](bool) {});
+}
+
+Rml::String msaa_label(int samples)
+{
+    return samples <= 1 ? "Off" : std::to_string(samples) + "x";
+}
+
+} // namespace
+
+SettingsWindow::SettingsWindow()
+{
+    add_tab("Video", [this](Rml::Element* content) {
+        auto& current = settings();
+        auto& left = add_child<Pane>(content, Pane::Type::Controlled);
+        auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
+
+        left.register_control(
+            left.add_child<BoolButton>(BoolButton::Props{
+                .key = "Fullscreen",
+                .getValue = [&current] { return current.video.windowMode.value() != 0; },
+                .setValue = [&current](bool value) {
+                    current.video.windowMode.set_value(value ? 1 : 0);
+                    aurora::window::set_fullscreen(value);
+                    persist();
+                },
+                .isModified = [&current] { return modified(current.video.windowMode); },
+            }),
+            right, [](Pane& pane) {
+                pane.add_text("Display the game in Aurora's borderless fullscreen mode.");
+            });
+
+        add_bool(left, right, current.video.vsync, "Vertical Sync",
+                 "Synchronize presentation with the display refresh rate.",
+                 [](bool value) { aurora_enable_vsync(value); });
+
+        left.register_control(
+            left.add_child<NumberButton>(NumberButton::Props{
+                .key = "Frame Limit",
+                .getValue = [&current] { return current.video.maxFrameRate.value(); },
+                .setValue = [&current](int value) {
+                    current.video.maxFrameRate.set_value(value);
+                    g_pc_frame_limit_override = value;
+                    persist();
+                },
+                .isModified = [&current] { return modified(current.video.maxFrameRate); },
+                .min = 0,
+                .max = 480,
+                .step = 5,
+                .suffix = " FPS",
+            }),
+            right, [](Pane& pane) { pane.add_text("Set to 0 for uncapped presentation."); });
+
+        left.register_control(
+            left.add_select_button({
+                .key = "Window Size",
+                .getValue = [&current] {
+                    return std::to_string(current.video.windowWidth.value()) + " x " +
+                           std::to_string(current.video.windowHeight.value());
+                },
+                .isDisabled = [&current] { return current.video.windowMode.value() != 0; },
+                .isModified = [&current] {
+                    return modified(current.video.windowWidth) || modified(current.video.windowHeight);
+                },
+            }),
+            right, [&current](Pane& pane) {
+                const auto resize = [&current] {
+                    aurora::window::set_window_size(current.video.windowWidth.value(),
+                                                    current.video.windowHeight.value());
+                    persist();
+                };
+                pane.add_child<NumberButton>(NumberButton::Props{
+                    .key = "Width",
+                    .getValue = [&current] { return current.video.windowWidth.value(); },
+                    .setValue = [&current, resize](int value) {
+                        current.video.windowWidth.set_value(value);
+                        resize();
+                    },
+                    .isModified = [&current] { return modified(current.video.windowWidth); },
+                    .min = 320, .max = 7680, .step = 16, .suffix = " px",
+                });
+                pane.add_child<NumberButton>(NumberButton::Props{
+                    .key = "Height",
+                    .getValue = [&current] { return current.video.windowHeight.value(); },
+                    .setValue = [&current, resize](int value) {
+                        current.video.windowHeight.set_value(value);
+                        resize();
+                    },
+                    .isModified = [&current] { return modified(current.video.windowHeight); },
+                    .min = 240, .max = 4320, .step = 16, .suffix = " px",
+                });
+                pane.add_text("Window dimensions apply immediately while windowed.");
+            });
+
+        left.register_control(
+            left.add_select_button({
+                .key = "Multisample Antialiasing",
+                .getValue = [&current] { return msaa_label(current.video.msaa.value()); },
+                .isModified = [&current] { return modified(current.video.msaa); },
+            }),
+            right, [&current](Pane& pane) {
+                for (int samples : std::array{1, 2, 4, 8}) {
+                    pane.add_button(ControlledButton::Props{
+                        .text = msaa_label(samples),
+                        .isSelected = [&current, samples] { return current.video.msaa.value() == samples; },
+                    }).on_pressed([&current, samples] {
+                        current.video.msaa.set_value(samples);
+                        save_settings();
+                    });
+                }
+                pane.add_text("MSAA changes take effect after restarting the game.");
+            });
+
+        left.register_control(
+            left.add_select_button({
+                .key = "Texture Pack",
+                .getValue = [] {
+                    return std::to_string(texture_replacements::registration_count()) + " loaded";
+                },
+            }),
+            right, [](Pane& pane) {
+                pane.add_button("Reload Texture Pack").on_pressed([] {
+                    texture_replacements::reload();
+                });
+                pane.add_text("Loads Dolphin-format DDS and PNG replacements recursively from " +
+                              texture_replacements::directory().string() +
+                              ". Aurora indexes filenames at startup and loads image data on demand. "
+                              "Legacy preload/cache values remain accepted in config for compatibility.");
+            });
+    });
+
+    add_tab("Audio", [this](Rml::Element* content) {
+        auto& current = settings();
+        auto& left = add_child<Pane>(content, Pane::Type::Controlled);
+        auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
+        left.register_control(
+            left.add_child<NumberButton>(NumberButton::Props{
+                .key = "Master Volume",
+                .getValue = [&current] { return current.audio.masterVolume.value(); },
+                .setValue = [&current](int value) {
+                    current.audio.masterVolume.set_value(value);
+                    persist();
+                },
+                .isModified = [&current] { return modified(current.audio.masterVolume); },
+                .min = 0, .max = 100, .step = 5, .suffix = "%",
+            }),
+            right, [](Pane& pane) { pane.add_text("Adjust the host audio stream gain immediately."); });
+    });
+
+    add_tab("Controls", [this](Rml::Element* content) {
+        auto& current = settings();
+        auto& left = add_child<Pane>(content, Pane::Type::Controlled);
+        auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
+
+        left.register_control(
+            left.add_button("Configure Controllers").on_pressed([this] {
+                push(std::make_unique<ControllerConfigWindow>());
+            }),
+            right, [](Pane& pane) {
+                pane.add_text("Configure keyboard and controller buttons, sticks, triggers, dead zones, and rumble for all four ports.");
+            });
+        left.register_control(
+            left.add_child<NumberButton>(NumberButton::Props{
+                .key = "Control Stick Deadzone",
+                .getValue = [&current] { return current.input.stickDeadzone.value(); },
+                .setValue = [&current](int value) {
+                    current.input.stickDeadzone.set_value(value);
+                    persist();
+                },
+                .isModified = [&current] { return modified(current.input.stickDeadzone); },
+                .min = 0, .max = 40, .step = 2, .suffix = "%",
+            }),
+            right, [](Pane& pane) { pane.add_text("Global left-stick deadzone for newly connected and active controllers."); });
+        left.register_control(
+            left.add_child<NumberButton>(NumberButton::Props{
+                .key = "C-Stick Deadzone",
+                .getValue = [&current] { return current.input.cstickDeadzone.value(); },
+                .setValue = [&current](int value) {
+                    current.input.cstickDeadzone.set_value(value);
+                    persist();
+                },
+                .isModified = [&current] { return modified(current.input.cstickDeadzone); },
+                .min = 0, .max = 40, .step = 2, .suffix = "%",
+            }),
+            right, [](Pane& pane) { pane.add_text("Global C-stick deadzone for newly connected and active controllers."); });
+    });
+
+    add_tab("Gameplay", [this](Rml::Element* content) {
+        auto& current = settings();
+        auto& left = add_child<Pane>(content, Pane::Type::Controlled);
+        auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
+
+        left.register_control(
+            left.add_child<BoolButton>(BoolButton::Props{
+                .key = "Resetti",
+                .getValue = [&current] { return !current.enhancements.disableResetti.value(); },
+                .setValue = [&current](bool value) {
+                    current.enhancements.disableResetti.set_value(!value);
+                    persist(true);
+                },
+                .isModified = [&current] { return modified(current.enhancements.disableResetti); },
+            }),
+            right, [](Pane& pane) { pane.add_text("Enable the normal Resetti consequence after quitting without saving."); });
+
+        left.register_control(
+            left.add_child<BoolButton>(BoolButton::Props{
+                .key = "Single-Player Shop Upgrades",
+                .getValue = [&current] { return current.enhancements.disableShopVisitorRequirement.value(); },
+                .setValue = [&current](bool value) {
+                    current.enhancements.disableShopVisitorRequirement.set_value(value);
+                    persist(true);
+                },
+                .isModified = [&current] { return modified(current.enhancements.disableShopVisitorRequirement); },
+            }),
+            right, [](Pane& pane) { pane.add_text("Remove the visiting-player requirement from the final Nook shop upgrade."); });
+
+        add_bool(left, right, current.enhancements.borderlessAcres, "Borderless Acres",
+                 "Remove acre-boundary movement restrictions. Enabling it refreshes nearby collision state.",
+                 [](bool) { apply_runtime_settings(true); });
+        add_bool(left, right, current.enhancements.pillarboxNes, "NES 4:3 Aspect",
+                 "Keep embedded NES games at their original 4:3 aspect ratio.");
+    });
+}
+
+void SettingsWindow::hide(bool close)
+{
+    save_settings();
+    Window::hide(close);
+}
+
+} // namespace acgc::ui
