@@ -39,10 +39,10 @@ JKRAramArchive::~JKRAramArchive() {
         }
 
         if (mDvdFile) {
-            delete mDvdFile;
+            JKR_DELETE(mDvdFile);
         }
         if (mBlock) {
-            delete mBlock;
+            JKR_DELETE(mBlock);
         }
 
         sVolumeList.remove(&mFileLoaderLink);
@@ -106,10 +106,10 @@ void JKRAramArchive::unmountFixed() {
     }
 
     if (mDvdFile)
-        delete mDvdFile;
+        JKR_DELETE(mDvdFile);
 
     if (mBlock)
-        delete mBlock;
+        JKR_DELETE(mBlock);
 
     sVolumeList.remove(&mFileLoaderLink);
     mIsMounted = false;
@@ -126,7 +126,7 @@ bool JKRAramArchive::open(s32 entryNum) {
     mStrTable = nullptr;
     mBlock = nullptr;
 
-    mDvdFile = new (JKRGetSystemHeap(), mMountDirection == MOUNT_DIRECTION_HEAD ? 4 : -4) JKRDvdFile(entryNum);
+    mDvdFile = JKR_NEW_ARGS(JKRGetSystemHeap(), mMountDirection == MOUNT_DIRECTION_HEAD ? 4 : -4) JKRDvdFile(entryNum);
     if (mDvdFile == nullptr) {
         mMountMode = 0;
         return 0;
@@ -209,11 +209,11 @@ cleanup:
             mArcInfoBlock = nullptr;
         }
         if (mBlock != nullptr) {
-            delete mBlock;
+            JKR_DELETE(mBlock);
             mBlock = nullptr;
         }
         if (mDvdFile != nullptr) {
-            delete mDvdFile;
+            JKR_DELETE(mDvdFile);
             mDvdFile = nullptr;
         }
 #endif

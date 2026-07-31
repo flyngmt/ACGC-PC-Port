@@ -11,13 +11,13 @@ JKRAramHeap::JKRAramHeap(u32 baseAddress, u32 size) : JKRDisposer() {
     this->mHeadAddress = ALIGN_NEXT(baseAddress, 0x20);
     this->mTailAddress = this->mHeadAddress + this->mSize;
     this->mGroupID = 0xFF;
-    JKRAramBlock* block = new (this->mHeap, 0) JKRAramBlock(this->mHeadAddress, 0, this->mSize, 0xFF, false);
+    JKRAramBlock* block = JKR_NEW_ARGS(this->mHeap, 0) JKRAramBlock(this->mHeadAddress, 0, this->mSize, 0xFF, false);
     sAramList.append(&block->mLink);
 }
 
 JKRAramHeap::~JKRAramHeap() {
     for (JSUListIterator<JKRAramBlock> it = sAramList.getFirst(); it != sAramList.getEnd();) {
-        delete (it++).getObject();
+        JKR_DELETE((it++).getObject());
     }
 }
 
@@ -38,7 +38,7 @@ JKRAramBlock* JKRAramHeap::alloc(u32 size, JKRAramHeap::EAllocMode mode) {
 /* Code retrieved from Twilight Princess Debug version & matched. Unused in AC.
  */
 void JKRAramHeap::free(JKRAramBlock* block) {
-    delete block;
+    JKR_DELETE(block);
 }
 
 JKRAramBlock* JKRAramHeap::allocFromHead(u32 size) {

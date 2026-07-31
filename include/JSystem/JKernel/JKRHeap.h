@@ -9,6 +9,8 @@
 #ifdef __cplusplus
 #ifdef TARGET_PC
 #include <new>
+#include <type_traits>
+#include <utility>
 #endif
 
 typedef void JKRHeapErrorHandler(void*, u32, int);
@@ -316,37 +318,126 @@ inline void JKRFreeToSysHeap(void* buf) {
 void JKRDefaultMemoryErrorRoutine(void*, u32, int);
 
 #ifdef TARGET_PC
-/* Keep JSystem allocations distinct from the host C++ runtime.  Aurora uses
+/* Keep JSystem allocations distinct from the host C++ runtime. Aurora uses
  * ordinary new/delete during static initialization, before a JKR heap exists.
- * This tagged overload follows Dusklight's host-side JSystem convention. */
+ * These tagged helpers mirror Dusklight's host-side JSystem convention. */
 enum class JKRHeapToken {
     Dummy,
 };
 
-#define JKR_NEW new (JKRHeapToken::Dummy)
+inline void* operator new(size_t, JKRHeapToken, void* where) noexcept {
+    return where;
+}
 
-void* operator new(size_t, JKRHeapToken) noexcept;
-void* operator new[](size_t, JKRHeapToken) noexcept;
+inline void* operator new[](size_t, JKRHeapToken, void* where) noexcept {
+    return where;
+}
+
+#define JKR_NEW new (JKRHeapToken::Dummy)
+#define JKR_NEW_ARRAY(type, count) jkrNewArray(count, std::in_place_type<type>)
+#define JKR_NEW_ARGS(...) new (JKRHeapToken::Dummy, __VA_ARGS__)
+#define JKR_NEW_ARRAY_ARGS(type, count, ...) jkrNewArray(count, std::in_place_type<type>, __VA_ARGS__)
+#define JKR_DELETE(expr)                                                                                               \
+    do {                                                                                                               \
+        auto* jkrDeletePtr = (expr);                                                                                   \
+        if (jkrDeletePtr != nullptr) {                                                                                 \
+            using JKRDeleteType = std::remove_pointer_t<decltype(jkrDeletePtr)>;                                      \
+            jkrDeletePtr->~JKRDeleteType();                                                                            \
+            operator delete(jkrDeletePtr, JKRHeapToken::Dummy);                                                       \
+        }                                                                                                              \
+    } while (false)
+#define JKR_DELETE_ARRAY(expr) jkrDeleteArray(expr)
+#define JKR_HEAP_TOKEN_PARAM , JKRHeapToken
+#define JKR_HEAP_TOKEN_ARG , JKRHeapToken::Dummy
 #else
 #define JKR_NEW new
-void* operator new(size_t);
+#define JKR_NEW_ARRAY(type, count) new type[count]
+#define JKR_NEW_ARGS(...) new (__VA_ARGS__)
+#define JKR_NEW_ARRAY_ARGS(type, count, ...) new (__VA_ARGS__) type[count]
+#define JKR_DELETE(expr) delete (expr)
+#define JKR_DELETE_ARRAY(expr) delete[] (expr)
+#define JKR_HEAP_TOKEN_PARAM
+#define JKR_HEAP_TOKEN_ARG
 #endif
+
+#ifdef TARGET_PC
+void* operator new(size_t, JKRHeapToken) noexcept;
+void* operator new(size_t, JKRHeapToken, s32) noexcept;
+void* operator new(size_t, JKRHeapToken, JKRHeap*, int) noexcept;
+void* operator new[](size_t, JKRHeapToken) noexcept;
+void* operator new[](size_t, JKRHeapToken, s32) noexcept;
+void* operator new[](size_t, JKRHeapToken, JKRHeap*, int) noexcept;
+void operator delete(void*, JKRHeapToken) noexcept;
+void operator delete[](void*, JKRHeapToken) noexcept;
+#else
+void* operator new(size_t);
 void* operator new(size_t, s32);
 void* operator new(size_t, JKRHeap*, int);
-#ifndef TARGET_PC
 inline void* operator new(size_t, void* buf) {
     return buf;
 } // i believe this is actually part of MSL_C?
-#endif
-
-#ifndef TARGET_PC
 void* operator new[](size_t);
-#endif
 void* operator new[](size_t, s32);
 void* operator new[](size_t, JKRHeap*, int);
+void operator delete(void*);
+void operator delete[](void*);
+#endif
 
-void operator delete(void*) noexcept;
-void operator delete[](void*) noexcept;
+#ifdef TARGET_PC
+template <typename T, typename... Args>
+T* jkrNewArray(size_t count, std::in_place_type_t<T>, Args&&... args) noexcept {
+    size_t allocSize = count * sizeof(T);
+    if constexpr (!std::is_trivially_destructible_v<T>) {
+        static_assert(sizeof...(Args) == 0,
+                      "non-trivial JKR arrays with custom allocation arguments are not supported");
+        allocSize += sizeof(size_t);
+    }
+
+    void* ptr = operator new(allocSize, JKRHeapToken::Dummy, args...);
+    if (ptr == nullptr) {
+        return nullptr;
+    }
+
+    T* dataPtr;
+    if constexpr (!std::is_trivially_destructible_v<T>) {
+        auto* length = static_cast<size_t*>(ptr);
+        *length = count;
+        dataPtr = reinterpret_cast<T*>(length + 1);
+    } else {
+        dataPtr = static_cast<T*>(ptr);
+    }
+
+    if constexpr (!std::is_trivially_constructible_v<T>) {
+        for (size_t i = 0; i < count; ++i) {
+            new (dataPtr + i) T();
+        }
+    }
+    return dataPtr;
+}
+
+template <typename T>
+void jkrDeleteArray(T* ptr) noexcept {
+    if (ptr == nullptr) {
+        return;
+    }
+
+    if constexpr (!std::is_trivially_destructible_v<T>) {
+        auto* countPtr = reinterpret_cast<size_t*>(ptr) - 1;
+        const size_t count = *countPtr;
+        for (size_t i = count; i != 0; --i) {
+            (ptr + i - 1)->~T();
+        }
+        operator delete(countPtr, JKRHeapToken::Dummy);
+    } else {
+        operator delete(ptr, JKRHeapToken::Dummy);
+    }
+}
+
+template <>
+inline void jkrDeleteArray(void* ptr) noexcept {
+    operator delete(ptr, JKRHeapToken::Dummy);
+}
+#endif
 
 #endif
 #endif // !JKRHEAP_H

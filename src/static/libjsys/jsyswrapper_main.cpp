@@ -1,5 +1,5 @@
 extern void JC_JUTFader_delete(void* fader) {
-    delete reinterpret_cast<JUTFader*>(fader);
+    JKR_DELETE(reinterpret_cast<JUTFader*>(fader));
 }
 
 extern void* JC_JUTFader_new(int ul_x, int ul_y, int br_x, int br_y, u32* color) {
@@ -43,7 +43,7 @@ extern void JC_JUTDbPrint_setVisible(void* dbprint, BOOL visible) {
 }
 
 extern void JC_J2DOrthoGraph_delete(void* orthograph) {
-    delete reinterpret_cast<J2DOrthoGraph*>(orthograph);
+    JKR_DELETE(reinterpret_cast<J2DOrthoGraph*>(orthograph));
 }
 
 extern void* JC_J2DOrthoGraph_new() {
@@ -383,7 +383,7 @@ extern void* JC_JKRAram_getAramHeap() {
 }
 
 extern void JC_JKRAramArchive_delete(void* aram_archive) {
-    delete reinterpret_cast<JKRAramArchive*>(aram_archive);
+    JKR_DELETE(reinterpret_cast<JKRAramArchive*>(aram_archive));
 }
 
 extern void* JC_JKRAramArchive_new() {

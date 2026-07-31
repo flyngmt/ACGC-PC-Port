@@ -1,6 +1,7 @@
 #include <MSL_C/ctype.h>
 #include <string.h>
 #include "JSystem/JKernel/JKRFileLoader.h"
+#include "JSystem/JKernel/JKRHeap.h"
 
 JSUList<JKRFileLoader> JKRFileLoader::sVolumeList;
 JKRFileLoader* JKRFileLoader::sCurrentVolume;
@@ -19,7 +20,7 @@ JKRFileLoader::~JKRFileLoader() {
 void JKRFileLoader::unmount() {
     if (mMountCount != 0) {
         if (--mMountCount == 0)
-            delete this;
+            JKR_DELETE(this);
     }
 }
 

@@ -33,7 +33,7 @@ JUTResFont::~JUTResFont() {
 }
 
 void JUTResFont::deleteMemBlocks_ResFont() {
-    delete[] mMemBlocks;
+    JKR_DELETE_ARRAY(mMemBlocks);
 }
 
 void JUTResFont::initialize_state() {
@@ -80,7 +80,7 @@ bool JUTResFont::protected_initiate(const ResFONT* resource, JKRHeap* heap) {
     countBlock();
     u32 blockNum = mWidthBlockCount + mGlyphBlockCount + mMapBlockCount;
 
-    mMemBlocks = new (heap, 0) void*[blockNum];
+    mMemBlocks = JKR_NEW_ARRAY_ARGS(void*, blockNum, heap, 0);
     blocks = mMemBlocks;
     if (mMemBlocks == nullptr) {
         return false;

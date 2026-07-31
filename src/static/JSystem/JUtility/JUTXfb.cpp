@@ -42,7 +42,7 @@ JUTXfb::~JUTXfb() {
 
 void JUTXfb::delXfb(int xfbIdx) {
     if (mXfbAllocated[xfbIdx] && mBuffer[xfbIdx]) {
-        delete mBuffer[xfbIdx];
+        JKR_DELETE_ARRAY(mBuffer[xfbIdx]);
     }
 }
 
@@ -56,7 +56,7 @@ JUTXfb* JUTXfb::createManager(const GXRenderModeObj* rmode, JKRHeap* heap, JUTXf
 
 void JUTXfb::destroyManager() {
     JUT_CONFIRM_MESSAGE(sManager);
-    delete sManager;
+    JKR_DELETE(sManager);
     sManager = nullptr;
 }
 
@@ -67,10 +67,10 @@ void JUTXfb::initiate(u16 w, u16 h, JKRHeap* heap, JUTXfb::EXfbNumber number) {
 
     u32 size = (u16)ALIGN_NEXT((u16)w, 16) * h;
 
-    mBuffer[0] = new (heap, 32) u16[size];
+    mBuffer[0] = JKR_NEW_ARRAY_ARGS(u16, size, heap, 32);
     mXfbAllocated[0] = true;
     if (number >= DoubleBuffer) {
-        mBuffer[1] = new (heap, 32) u16[size];
+        mBuffer[1] = JKR_NEW_ARRAY_ARGS(u16, size, heap, 32);
         mXfbAllocated[1] = true;
     } else {
         mBuffer[1] = nullptr;
@@ -78,7 +78,7 @@ void JUTXfb::initiate(u16 w, u16 h, JKRHeap* heap, JUTXfb::EXfbNumber number) {
     }
 
     if (number >= TripleBuffer) {
-        mBuffer[2] = new (heap, 32) u16[size];
+        mBuffer[2] = JKR_NEW_ARRAY_ARGS(u16, size, heap, 32);
         mXfbAllocated[2] = true;
     } else {
         mBuffer[2] = nullptr;

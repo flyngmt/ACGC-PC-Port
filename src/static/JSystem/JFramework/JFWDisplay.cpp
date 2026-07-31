@@ -1,4 +1,8 @@
+#ifdef TARGET_PC
+#include <string.h>
+#else
 #include <libc/string.h>
+#endif
 #include <dolphin/vi.h>
 #include "_mem.h"
 #include "JSystem/J2D/J2DGrafContext.h"
@@ -20,7 +24,7 @@
 // https://github.com/kiwi515/ogws/blob/master/src/egg/core/eggAsyncDisplay.cpp
 // gpHang: https://github.com/valentinaslover/paper-mar/blob/master/source/sdk/DEMOInit.c#L280
 
-GC_Mtx e_mtx = { { 1.0f, 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f, 0.0f } };
+Mtx e_mtx = { { 1.0f, 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f, 0.0f } };
 
 JFWDisplay* JFWDisplay::sManager;
 static GXTexObj clear_z_tobj;
@@ -63,7 +67,7 @@ void JFWDisplay::ctor_subroutine(const GXRenderModeObj* rmode, bool enableAlpha)
     JUTProcBar::clear();
 }
 
-JFWDisplay::JFWDisplay(const _GXRenderModeObj* rmode, JKRHeap* heap, JUTXfb::EXfbNumber bufferCount, bool p3) {
+JFWDisplay::JFWDisplay(const GXRenderModeObj* rmode, JKRHeap* heap, JUTXfb::EXfbNumber bufferCount, bool p3) {
     ctor_subroutine(rmode, p3);
     mXfb = JUTXfb::createManager(rmode, heap, bufferCount);
 }
@@ -94,7 +98,7 @@ JFWDisplay* JFWDisplay::createManager(const GXRenderModeObj* rmode, JKRHeap* hea
 
 void JFWDisplay::destroyManager() {
     JUT_CONFIRM_MESSAGE(sManager);
-    delete sManager;
+    JKR_DELETE(sManager);
     sManager = nullptr;
 }
 
@@ -367,8 +371,7 @@ void JFWDisplay::threadSleep(s64 time) {
     OSRestoreInterrupts(status);
 }
 
-static u8 clear_z_TX[]
-    __attribute__((aligned(32))) = { 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00,
+static u8 clear_z_TX[] ATTRIBUTE_ALIGN(32) = { 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00,
                                      0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff,
                                      0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
                                      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,

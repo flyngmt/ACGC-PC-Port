@@ -15,7 +15,7 @@ JKRAram* JKRAram::create(u32 aram_audio_buffer_size, u32 aram_audio_graph_size, 
                          s32 piece_priority) {
     if (!sAramObject) {
         sAramObject =
-            new (JKRGetSystemHeap(), 0) JKRAram(aram_audio_buffer_size, aram_audio_graph_size, piece_priority);
+            JKR_NEW_ARGS(JKRGetSystemHeap(), 0) JKRAram(aram_audio_buffer_size, aram_audio_graph_size, piece_priority);
     }
 
     JKRCreateAramStreamManager(streamPriority);
@@ -56,13 +56,13 @@ JKRAram::JKRAram(u32 bufSize, u32 graphSize, s32 priority) : JKRThread(0x4000, 0
         mUserMemoryPtr = (u32)0;
     }
 
-    mAramHeap = new (JKRHeap::getSystemHeap(), 0) JKRAramHeap(mGraphMemoryPtr, mGraphMemorySize);
+    mAramHeap = JKR_NEW_ARGS(JKRHeap::getSystemHeap(), 0) JKRAramHeap(mGraphMemoryPtr, mGraphMemorySize);
 }
 
 JKRAram::~JKRAram() {
     sAramObject = nullptr;
     if (mAramHeap)
-        delete mAramHeap;
+        JKR_DELETE(mAramHeap);
 }
 
 void* JKRAram::run() {
@@ -74,7 +74,7 @@ void* JKRAram::run() {
         OSReceiveMessage(&sMessageQueue, (OSMessage*)&message, OS_MESSAGE_BLOCK);
         result = message->mActive;
         command = (JKRAMCommand*)message->mArg;
-        delete message;
+        JKR_DELETE(message);
 
         switch (result) {
             case 1:
@@ -137,7 +137,7 @@ JKRAramBlock* JKRAram::mainRamToAram(u8* buf, u32 address, u32 alignedSize, JKRE
         void* allocatedMem = JKRAllocFromHeap(heap, fileSize, -32);
         if (allocatedMem == nullptr) {
             if (block != nullptr) {
-                delete block;
+                JKR_DELETE(block);
             }
             block = nullptr;
         } else {

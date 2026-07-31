@@ -43,7 +43,7 @@ JUTProcBar* JUTProcBar::create() {
 
 void JUTProcBar::destroy() {
     if (sManager) {
-        delete sManager;
+        JKR_DELETE(sManager);
     }
     sManager = nullptr;
 }

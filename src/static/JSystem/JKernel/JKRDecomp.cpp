@@ -12,7 +12,7 @@ JKRDecomp* JKRDecomp::sDecompObject;
 
 JKRDecomp* JKRDecomp::create(s32 decompPriority) {
     if (JKRDecomp::sDecompObject == nullptr) {
-        JKRDecomp::sDecompObject = new (JKRGetSystemHeap(), 0) JKRDecomp(decompPriority);
+        JKRDecomp::sDecompObject = JKR_NEW_ARGS(JKRGetSystemHeap(), 0) JKRDecomp(decompPriority);
     }
 
     return JKRDecomp::sDecompObject;
@@ -63,7 +63,7 @@ void* JKRDecomp::run() {
 
 JKRDecompCommand* JKRDecomp::prepareCommand(u8* srcBuffer, u8* dstBuffer, u32 srcLength, u32 skipCount,
                                             DecompCallback* callback) {
-    JKRDecompCommand* cmd = new (JKRGetSystemHeap(), -4) JKRDecompCommand();
+    JKRDecompCommand* cmd = JKR_NEW_ARGS(JKRGetSystemHeap(), -4) JKRDecompCommand();
 
     cmd->mSrcBuffer = srcBuffer;
     cmd->mDstBuffer = dstBuffer;
@@ -117,7 +117,7 @@ bool JKRDecomp::sync(JKRDecompCommand* cmd, BOOL noBlock) {
 bool JKRDecomp::orderSync(u8* srcBuffer, u8* dstBuffer, u32 srcLength, u32 skipCount) {
     JKRDecompCommand* cmd = JKRDecomp::orderAsync(srcBuffer, dstBuffer, srcLength, skipCount, nullptr);
     bool res = JKRDecomp::sync(cmd, FALSE);
-    delete cmd;
+    JKR_DELETE(cmd);
     return res;
 }
 

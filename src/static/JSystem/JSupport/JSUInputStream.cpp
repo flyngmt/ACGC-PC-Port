@@ -39,10 +39,10 @@ char* JSUInputStream::readString() {
         return nullptr;
     }
 
-    char* buf = JKR_NEW char[len + 1];
+    char* buf = JKR_NEW_ARRAY(char, len + 1);
     r = this->readData(buf, len);
     if (r != len) {
-        delete[] buf;
+        JKR_DELETE_ARRAY(buf);
         this->setState(JSU_EOF);
         return nullptr;
     }

@@ -21,7 +21,7 @@ JKRAramBlock* JKRAramBlock::allocHead(u32 size, u8 groupID, JKRAramHeap* heap) {
     u32 address = this->mAddress + this->mSize;
     u32 freeSize = this->mFreeSize - size;
 
-    JKRAramBlock* block = new (heap->mHeap, 0) JKRAramBlock(address, size, freeSize, groupID, false);
+    JKRAramBlock* block = JKR_NEW_ARGS(heap->mHeap, 0) JKRAramBlock(address, size, freeSize, groupID, false);
     this->mFreeSize = 0;
     this->mLink.mPtrList->insert(this->mLink.mNext, &block->mLink);
     return block;
@@ -30,7 +30,7 @@ JKRAramBlock* JKRAramBlock::allocHead(u32 size, u8 groupID, JKRAramHeap* heap) {
 JKRAramBlock* JKRAramBlock::allocTail(u32 size, u8 groupID, JKRAramHeap* heap) {
     u32 address = this->mAddress + this->mSize + this->mFreeSize - size;
 
-    JKRAramBlock* block = new (heap->mHeap, 0) JKRAramBlock(address, size, 0, groupID, true);
+    JKRAramBlock* block = JKR_NEW_ARGS(heap->mHeap, 0) JKRAramBlock(address, size, 0, groupID, true);
     this->mFreeSize -= size;
     this->mLink.mPtrList->insert(this->mLink.mNext, &block->mLink);
     return block;

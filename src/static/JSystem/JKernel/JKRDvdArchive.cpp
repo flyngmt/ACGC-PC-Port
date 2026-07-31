@@ -37,7 +37,7 @@ JKRDvdArchive::~JKRDvdArchive() {
         }
 
         if (mDvdFile) {
-            delete mDvdFile;
+            JKR_DELETE(mDvdFile);
         }
 
         sVolumeList.remove(&mFileLoaderLink);
@@ -56,7 +56,7 @@ bool JKRDvdArchive::open(s32 entryNum) {
     mFileEntries = nullptr;
     mStrTable = nullptr;
 
-    mDvdFile = new (JKRGetSystemHeap(), 0) JKRDvdFile(entryNum);
+    mDvdFile = JKR_NEW_ARGS(JKRGetSystemHeap(), 0) JKRDvdFile(entryNum);
     if (mDvdFile == nullptr) {
         mMountMode = 0;
         return 0;
@@ -122,7 +122,7 @@ cleanup:
 #endif
         JREPORTF(":::Cannot alloc memory [%s][%d]\n", __FILE__, 397); // Macro?
         if (mDvdFile != nullptr) {
-            delete mDvdFile;
+            JKR_DELETE(mDvdFile);
             mDvdFile = nullptr;
         }
     }

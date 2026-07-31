@@ -27,18 +27,18 @@ JKRAramBlock* JKRDvdAramRipper::loadToAram(JKRDvdFile* dvdFile, u32 p1, JKRExpan
     syncAram(command, 0);
 
     if (p1) {
-        delete command;
+        JKR_DELETE(command);
         return (JKRAramBlock*)-1;
     }
 
     JKRAramBlock* result = command->mBlock;
-    delete command;
+    JKR_DELETE(command);
     return result;
 }
 
 JKRADCommand* JKRDvdAramRipper::loadToAram_Async(JKRDvdFile* dvdFile, u32 p1, JKRExpandSwitch expSwitch,
                                                  JKRADCommand::LoadCallback cb, u32 p4, u32 p5) {
-    JKRADCommand* command = new (JKRGetSystemHeap(), -4) JKRADCommand();
+    JKRADCommand* command = JKR_NEW_ARGS(JKRGetSystemHeap(), -4) JKRADCommand();
     command->mDvdFile = dvdFile;
     command->_1C = p1;
     command->mBlock = nullptr;
@@ -49,7 +49,7 @@ JKRADCommand* JKRDvdAramRipper::loadToAram_Async(JKRDvdFile* dvdFile, u32 p1, JK
     command->_18 = p5;
 
     if (!callCommand_Async(command)) {
-        delete command;
+        JKR_DELETE(command);
         return nullptr;
     }
 
@@ -68,7 +68,7 @@ JKRADCommand* JKRDvdAramRipper::callCommand_Async(JKRADCommand* command) {
         isCmdTrdNull = false;
     } else {
         dvdFile->mAramThread = OSGetCurrentThread();
-        JSUFileInputStream* stream = new (JKRGetSystemHeap(), -4) JSUFileInputStream(dvdFile);
+        JSUFileInputStream* stream = JKR_NEW_ARGS(JKRGetSystemHeap(), -4) JSUFileInputStream(dvdFile);
         dvdFile->mInputStream = stream;
         u32 fileSize = dvdFile->getFileSize();
         if (command->_18 && fileSize > command->_18) {
@@ -84,7 +84,7 @@ JKRADCommand* JKRDvdAramRipper::callCommand_Async(JKRADCommand* command) {
                 }
 
                 if (errorRetry == false) {
-                    delete stream;
+                    JKR_DELETE(stream);
                     return nullptr;
                 }
 
@@ -174,10 +174,10 @@ bool JKRDvdAramRipper::syncAram(JKRADCommand* command, int p1) {
 
     sDvdAramAsyncList.remove(&command->mLink);
     if (command->mStreamCommand) {
-        delete command->mStreamCommand;
+        JKR_DELETE(command->mStreamCommand);
     }
 
-    delete dvdFile->mInputStream;
+    JKR_DELETE(dvdFile->mInputStream);
     dvdFile->mAramThread = nullptr;
     OSUnlockMutex(&dvdFile->mAramMutex);
     return true;
@@ -189,7 +189,7 @@ JKRADCommand::JKRADCommand() : mLink(this) {
 
 JKRADCommand::~JKRADCommand() {
     if (_44 == 1)
-        delete mDvdFile;
+        JKR_DELETE(mDvdFile);
 }
 
 static OSMutex decompMutex;

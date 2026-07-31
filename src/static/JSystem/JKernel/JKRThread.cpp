@@ -67,7 +67,7 @@ JKRTask* JKRTask::create() {
 }
 
 void JKRTask::destroy() {
-    delete this;
+    JKR_DELETE(this);
 }
 
 void* JKRTask::run() {

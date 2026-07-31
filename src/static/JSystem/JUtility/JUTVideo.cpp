@@ -18,7 +18,7 @@ JUTVideo* JUTVideo::createManager(const GXRenderModeObj* renderModeObj) {
 
 void JUTVideo::destroyManager() {
     if (sManager != nullptr) {
-        delete sManager;
+        JKR_DELETE(sManager);
         sManager = nullptr;
     }
 }

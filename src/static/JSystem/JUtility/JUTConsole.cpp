@@ -46,7 +46,7 @@ JUTConsole* JUTConsole::create(uint param_0, void* buffer, u32 bufferSize) {
 // unused
 void JUTConsole::destroy(JUTConsole* console) {
     JUT_ASSERT(console != 0);
-    delete console;
+    JKR_DELETE(console);
 }
 
 JUTConsole::JUTConsole(uint p1, uint maxLines, bool p3) {
@@ -340,7 +340,7 @@ JUTConsoleManager* JUTConsoleManager::createManager(JKRHeap* pHeap) {
     if (pHeap == nullptr) {
         pHeap = JKRGetCurrentHeap();
     }
-    sManager = new (pHeap, 0) JUTConsoleManager();
+    sManager = JKR_NEW_ARGS(pHeap, 0) JUTConsoleManager();
     return sManager;
 }
 

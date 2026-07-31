@@ -7,7 +7,11 @@
 #include <stdlib.h>
 
 #include "MSL_C/printf.h"
+#ifdef TARGET_PC
+#include <string.h>
+#else
 #include "libc/string.h"
+#endif
 
 #include "JSystem/JUtility/JUTException.h"
 #include "JSystem/JUtility/JUTDirectPrint.h"
@@ -57,7 +61,7 @@ JSUList<JUTException::JUTExMapFile> JUTException::sMapFileList(false);
 
 JUTException* JUTException::create(JUTDirectPrint* directPrint) {
     if (sErrorManager == nullptr) {
-        sErrorManager = new (JKRGetSystemHeap(), 0) JUTException(directPrint);
+        sErrorManager = JKR_NEW_ARGS(JKRGetSystemHeap(), 0) JUTException(directPrint);
         sErrorManager->resume();
     }
     return sErrorManager;

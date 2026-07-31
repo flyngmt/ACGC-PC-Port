@@ -62,20 +62,20 @@ JKRArchive* JKRArchive::mount(const char* path, EMountMode mode, JKRHeap* heap, 
             if (entryNum == -1)
                 archive = nullptr;
             else
-                archive = new (heap, alignment) JKRMemArchive(entryNum, direction);
+                archive = JKR_NEW_ARGS(heap, alignment) JKRMemArchive(entryNum, direction);
             break;
         case MOUNT_ARAM:
-            archive = new (heap, alignment) JKRAramArchive(entryNum, direction);
+            archive = JKR_NEW_ARGS(heap, alignment) JKRAramArchive(entryNum, direction);
             break;
         case MOUNT_DVD:
-            archive = new (heap, alignment) JKRDvdArchive(entryNum, direction);
+            archive = JKR_NEW_ARGS(heap, alignment) JKRDvdArchive(entryNum, direction);
             break;
         case MOUNT_COMP:
-            archive = new (heap, alignment) JKRCompArchive(entryNum, direction);
+            archive = JKR_NEW_ARGS(heap, alignment) JKRCompArchive(entryNum, direction);
             break;
     }
     if (archive != nullptr && archive->getMountMode() == UNKNOWN_MOUNT_MODE) {
-        delete archive;
+        JKR_DELETE(archive);
         archive = nullptr;
     }
     return archive;
@@ -86,7 +86,7 @@ JKRArchive* JKRArchive::mount(void* p1, JKRHeap* heap, EMountDirection mountDire
     if (archive != nullptr) {
         return archive;
     }
-    return new (heap, (mountDirection == MOUNT_DIRECTION_HEAD) ? 4 : -4) JKRMemArchive(p1, 0xFFFF, MBF_0);
+    return JKR_NEW_ARGS(heap, (mountDirection == MOUNT_DIRECTION_HEAD) ? 4 : -4) JKRMemArchive(p1, 0xFFFF, MBF_0);
 }
 
 JKRArchive* JKRArchive::mount(s32 entryNum, EMountMode mountMode, JKRHeap* heap, EMountDirection mountDirection) {
@@ -98,20 +98,20 @@ JKRArchive* JKRArchive::mount(s32 entryNum, EMountMode mountMode, JKRHeap* heap,
         JKRArchive* archive;
         switch (mountMode) {
             case MOUNT_MEM:
-                archive = new (heap, i) JKRMemArchive(entryNum, mountDirection);
+                archive = JKR_NEW_ARGS(heap, i) JKRMemArchive(entryNum, mountDirection);
                 break;
             case MOUNT_ARAM:
-                archive = new (heap, i) JKRAramArchive(entryNum, mountDirection);
+                archive = JKR_NEW_ARGS(heap, i) JKRAramArchive(entryNum, mountDirection);
                 break;
             case MOUNT_DVD:
-                archive = new (heap, i) JKRDvdArchive(entryNum, mountDirection);
+                archive = JKR_NEW_ARGS(heap, i) JKRDvdArchive(entryNum, mountDirection);
                 break;
             case MOUNT_COMP:
-                archive = new (heap, i) JKRCompArchive(entryNum, mountDirection);
+                archive = JKR_NEW_ARGS(heap, i) JKRCompArchive(entryNum, mountDirection);
                 break;
         }
         if (archive != nullptr && archive->getMountMode() == UNKNOWN_MOUNT_MODE) {
-            delete archive;
+            JKR_DELETE(archive);
             archive = nullptr;
         }
         return archive;
@@ -302,7 +302,7 @@ JKRFileFinder* JKRArchive::getFirstFile(const char* path) const {
         dirEntry = findDirectory(path, sCurrentDirID);
     }
     if (dirEntry) {
-        return new (JKRGetSystemHeap(), 0)
+        return JKR_NEW_ARGS(JKRGetSystemHeap(), 0)
             JKRArcFinder(const_cast<JKRArchive*>(this), dirEntry->mFirstIdx, dirEntry->mNum);
     }
     return nullptr;

@@ -41,10 +41,10 @@ JKRCompArchive::~JKRCompArchive() {
         mArcInfoBlock = nullptr;
     }
     if (mAramPart) {
-        delete mAramPart;
+        JKR_DELETE(mAramPart);
     }
     if (mDvdFile) {
-        delete mDvdFile;
+        JKR_DELETE(mDvdFile);
     }
 
     sVolumeList.remove(&mFileLoaderLink);
@@ -64,7 +64,7 @@ bool JKRCompArchive::open(s32 entryNum) {
     mFileEntries = nullptr;
     mStrTable = nullptr;
 
-    mDvdFile = new (JKRGetSystemHeap(), 0) JKRDvdFile(entryNum);
+    mDvdFile = JKR_NEW_ARGS(JKRGetSystemHeap(), 0) JKRDvdFile(entryNum);
     if (mDvdFile == nullptr) {
         mMountMode = 0;
         return false;
@@ -231,11 +231,11 @@ bool JKRCompArchive::open(s32 entryNum) {
             mArcInfoBlock = nullptr;
         }
         if (mAramPart != nullptr) {
-            delete mAramPart;
+            JKR_DELETE(mAramPart);
             mAramPart = nullptr;
         }
         if (mDvdFile != nullptr) {
-            delete mDvdFile;
+            JKR_DELETE(mDvdFile);
             mDvdFile = nullptr;
         }
         JREPORTF(":::[%s: %d] Cannot alloc memory in mounting CompArchive\n", __FILE__, 567);
@@ -254,7 +254,7 @@ bool JKRCompArchive::open(s32 entryNum) {
     mFileEntries = nullptr;
     mStrTable = nullptr;
 
-    mDvdFile = new (JKRGetSystemHeap(), 0) JKRDvdFile(entryNum);
+    mDvdFile = JKR_NEW_ARGS(JKRGetSystemHeap(), 0) JKRDvdFile(entryNum);
     if (mDvdFile == nullptr) {
         mMountMode = 0;
         return 0;
@@ -364,7 +364,7 @@ bool JKRCompArchive::open(s32 entryNum) {
     if (mMountMode == 0) {
         JREPORTF(0, ":::[%s: %d] Cannot alloc memory in mounting CompArchive\n", __FILE__, 567); // Macro?
         if (mDvdFile) {
-            delete mDvdFile;
+            JKR_DELETE(mDvdFile);
             mDvdFile = nullptr;
         }
     }

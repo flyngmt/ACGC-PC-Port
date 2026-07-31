@@ -7,9 +7,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#if defined(_WIN32)
+#include <string.h>
+#define pc_strcasecmp _stricmp
+#else
 #include <strings.h>
-#include <dirent.h>
+#define pc_strcasecmp strcasecmp
+#endif
 #include <filesystem>
+#include <string>
 #include <system_error>
 extern "C" {
     void pc_fixnes_init(unsigned char* ines_data, int ines_size);
@@ -63,26 +69,39 @@ static void pc_sync_prgram_to_bbramp() {
 #define PC_NES_ROMS_DIR "nes_roms"
 
 static int pc_nes_rom_cmp(const void* a, const void* b) {
-    return strcasecmp(*(const char* const*)a, *(const char* const*)b);
+    return pc_strcasecmp(*(const char* const*)a, *(const char* const*)b);
 }
 
 static int pc_nes_rom_scan(char*** out_names) {
     *out_names = nullptr;
-    DIR* d = opendir(PC_NES_ROMS_DIR);
-    if (d == nullptr) return 0;
+    std::error_code error;
+    std::filesystem::directory_iterator iter(PC_NES_ROMS_DIR, error);
+    if (error) return 0;
+
     char** names = nullptr;
     int count = 0;
     int cap = 0;
-    for (struct dirent* e; (e = readdir(d)) != nullptr; ) {
-        size_t len = strlen(e->d_name);
-        if (len < 5 || strcasecmp(e->d_name + len - 4, ".nes") != 0) continue;
+    for (const std::filesystem::directory_iterator end; iter != end; iter.increment(error)) {
+        if (error) break;
+
+        const std::string filename = iter->path().filename().string();
+        const size_t len = filename.size();
+        if (len < 5 || pc_strcasecmp(filename.c_str() + len - 4, ".nes") != 0) continue;
+
         if (count == cap) {
-            cap = cap ? cap * 2 : 8;
-            names = (char**)realloc(names, cap * sizeof(char*));
+            const int new_cap = cap ? cap * 2 : 8;
+            char** new_names = (char**)realloc(names, new_cap * sizeof(char*));
+            if (new_names == nullptr) break;
+            names = new_names;
+            cap = new_cap;
         }
-        names[count++] = strdup(e->d_name);
+
+        char* name = (char*)malloc(len + 1);
+        if (name == nullptr) break;
+        memcpy(name, filename.c_str(), len + 1);
+        names[count++] = name;
     }
-    closedir(d);
+
     if (count > 1) qsort(names, count, sizeof(char*), pc_nes_rom_cmp);
     *out_names = names;
     return count;
@@ -96,7 +115,7 @@ static void pc_nes_rom_free(char** names, int count) {
 static void pc_nes_rom_copy_title(u8* dst, const char* filename) {
     /* Filename without .nes extension, space-padded to MURA_GAME_NAME_SIZE. */
     size_t len = strlen(filename);
-    if (len >= 4 && strcasecmp(filename + len - 4, ".nes") == 0) len -= 4;
+    if (len >= 4 && pc_strcasecmp(filename + len - 4, ".nes") == 0) len -= 4;
     if (len > MURA_GAME_NAME_SIZE) len = MURA_GAME_NAME_SIZE;
     memset(dst, ' ', MURA_GAME_NAME_SIZE);
     memcpy(dst, filename, len);
@@ -108,7 +127,11 @@ static void pc_nes_rom_copy_title(u8* dst, const char* filename) {
 #define pc_widescreen_set_viewport GXSetViewport
 #endif
 
+#ifdef TARGET_PC
+#include <string.h>
+#else
 #include "libc/string.h"
+#endif
 #include "dolphin/gx.h"
 #include "dolphin/os.h"
 #include "dolphin/mtx.h"
@@ -359,7 +382,7 @@ static void famicom_save_data_setup(FamicomSaveDataHeader* header, u32 size, u8*
 }
 
 static void famicom_save_data_init(FamicomSaveDataHeader* header, u32 size, u8* identifier) {
-    bzero(header, FAMICOM_SAVE_HEADER_SIZE + size * PLAYER_NUM);
+    memset(header, 0, FAMICOM_SAVE_HEADER_SIZE + size * PLAYER_NUM);
     header->no_save = TRUE;
     famicom_save_data_setup(header, size, identifier);
 }
@@ -409,7 +432,7 @@ static void process_filer_mode() {
     static const Vec at = { 0.0f, 0.0f, -100.0f };
     static const Vec up = { 0.0f, 1.0f, 0.0f };
     Mtx44 m;
-    Mtx34 lookat_m;
+    Mtx lookat_m;
 
     GXInvalidateTexAll();
     GXInvalidateVtxCache();
@@ -1005,7 +1028,7 @@ static s32 memcard_data_save(
         goto exit;
     }
 
-    bzero(save_data, save_data_size_block_aligned);
+    memset(save_data, 0, save_data_size_block_aligned);
     memcpy(save_data, comment_img, comment_img_size); // copy memcard file info data
     memcpy(save_data + comment_img_size, header, save_data_size); // copy data header & save data
 
@@ -1046,7 +1069,7 @@ static s32 memcard_data_save(
                 goto exit;
             }
 
-            bool save_updated = bcmp(save_data, buf, save_data_size_block_aligned) == 0;
+            bool save_updated = memcmp(save_data, buf, save_data_size_block_aligned) == 0;
             if (save_updated) {
                 // No need to save, so the process has completed successfully.
                 OSReport("セーブする必要が無いので正常終了\n");
@@ -1135,7 +1158,7 @@ static s32 memcard_data_save(
             OSReport("ファイル全体のベリファイ\n");
             result = CARDRead(&fileInfo, buf, save_data_size_block_aligned, 0);
             if (result == CARD_RESULT_READY) {
-                if (bcmp(save_data, buf, save_data_size_block_aligned) == 0) {
+                if (memcmp(save_data, buf, save_data_size_block_aligned) == 0) {
                     // Verification successful.
                     OSReport("ベリファイ成功\n");
                 }
@@ -1467,7 +1490,7 @@ static s32 memcard_game_load(
         *tags_pp = end_tag;
     }
 
-    bzero(game_header, sizeof(MemcardGameHeader_t));
+    memset(game_header, 0, sizeof(MemcardGameHeader_t));
     game_header->_00 = 'G';
     game_header->_01 = 0;
     pc_nes_rom_copy_title(game_header->mori_name, names[rom_idx]);
@@ -1862,7 +1885,7 @@ static size_t entrylist(const char* dir, char* filename_strbuf) {
             fileFinder->findNextFile();
         }
 
-        delete fileFinder;
+        JKR_DELETE(fileFinder);
     }
 
     return len;
@@ -1957,7 +1980,7 @@ static void famicom_mount_archive_wait() {
 
 extern int famicom_init(int rom_idx, Famicom_MallocInfo* malloc_info, int player_no) {
     famicom_mount_archive_wait();
-    bzero(&famicomCommon, sizeof(FamicomCommon));
+    memset(&famicomCommon, 0, sizeof(FamicomCommon));
     my_malloc_current = malloc_info;
     
     if (player_no >= 0 && player_no < PLAYER_NUM) {
@@ -2161,14 +2184,14 @@ static int SetupResBanner(const ResTIMG* img, u8* dst, size_t max_size, size_t* 
             banner_type = CARD_STAT_BANNER_C8;
         }
 
-        bcopy(((u8*)img) + img->mImageDataOffset, data_p, banner_size);
+        memmove(data_p, ((u8*)img) + img->mImageDataOffset, banner_size);
         data_p += banner_size;
 
         if (img->mPaletteFormat != ResTIMG_NO_PALETTE) {
             size_t pal_size = img->mPaletteEntryCount * sizeof(u16);
 
-            bcopy(((u8*)img) + img->mPaletteOffset, data_p, pal_size);
-            bzero(data_p + pal_size, (256 * sizeof(u16)) - pal_size); // zero out unused entries
+            memmove(data_p, ((u8*)img) + img->mPaletteOffset, pal_size);
+            memset(data_p + pal_size, 0, (256 * sizeof(u16)) - pal_size); // zero out unused entries
             data_p += 256 * sizeof(u16);
         }
     }
@@ -2221,14 +2244,14 @@ static int SetupResIcon(const ResTIMG* img, u8* dst, size_t max_size, size_t* si
             i++;
         }
 
-        bcopy(((u8*)img) + img->mImageDataOffset, data_p, icon_size);
+        memmove(data_p, ((u8*)img) + img->mImageDataOffset, icon_size);
         data_p += icon_size;
 
         if (img->mPaletteFormat != ResTIMG_NO_PALETTE) {
             size_t pal_size = img->mPaletteEntryCount * sizeof(u16);
 
-            bcopy(((u8*)img) + img->mPaletteOffset, data_p, pal_size);
-            bzero(data_p + pal_size, (256 * sizeof(u16)) - pal_size); // zero out unused entries
+            memmove(data_p, ((u8*)img) + img->mPaletteOffset, pal_size);
+            memset(data_p + pal_size, 0, (256 * sizeof(u16)) - pal_size); // zero out unused entries
             data_p += 256 * sizeof(u16);
         }
     }
@@ -2352,7 +2375,7 @@ static int famicom_rom_load() {
     OSReport("nesrom_buffer_size=%d\n", nesrom_buffer_size);
 
     if (nesrom_buffer_size >= KS_NES_CHRROM_SIZE) {
-        bzero(famicomCommon.nesromp, KS_NES_CHRROM_SIZE);
+        memset(famicomCommon.nesromp, 0, KS_NES_CHRROM_SIZE);
     }
 
     if (famicomCommon.nesrom_memcard != FALSE) {
@@ -2389,7 +2412,7 @@ static int famicom_rom_load() {
     else {
         const char* filename = (char*)nesrom_filename_ptrs[nesrom_idx];
         OSReport("%d:<%s>\n", nesrom_idx, filename);
-        bzero(famicomCommon.nesromp, nesrom_buffer_size);
+        memset(famicomCommon.nesromp, 0, nesrom_buffer_size);
         size_t loaded_size = JKRFileLoader::readGlbResource(famicomCommon.nesromp, nesrom_buffer_size, filename, EXPAND_SWITCH_DECOMPRESS);
         if (loaded_size == 0) {
             return -1;
@@ -2402,7 +2425,7 @@ static int famicom_rom_load() {
         nesinfo_data_end = nesinfo_data_start + loaded_size;
 
         MemcardGameHeader_t* memcard_game_header = &famicomCommon.memcard_game_header;
-        bzero(memcard_game_header, sizeof(MemcardGameHeader_t));
+        memset(memcard_game_header, 0, sizeof(MemcardGameHeader_t));
         memcard_game_header->_00 = 'G';
         memcard_game_header->_01 = 0;
         strncpy((char*)memcard_game_header->mori_name, (char*)nesinfo_get_moriName(), MURA_GAME_NAME_SIZE);
@@ -2442,7 +2465,7 @@ static int famicom_rom_load() {
         famicomCommon.save_data_total_size = famicomCommon.save_data_single_size * PLAYER_NUM + sizeof(FamicomSaveDataHeader);
         famicomCommon.save_data_header = (FamicomSaveDataHeader*)nintendo_hi_0; // overwritten for use with save data
         famicomCommon.internal_save_datap = nintendo_hi_0 + sizeof(FamicomSaveDataHeader) + famicomCommon.save_data_single_size * famicomCommon.save_pl_no;
-        bzero(famicomCommon.save_data_header, famicomCommon.save_data_total_size);
+        memset(famicomCommon.save_data_header, 0, famicomCommon.save_data_total_size);
     }
 
     if (famicomCommon.nesrom_memcard == FALSE) {
@@ -3051,7 +3074,7 @@ static int famicom_cardResultToMiyake(s32 cardResult) {
 extern int famicom_internal_data_load() {
 #ifdef TARGET_PC
     /* PC: Load NES save data from the configured user directory. */
-    bzero(&famicomCommon, sizeof(FamicomCommon));
+    memset(&famicomCommon, 0, sizeof(FamicomCommon));
     famicomCommon.nesrom_memcard = FALSE;
     strncpy((char*)famicomCommon.mura_save_name, "DobutsunomoriP_MURA", 32);
     strncpy((char*)famicomCommon.famicom_save_name, "DobutsunomoriP_F_SAVE", 32);
@@ -3062,7 +3085,7 @@ extern int famicom_internal_data_load() {
     famicomCommon.internal_save_datap = nullptr;
     {
         char nes_path[PC_NES_SAVE_PATH_MAX];
-        bzero(famicomCommonSave, sizeof(famicomCommonSave));
+        memset(famicomCommonSave, 0, sizeof(famicomCommonSave));
         pc_nes_save_source = PC_NES_SAVE_SOURCE_NONE;
         if (!pc_nes_save_path(nes_path, sizeof(nes_path))) {
             OSReport("[PC] NES save path exceeds %d bytes\n", PC_NES_SAVE_PATH_MAX);
@@ -3094,7 +3117,7 @@ extern int famicom_internal_data_load() {
     return FAMICOM_RESULT_OK;
 #endif
     famicom_mount_archive_wait();
-    bzero(&famicomCommon, sizeof(FamicomCommon));
+    memset(&famicomCommon, 0, sizeof(FamicomCommon));
     famicomCommon.nesrom_memcard = FALSE;
     strncpy((char*)famicomCommon.mura_save_name, "DobutsunomoriP_MURA", 32);
     strncpy((char*)famicomCommon.famicom_save_name, "DobutsunomoriP_F_SAVE", 32);
@@ -3188,7 +3211,7 @@ extern int famicom_internal_data_save() {
     s32 chan;
 
     famicom_mount_archive_wait();
-    bzero(&famicomCommon, sizeof(FamicomCommon));
+    memset(&famicomCommon, 0, sizeof(FamicomCommon));
     famicomCommon.nesrom_memcard = FALSE;
     strncpy((char*)famicomCommon.mura_save_name, "DobutsunomoriP_MURA", 32);
     strncpy((char*)famicomCommon.famicom_save_name, "DobutsunomoriP_F_SAVE", 32);
