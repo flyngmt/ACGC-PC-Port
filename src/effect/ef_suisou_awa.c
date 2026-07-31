@@ -92,8 +92,8 @@ static void eSuisou_Awa_mv(eEC_Effect_c* effect, GAME* game) {
         effect->scale.x = eEC_CLIP->calc_adjust_proc((s16)effect->lifetime, 76, 80, effect->offset.x, 0.0f);
         effect->scale.y = effect->scale.z = effect->scale.x;
         effect->velocity.y *= powf(sqrtf(0.84f), dt);
-        effect->effect_specific[0] += (s16)(effect->effect_specific[1] * dt);
-        effect->effect_specific[2] += (s16)(effect->effect_specific[3] * dt);
+        effect->effect_specific[0] += F32_TO_S16(effect->effect_specific[1] * dt);
+        effect->effect_specific[2] += F32_TO_S16(effect->effect_specific[3] * dt);
         if (effect->arg0 == 2) {
             /* Drive sine via lifetime instead of game_frame so high-fps doesn't aliase. */
             f32 t = 80.0f - effect->lifetime;

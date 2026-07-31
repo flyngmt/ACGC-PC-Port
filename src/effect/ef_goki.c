@@ -71,7 +71,7 @@ static void eGoki_mv(eEC_Effect_c* effect, GAME* game) {
     effect->position.y += effect->velocity.y * dt;
     effect->position.z += effect->velocity.z * dt;
     effect->velocity.y *= powf(sqrtf(0.65f), dt);
-    effect->effect_specific[1] += (s16)(1000 * dt);
+    effect->effect_specific[1] += F32_TO_S16(1000 * dt);
     effect->offset.x = effect->offset.y * sin_s(effect->effect_specific[1]);
     effect->effect_specific[0] = -effect->offset.z * cos_s(effect->effect_specific[1]);
 }

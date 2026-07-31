@@ -67,7 +67,7 @@ static void eReset_Hole_mv(eEC_Effect_c* effect, GAME* game) {
             eEL_CalcAdjust_F(effect->lifetime, 0.0f, 16.0f, scale, 0.0f);
 
         {
-            effect->effect_specific[2] += (s16)((f32)game->graph->dt_num_60fps_frames * 100.0f);
+            effect->effect_specific[2] += F32_TO_S16((f32)game->graph->dt_num_60fps_frames * 100.0f);
             if (effect->effect_specific[2] >= 800) {
                 effect->effect_specific[2] -= 800;
                 int rotate_180 = ((effect->effect_specific[1] & 1) == 0);
@@ -96,7 +96,7 @@ static void eReset_Hole_mv(eEC_Effect_c* effect, GAME* game) {
             eEL_CalcAdjust_F(effect->lifetime, 0.0f, 24.0f, 0.0f, scale);
 
         if (effect->lifetime > 8.0f) {
-            effect->effect_specific[3] += (s16)((f32)game->graph->dt_num_60fps_frames * 100.0f);
+            effect->effect_specific[3] += F32_TO_S16((f32)game->graph->dt_num_60fps_frames * 100.0f);
             if (effect->effect_specific[3] >= 800) {
                 effect->effect_specific[3] -= 800;
                 int rotate_180 = ((effect->effect_specific[1] & 1) == 0);

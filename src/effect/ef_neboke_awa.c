@@ -66,8 +66,8 @@ static void eSleep_mv(eEC_Effect_c* effect, GAME* game) {
     f32 dt = (f32)game->graph->dt_num_60fps_frames;
     f32 t = 64.0f - effect->lifetime;
 
-    effect->effect_specific[2] += (s16)(DEG2SHORT_ANGLE2(11.25f) * dt);
-    effect->effect_specific[3] += (s16)(DEG2SHORT_ANGLE2(6.33f)  * dt);
+    effect->effect_specific[2] += F32_TO_S16(DEG2SHORT_ANGLE2(11.25f) * dt);
+    effect->effect_specific[3] += F32_TO_S16(DEG2SHORT_ANGLE2(6.33f) * dt);
 
     effect->velocity.x += effect->acceleration.x * dt;
     effect->velocity.y += effect->acceleration.y * dt;

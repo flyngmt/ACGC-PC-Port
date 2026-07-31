@@ -50,7 +50,7 @@ static void eOMN_mv(eEC_Effect_c* effect, GAME* game) {
     f32 dt = (f32)game->graph->dt_num_60fps_frames;
     float vel;
 
-    effect->effect_specific[0] += (s16)(DEG2SHORT_ANGLE2(2.29f) * dt);
+    effect->effect_specific[0] += F32_TO_S16(DEG2SHORT_ANGLE2(2.29f) * dt);
     effect->effect_specific[1] += (int)(effect->acceleration.x * dt);
 
     vel = effect->velocity.x * sin_s(effect->effect_specific[1]);

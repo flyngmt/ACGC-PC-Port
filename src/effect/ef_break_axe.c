@@ -55,7 +55,7 @@ static void eBreak_Axe_ct(eEC_Effect_c* effect, GAME* game, void* ct_arg) {
         angle += (int)((20.0f + GETREG(TAKREG, 58) + RANDOM_F(20.0f + GETREG(TAKREG, 59))) * 182.04445f);
         effect->offset.y += 15.0f;
     } else {
-        angle += RANDOM_F(14563.0f);
+        angle += F32_TO_S16(RANDOM_F(14563.0f));
         effect->offset.y += 3.0f;
     }
 
@@ -137,8 +137,8 @@ static void eBreak_Axe_mv(eEC_Effect_c* effect, GAME* game) {
     effect->position.y += effect->velocity.y * dt;
     effect->position.z += effect->velocity.z * dt;
 
-    effect->effect_specific[0] += (s16)(effect->effect_specific[1] * dt);
-    effect->effect_specific[2] += (s16)(effect->effect_specific[3] * dt);
+    effect->effect_specific[0] += F32_TO_S16(effect->effect_specific[1] * dt);
+    effect->effect_specific[2] += F32_TO_S16(effect->effect_specific[3] * dt);
 
     if (effect->lifetime <= (f32)((35 + GETREG(TAKREG, 60)) * 2 - 5)) {
         if (effect->position.y < effect->offset.y && mCoBG_CheckWaterAttribute(ut_attr)) {

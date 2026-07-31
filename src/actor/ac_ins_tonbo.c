@@ -112,7 +112,7 @@ extern void aITB_actor_init(ACTOR* actorx, GAME* game) {
             // Set initial position and angle
             aITB_SET_HEIGHT(ins, 52.0f + RANDOM_F(10.0f));
             actorx->world.position.y = 20.0f + mCoBG_GetBgY_OnlyCenter_FromWpos(actorx->world.position, 0.0f);
-            actorx->world.angle.y = DEG2SHORT_ANGLE3(180.0f) - RANDOM_F(DEG2SHORT_ANGLE3(360.0f));
+            actorx->world.angle.y = F32_TO_S16(DEG2SHORT_ANGLE3(180.0f) - RANDOM_F(DEG2SHORT_ANGLE3(360.0f)));
             actorx->shape_info.rotation.y = actorx->world.angle.y;
             mFI_BkNum2WposXZ(&aITB_GET_BK_CENTER_X(ins), &aITB_GET_BK_CENTER_Z(ins), actorx->block_x, actorx->block_z);
             aITB_GET_BK_CENTER_X(ins) += mFI_BK_WORLDSIZE_HALF_X_F;

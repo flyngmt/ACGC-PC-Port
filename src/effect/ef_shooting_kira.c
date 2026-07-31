@@ -85,7 +85,7 @@ static void eShootingKira_dw(eEC_Effect_c* effect, GAME* game) {
         alpha = eEL_CalcAdjust_F(t, max * 0.87f, max, 150.0f, 100.0f);
     }
 
-    angle_z = (s16)eEL_CalcAdjust_F(t, 0.0f, max, 0.0f, 0x20000);
+    angle_z = F32_TO_S16(eEL_CalcAdjust_F(t, 0.0f, max, 0.0f, 0x20000));
     Matrix_translate(effect->position.x, effect->position.y, effect->position.z, MTX_LOAD);
     Matrix_mult(&play->billboard_matrix, MTX_MULT);
     Matrix_RotateZ(angle_z, MTX_MULT);

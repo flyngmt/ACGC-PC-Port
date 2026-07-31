@@ -43,7 +43,7 @@ static void eShooting_mv(eEC_Effect_c* effect, GAME* game) {
     f32 t = (f32)EFFECT_LIFETIME - effect->lifetime;
     s16 trigger = (s16)(GETREG(MYKREG, 6) + 76);
 
-    effect->effect_specific[1] += (s16)(256 * dt);
+    effect->effect_specific[1] += F32_TO_S16(256 * dt);
 
     if (effect->effect_specific[2] < 1 && t >= (f32)trigger) {
         effect->effect_specific[2] = 1;

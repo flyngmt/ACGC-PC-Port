@@ -457,7 +457,7 @@ static void aMHS_actor_move(ACTOR* actorx, GAME* game) {
 
     my_house->arg2_f = drtbl[my_house->request_type];
     aMHS_set_door_SE(my_house);
-    actorx->actor_specific -= (s16)(mEnv_GetWindPowerF() * 1000.0f * (f32)game->graph->dt_num_60fps_frames);
+    actorx->actor_specific -= F32_TO_S16(mEnv_GetWindPowerF() * 1000.0f * (f32)game->graph->dt_num_60fps_frames);
     (*my_house->action_proc)(my_house, play);
 
     if (aMHS_light_ctrl(my_house)) {

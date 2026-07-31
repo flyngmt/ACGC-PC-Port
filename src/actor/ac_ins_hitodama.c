@@ -22,7 +22,7 @@ enum {
 #define aIHD_MOVE_TIM(insect) ((insect)->s32_work2)
 #define aIHD_ANGLE(insect) ((insect)->s32_work3)
 
-#define aIHD_RANDOM_ANGLE() (RANDOM_F(65536))
+#define aIHD_RANDOM_ANGLE() F32_TO_S16(RANDOM_F(65536))
 #define aIHD_ANGLE_F(insect) (sin_s((s16)aIHD_ANGLE(insect)))
 
 static int aIHD_set_move_info(aINS_INSECT_ACTOR* insect, GAME* game);

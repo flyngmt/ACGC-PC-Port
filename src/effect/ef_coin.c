@@ -56,9 +56,9 @@ static void eCoin_ct(eEC_Effect_c* effect, GAME* game, void* ct_arg) {
     effect->timer = 100;
 
     effect->effect_specific[0] = FALSE;
-    effect->effect_specific[1] = RANDOM_F(65535);
-    effect->effect_specific[2] = RANDOM_F(65535);
-    effect->effect_specific[3] = RANDOM_F(65535);
+    effect->effect_specific[1] = F32_TO_S16(RANDOM_F(65535));
+    effect->effect_specific[2] = F32_TO_S16(RANDOM_F(65535));
+    effect->effect_specific[3] = F32_TO_S16(RANDOM_F(65535));
     effect->effect_specific[4] = 0;
 
     effect->velocity.x = sin_s(angle) * 0.77f;
@@ -90,9 +90,9 @@ static void eCoin_mv(eEC_Effect_c* effect, GAME* game) {
     if (effect->effect_specific[0] == FALSE) {
 
         eEC_CLIP->set_continious_env_proc(effect, 100, 100);
-        effect->effect_specific[1] += (s16)(DEG2SHORT_ANGLE(21.093750f) * dt);
-        effect->effect_specific[2] += (s16)(DEG2SHORT_ANGLE(18.281250f) * dt);
-        effect->effect_specific[3] += (s16)(DEG2SHORT_ANGLE(19.687500f) * dt);
+        effect->effect_specific[1] += F32_TO_S16(DEG2SHORT_ANGLE(21.093750f) * dt);
+        effect->effect_specific[2] += F32_TO_S16(DEG2SHORT_ANGLE(18.281250f) * dt);
+        effect->effect_specific[3] += F32_TO_S16(DEG2SHORT_ANGLE(19.687500f) * dt);
 
         if (effect->position.y <= effect->offset.x) {
             xyz_t pos = effect->position;
@@ -131,7 +131,7 @@ static void eCoin_mv(eEC_Effect_c* effect, GAME* game) {
         effect->effect_specific[3] = 0;
 
     } else {
-        effect->effect_specific[4] += (s16)(DEG2SHORT_ANGLE(7.031250f) * dt);
+        effect->effect_specific[4] += F32_TO_S16(DEG2SHORT_ANGLE(7.031250f) * dt);
         effect->effect_specific[1] = sin_s(effect->effect_specific[4]) * 2048.0f;
         effect->effect_specific[3] = cos_s(effect->effect_specific[4]) * 2048.0f;
         effect->effect_specific[2] = 0;

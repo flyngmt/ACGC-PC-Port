@@ -77,8 +77,8 @@ static void aBEE_anime_proc(BEE_ACTOR* bee) {
     kf_p->frame_control.current_frame = bee->start_frame;
     cKF_SkeletonInfo_R_play(kf_p);
     kf_p->frame_control.speed = 0.0f;
-    bee->fly_angle[0] += (s16)(500.0f * dt);
-    bee->fly_angle[1] -= (s16)(500.0f * dt);
+    bee->fly_angle[0] += F32_TO_S16(500.0f * dt);
+    bee->fly_angle[1] -= F32_TO_S16(500.0f * dt);
 }
 
 static void aBEE_fly_move_common(BEE_ACTOR* bee, GAME* game) {
@@ -115,7 +115,7 @@ static void aBEE_fly_move_common(BEE_ACTOR* bee, GAME* game) {
     bee->speed += fabsf((f32)((DEG2SHORT_ANGLE2(180.0f) - abs_speed_angle) / DEG2SHORT_ANGLE2(30.0f)));
     add_calc(&bee->actor_class.speed, bee->speed, CALC_EASE(0.3f), 0.15f, 0.0f);
 
-    bee->bobbing_counter += (s16)(0x900 * game->graph->dt_num_60fps_frames);
+    bee->bobbing_counter += F32_TO_S16(0x900 * game->graph->dt_num_60fps_frames);
     if (player != NULL) {
         bee->pos_y = player->world.position.y + 50.0f;
     }

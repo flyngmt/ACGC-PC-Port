@@ -164,7 +164,7 @@ static void aAL_title_decide_p_sel_npc() {
       break;
     }
   }
-  
+
   idx = mNpc_SearchAnimalinfo(Save_Get(animals), npc_name, ANIMAL_NUM_MAX);
   mNpc_RegistEventNpc(SP_NPC_P_SEL2, npc_name, npc_name, Save_Get(animals[idx].cloth));
 }
@@ -206,7 +206,7 @@ static void aAL_logo_in(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
   int animal_done;
   int cros_done;
   int sing_done;
-    
+
   if (aAL_chk_start_key2(actor, game) == FALSE) {
     animal_done = cKF_SkeletonInfo_R_play(&actor->animal.skeleton);
     cros_done = cKF_SkeletonInfo_R_play(&actor->cros.skeleton);
@@ -243,9 +243,11 @@ static void aAL_game_start_wait(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
   s16 t;
   float new_opacity_timer;
 
+  t = F32_TO_S16(actor->start_opacity_timer);
   new_opacity_timer = actor->start_opacity_timer;
-  new_opacity_timer += game->graph->dt_num_60fps_frames * (32768.0f / (actor->start_opacity_timer > 0 ? 50.0f : 22.0f));
-  start_opacity = 127.5f * sin_s((u16)new_opacity_timer) + 127.5f; // 127.5f + 127.5f * [0, 1] = [127.5f, 255.0f] (opacity)
+  new_opacity_timer += game->graph->dt_num_60fps_frames * F32_TO_S16(32768.0f / (t > 0 ? 50.0f : 22.0f));
+  t = F32_TO_S16(new_opacity_timer);
+  start_opacity = 127.5f * sin_s(t) + 127.5f; // 127.5f + 127.5f * [0, 1] = [127.5f, 255.0f] (opacity)
 
   if (start_opacity > 255.0f) {
     start_opacity = 255.0f;
@@ -502,7 +504,7 @@ static void aAL_tm_draw(GRAPH* graph) {
   gSPDisplayList(gfx++, init_disp);
   gSPDisplayList(gfx++, logo_us_tm_model);
   SET_FONT_DISP(gfx);
-  
+
   CLOSE_DISP(graph);
 
   Matrix_pull();
@@ -547,7 +549,7 @@ static void aAL_press_start_draw(ANIMAL_LOGO_ACTOR* actor, GRAPH* graph) {
   static const u32 ps_prim_r[5] = { 70, 60, 60, 40, 40 };
   static const u32 ps_prim_g[5] = { 40, 50, 40, 50, 50 };
   static const u32 ps_prim_b[5] = { 40, 30, 60, 70, 60 };
-  
+
   static const u32 ps_env_r[5] = { 255, 255, 255, 120, 165 };
   static const u32 ps_env_g[5] = {  90, 135, 100, 205, 245 };
   static const u32 ps_env_b[5] = {  30,   0, 255, 245,   0 };
@@ -649,7 +651,7 @@ static void aAL_title_draw(GAME* game, ANIMAL_LOGO_ACTOR* actor) {
   SET_POLY_OPA_DISP(NOW_FONT_DISP);
   gSPMatrix(NOW_POLY_OPA_DISP++, _Matrix_to_Mtx_new(graph), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
   gSPDisplayList(NOW_POLY_OPA_DISP++, init_disp);
-  
+
   aAL_skl_draw(game, &actor->animal.skeleton);
   aAL_skl_draw(game, &actor->cros.skeleton);
   aAL_skl_draw(game, &actor->sing.skeleton);

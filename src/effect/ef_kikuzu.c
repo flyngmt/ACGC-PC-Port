@@ -62,8 +62,8 @@ static void eKikuzu_mv(eEC_Effect_c* effect, GAME* game) {
     effect->position.x += effect->velocity.x * dt;
     effect->position.y += effect->velocity.y * dt;
     effect->position.z += effect->velocity.z * dt;
-    effect->effect_specific[0] += (s16)(effect->effect_specific[1] * dt);
-    effect->effect_specific[2] += (s16)(effect->effect_specific[3] * dt);
+    effect->effect_specific[0] += F32_TO_S16(effect->effect_specific[1] * dt);
+    effect->effect_specific[2] += F32_TO_S16(effect->effect_specific[3] * dt);
 
     if (effect->position.y < effect->offset.y && effect->offset.x >= effect->offset.y && effect->velocity.y < 0.0f) {
         f32 bounce = DTCONV_GAME(0.6f, game);

@@ -2142,7 +2142,7 @@ extern int Camera2_request_main_needlework_talk(GAME_PLAY* play, ACTOR* speaker,
     s16 angle_y;
     f32 diff_x = listener->eye.position.x - speaker->eye.position.x;
 
-    angle_y = (s16)(diff_x * (20.0f / 3.0f) + -32768.0f);
+    angle_y = F32_TO_S16(diff_x * (20.0f / 3.0f) + -32768.0f);
 
     if (angle_y > 0) {
         angle_y = DEG2SHORT_ANGLE(-180.0f);
@@ -2489,7 +2489,7 @@ static void Camera2_Staff_Roll_Center(GAME_PLAY* play, ACTOR* speaker, ACTOR* li
         center_z = (pos0->z + pos1->z) / 2.0f;
 
         h = cKF_HermitCalc(t, 1.0f, 0.0f, 1.0f, 0.49f, 0.0f);
-        temp2 = ((f32)camera->main_data.staff_roll.r_delta / 4600.0f) * 65535.0f;
+        temp2 = F32_TO_S16(((f32)camera->main_data.staff_roll.r_delta / 4600.0f) * 65535.0f);
         h *= ((1.0f + sin_s(temp2) * 0.2f) - 0.2f) * 45.0f;
 
         // likely fakematch
@@ -2526,12 +2526,16 @@ static void Camera2_Staff_Roll_DistAngle(GAME_PLAY* play, ACTOR* speaker, ACTOR*
     s16 temp;
     f32 dist;
 
-    temp = ((f32)camera->main_data.staff_roll.r_delta / 4600.0f) * 65535.0f;
+    temp = F32_TO_S16(((f32)camera->main_data.staff_roll.r_delta / 4600.0f) * 65535.0f);
     dist = ((sin_s(temp) * 0.2f + 1.0f) - 0.2f) * 575.0f;
-    temp = ((f32)camera->main_data.staff_roll.rotation_x_delta / CAMERA2_STAFFROLL_CENTER_X_ROT_STEP_DIVISOR) * 65536.0f;
+    temp = F32_TO_S16(
+        ((f32)camera->main_data.staff_roll.rotation_x_delta / CAMERA2_STAFFROLL_CENTER_X_ROT_STEP_DIVISOR) * 65536.0f);
 
     angle->x = (s16)(sin_s(temp) * 5000.0f);
-    angle->y = (s16)((-(f32)camera->main_data.staff_roll.rotation_y_delta / CAMERA2_STAFFROLL_CENTER_Y_ROT_STEP_DIVISOR) * 65535.0f) +
+    angle->y = F32_TO_S16(
+                   (-(f32)camera->main_data.staff_roll.rotation_y_delta /
+                    CAMERA2_STAFFROLL_CENTER_Y_ROT_STEP_DIVISOR) *
+                   65535.0f) +
                camera->main_data.staff_roll.last_direction.y + (u16)SHT_MIN_S;
     angle->z = 0;
 

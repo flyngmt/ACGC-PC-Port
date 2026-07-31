@@ -40,7 +40,7 @@ static void eLL2_ct(eEC_Effect_c* effect, GAME* game, void* ct_arg) {
 static void eLL2_mv(eEC_Effect_c* effect, GAME* game) {
     f32 dt = (f32)game->graph->dt_num_60fps_frames;
     f32 t = 112.0f - effect->lifetime;
-    effect->effect_specific[1] += (s16)(DEG2SHORT_ANGLE(10.55f) * dt);
+    effect->effect_specific[1] += F32_TO_S16(DEG2SHORT_ANGLE(10.55f) * dt);
     effect->position.y += eEL_CalcAdjust_F(t, 0.0f, 28.0f, 1.0f, 0.1f) * dt;
 }
 

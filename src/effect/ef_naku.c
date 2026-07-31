@@ -48,7 +48,7 @@ static void eNaku_mv(eEC_Effect_c* effect, GAME* game) {
     eEC_CLIP->set_continious_env_proc(effect, 32, 18);
 
     {
-        effect->effect_specific[2] += (s16)((f32)game->graph->dt_num_60fps_frames * 100.0f);
+        effect->effect_specific[2] += F32_TO_S16((f32)game->graph->dt_num_60fps_frames * 100.0f);
         if (effect->effect_specific[2] >= 200 && eEC_CLIP != NULL) {
             effect->effect_specific[2] -= 200;
             eEC_CLIP->effect_make_proc(eEC_EFFECT_NAMIDA, effect->position, prio, effect->effect_specific[0], &play->game,

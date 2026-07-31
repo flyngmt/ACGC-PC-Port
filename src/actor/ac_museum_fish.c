@@ -1172,7 +1172,7 @@ void mfish_point_light_mv(MUSEUM_FISH_ACTOR* actor, GAME* game) {
     actor->actor.world.position.x = sin_s(actor->_14dc0) * 200.0f;
     actor->actor.world.position.y = sin_s(actor->_14dc0 * 2) * 10.0f;
     actor->actor.world.position.z = cos_s(actor->_14dc0) * 200.0f;
-    actor->_14dc0 += (s16)((f32)DEG2SHORT_ANGLE(1.5f) * dt);
+    actor->_14dc0 += F32_TO_S16((f32)DEG2SHORT_ANGLE(1.5f) * dt);
 }
 
 void mfish_normal_light_set(ACTOR* actor, GAME* game) {

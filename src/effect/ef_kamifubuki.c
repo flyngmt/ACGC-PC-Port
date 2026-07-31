@@ -79,7 +79,7 @@ static void eKamifubuki_mv(eEC_Effect_c* effect, GAME* game) {
     effect->acceleration.z *= decay;
     effect->velocity.x += RANDOM_F(0.15f) * sin_s(effect->effect_specific[0]) * dt;
     effect->acceleration.x += RANDOM_F(0.15f) * sin_s(effect->effect_specific[0]) * dt;
-    effect->effect_specific[0] += (s16)(effect->effect_specific[1] * dt);
+    effect->effect_specific[0] += F32_TO_S16(effect->effect_specific[1] * dt);
 }
 extern Gfx ef_kamihubuki01_00_model[];
 static void eKamifubuki_one_draw(eEC_Effect_c* effect, xyz_t* pos, GAME* game) {

@@ -52,7 +52,7 @@ static void eLoveH_mv(eEC_Effect_c* effect, GAME* game) {
     effect->position.y += effect->velocity.y * dt;
     effect->position.z += effect->velocity.z * dt;
 
-    effect->effect_specific[0] += (s16)(DEG2SHORT_ANGLE2(10.55f) * dt);
+    effect->effect_specific[0] += F32_TO_S16(DEG2SHORT_ANGLE2(10.55f) * dt);
     effect->acceleration.y = eEL_CalcAdjust_F(t, 20.0f, 120.0f, 0.0f, 0.0425f);
 }
 

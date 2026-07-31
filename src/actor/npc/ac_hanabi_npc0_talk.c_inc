@@ -249,7 +249,7 @@ static void aHN0_schedule_init_proc(NPC_ACTOR* nactorx, GAME_PLAY* play) {
     nactorx->condition_info.hide_request = FALSE;
     actorx->status_data.weight = MASSTYPE_HEAVY;
 
-    angle = RANDOM_F(65536.0f);
+    angle = F32_TO_S16(RANDOM_F(65536.0f));
     actorx->shape_info.rotation.y = angle;
     actorx->world.angle.y = angle;
     actor->base_angle = angle;

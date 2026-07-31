@@ -59,7 +59,7 @@ static void eKagu_Happa_mv(eEC_Effect_c* effect, GAME* game) {
     effect->scale.y = effect->scale.z = effect->scale.x;
     if (timer_like > 10) {
         effect->position.y += ((timer_like - 14.f) - 4.f) * (-10.f / 98.f) * ((timer_like - 14.f) - 4.f) + 20.f;
-        effect->effect_specific[0] += (s16)(0x924 * dt);
+        effect->effect_specific[0] += F32_TO_S16(0x924 * dt);
     } else if (effect->effect_specific[1] < 1 && t >= (f32)(EFFECT_LIFETIME - 2)) {
         /* Frame-exact one-shot at original timer==2 (i.e. t == LIFETIME-2). */
         effect->effect_specific[1] = 1;

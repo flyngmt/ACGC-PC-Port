@@ -56,7 +56,7 @@ static void eSN_mv(eEC_Effect_c* effect, GAME* game) {
     f32 dt = (f32)game->graph->dt_num_60fps_frames;
     f32 t = 128.0f - effect->lifetime;
 
-    effect->effect_specific[0] += (s16)(DEG2SHORT_ANGLE2(30.94f) * dt);
+    effect->effect_specific[0] += F32_TO_S16(DEG2SHORT_ANGLE2(30.94f) * dt);
 
     if (t < 8.0f) {
         effect->position.y += 1.6f * dt;

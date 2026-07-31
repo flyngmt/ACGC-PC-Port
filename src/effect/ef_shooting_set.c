@@ -89,7 +89,7 @@ static void eShootingSet_mv(eEC_Effect_c* effect, GAME* game) {
     eEC_CLIP->set_continious_env_proc(effect, 100, 100);
 
     if (mEv_CheckTitleDemo() != mEv_TITLEDEMO_STAFFROLL) {
-        effect->effect_specific[2] += (s16)(dt * 10.0f);
+        effect->effect_specific[2] += F32_TO_S16(dt * 10.0f);
         if (effect->effect_specific[2] >= effect->effect_specific[1] * 10) {
             effect->effect_specific[2] = 0;
             effect->effect_specific[1] = eShootingSet_GetFrame_MakeNextShooting();
@@ -107,7 +107,7 @@ static void eShootingSet_mv(eEC_Effect_c* effect, GAME* game) {
                 actor = GET_PLAYER_ACTOR_GAME(game);
 
                 temp = RANDOM_F(80.0f);
-                rnd_angle = RANDOM_F(65535.0f);
+                rnd_angle = F32_TO_S16(RANDOM_F(65535.0f));
 
                 pos.x += actor->actor_class.world.position.x;
                 pos.z += actor->actor_class.world.position.z;

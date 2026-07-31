@@ -56,8 +56,8 @@ static void eDoyon_mv(eEC_Effect_c* effect, GAME* game) {
     effect->position.y += effect->velocity.y * dt;
     effect->position.z += effect->velocity.z * dt;
 
-    effect->effect_specific[0] += (s16)(DEG2SHORT_ANGLE2(5.625f) * dt);
-    effect->effect_specific[1] += (s16)(DEG2SHORT_ANGLE2(5.625f) * dt);
+    effect->effect_specific[0] += F32_TO_S16(DEG2SHORT_ANGLE2(5.625f) * dt);
+    effect->effect_specific[1] += F32_TO_S16(DEG2SHORT_ANGLE2(5.625f) * dt);
 
     effect->velocity.x *= decay;
     effect->velocity.y *= decay;

@@ -316,7 +316,7 @@ static void mEnv_InitWind() {
     f32 min = mEnv_wind_info.wind_power_range_min;
     f32 max = mEnv_wind_info.wind_power_range_max;
     
-    mEnv_wind_info.target_wind_angle = angle; /* completely random wind direction */
+    mEnv_wind_info.target_wind_angle = F32_TO_S16(angle); /* completely random wind direction */
     mEnv_wind_info.target_wind_power = min + t * (max - min);
   }
 

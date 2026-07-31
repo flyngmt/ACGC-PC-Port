@@ -70,7 +70,7 @@ static void eClacker_mv(eEC_Effect_c* effect, GAME* game) {
      * cross t==12 and continue every 8 ticks until effect dies. */
     f32 t = 80.0f - effect->lifetime;
     if (t >= 12.0f) {
-        effect->effect_specific[2] += (s16)((f32)game->graph->dt_num_60fps_frames * 100.0f);
+        effect->effect_specific[2] += F32_TO_S16((f32)game->graph->dt_num_60fps_frames * 100.0f);
         if (effect->effect_specific[2] >= 800) {
             effect->effect_specific[2] -= 800;
             xyz_t pos = effect->position;

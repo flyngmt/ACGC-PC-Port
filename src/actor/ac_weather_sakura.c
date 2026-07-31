@@ -68,9 +68,9 @@ static void aWeatherSakura_make(ACTOR* actor, GAME* game) {
 }
 
 static void aWeatherSakura_ct(aWeather_Priv* priv, GAME* game) {
-    priv->work[0] = RANDOM_F(65535.0f);
-    priv->work[1] = RANDOM_F(65535.0f);
-    priv->work[2] = RANDOM_F(65535.0f);
+    priv->work[0] = F32_TO_S16(RANDOM_F(65535.0f));
+    priv->work[1] = F32_TO_S16(RANDOM_F(65535.0f));
+    priv->work[2] = F32_TO_S16(RANDOM_F(65535.0f));
 }
 
 static int aWeatherSakura_CheckSakuraBorder(aWeather_Priv* priv) {
@@ -148,12 +148,12 @@ static void aWeatherSakura_move(aWeather_Priv* priv, GAME* game) {
     priv->pos.y += priv->speed.y * dt;
     priv->pos.z += priv->speed.z * dt;
 
-    priv->work[3] += (float)priv->work[4] * dt;
+    priv->work[3] += F32_TO_S16((float)priv->work[4] * dt);
     aWeatherSakura_SetWind2Sakura(priv, game);
     aWeatherSakura_CheckSakuraScroll(priv);
-    priv->work[0] += 0x200 * dt;
-    priv->work[1] += 0x8DC * dt;
-    priv->work[2] += 0x474 * dt;
+    priv->work[0] += F32_TO_S16(0x200 * dt);
+    priv->work[1] += F32_TO_S16(0x8DC * dt);
+    priv->work[2] += F32_TO_S16(0x474 * dt);
 }
 
 static void aWeatherSakura_set(GAME* game) {

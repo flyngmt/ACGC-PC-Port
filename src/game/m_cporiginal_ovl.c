@@ -545,8 +545,8 @@ static void mCO_set_frame_main_dl(Submenu* submenu, GAME* game, int folder) {
     int j;
     int k;
 
-    tex_x = (u16)(-pos_x * 4.0f);
-    tex_y = (u16)(-pos_y * 4.0f);
+    tex_x = F32_TO_U16(-pos_x * 4.0f);
+    tex_y = F32_TO_U16(-pos_y * 4.0f);
 
     OPEN_POLY_OPA_DISP(graph);
 

@@ -32,10 +32,21 @@ extern "C" {
 /* Float modulo operator */
 #define MOD_F(a, m) (a - (int)((a) * (1.0f / (m))) * (m))
 
+#ifdef TARGET_PC
+/* Direct float-to-s16/u16 conversions are UB when the truncated value
+ * is outside the destination range. Convert through s32 to retain the
+ * original wrapping behavior. */
+#define F32_TO_S16(value) ((s16)(s32)(value))
+#define F32_TO_U16(value) ((u16)(s32)(value))
+#else
+#define F32_TO_S16(value) ((s16)(value))
+#define F32_TO_U16(value) ((u16)(value))
+#endif
+
 /* radians -> short angle */
 #define RAD2SHORT_ANGLE(rad) ((s16)(int)((rad) * (65536.0f / (2.0f * F_PI))))
-#define RAD2SHORTANGLE(rad) ((s16)((32768.0f / F_PI) * ((f32)(rad))))
-#define RAD2SHORT_ANGLE2(rad) ((s16)((rad) * (65536.0f / (2.0f * F_PI))))
+#define RAD2SHORTANGLE(rad) F32_TO_S16((32768.0f / F_PI) * ((f32)(rad)))
+#define RAD2SHORT_ANGLE2(rad) F32_TO_S16((rad) * (65536.0f / (2.0f * F_PI)))
 
 /* short angle -> radians */
 #define SHORT2RAD_ANGLE(s) ((((f32)(s)) / (65536.0f / (2.0f * F_PI))))
@@ -43,7 +54,7 @@ extern "C" {
 #define SHORTANGLE2RAD(sangle) ((F_PI / 32768.0f) * ((f32)(sangle)))
 
 /* degrees -> short angle */
-#define DEG2SHORT_ANGLE(deg) ((s16)((deg) * (65536.0f / 360.0f)))
+#define DEG2SHORT_ANGLE(deg) F32_TO_S16((deg) * (65536.0f / 360.0f))
 #define DEG2SHORT_ANGLE2(deg) ((int)((deg) * (65536.0f / 360.0f)))
 #define DEG2SHORT_ANGLE3(deg) ((deg) * (65536.0f / 360.0f))
 

@@ -50,7 +50,7 @@ static void eSSHN_mv(eEC_Effect_c* effect, GAME* game) {
 
     eEC_CLIP->set_continious_env_proc(effect, 22, 122);
     {
-        effect->effect_specific[0] += (s16)((f32)game->graph->dt_num_60fps_frames * 100.0f);
+        effect->effect_specific[0] += F32_TO_S16((f32)game->graph->dt_num_60fps_frames * 100.0f);
         if (effect->effect_specific[0] >= 400) {
             effect->effect_specific[0] -= 400;
             item_name = effect->item_name;

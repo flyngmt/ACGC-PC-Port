@@ -681,7 +681,7 @@ static void aBALL_calc_axis(ACTOR* actor, GAME* game) {
     s16 angle;
     f32 speed_fact;
 
-    angle = (actor->speed * 434.81952f * (f32)game->graph->dt_num_60fps_frames);
+    angle = F32_TO_S16(actor->speed * 434.81952f * (f32)game->graph->dt_num_60fps_frames);
 
     if (ball->process_proc == aBALL_process_air_water || ball->process_proc == aBALL_process_ground_water) {
         speed_fact = ((-1.0f) - actor->position_speed.y) / (-2.0f);

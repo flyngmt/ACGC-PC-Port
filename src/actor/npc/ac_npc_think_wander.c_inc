@@ -40,7 +40,7 @@ static int aNPC_think_wander_move_next(u16* arg_data, NPC_ACTOR* nactorx) {
 
         while (TRUE) {
             // 0xFFFF, should've just been 0x10000 since fqrand upper bound is exclusive.
-            angle = (s16)RANDOM_F(DEG2SHORT_ANGLE2(360.0f) - 1);
+            angle = F32_TO_S16(RANDOM_F(DEG2SHORT_ANGLE2(360.0f) - 1));
             dst_pos.x = center_x + sin_s(angle) * radius;
             dst_pos.z = center_z + cos_s(angle) * radius;
             mFI_Wpos2UtNum_inBlock(&ux, &uz, dst_pos);

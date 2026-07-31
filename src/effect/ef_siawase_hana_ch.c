@@ -87,7 +87,7 @@ static void eSSHNC_mv(eEC_Effect_c* effect, GAME* game) {
     effect->position.y += effect->velocity.y * dt;
     effect->position.z += effect->velocity.z * dt;
 
-    effect->effect_specific[1] += (s16)(effect->effect_specific[2] * dt);
+    effect->effect_specific[1] += F32_TO_S16(effect->effect_specific[2] * dt);
 
     scale = eEL_CalcAdjust_F(t, 40.0f, 58.0f, 0.0f, 0.005f);
     effect->scale.x = scale;

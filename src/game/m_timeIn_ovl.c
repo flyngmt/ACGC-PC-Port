@@ -366,8 +366,10 @@ static void mTI_set_clock(Submenu* submenu, GRAPH* graph, f32 x, f32 y) {
   u16 save_min = submenu->overlay->timeIn_ovl->saved_min;
   Gfx* gfx;
 
-  r[0] = -(((f32)(save_min % lbRTC_MINUTES_PER_HOUR) / (f32)lbRTC_MINUTES_PER_HOUR) * 65536.0f); // minute hand
-  r[1] = -(((f32)save_min / (f32)((lbRTC_MINUTES_PER_HOUR * lbRTC_HOURS_PER_DAY) / 2)) * 65536.0f); // hour hand
+  r[0] = F32_TO_S16(-(((f32)(save_min % lbRTC_MINUTES_PER_HOUR) / (f32)lbRTC_MINUTES_PER_HOUR) *
+                       65536.0f)); // minute hand
+  r[1] = F32_TO_S16(-(((f32)save_min / (f32)((lbRTC_MINUTES_PER_HOUR * lbRTC_HOURS_PER_DAY) / 2)) *
+                       65536.0f)); // hour hand
   r[2] = 0; // second hand?
 
   Matrix_translate((x + -61.0f) * 16.0f, (y + 45.0f) * 16.0f, 140.0f, MTX_LOAD);

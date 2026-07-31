@@ -76,8 +76,8 @@ static void aWeatherLeaf_make(ACTOR* actor, GAME* game) {
 
 static void aWeatherLeaf_ct(aWeather_Priv* priv, GAME* game) {
     priv->work[0] = RANDOM_F(3.0f);
-    priv->work[1] = RANDOM_F(65535.0f);
-    priv->work[2] = RANDOM_F(65535.0f);
+    priv->work[1] = F32_TO_S16(RANDOM_F(65535.0f));
+    priv->work[2] = F32_TO_S16(RANDOM_F(65535.0f));
 }
 
 static int aWeatherLeaf_CheckLeafBorder(aWeather_Priv* priv) {
@@ -155,11 +155,11 @@ static void aWeatherLeaf_move(aWeather_Priv* priv, GAME* game) {
     priv->pos.y += priv->speed.y * dt;
     priv->pos.z += priv->speed.z * dt;
 
-    priv->work[3] += (float)priv->work[4] * dt;
+    priv->work[3] += F32_TO_S16((float)priv->work[4] * dt);
     aWeatherLeaf_SetWind2Leaf(priv, game);
     aWeatherLeaf_CheckLeafScroll(priv);
-    priv->work[1] += 0x8DC * dt;
-    priv->work[2] += 0x474 * dt;
+    priv->work[1] += F32_TO_S16(0x8DC * dt);
+    priv->work[2] += F32_TO_S16(0x474 * dt);
 }
 
 static void aWeatherLeaf_set(GAME* game) {

@@ -38,7 +38,7 @@ static void eLove_mv(eEC_Effect_c* effect, GAME* game) {
     sAdo_OngenPos((JaudioObjectId)(uintptr_t)effect, 14, &effect->position);
 
     {
-        effect->effect_specific[0] += (s16)((f32)game->graph->dt_num_60fps_frames * 100.0f);
+        effect->effect_specific[0] += F32_TO_S16((f32)game->graph->dt_num_60fps_frames * 100.0f);
         if (effect->effect_specific[0] >= 800) {
             effect->effect_specific[0] -= 800;
             name = effect->item_name;

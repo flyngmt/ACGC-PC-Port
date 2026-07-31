@@ -46,9 +46,9 @@ static void eHanabiBotan1_ct(eEC_Effect_c* effect, GAME* game, void* ct_arg) {
 static void eHanabiBotan1_mv(eEC_Effect_c* effect, GAME* game) {
     f32 dt = (f32)game->graph->dt_num_60fps_frames;
     f32 t = (f32)EFFECT_LIFETIME - effect->lifetime;
-    effect->effect_specific[0] += (s16)(0x300 * dt);
-    effect->effect_specific[1] += (s16)(0x100 * dt);
-    effect->effect_specific[2] += (s16)(0x80  * dt);
+    effect->effect_specific[0] += F32_TO_S16(0x300 * dt);
+    effect->effect_specific[1] += F32_TO_S16(0x100 * dt);
+    effect->effect_specific[2] += F32_TO_S16(0x80 * dt);
     effect->offset.x = sin_s(effect->effect_specific[1]) * 2.f;
     effect->offset.z = sin_s(-effect->effect_specific[1]) * 2.f;
     add_calc2(&effect->scale.x, 0.07, CALC_EASE(0.2f), 5.f);

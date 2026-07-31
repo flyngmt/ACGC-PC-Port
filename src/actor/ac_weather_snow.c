@@ -152,7 +152,7 @@ static void aWeatherSnow_move(aWeather_Priv* priv, GAME* game) {
     priv->pos.x += priv->speed.x * dt;
     priv->pos.y += priv->speed.y * dt;
     priv->pos.z += priv->speed.z * dt;
-    priv->work[0] += (float)priv->work[1] * dt;
+    priv->work[0] += F32_TO_S16((float)priv->work[1] * dt);
     aWeatherSnow_SetWind2Snow(priv, game);
     aWeatherSnow_CheckSnowScroll(priv, play);
 }

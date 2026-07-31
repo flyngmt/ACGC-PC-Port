@@ -136,12 +136,12 @@ static void eBushHappa_mv(eEC_Effect_c* effect, GAME* game) {
         effect->velocity.x *= decay;
         effect->velocity.z *= decay;
 
-        effect->effect_specific[0] += (s16)(0x662 * dt);
-        effect->effect_specific[1] += (s16)(0x662 * dt);
-        effect->effect_specific[3] += (s16)(0xA00 * dt);
+        effect->effect_specific[0] += F32_TO_S16(0x662 * dt);
+        effect->effect_specific[1] += F32_TO_S16(0x662 * dt);
+        effect->effect_specific[3] += F32_TO_S16(0xA00 * dt);
     } else {
-        effect->effect_specific[0] += (s16)(0x280 * dt);
-        effect->effect_specific[1] += (s16)(0x280 * dt);
+        effect->effect_specific[0] += F32_TO_S16(0x280 * dt);
+        effect->effect_specific[1] += F32_TO_S16(0x280 * dt);
 
         if (effect->velocity.y <= 0.0f) {
             effect->effect_specific[2] = 1;

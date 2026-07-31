@@ -97,7 +97,7 @@ static void eKONP_ct(eEC_Effect_c* effect, GAME* game, void* ct_arg) {
 
 static void eKONP_mv(eEC_Effect_c* effect, GAME* game) {
     f32 dt = (f32)game->graph->dt_num_60fps_frames;
-    effect->effect_specific[2] += (s16)((DEG2SHORT_ANGLE2(11.25f) - 1) * dt);
+    effect->effect_specific[2] += F32_TO_S16((DEG2SHORT_ANGLE2(11.25f) - 1) * dt);
     effect->velocity.x += effect->acceleration.x * dt;
     effect->velocity.y += effect->acceleration.y * dt;
     effect->velocity.z += effect->acceleration.z * dt;

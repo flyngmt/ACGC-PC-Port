@@ -440,8 +440,9 @@ extern void mTM_time_init() {
 
   // Calculate rad_hour and rad_min values for clock hands
   temp = Common_Get(time.rtc_time.sec) + Common_Get(time.rtc_time.min) * mTM_SECONDS_IN_MINUTE;
-  Common_Set(time.rad_min, (temp / mTM_SECONDS_IN_HOUR_F) * SHORT_ANGLE_MAX);
-  Common_Set(time.rad_hour, ((temp + Common_Get(time.rtc_time.hour) * mTM_SECONDS_IN_HOUR) / mTM_SECONDS_IN_HALFDAY_F) * SHORT_ANGLE_MAX);
+  Common_Set(time.rad_min, F32_TO_S16((temp / mTM_SECONDS_IN_HOUR_F) * SHORT_ANGLE_MAX));
+  Common_Set(time.rad_hour, F32_TO_S16(((temp + Common_Get(time.rtc_time.hour) * mTM_SECONDS_IN_HOUR) /
+                                       mTM_SECONDS_IN_HALFDAY_F) * SHORT_ANGLE_MAX));
 }
 
 /**
@@ -516,8 +517,9 @@ extern void mTM_time() {
 
   // Calculate rad_hour and rad_min values for clock hands
   temp = Common_Get(time.rtc_time.sec) + Common_Get(time.rtc_time.min) * mTM_SECONDS_IN_MINUTE;
-  Common_Set(time.rad_min, (temp / mTM_SECONDS_IN_HOUR_F) * SHORT_ANGLE_MAX);
-  Common_Set(time.rad_hour, ((temp + Common_Get(time.rtc_time.hour) * mTM_SECONDS_IN_HOUR) / mTM_SECONDS_IN_HALFDAY_F) * SHORT_ANGLE_MAX);
+  Common_Set(time.rad_min, F32_TO_S16((temp / mTM_SECONDS_IN_HOUR_F) * SHORT_ANGLE_MAX));
+  Common_Set(time.rad_hour, F32_TO_S16(((temp + Common_Get(time.rtc_time.hour) * mTM_SECONDS_IN_HOUR) /
+                                       mTM_SECONDS_IN_HALFDAY_F) * SHORT_ANGLE_MAX));
 
   // Check if the renewal time has changed, and if so, update the renewal time and set renewal flags
   mTM_renewal_renew_time();

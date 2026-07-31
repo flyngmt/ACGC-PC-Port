@@ -131,7 +131,7 @@ static void eTamaire_mv(eEC_Effect_c* effect, GAME* game) {
         }
     }
 
-    effect->effect_specific[0] += (s16)(effect->effect_specific[1] * dt);
+    effect->effect_specific[0] += F32_TO_S16(effect->effect_specific[1] * dt);
     effect->scale.y = (ABS(effect->velocity.y) * 0.1f + 0.9f) * 0.005f;
 }
 

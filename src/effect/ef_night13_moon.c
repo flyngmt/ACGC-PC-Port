@@ -98,9 +98,9 @@ static void eNight13Moon_mv(eEC_Effect_c* effect, GAME* game) {
         }
     }
 
-    effect->effect_specific[0] += (s16)(150 * dt);
-    effect->effect_specific[1] -= (s16)(100 * dt);
-    effect->effect_specific[2] += (s16)(256 * dt);
+    effect->effect_specific[0] += F32_TO_S16(150 * dt);
+    effect->effect_specific[1] -= F32_TO_S16(100 * dt);
+    effect->effect_specific[2] += F32_TO_S16(256 * dt);
 
     eEC_CLIP->set_continious_env_proc(effect, 20000, 20000);
     effect->position = eNight13Moon_GetNowMoonPos(effect->acceleration);
