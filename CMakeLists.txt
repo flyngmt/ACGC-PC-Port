@@ -32,10 +32,8 @@ if (NOT TARGET nlohmann_json::nlohmann_json)
     FetchContent_MakeAvailable(nlohmann_json)
 endif ()
 
-# Do NOT set a default build type. Optimization is controlled by the common
-# flags below: -O2 with -fno-strict-aliasing and -fwrapv, which neutralize the
-# decomp UB classes (type punning, signed overflow) that broke plain -O2.
-# The NDEBUG define below ensures asserts stay disabled regardless of build type.
+# Build type comes from the selected preset. NDEBUG remains explicit because
+# matching game behavior should not depend on a host toolchain's configuration.
 
 # Allow mixed C/C++ linkage
 set(CMAKE_C_EXTENSIONS ON)
@@ -57,7 +55,27 @@ add_compile_definitions(
 # flags for the decomp's type-punning and signed-overflow assumptions. MSVC has
 # no equivalent switches and does not perform GCC-style type-based alias
 # analysis, so do not pass the GNU options to cl.exe.
-if (NOT CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+if (MSVC)
+    add_compile_options(
+        $<$<COMPILE_LANGUAGE:C,CXX>:/bigobj>
+        $<$<COMPILE_LANGUAGE:C,CXX>:/utf-8>
+    )
+
+    # MSVC's Debug defaults include /RTC1, which is incompatible with the /O2
+    # required by fixNES. Remove it from this directory, then opt maintained
+    # and game sources back in below while leaving the NES hot path optimized.
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        foreach (lang C CXX)
+            foreach (debug_flag /Od /RTC1)
+                string(REPLACE "${debug_flag}" "" CMAKE_${lang}_FLAGS_DEBUG "${CMAKE_${lang}_FLAGS_DEBUG}")
+            endforeach ()
+        endforeach ()
+        set(ACGC_DEBUG_OPTIONS
+            $<$<COMPILE_LANGUAGE:C,CXX>:/Od>
+            $<$<COMPILE_LANGUAGE:C,CXX>:/RTC1>
+        )
+    endif ()
+else ()
     add_compile_options(
         -fno-strict-aliasing
         -fwrapv
@@ -69,10 +87,8 @@ endif ()
 # =============================================================================
 include_directories(
     ${DECOMP_ROOT}/include
-    # NOTE: Do NOT add ${DECOMP_ROOT}/include/libc here!
-    # Having both include/ and include/libc/ in the path makes the decomp's
-    # shadow headers (e.g. libc/string.h) resolve their system-header handoff
-    # back to themselves. With only include/, <string.h> reaches the toolchain.
+    # include/libc contains the console runtime declarations, not host libc
+    # wrappers. Native code includes the toolchain's standard headers directly.
     ${DECOMP_ROOT}/src
     # Project root needed for includes like "src/actor/npc/event/file.c_inc"
     ${DECOMP_ROOT}
@@ -292,8 +308,8 @@ set(FIXNES_SOURCES
 )
 # fixNES compile flags: optimize for performance (third-party code, no decomp UB),
 # enable inlining (critical for cycle-by-cycle emulation), lower APU frequency
-if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-    set(FIXNES_COMPILE_OPTIONS "/w;/O2")
+if (MSVC)
+    set(FIXNES_COMPILE_OPTIONS "/W0;/O2")
     set(PC_NES_COMPILE_OPTIONS "/W4;/O2;/wd4100")
 else ()
     set(FIXNES_COMPILE_OPTIONS "-w;-O2")
@@ -346,9 +362,11 @@ set_source_files_properties(
 # =============================================================================
 # Per-source warning settings
 # =============================================================================
-# Decomp code: suppress all warnings (fires heavily on decompiled code).
-if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-    set(DECOMP_WARN_FLAGS "/w;$<$<COMPILE_LANGUAGE:CXX>:/permissive>")
+# Keep warnings useful by separating code ownership: decompiled matching code
+# is warning-noisy by construction, while maintained host code below builds at
+# the toolchain's high warning level.
+if (MSVC)
+    set(DECOMP_WARN_FLAGS "/W0;${ACGC_DEBUG_OPTIONS}")
 else ()
     set(DECOMP_WARN_FLAGS "-w;-fpermissive")
     if (CMAKE_C_COMPILER_ID MATCHES "Clang")
@@ -360,18 +378,27 @@ endif ()
 set_source_files_properties(${GAME_C_SOURCES} ${GAME_CXX_SOURCES}
     PROPERTIES COMPILE_OPTIONS "${DECOMP_WARN_FLAGS}"
 )
+if (MSVC)
+    # MSVC exposes the standard C11 <stdatomic.h> implementation behind this
+    # opt-in switch. Only the audio command queue uses it.
+    set_property(SOURCE "${DECOMP_ROOT}/src/static/jaudio_NES/internal/sub_sys.c"
+        APPEND PROPERTY COMPILE_OPTIONS /experimental:c11atomics
+    )
+endif ()
 
 # PC port code: enable warnings to catch bugs in code we control
 set(PC_C_SOURCES ${PC_SOURCES})
 list(FILTER PC_C_SOURCES EXCLUDE REGEX "\\.cpp$")
+# pc_nes_fixnes.c has its own warning and optimization policy above.
+list(REMOVE_ITEM PC_C_SOURCES ${PC_ROOT}/src/pc_nes_fixnes.c)
 set(PC_CXX_SOURCES ${PC_SOURCES})
 list(FILTER PC_CXX_SOURCES INCLUDE REGEX "\\.cpp$")
 # The suppressions cover warnings from decomp headers (types.h, gfxprint.h,
 # OSRtc.h, libultra.h) that we can't modify. Use /W4 rather than /Wall on MSVC:
 # the latter enables every off-by-default compiler warning.
-if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-    set(PC_C_WARN_FLAGS "/W4;/wd4018;/wd4100;/wd4138;/wd4505")
-    set(PC_CXX_WARN_FLAGS "${PC_C_WARN_FLAGS};/permissive")
+if (MSVC)
+    set(PC_C_WARN_FLAGS "/W4;/wd4018;/wd4100;/wd4138;/wd4505;${ACGC_DEBUG_OPTIONS}")
+    set(PC_CXX_WARN_FLAGS "${PC_C_WARN_FLAGS}")
 else ()
     set(PC_WARN_SUPPRESS "-Wno-unused-parameter;-Wno-sign-compare;-Wno-comment;-Wno-unused-function")
     if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -404,6 +431,12 @@ add_executable(acgc
     ${GAME_CXX_SOURCES}
     ${RC_FILE}
 )
+
+if (MSVC AND WIN32)
+    # app.rc embeds the UTF-8 code-page manifest. Do not also ask link.exe to
+    # synthesize a second manifest resource with the same ID.
+    target_link_options(acgc PRIVATE /MANIFEST:NO)
+endif ()
 
 target_link_libraries(acgc PRIVATE
     nlohmann_json::nlohmann_json
