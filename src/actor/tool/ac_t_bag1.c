@@ -27,7 +27,7 @@ ACTOR_PROFILE T_Bag1_Profile = {
 
 extern Gfx crw_bag1_body_model[];
 
-static void aTBG1_actor_ct(ACTOR* actor, GAME*){
+static void aTBG1_actor_ct(ACTOR* actor, GAME* game){
 
     aTBG1_setupAction(actor,4);
 }
@@ -50,7 +50,7 @@ static void aTBG1_setupAction(ACTOR*actor, int action){
 
 }
 
-static void aTBG1_actor_move(ACTOR* actor, GAME*){
+static void aTBG1_actor_move(ACTOR* actor, GAME* game){
     BAG1_ACTOR* bag = (BAG1_ACTOR*)actor;
 
     if(bag->tools_class.work0 != bag->current_id){

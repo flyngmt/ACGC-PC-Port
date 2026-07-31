@@ -24,8 +24,8 @@ static u8* nesinfo_ptr = nullptr;
 u32 nesinfo_tags_size = 0;
 u8* nesinfo_tags_start = nullptr;
 u8* nesinfo_tags_end = nullptr;
-static char* nesinfo_tags_gameName = nullptr;
-static char* nesinfo_tags_kanjiName = nullptr;
+static const char* nesinfo_tags_gameName = nullptr;
+static const char* nesinfo_tags_kanjiName = nullptr;
 static u8* nesinfo_tags_moriName = nullptr;
 u32 nesinfo_data_size = 0;
 u8* nesinfo_data_start = nullptr;
@@ -418,8 +418,8 @@ static u8 tags_table_balloon_fight_jpn[] = {
 typedef struct nesinfo_tag_s {
     u8* tags_table;
     size_t tags_size;
-    char* gameName;
-    char* kanjiName;
+    const char* gameName;
+    const char* kanjiName;
 } nesinfo_tag_info;
 
 static const nesinfo_tag_info tags_table_table[FAMICOM_INTERNAL_ROM_NUM] = {

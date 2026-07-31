@@ -6,7 +6,7 @@
 #include "libforest/emu64.h"
 #include "_mem.h"
 #include "m_lib.h"
-#include "dolphin/os/OSArena.h"
+#include <dolphin/os.h>
 #include "dolphin/vi.h"
 #include "libc64/malloc.h"
 

@@ -10,7 +10,7 @@
 #define FIX_SQRT_LINKAGE
 #include "Famicom/ks_nes_draw.h"
 #include "dolphin/gx.h"
-#include "dolphin/PPCArch.h"
+#include <dolphin/base/PPCArch.h>
 #include "_mem.h"
 #include "dolphin/os.h"
 

@@ -2,8 +2,8 @@
 #define _STDIO_H_
 
 #ifdef TARGET_PC
-#include <stdio.h>
-#else
+#error ACGC console libc headers are not host libc wrappers; include the system header instead
+#endif
 
 #include <stdarg.h>
 
@@ -23,5 +23,4 @@ int vsprintf(char *s, const char *format, va_list arg);
 }
 #endif
 
-#endif /* TARGET_PC */
 #endif

@@ -6,6 +6,10 @@
 #include "libc64/qrand.h"
 #include "m_lib.h"
 
+#ifdef TARGET_PC
+#include <float.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -24,7 +28,9 @@ extern "C" {
 #define USHT_MIN ((f32)USHT_MIN_S)
 #define USHT_MAX ((f32)USHT_MAX_S)
 
-#if VERSION >= VER_GAFU01_00
+#if defined(TARGET_PC)
+/* Use the host libc's FLT_MAX definition on native builds. */
+#elif VERSION >= VER_GAFU01_00
 extern u32 __float_max[];
 #define FLT_MAX (*(float*)__float_max)
 #else

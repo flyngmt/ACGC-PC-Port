@@ -30,7 +30,7 @@ DSPchannel_* GetDspHandle(u8 idx)
  * Address:	........
  * Size:	000034
  */
-DSPchannel_* GetDspHandleNc(u8)
+DSPchannel_* GetDspHandleNc(u8 unused)
 {
 	// UNUSED FUNCTION
 }
@@ -73,7 +73,7 @@ void DSP_SetPitch(u8 idx, u16 pitch)
  * Address:	........
  * Size:	000050
  */
-void DSP_SetPitch_Indirect(u8 idx, f32, f32)
+void DSP_SetPitch_Indirect(u8 idx, f32 unused_pitch, f32 unused_ratio)
 {
 	// UNUSED FUNCTION
 }

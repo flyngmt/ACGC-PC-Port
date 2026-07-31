@@ -1793,7 +1793,7 @@ void Sou_InitAudio() {
     Na_StaffRollInit();
 }
 
-void Sou_DVD_Error(char*, u8*) {
+void Sou_DVD_Error(char* message, u8* status) {
     fatalErrorCallback();
 }
 
@@ -3641,11 +3641,17 @@ extern u8 Na_SeFadeoutCheck() {
     return ret;
 }
 
-__declspec(export) extern void Na_BgmTrOn(u8 subTrack) {
+#if defined(__MWERKS__)
+__declspec(export)
+#endif
+extern void Na_BgmTrOn(u8 subTrack) {
     NA_COMMAND_AUDIO_SUBTRACK_SET_MUTE(sou_now_bgm_handle, subTrack, FALSE);
 }
 
-__declspec(export) extern void Na_BgmTrOff(u8 subTrack) {
+#if defined(__MWERKS__)
+__declspec(export)
+#endif
+extern void Na_BgmTrOff(u8 subTrack) {
     NA_COMMAND_AUDIO_SUBTRACK_SET_MUTE(sou_now_bgm_handle, subTrack, TRUE);
 }
 

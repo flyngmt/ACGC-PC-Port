@@ -288,7 +288,7 @@ static void aBALL_BGcheck(BALL_ACTOR* actor) {
     }
 }
 
-static void aBALL_OBJcheck(BALL_ACTOR* actor, GAME*) {
+static void aBALL_OBJcheck(BALL_ACTOR* actor, GAME* game) {
     int wade;
     ACTOR* collided;
     xyz_t pos_speed;

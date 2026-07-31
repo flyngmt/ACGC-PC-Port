@@ -26,6 +26,15 @@
 
 namespace {
 
+std::FILE* open_file(const char* path, const char* mode) {
+#ifdef _MSC_VER
+    std::FILE* file = nullptr;
+    return fopen_s(&file, path, mode) == 0 ? file : nullptr;
+#else
+    return std::fopen(path, mode);
+#endif
+}
+
 struct ThreadData {
     std::thread thread;
     std::mutex mutex;
@@ -646,6 +655,14 @@ void _strip(float) {
 int bcmp(const void* first, const void* second, size_t size) {
     return std::memcmp(first, second, size);
 }
+
+void bcopy(const void* source, void* destination, size_t size) {
+    std::memmove(destination, source, size);
+}
+
+void bzero(void* destination, size_t size) {
+    std::memset(destination, 0, size);
+}
 #endif
 
 void osCreateMesgQueue(OSMessageQueue* queue, OSMessage messages, int count) {
@@ -714,7 +731,7 @@ int pc_card_scan_for_gci(s32 channel, char* out_path, int out_size) {
     }
     const std::filesystem::path directory = directory_path;
     const auto is_valid_gci = [](const std::filesystem::path& path) {
-        FILE* file = std::fopen(path.string().c_str(), "rb");
+        FILE* file = open_file(path.string().c_str(), "rb");
         if (file == nullptr) {
             return false;
         }

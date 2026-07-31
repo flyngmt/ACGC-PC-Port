@@ -2,11 +2,8 @@
 #define _MATH_H_
 
 #ifdef TARGET_PC
-/* Undef guard since MinGW-w64 math.h uses the same _MATH_H_ guard name */
-#undef _MATH_H_
-#include <math.h>
-#define _MATH_H_
-#else
+#error ACGC console libc headers are not host libc wrappers; include the system header instead
+#endif
 
 #define NAN       (0.0f / 0.0f)
 #define HUGE_VALF (1.0f / 0.0f)
@@ -116,5 +113,4 @@ inline float fmodf(float x, float m)
 #pragma cplusplus reset
 #endif
 
-#endif /* TARGET_PC */
 #endif

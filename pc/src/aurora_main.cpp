@@ -560,6 +560,8 @@ int main(int argc, char* argv[]) {
     AuroraConfig config{};
     config.appName = "Animal Crossing";
     config.userPath = user_path.empty() ? nullptr : user_path.c_str();
+    config.windowPosX = -1;
+    config.windowPosY = -1;
     config.windowWidth = windowDimensions.width;
     config.windowHeight = windowDimensions.height;
     config.startFullscreen = settings.video.windowMode.value() != 0;

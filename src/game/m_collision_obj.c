@@ -18,11 +18,11 @@ int ClObj_ct(GAME* game, ClObj_c* cl) {
     return 1;
 }
 
-int ClObj_dt(GAME*, ClObj_c*) {
+int ClObj_dt(GAME* game, ClObj_c* collision) {
     return 1;
 }
 
-int ClObj_set4(GAME*, ClObj_c* cl, ACTOR* actor, ClObjData_c* data) {
+int ClObj_set4(GAME* game, ClObj_c* cl, ACTOR* actor, ClObjData_c* data) {
     cl->owner_actor = actor;
     cl->collision_flags0 = data->collision_flags0;
     cl->collision_flags1 = data->collision_flags1;
@@ -31,7 +31,7 @@ int ClObj_set4(GAME*, ClObj_c* cl, ACTOR* actor, ClObjData_c* data) {
     return 1;
 }
 
-void ClObj_OCClear(GAME*, ClObj_c* cl) {
+void ClObj_OCClear(GAME* game, ClObj_c* cl) {
     cl->collision_flags0 &= ~ClObj_FLAG_COLLIDED;
     cl->collided_actor = NULL;
     cl->collision_flags1 &= ~ClObj_FLAG2_PLAYER_WAS_HIT;
@@ -49,7 +49,7 @@ int ClObjElem_set(ClObjElem_c* elem, ClObjElemData_c* data) {
     return 1;
 }
 
-void ClObjElem_OCClear(GAME*, ClObjElem_c* elem) {
+void ClObjElem_OCClear(GAME* game, ClObjElem_c* elem) {
     elem->flags &= ~ClObjElem_FLAG_HIT;
 }
 
@@ -82,7 +82,7 @@ int ClObjPipeAttr_ct(GAME* game, ClObjPipeAttr_c* attribute) {
     return 1;
 }
 
-int ClObjPipeAttr_dt(GAME*, ClObjPipeAttr_c*) {
+int ClObjPipeAttr_dt(GAME* game, ClObjPipeAttr_c* collision) {
     return 1;
 }
 

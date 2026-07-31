@@ -62,13 +62,13 @@ static void Player_actor_Movement_axe_common(ACTOR* actor, const xyz_t* axe_pos)
     Player_actor_Movement_Base_Braking_common(actor, 0.32625002f);
 }
 
-static void Player_actor_Movement_Swing_axe(ACTOR* actor, mPlayer_main_swing_axe_c* main_axe, int) {
+static void Player_actor_Movement_Swing_axe(ACTOR* actor, mPlayer_main_swing_axe_c* main_axe, int unused) {
     Player_actor_Movement_axe_common(actor, &main_axe->axe_common.target_pos);
 
     actor->world.angle.y = actor->shape_info.rotation.y;
 }
 
-static int Player_actor_CulcAnimation_Swing_axe(ACTOR* actor, f32* frame_calc, int) {
+static int Player_actor_CulcAnimation_Swing_axe(ACTOR* actor, f32* frame_calc, int unused) {
     return Player_actor_CulcAnimation_Base2(actor, frame_calc);
 }
 
@@ -173,7 +173,7 @@ static void Player_actor_SetSound_AXE_FURI_axe_common(ACTOR* actor) {
     }
 }
 
-static void Player_actor_SetSound_AXE_FURI_Swing_axe(ACTOR* actor, int) {
+static void Player_actor_SetSound_AXE_FURI_Swing_axe(ACTOR* actor, int unused) {
     Player_actor_SetSound_AXE_FURI_axe_common(actor);
 }
 
@@ -249,11 +249,11 @@ static void Player_actor_Check_BirthBee_Swing_axe(ACTOR* actor, GAME* game, mPla
     }
 }
 
-static void Player_actor_ObjCheck_Swing_axe(ACTOR* actor, GAME* game, int) {
+static void Player_actor_ObjCheck_Swing_axe(ACTOR* actor, GAME* game, int unused) {
     Player_actor_Excute_Corect_forStand(actor, game);
 }
 
-static void Player_actor_BGcheck_Swing_axe(ACTOR* actor, int) {
+static void Player_actor_BGcheck_Swing_axe(ACTOR* actor, int unused) {
     Player_actor_BGcheck_common_type1(actor);
 }
 

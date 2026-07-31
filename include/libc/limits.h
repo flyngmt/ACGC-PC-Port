@@ -2,8 +2,8 @@
 #define _LIMITS_H_
 
 #ifdef TARGET_PC
-#include <limits.h>
-#else
+#error ACGC console libc headers are not host libc wrappers; include the system header instead
+#endif
 
 #define CHAR_BIT 8
 
@@ -25,5 +25,4 @@
 
 #define DBL_MANT_DIG 53
 
-#endif /* TARGET_PC */
 #endif

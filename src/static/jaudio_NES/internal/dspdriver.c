@@ -5,7 +5,7 @@
 #include "jaudio_NES/audiothread.h"
 #include "jaudio_NES/driverinterface.h"
 #include "jaudio_NES/rate.h"
-#include <dolphin/PPCArch.h>
+#include <dolphin/base/PPCArch.h>
 
 #define DSPCH_LENGTH (64)
 static dspch_ DSPCH[DSPCH_LENGTH] ATTRIBUTE_ALIGN(32);

@@ -27,7 +27,7 @@ ACTOR_PROFILE T_Hat3_Profile = {
 
 extern Gfx crw_hat3_body_model[];
 
-static void aTHT3_actor_ct(ACTOR* actor, GAME*){
+static void aTHT3_actor_ct(ACTOR* actor, GAME* game){
 
     aTHT3_setupAction(actor,4);
 }
@@ -50,7 +50,7 @@ static void aTHT3_setupAction(ACTOR*actor, int action){
 
 }
 
-static void aTHT3_actor_move(ACTOR* actor, GAME*){
+static void aTHT3_actor_move(ACTOR* actor, GAME* game){
     HAT3_ACTOR* hat = (HAT3_ACTOR*)actor;
 
     if(hat->tools_class.work0 != hat->current_id){

@@ -39,7 +39,7 @@ typedef void (*mActor_proc)(ACTOR*, GAME*);
 
 // TODO: Name the unique ones for their correspondant actor
 
-typedef enum bank_id {
+enum bank_id {
     ACTOR_OBJ_BANK_NONE,
     ACTOR_OBJ_BANK_1,
     ACTOR_OBJ_BANK_2,

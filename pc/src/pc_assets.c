@@ -15,6 +15,33 @@ enum { SWAP_NONE = 0, SWAP_U16 = 1, SWAP_VTX = 2, SWAP_U32 = 3 };
 
 static u8* g_rel_data = NULL;
 static u8* g_dol_data = NULL;
+static int g_rel_data_is_aligned = 0;
+
+static void* aurora_aligned_alloc(size_t alignment, size_t size) {
+#if defined(_MSC_VER)
+    return _aligned_malloc(size, alignment);
+#else
+    return aligned_alloc(alignment, size);
+#endif
+}
+
+static void aurora_aligned_free(void* ptr) {
+#if defined(_MSC_VER)
+    _aligned_free(ptr);
+#else
+    free(ptr);
+#endif
+}
+
+static void aurora_free_rel_data(void) {
+    if (g_rel_data_is_aligned) {
+        aurora_aligned_free(g_rel_data);
+    } else {
+        free(g_rel_data);
+    }
+    g_rel_data = NULL;
+    g_rel_data_is_aligned = 0;
+}
 
 static u32 aurora_read_be32(const u8* p) {
     return ((u32)p[0] << 24) | ((u32)p[1] << 16) | ((u32)p[2] << 8) | p[3];
@@ -78,7 +105,7 @@ static u8* aurora_load_dvd_file(const char* path, u32* out_size) {
     if (!DVDOpen(path, &file_info)) return NULL;
     file_size = file_info.length;
     transfer_size = (file_size + 31u) & ~31u;
-    buffer = (u8*)aligned_alloc(32, transfer_size);
+    buffer = (u8*)aurora_aligned_alloc(32, transfer_size);
     if (buffer == NULL) {
         DVDClose(&file_info);
         return NULL;
@@ -86,7 +113,7 @@ static u8* aurora_load_dvd_file(const char* path, u32* out_size) {
     result = DVDReadPrio(&file_info, buffer, (s32)transfer_size, 0, 2);
     DVDClose(&file_info);
     if (result < (s32)file_size) {
-        free(buffer);
+        aurora_aligned_free(buffer);
         return NULL;
     }
     *out_size = file_size;
@@ -114,13 +141,14 @@ static int aurora_load_rom_images(void) {
     if (rel_size >= 16 && memcmp(rel_raw, "Yaz0", 4) == 0) {
         u32 decoded_size = 0;
         g_rel_data = aurora_yaz0_decode(rel_raw, rel_size, &decoded_size);
-        free(rel_raw);
+        aurora_aligned_free(rel_raw);
         if (g_pc_verbose && g_rel_data != NULL) {
             printf("[PC] Aurora DVD: DOL %d bytes, REL %u -> %u bytes\n",
                    dol_size, rel_size, decoded_size);
         }
     } else {
         g_rel_data = rel_raw;
+        g_rel_data_is_aligned = 1;
         if (g_pc_verbose) {
             printf("[PC] Aurora DVD: DOL %d bytes, REL %u bytes\n", dol_size, rel_size);
         }
@@ -29977,9 +30005,10 @@ extern void _pc_load_src_data_field_bg_rail_pal_c(void);
 extern void _pc_load_src_static_nintendo_hi_0_c(void);
 extern void _pc_load_src_game_m_choice_draw_c_inc(void);
 extern void _pc_load_src_static_bootdata_logo_nin_c(void);
+extern void _pc_load_JUTResFONT_Ascfont_fix12(void);
 
 int pc_assets_init(void) {
-    int i, loaded = 0, failed = 0, rom_mode = 0;
+    int i, loaded = 0, rom_mode = 0;
     int total = (int)(sizeof(s_assets) / sizeof(s_assets[0]));
 
     /* Aurora exposes the mounted RVZ/ISO's DOL and FST through its DVD layer. */
@@ -29993,7 +30022,7 @@ int pc_assets_init(void) {
             rom_mode = 1;
             if (g_pc_verbose) printf("[PC] ROM-direct mode: loaded pre-extracted DOL + REL\n");
         } else {
-            if (g_rel_data) { free(g_rel_data); g_rel_data = NULL; }
+            if (g_rel_data) aurora_free_rel_data();
             if (g_dol_data) { free(g_dol_data); g_dol_data = NULL; }
         }
     }
@@ -30781,11 +30810,10 @@ int pc_assets_init(void) {
     _pc_load_src_static_bootdata_logo_nin_c();
 
     /* Font data from DOL .rodata (replaces pc_fontdata.c hex blob) */
-    { extern void _pc_load_JUTResFONT_Ascfont_fix12(void);
-      _pc_load_JUTResFONT_Ascfont_fix12(); }
+    _pc_load_JUTResFONT_Ascfont_fix12();
 
     /* Free ROM data */
-    if (g_rel_data) { free(g_rel_data); g_rel_data = NULL; }
+    if (g_rel_data) aurora_free_rel_data();
     if (g_dol_data) { free(g_dol_data); g_dol_data = NULL; }
 
     if (g_pc_verbose)

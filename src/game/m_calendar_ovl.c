@@ -6,7 +6,11 @@
 #include "m_warning_ovl.h"
 #include "sys_matrix.h"
 #include "m_malloc.h"
+#ifdef TARGET_PC
+#include <math.h>
+#else
 #include "libc/math.h"
+#endif
 
 static f32 mCD_add_calc_dt(f32* value, f32 target, f32 rate, f32 max_step, f32 min_step) {
     f32 dt = (f32)gamePT->graph->dt_num_60fps_frames;

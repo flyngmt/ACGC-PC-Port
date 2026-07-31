@@ -22,7 +22,7 @@
 void apuInitBufs();
 void apuDeinitBufs();
 void apuInit();
-FIXNES_ALWAYSINLINE void apuCycle();
+void apuCycle();
 void apuWriteDMCBuf(uint8_t val);
 uint8_t *apuGetBuf();
 uint32_t apuGetBufSize();

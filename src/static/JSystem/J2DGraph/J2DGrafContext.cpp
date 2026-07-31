@@ -39,7 +39,7 @@ void J2DGrafContext::setup2D() {
     GXSetCullMode(GX_CULL_NONE);
 
     GXLoadPosMtxImm(mPosMtx, 0);
-    GC_Mtx m;
+    Mtx m;
     PSMTXIdentity(m);
     GXLoadTexMtxImm(m, 60, GX_MTX3x4);
 

@@ -2,8 +2,8 @@
 #define _STDLIB_H_
 
 #ifdef TARGET_PC
-#include <stdlib.h>
-#else
+#error ACGC console libc headers are not host libc wrappers; include the system header instead
+#endif
 
 #include <stddef.h>
 #include <wchar.h>
@@ -26,5 +26,4 @@ static inline int abs(int x)
 }
 #endif
 
-#endif /* TARGET_PC */
 #endif

@@ -2,7 +2,11 @@
 #define JUTDIRECTPRINT_H
 
 #include "types.h"
+#ifdef TARGET_PC
+#include <stdarg.h>
+#else
 #include "libc/stdarg.h"
+#endif
 
 #ifdef __cplusplus
 

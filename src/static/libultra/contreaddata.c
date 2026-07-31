@@ -100,25 +100,25 @@ extern void osContGetReadDataEx(OSContPadEx* pad) {
         PADStatus curPad = padStatus[i];
 
         if (curPad.err == PAD_ERR_TRANSFER) {
-            pad->pad.errno = 0;
+            pad->pad.error = 0;
         } else {
             switch (curPad.err) {
                 case PAD_ERR_NO_CONTROLLER:
-                    pad->pad.errno = 8;
+                    pad->pad.error = 8;
                     break;
                 case PAD_ERR_NOT_READY:
-                    pad->pad.errno = 8;
+                    pad->pad.error = 8;
                     break;
                 case PAD_ERR_TRANSFER:
-                    pad->pad.errno = 4;
+                    pad->pad.error = 4;
                     break;
                 default:
-                    pad->pad.errno = 0;
+                    pad->pad.error = 0;
                     break;
             }
         }
         
-        if (pad->pad.errno == 0) {
+        if (pad->pad.error == 0) {
             u16 jut_button = curPad.button;
             u16 mask = jut_button & (JUT_START | JUT_X | JUT_B);
             u16 button = 0;

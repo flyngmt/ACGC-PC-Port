@@ -76,7 +76,7 @@ struct J2DGrafContext {
     u8 mLineWidth;                    // _34
     JGeometry::TVec2f mPrevPos;       // _38
     Mtx44 mMtx44;                     // _40
-    GC_Mtx mPosMtx;                   // _80
+    Mtx mPosMtx;                   // _80
     J2DGrafBlend _B0;                 // _B0
     J2DGrafBlend mLinePart;           // _B3
     J2DGrafBlend mBoxPart;            // _B6

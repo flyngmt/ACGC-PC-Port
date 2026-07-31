@@ -12,8 +12,8 @@
 
 void ppuInit();
 void ppuAddCycles();
-FIXNES_ALWAYSINLINE void ppuCycle();
-FIXNES_ALWAYSINLINE bool ppuDrawDone();
+void ppuCycle();
+bool ppuDrawDone();
 uint8_t ppuGet8(uint16_t addr);
 void ppuSet8(uint16_t addr, uint8_t val);
 uint8_t ppuNMI();

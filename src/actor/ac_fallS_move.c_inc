@@ -1,4 +1,4 @@
-void aFLS_actor_move(ACTOR* actor, GAME*) {
+void aFLS_actor_move(ACTOR* actor, GAME* game) {
     xyz_t pos;
 
     xyz_t_move(&pos, &actor->world.position);

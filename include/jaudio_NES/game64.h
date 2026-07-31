@@ -3,7 +3,11 @@
 
 #include "types.h"
 #include "jaudio_NES/identity.h"
+#ifdef TARGET_PC
+#include <stdarg.h>
+#else
 #include "libc/stdarg.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {

@@ -2,8 +2,8 @@
 #define _STDARG_H_
 
 #ifdef TARGET_PC
-#include <stdarg.h>
-#else
+#error ACGC console libc headers are not host libc wrappers; include the system header instead
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,5 +40,4 @@ typedef __builtin_va_list va_list;
 }
 #endif
 
-#endif /* TARGET_PC */
 #endif

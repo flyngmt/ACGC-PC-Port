@@ -27,7 +27,7 @@ ACTOR_PROFILE T_Biscus4_Profile = {
 
 extern Gfx crw_biscus4_body_model[];
 
-static void aTB4_actor_ct(ACTOR* actor, GAME*){
+static void aTB4_actor_ct(ACTOR* actor, GAME* game){
 
     aTB4_setupAction(actor,4);
 }
@@ -50,7 +50,7 @@ static void aTB4_setupAction(ACTOR*actor, int action){
 
 }
 
-static void aTB4_actor_move(ACTOR* actor, GAME*){
+static void aTB4_actor_move(ACTOR* actor, GAME* game){
     BISCUS4_ACTOR* biscus = (BISCUS4_ACTOR*)actor;
 
     if(biscus->tools_class.work0 != biscus->current_id){

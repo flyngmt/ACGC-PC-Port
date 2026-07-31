@@ -27,7 +27,7 @@ ACTOR_PROFILE T_Cobra1_Profile = {
 
 extern Gfx crw_cobra_model[];
 
-static void aTCB1_actor_ct(ACTOR* actor, GAME*){
+static void aTCB1_actor_ct(ACTOR* actor, GAME* game){
 
     aTCB1_setupAction(actor,4);
 }
@@ -50,7 +50,7 @@ static void aTCB1_setupAction(ACTOR*actor, int action){
 
 }
 
-static void aTCB1_actor_move(ACTOR* actor, GAME*){
+static void aTCB1_actor_move(ACTOR* actor, GAME* game){
     COBRA1_ACTOR* cobra = (COBRA1_ACTOR*)actor;
 
     if(cobra->tools_class.work0 != cobra->current_id){

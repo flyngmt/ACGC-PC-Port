@@ -8,7 +8,11 @@
 #include "m_font.h"
 #include "m_quest.h"
 #include "sys_matrix.h"
+#ifdef TARGET_PC
+#include <math.h>
+#else
 #include "libc/math.h"
+#endif
 
 static mNT_Ovl_c notice_ovl_data;
 

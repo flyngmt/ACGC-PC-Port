@@ -1002,7 +1002,7 @@ FIXNES_NOINLINE static void cpuDoDMA()
 }
 
 /* Main CPU Interpreter */
-FIXNES_ALWAYSINLINE bool cpuCycle()
+bool cpuCycle()
 {
 	cpu_odd_cycle^=true;
 	//printf("CPU Cycle\n");

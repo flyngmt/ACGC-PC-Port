@@ -2,7 +2,7 @@
 
 #include "dolphin/dvd.h"
 #include "dolphin/os.h"
-#include "dolphin/os/OSArena.h"
+#include <dolphin/os.h>
 #include "dolphin/os/OSContext.h"
 #include "dolphin/os/OSModule.h"
 #include "dolphin/os/OSReset.h"

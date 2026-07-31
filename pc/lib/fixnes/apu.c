@@ -467,7 +467,7 @@ FIXNES_NOINLINE static void apuClockB()
 		apu.trireload = false;
 }
 
-FIXNES_ALWAYSINLINE void apuCycle()
+void apuCycle()
 {
 	uint8_t aExp = audioExpansion;
 #if AUDIO_LOWERFREQ

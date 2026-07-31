@@ -111,7 +111,7 @@ static void fixnes_convert_frame(const uint16_t *fb) {
 
 static void fixnes_set_projection(int pillarbox) {
     Mtx44 projection;
-    AuroraMtx identity;
+    Mtx identity;
 
     C_MTXOrtho(projection, 1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 10.0f);
     C_MTXIdentity(identity);

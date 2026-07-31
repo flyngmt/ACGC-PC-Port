@@ -2,8 +2,8 @@
 #define _DOLPHIN_LIBC_CTYPE_H_
 
 #ifdef TARGET_PC
-#include <ctype.h>
-#else
+#error ACGC console libc headers are not host libc wrappers; include the system header instead
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,5 +15,4 @@ int tolower(int c);
 }
 #endif
 
-#endif /* TARGET_PC */
 #endif // _DOLPHIN_LIBC_CTYPE_H_

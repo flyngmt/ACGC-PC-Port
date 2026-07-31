@@ -1,4 +1,4 @@
-static void aRSV_set_bgOffset(ACTOR*, int) {
+static void aRSV_set_bgOffset(ACTOR* actor, int offset) {
 }
 
 static void aRSV_set_talk_info(ACTOR* actor) {

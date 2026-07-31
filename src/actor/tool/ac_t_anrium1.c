@@ -27,7 +27,7 @@ ACTOR_PROFILE T_Anrium1_Profile = {
 
 extern Gfx crw_anrium1_body_model[];
 
-static void aTA1_actor_ct(ACTOR* actor, GAME*){
+static void aTA1_actor_ct(ACTOR* actor, GAME* game){
 
     aTA1_setupAction(actor,4);
 }
@@ -50,7 +50,7 @@ static void aTA1_setupAction(ACTOR*actor, int action){
 
 }
 
-static void aTA1_actor_move(ACTOR* actor, GAME*){
+static void aTA1_actor_move(ACTOR* actor, GAME* game){
     ANRIUM1_ACTOR* anrium = (ANRIUM1_ACTOR*)actor;
 
     if(anrium->tools_class.work0 != anrium->current_id){

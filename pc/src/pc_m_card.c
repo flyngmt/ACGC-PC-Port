@@ -38,11 +38,23 @@
 #include <string.h>
 #include <time.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #ifdef _WIN32
-#include <direct.h>  /* _mkdir */
+#include <direct.h>  /* _getcwd, _mkdir */
+#define pc_getcwd _getcwd
+#else
+#include <unistd.h>
+#define pc_getcwd getcwd
 #endif
 #include <dolphin/os.h>  /* OSReport */
+
+static FILE* pc_fopen(const char* path, const char* mode) {
+#ifdef _MSC_VER
+    FILE* file = NULL;
+    return fopen_s(&file, path, mode) == 0 ? file : NULL;
+#else
+    return fopen(path, mode);
+#endif
+}
 
 /* --- Save paths below the configured --user-dir --- */
 #define PC_SAVE_PATH_MAX 1024
@@ -350,7 +362,7 @@ static int pc_save_write_gci_to(const char* gci_path, const char* tmp_path) {
         const char* title = "DobutsunomoriP (AC PC Port)";
         u8* comment = others_ptr;
         memset(comment, 0, CARD_COMMENT_SIZE);
-        strncpy((char*)comment, title, 32);
+        memcpy(comment, title, strlen(title));
         memcpy(comment + 32, Save_Get(land_info).name, 8);
     }
 
@@ -421,7 +433,7 @@ static int pc_save_write_gci_to(const char* gci_path, const char* tmp_path) {
     memcpy(dir_hdr.gameName, "GAFE", 4);
     memcpy(dir_hdr.company, "01", 2);
     dir_hdr.bannerFormat = 0;
-    strncpy((char*)dir_hdr.fileName, "DobutsunomoriP_MURA", CARD_FILENAME_MAX);
+    memcpy(dir_hdr.fileName, "DobutsunomoriP_MURA", sizeof("DobutsunomoriP_MURA") - 1);
     {
         time_t unix_now = time(NULL);
         u32 gc_secs = (u32)(unix_now - 946684800LL);
@@ -437,7 +449,7 @@ static int pc_save_write_gci_to(const char* gci_path, const char* tmp_path) {
     put_be32((u8*)&dir_hdr.commentAddr, 0);
 
     /* write temp file → rotate backups → rename */
-    fp = fopen(tmp_path, "wb");
+    fp = pc_fopen(tmp_path, "wb");
     if (!fp) {
         OSReport("[PC] GCI save: failed to open temp file '%s'\n", tmp_path);
         free(file_data);
@@ -480,10 +492,9 @@ static int pc_save_read_gci(const char* path) {
     CARDDir dir_hdr;
     u8* file_data;
     Save_t* save_src;
-    u32 offset;
     long file_size;
 
-    fp = fopen(path, "rb");
+    fp = pc_fopen(path, "rb");
     if (!fp) {
         OSReport("[PC] GCI: fopen('%s') failed\n", path);
         return FALSE;
@@ -598,9 +609,8 @@ static int pc_save_read_gci_to_keep(const char* path) {
     CARDDir dir_hdr;
     u8* file_data;
     Save_t* save_src;
-    u32 offset;
 
-    fp = fopen(path, "rb");
+    fp = pc_fopen(path, "rb");
     if (!fp) return FALSE;
 
     if (fread(&dir_hdr, GCI_HEADER_SIZE, 1, fp) != 1) { fclose(fp); return FALSE; }
@@ -680,7 +690,7 @@ static int pc_save_is_gci_file(const char* path) {
         return FALSE;
     }
 
-    fp = fopen(path, "rb");
+    fp = pc_fopen(path, "rb");
     if (fp == NULL) {
         return FALSE;
     }
@@ -713,12 +723,12 @@ static int pc_save_copy_gci_if_absent(const char* source, const char* destinatio
         return FALSE;
     }
 
-    input = fopen(source, "rb");
+    input = pc_fopen(source, "rb");
     if (input == NULL) {
         return FALSE;
     }
     remove(import_path);
-    output = fopen(import_path, "wb");
+    output = pc_fopen(import_path, "wb");
     if (output == NULL) {
         fclose(input);
         return FALSE;
@@ -829,7 +839,7 @@ int pc_save_check_and_load(void) {
     pc_save_paths_init();
     {
         char cwd[512];
-        if (getcwd(cwd, sizeof(cwd))) {
+        if (pc_getcwd(cwd, sizeof(cwd))) {
             OSReport("[PC] Save: current working directory = '%s'\n", cwd);
         }
     }
@@ -1048,7 +1058,7 @@ static int pc_read_gci_land_info(const char* path, Save_t* out) {
     u8* file_data;
     int ok = FALSE;
 
-    fp = fopen(path, "rb");
+    fp = pc_fopen(path, "rb");
     if (!fp) return FALSE;
 
     if (fread(&hdr, GCI_HEADER_SIZE, 1, fp) == 1 &&

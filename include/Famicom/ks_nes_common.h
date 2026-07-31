@@ -211,7 +211,7 @@ typedef struct ksNesDrawCtx {
     /* 0x7840 */ u8 bg_palette_attr_texture[(40 * 256) / 2]; // I4 texture, holds background palette attributes
     /* 0x8E40 */ u8 sprite_indirect_lut[(16 * 4) * 2]; // 4x16 texture IA8, handles indirect tex coords, for mirroring and sized sprites
     /* 0x8EC0 */ u8 sprite_chr_bank_lut[(5 * 4) * 2]; // 8x4 IA8 sprite CHR bank lookup table -- @ BUG - this is setup as a 5x4 IA8 texture, but gets loaded as 8x4.
-    /* 0x8EE8 */ Mtx34 draw_mtx;
+    /* 0x8EE8 */ Mtx draw_mtx;
 } ksNesDrawCtx;
 
 #define KS_NES_TYPE_FROM_DRAW_CTX_SCANLINE_BUF_OFS(type, draw_ctx, ofs) ((type*)((((u8*)(draw_ctx).scanline_raw_buf) + (ofs))))

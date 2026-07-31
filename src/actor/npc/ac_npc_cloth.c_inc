@@ -61,13 +61,7 @@ static void aNPC_dma_cloth_data_fg(void) {
             aNPC_dma_cloth_pal_data_fg(cloth);
 #ifdef TARGET_PC
             /* Palette from ARAM is BE u16 (RGB5A3). Byte-swap to native LE. */
-            {
-                u16* pal = (u16*)cloth->palette_bank.ram_start;
-                int pi;
-                for (pi = 0; pi < aNPC_CLOTH_PAL_SIZE / (int)sizeof(u16); pi++) {
-                    pal[pi] = __builtin_bswap16(pal[pi]);
-                }
-            }
+            pc_bswap16_array(cloth->palette_bank.ram_start, aNPC_CLOTH_PAL_SIZE / (int)sizeof(u16));
 #endif
             cloth->dma_flag = FALSE;
             cloth->texture_bank.state = 0;

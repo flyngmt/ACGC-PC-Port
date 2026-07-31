@@ -62,11 +62,11 @@ static void Player_actor_Movement_Reflect_axe(ACTOR* actor, mPlayer_main_reflect
     Player_actor_Movement_Reflect_axe_common(actor, &main_axe->axe_common, flag);
 }
 
-static int Player_actor_CulcAnimation_Reflect_axe(ACTOR* actor, f32* frame_calc, int) {
+static int Player_actor_CulcAnimation_Reflect_axe(ACTOR* actor, f32* frame_calc, int unused) {
     return Player_actor_CulcAnimation_Base2(actor, frame_calc);
 }
 
-static void Player_actor_SetEffectHit_Reflect_axe(ACTOR* actor, GAME* game, s16 arg2, int) {
+static void Player_actor_SetEffectHit_Reflect_axe(ACTOR* actor, GAME* game, s16 arg2, int unused) {
     Player_actor_SetEffectHit_axe_common(actor, game, arg2);
 }
 
@@ -75,7 +75,7 @@ static void Player_actor_SetEffect_Reflect_axe(ACTOR* actor, GAME* game, int arg
     Player_actor_SetEffectStart_axe_common(actor, game);
 }
 
-static void Player_actor_SetAngleSpeedF_Reflect_axe(ACTOR* actor, int) {
+static void Player_actor_SetAngleSpeedF_Reflect_axe(ACTOR* actor, int unused) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
 
     if (Player_actor_Check_AnimationFrame(&player->keyframe0.frame_control, 15.0f)) {
@@ -84,7 +84,7 @@ static void Player_actor_SetAngleSpeedF_Reflect_axe(ACTOR* actor, int) {
     }
 }
 
-static void Player_actor_SetOrderNPC_Reflect_axe(ACTOR* actor, mPlayer_main_reflect_axe_c* main_axe, int) {
+static void Player_actor_SetOrderNPC_Reflect_axe(ACTOR* actor, mPlayer_main_reflect_axe_c* main_axe, int unused) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
     int rock;
     if (Player_actor_Check_AnimationFrame(&player->keyframe0.frame_control, 15.0f)) {
@@ -122,7 +122,7 @@ static void Player_actor_SetOrderNPC_Reflect_axe(ACTOR* actor, mPlayer_main_refl
     }
 }
 
-static void Player_actor_SetSound_Reflect_axe(ACTOR* actor, mPlayer_main_reflect_axe_c* main_axe, int) {
+static void Player_actor_SetSound_Reflect_axe(ACTOR* actor, mPlayer_main_reflect_axe_c* main_axe, int unused) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
 
     Player_actor_SetSound_AXE_FURI_axe_common(actor);
@@ -146,11 +146,11 @@ static void Player_actor_SetSound_Reflect_axe(ACTOR* actor, mPlayer_main_reflect
     }
 }
 
-static void Player_actor_ChangeItemNo_Reflect_axe(ACTOR* actor, mPlayer_main_reflect_axe_c* main_axe, int) {
+static void Player_actor_ChangeItemNo_Reflect_axe(ACTOR* actor, mPlayer_main_reflect_axe_c* main_axe, int unused) {
     Player_actor_ChangeItemNo_axe_common(actor, main_axe->axe_common.axe_damage_no);
 }
 
-static void Player_actor_informed_insects_Reflect_axe(ACTOR* actor, mPlayer_main_reflect_axe_c* main_axe, int) {
+static void Player_actor_informed_insects_Reflect_axe(ACTOR* actor, mPlayer_main_reflect_axe_c* main_axe, int unused) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
 
     if (Player_actor_Check_AnimationFrame(&player->keyframe0.frame_control, 15.0f)) {
@@ -177,11 +177,11 @@ static void Player_actor_SearchAnimation_Reflect_axe(ACTOR* actor, GAME* game, m
     }
 }
 
-static void Player_actor_ObjCheck_Reflect_axe(ACTOR* actor, GAME* game, int) {
+static void Player_actor_ObjCheck_Reflect_axe(ACTOR* actor, GAME* game, int unused) {
     Player_actor_Excute_Corect_forStand(actor, game);
 }
 
-static void Player_actor_BGcheck_Reflect_axe(ACTOR* actor, int) {
+static void Player_actor_BGcheck_Reflect_axe(ACTOR* actor, int unused) {
     Player_actor_BGcheck_common_type1(actor);
 }
 

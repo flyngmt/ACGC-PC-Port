@@ -22,11 +22,11 @@ extern "C" {
 
 typedef u64 Z_OSTime;
 
-#ifdef TARGET_PC
+#if defined(TARGET_PC) && !defined(_WIN32)
 #include <strings.h>
 #else
-int bcmp(void* v1, void* v2, u32 size);
-void bcopy(void* src, void* dst, size_t n);
+int bcmp(const void* v1, const void* v2, size_t size);
+void bcopy(const void* src, void* dst, size_t size);
 void bzero(void* ptr, size_t size);
 #endif
 void osSyncPrintf(const char* fmt, ...);

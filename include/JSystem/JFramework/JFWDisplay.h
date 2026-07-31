@@ -14,7 +14,7 @@
 
 typedef void (*JFWDisplayUnkFunc)(void);
 
-extern GC_Mtx e_mtx;
+extern Mtx e_mtx;
 
 class JFWAlarm : public OSAlarm { // everything here seems to be auto inlined or unused
   public:
@@ -50,13 +50,13 @@ class JFWDisplay {
         /* 0x1 */ UNK_METHOD_1 = 1
     };
 
-    static JFWDisplay* createManager(const _GXRenderModeObj*, JKRHeap*, JUTXfb::EXfbNumber, bool); // 0x80015bfc
+    static JFWDisplay* createManager(const GXRenderModeObj*, JKRHeap*, JUTXfb::EXfbNumber, bool); // 0x80015bfc
     void waitBlanking(int);                                                                        // 0x8001684c
     void threadSleep(s64);                                                                         // 0x800169fc
     void clearEfb_init();                                                                          // 0x80016ab8
     void clearEfb();                                                                               // 0x80016b2c
-    void clearEfb(_GXColor);                                                                       // 0x80016b58
-    void clearEfb(int, int, int, int, _GXColor);                                                   // 0x80016b9c
+    void clearEfb(GXColor);                                                                        // 0x80016b58
+    void clearEfb(int, int, int, int, GXColor);                                                    // 0x80016b9c
     void calcCombinationRatio();                                                                   // 0x80016f0c
 
     void ctor_subroutine(const GXRenderModeObj*, bool);
@@ -77,9 +77,9 @@ class JFWDisplay {
     JFWDisplay(void*, bool);
     JFWDisplay(void*, void*, bool);
     JFWDisplay(void*, void*, void*, bool);
-    void createManager(const _GXRenderModeObj*, void*, bool);
-    void createManager(const _GXRenderModeObj*, void*, void*, bool);
-    void createManager(const _GXRenderModeObj*, void*, void*, void*, bool);
+    void createManager(const GXRenderModeObj*, void*, bool);
+    void createManager(const GXRenderModeObj*, void*, void*, bool);
+    void createManager(const GXRenderModeObj*, void*, void*, void*, bool);
     void deleteToSingleXfb(int);
     void deleteToSingleXfb(void*);
     void addToDoubleXfb(void*, bool);

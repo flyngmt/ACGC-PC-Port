@@ -59,7 +59,7 @@ extern void game_debug_draw_last(GAME* this, GRAPH* graph) {
 
         for (i = 0; i < MAXCONTROLLERS; i++) {
             pad_t* pad = &this->pads[i];
-            if (pad->now.errno == 0) {
+            if (pad->now.error == 0) {
                 last_now_button[i] = pad->now.button;
                 last_on_trigger[i] = pad->on.button;
                 last_button[i] = last_now_button[i] | last_on_trigger[i];

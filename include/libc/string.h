@@ -2,8 +2,8 @@
 #define ACGC_LIBC_STRING_H
 
 #ifdef TARGET_PC
-#include <string.h>
-#else
+#error ACGC console libc headers are not host libc wrappers; include the system header instead
+#endif
 
 #include <stddef.h>
 
@@ -32,5 +32,4 @@ char* strcat(char* dst, const char* src);
 }
 #endif
 
-#endif /* TARGET_PC */
 #endif

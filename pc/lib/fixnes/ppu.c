@@ -771,7 +771,7 @@ static uint16_t ppuLastDot(uint16_t line)
 #else //1x horizontal and vertical scaling for pure integer scale display
 #define TEX_AT_POS 	textureImage[drawPos]
 #endif
-FIXNES_ALWAYSINLINE void ppuCycle()
+void ppuCycle()
 {
 	uint16_t dot = ppu.curDot, line = ppu.curLine;
 #if defined(DISPLAY_PPUWRITES) || defined(DO_4_3_ASPECT)
@@ -1684,7 +1684,7 @@ static uint8_t ppuDoSprites(uint8_t color, uint16_t dot)
 	return color;
 }
 
-FIXNES_ALWAYSINLINE bool ppuDrawDone()
+bool ppuDrawDone()
 {
 	if(ppu.FrameDone)
 	{

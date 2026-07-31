@@ -15,10 +15,6 @@
 #ifndef __alloca
 #define __alloca alloca
 #endif
-/* Metrowerks __declspec(section "...") is not supported by GCC.
- * GCC defines __declspec as a builtin keyword, so we must #undef it first. */
-#undef __declspec
-#define __declspec(x)
 #else
 #include "MSL_C/w_math.h"
 #endif
