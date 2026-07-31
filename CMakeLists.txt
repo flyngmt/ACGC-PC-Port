@@ -32,9 +32,6 @@ if (NOT TARGET nlohmann_json::nlohmann_json)
     FetchContent_MakeAvailable(nlohmann_json)
 endif ()
 
-# Build type comes from the selected preset. NDEBUG remains explicit because
-# matching game behavior should not depend on a host toolchain's configuration.
-
 # Allow mixed C/C++ linkage
 set(CMAKE_C_EXTENSIONS ON)
 set(CMAKE_CXX_EXTENSIONS ON)
@@ -51,19 +48,13 @@ add_compile_definitions(
     _LANGUAGE_C    # Required for N64 GBI/ultratypes headers
 )
 
-# Common compiler flags (applied to all sources). GCC and Clang need explicit
-# flags for the decomp's type-punning and signed-overflow assumptions. MSVC has
-# no equivalent switches and does not perform GCC-style type-based alias
-# analysis, so do not pass the GNU options to cl.exe.
 if (MSVC)
     add_compile_options(
         $<$<COMPILE_LANGUAGE:C,CXX>:/bigobj>
         $<$<COMPILE_LANGUAGE:C,CXX>:/utf-8>
     )
 
-    # MSVC's Debug defaults include /RTC1, which is incompatible with the /O2
-    # required by fixNES. Remove it from this directory, then opt maintained
-    # and game sources back in below while leaving the NES hot path optimized.
+    # MSVC's Debug defaults include /RTC1, which is incompatible with /O2 used by fixNES
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         foreach (lang C CXX)
             foreach (debug_flag /Od /RTC1)
@@ -87,15 +78,12 @@ endif ()
 # =============================================================================
 include_directories(
     ${DECOMP_ROOT}/include
-    # include/libc contains the console runtime declarations, not host libc
-    # wrappers. Native code includes the toolchain's standard headers directly.
     ${DECOMP_ROOT}/src
     # Project root needed for includes like "src/actor/npc/event/file.c_inc"
     ${DECOMP_ROOT}
     ${PC_ROOT}/include
     ${PC_ROOT}/include/acgc/ui
     ${PC_ROOT}/lib/fixnes
-    # .inc assets are loaded at runtime from disc image (no build/GAFE01_00 needed)
 )
 
 # =============================================================================
@@ -111,40 +99,10 @@ file(GLOB_RECURSE GAME_CXX_SOURCES CONFIGURE_DEPENDS
 # Exclude files that conflict with PC port or are platform-specific
 list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/AUS/.*")  # AUS-specific versions
 
-# The matching Dolphin SDK lives outside src/ in libs/dolphin, so the game
-# source glob cannot accidentally compile it into the PC target. Keep these
-# filters while the legacy backend remains to accommodate older source trees.
-list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/dolphin/gx/.*")
-list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/dolphin/os/.*")
-list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/dolphin/vi/.*")
-list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/dolphin/pad/.*")
-list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/dolphin/card/.*")
-list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/dolphin/dvd/.*")
-list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/dolphin/ai/.*")
-list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/dolphin/ar/.*")
-list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/dolphin/dsp/.*")
-list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/dolphin/exi/.*")
-list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/dolphin/si/.*")
-list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/dolphin/db/.*")
-list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/dolphin/mtx/.*")
-list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/dolphin/base/.*")
-list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/dolphin/gba/.*")
-list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/dolphin/amcstubs/.*")
-list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/dolphin/OdemuExi2/.*")
-list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/dolphin/odenotstub/.*")
-
 # Exclude PPC-specific runtime/compiler support (Metrowerks CodeWarrior)
 list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/TRK_MINNOW_DOLPHIN/.*")
 list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/Runtime\\.PPCEABI\\.H/.*")
 list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/MSL_C\\.PPCEABI\\.bare\\.H/.*")
-
-# Bootdata: Include window/logo model display lists (gam_win1.c, gam_win2.c, gam_win3.c, logo_nin.c)
-# These provide Gfx[] arrays used by initial_menu.c for UI windows and Nintendo logo.
-
-# Include ALL data files now that .inc assets are extracted from ROM
-# (build/GAFE01_00/include/ is in the include path)
-file(GLOB_RECURSE DATA_C_SOURCES CONFIGURE_DEPENDS "${DECOMP_ROOT}/src/data/*.c")
-list(APPEND GAME_C_SOURCES ${DATA_C_SOURCES})
 
 # f_furniture.c #includes all 696 src/furniture/*.c files as a single TU (like GC build).
 # Exclude the individual files to avoid duplicate symbol definitions.
@@ -164,13 +122,6 @@ list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/actor/npc/.*_anime\\.c$")
 # Exclude the matching console reporter; the host adapter routes reports to the
 # active process output and will be folded into the shared logging slice.
 list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/osreport\\.c$")
-# audio.c now included (jaudio_NES provides Na_* functions)
-
-# Exclude Famicom/NES emulator (contains PPC inline assembly)
-list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/Famicom/.*")
-
-# Exclude MSL_C library sources (using system libc on PC)
-list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/MSL_C/.*")
 
 # jaudio_NES: Include audio engine, exclude GBA-specific files
 list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/jaudio_NES/internal/dsp_cardunlock\\.c$")
@@ -210,9 +161,6 @@ list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/ReconfigBATs\\.c$")
 # Exclude GC-specific entry point (PC has its own main)
 list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/executor\\.c$")
 
-# ROM asset .inc files now available in build/GAFE01_00/include/assets/
-# All previously-excluded files are now compiled with real data.
-
 # Exclude ef_effect_lib.c (has no #includes, pure function definitions without type context)
 list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/ef_effect_lib\\.c$")
 
@@ -220,20 +168,7 @@ list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/ef_effect_lib\\.c$")
 list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/m_card\\.c$")
 
 # Also filter C++ sources
-list(FILTER GAME_CXX_SOURCES EXCLUDE REGEX ".*/AUS/.*")
-list(FILTER GAME_CXX_SOURCES EXCLUDE REGEX ".*/dolphin/.*")
-list(FILTER GAME_CXX_SOURCES EXCLUDE REGEX ".*/TRK_MINNOW_DOLPHIN/.*")
 list(FILTER GAME_CXX_SOURCES EXCLUDE REGEX ".*/Runtime\\.PPCEABI\\.H/.*")
-list(FILTER GAME_CXX_SOURCES EXCLUDE REGEX ".*/MSL_C\\.PPCEABI\\.bare\\.H/.*")
-list(FILTER GAME_CXX_SOURCES EXCLUDE REGEX ".*/Famicom/.*")
-
-# Re-include Famicom files (PPC asm guarded out with #ifndef TARGET_PC)
-list(APPEND GAME_CXX_SOURCES
-    ${DECOMP_ROOT}/src/static/Famicom/famicom.cpp
-    ${DECOMP_ROOT}/src/static/Famicom/famicom_nesinfo.cpp
-    ${DECOMP_ROOT}/src/static/Famicom/ks_nes_core.cpp
-    ${DECOMP_ROOT}/src/static/Famicom/ks_nes_draw.cpp
-)
 
 # Exclude emu64_print.cpp (it's #included directly from emu64.c, not a standalone file)
 list(FILTER GAME_CXX_SOURCES EXCLUDE REGEX ".*/emu64_print\\.cpp$")
@@ -351,7 +286,6 @@ set_source_files_properties(
     "${DECOMP_ROOT}/src/static/libforest/emu64/emu64.c"
     # ja_calc.c uses std::sinf, std::sqrtf
     "${DECOMP_ROOT}/src/static/jaudio_NES/internal/ja_calc.c"
-    # sample.c: reinterpret_cast replaced with C cast under TARGET_PC, no longer needs C++
     # jammain_2.c uses extern "C"
     "${DECOMP_ROOT}/src/static/jaudio_NES/internal/jammain_2.c"
     # game64.c includes .c_inc with extern "C" (OSAttention.c_inc)
