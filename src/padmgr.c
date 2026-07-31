@@ -307,7 +307,7 @@ extern void padmgr_RequestPadData_NonLock(pad_t* pad, int flag) {
 }
 
 #ifdef TARGET_PC
-/* On PC, the padmgr thread doesn't run (osStartThread is a no-op).
+/* On PC, the padmgr thread is not created.
    Poll input once per frame, then let all callers read the accumulated triggers.
    On GC, the padmgr thread polls asynchronously and accumulates triggers between reads.
    On PC, inline polling means a second call within the same frame sees no state change
@@ -484,8 +484,15 @@ extern void padmgr_Init(OSMessageQueue* mq) {
 extern void padmgr_Create(OSMessageQueue* serial_mq, OSId id, OSPri priority, void* stackend, size_t stack_size) {
     padmgr_Init(serial_mq);
     osCreateMesgQueue(&this->_msgQueue8C, this->_msgBuf2C, PADMSGBUFCNT);
+#ifdef TARGET_PC
+    (void)id;
+    (void)priority;
+    (void)stackend;
+    (void)stack_size;
+#else
     osCreateThread2(&this->thread, id, &padmgr_MainProc, this, stackend, stack_size, priority);
     osStartThread(&this->thread);
+#endif
 }
 
 extern int padmgr_isConnectedController(int idx) {
