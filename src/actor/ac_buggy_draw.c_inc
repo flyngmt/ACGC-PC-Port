@@ -34,7 +34,7 @@ static int aBGY_actor_draw_after(GAME* game, cKF_SkeletonInfo_R_c* keyframe, int
 
     STRUCTURE_ACTOR* buggy;
     GRAPH* graph;
-    Mtx* mtx;
+    N64Mtx* mtx;
     int winter;
     int l;
     int r;
@@ -84,7 +84,7 @@ static void aBGY_actor_draw(ACTOR* actor, GAME* game) {
     STRUCTURE_ACTOR* buggy;
     GRAPH* graph;
     cKF_SkeletonInfo_R_c* keyframe;
-    Mtx* mtx;
+    N64Mtx* mtx;
     Gfx* poly_opa;
     Gfx* poly_xlu;
 
@@ -92,7 +92,7 @@ static void aBGY_actor_draw(ACTOR* actor, GAME* game) {
     graph = game->graph;
     keyframe = &buggy->keyframe;
 
-    mtx = GRAPH_ALLOC_TYPE(graph, Mtx, (u32)keyframe->skeleton->num_shown_joints);
+    mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, (u32)keyframe->skeleton->num_shown_joints);
 
     if (mtx != NULL) {
         u16* pal;

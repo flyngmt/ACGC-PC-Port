@@ -68,7 +68,7 @@ static void aWeatherSnow_make(ACTOR* actor, GAME* game) {
     }
 }
 
-static void aWeatherSnow_ct(aWeather_Priv*, GAME*) {
+static void aWeatherSnow_ct(aWeather_Priv* priv, GAME* game) {
 }
 
 static int aWeatherSnow_CheckSnowBorder(aWeather_Priv* priv, GAME_PLAY* play) {
@@ -174,7 +174,7 @@ void aWeatherSnow_draw(aWeather_Priv* priv, GAME* game) {
 
     xyz_t pos;
     xyz_t screen_pos;
-    Mtx* work;
+    N64Mtx* work;
     f32 scale;
     f32 min;
 
@@ -187,7 +187,7 @@ void aWeatherSnow_draw(aWeather_Priv* priv, GAME* game) {
     if ((0.0f <= screen_pos.x) && (screen_pos.x < SCREEN_WIDTH_F) && (0.0f <= screen_pos.y) &&
         (screen_pos.y < SCREEN_HEIGHT_F)) {
 
-        work = GRAPH_ALLOC_TYPE(game->graph, Mtx, 1);
+        work = GRAPH_ALLOC_TYPE(game->graph, N64Mtx, 1);
 
         min = pos.y - (40.0f + player->actor_class.world.position.y);
 

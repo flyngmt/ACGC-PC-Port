@@ -1029,7 +1029,7 @@ static int EffectBG_object_after_display(GAME* game, cKF_SkeletonInfo_R_c* keyfr
 }
 
 static void EffectBG_object_draw(EffectBg_c* efbg, GAME* game) {
-    Mtx* mtx;
+    N64Mtx* mtx;
 
     _texture_z_light_fog_prim(game->graph);
     _texture_z_light_fog_prim_xlu(game->graph);

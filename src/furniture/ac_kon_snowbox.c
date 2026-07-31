@@ -25,7 +25,7 @@ static void aKonSnowbox_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* gam
 }
 
 static void aKonSnowbox_dw(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data){
-    Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
+    N64Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
 
     OPEN_DISP(game->graph);
 

@@ -124,7 +124,7 @@ static int fNNB_DrawAfter(GAME* game, cKF_SkeletonInfo_R_c* keyf, int jointNum, 
 
 void fNNB_dw(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data) {
     cKF_SkeletonInfo_R_c* keyf;
-    Mtx* mtx;
+    N64Mtx* mtx;
     int fctr;
     int tex_frame = (int)ftr_actor->dynamic_work_f[1];
     s16 ctr;

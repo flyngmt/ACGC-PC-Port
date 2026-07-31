@@ -20,7 +20,7 @@ struct bee_actor_s {
     cKF_SkeletonInfo_R_c keyframe;
     s_xyz work[aBEE_JOINT_NUM];
     s_xyz morph[aBEE_JOINT_NUM];
-    Mtx mtx[2][aBEE_JOINT_NUM];
+    N64Mtx mtx[2][aBEE_JOINT_NUM];
     xyz_t size;
     f32 speed;
     f32 start_frame;

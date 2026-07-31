@@ -190,11 +190,11 @@ extern void watch_my_step_move(GAME_PLAY* play) {
 extern void watch_my_step_draw(GAME_PLAY* play) {
     GAME* game = (GAME*)play;
     GRAPH* g = play->game.graph;
-    Mtx* font_mtx;
+    N64Mtx* font_mtx;
 
     OPEN_DISP(g);
 
-    font_mtx = GRAPH_ALLOC_TYPE(g, Mtx, 1);
+    font_mtx = GRAPH_ALLOC_TYPE(g, N64Mtx, 1);
 
     navigate_camera_draw(play);
     mWt_mybell_confirmation_draw(play);
@@ -343,11 +343,11 @@ static void navigate_camera_move(GAME_PLAY* play) {
 static void navigate_camera_draw(GAME_PLAY* play) {
     GRAPH* g = play->game.graph;
     Gfx* font_gfx;
-    Mtx* font_mtx;
+    N64Mtx* font_mtx;
 
     OPEN_DISP(g);
 
-    font_mtx = GRAPH_ALLOC_TYPE(g, Mtx, 1);
+    font_mtx = GRAPH_ALLOC_TYPE(g, N64Mtx, 1);
 
     if (S_navigate.draw_type != 0) {
         u8 a = S_navigate.opacity * 255.0f;
@@ -519,10 +519,10 @@ static void mWt_mybell_confirmation_move(GAME_PLAY* play) {
 static void mWt_mybell_confirmation_draw(GAME_PLAY* play) {
     GAME* game = (GAME*)play;
     GRAPH* g = play->game.graph;
-    Mtx* font_mtx;
+    N64Mtx* font_mtx;
     Gfx* font_gfx;
 
-    font_mtx = GRAPH_ALLOC_TYPE(g, Mtx, 1);
+    font_mtx = GRAPH_ALLOC_TYPE(g, N64Mtx, 1);
 
     if (S_mybell_conf.draw_type != 0) {
         u8 a = S_mybell_conf.opacity * 255.0f;

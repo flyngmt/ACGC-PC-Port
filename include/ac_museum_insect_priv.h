@@ -25,10 +25,10 @@ typedef void (*PRIV_INSECT_PROCESS)(struct _MUSEUM_INSECT_PRIVATE_DATA*, GAME*);
 
 typedef struct _MUSEUM_INSECT_SKELETON {
     cKF_SkeletonInfo_R_c _00;
-    Mtx _70;
-    artificial_padding(0x70, 0x170, Mtx);
-    Mtx _170;
-    artificial_padding(0x170, 0x270, Mtx);
+    N64Mtx _70;
+    artificial_padding(0x70, 0x170, N64Mtx);
+    N64Mtx _170;
+    artificial_padding(0x170, 0x270, N64Mtx);
     s_xyz _270;
     artificial_padding(0x270, 0x288, s_xyz);
     s_xyz _288;

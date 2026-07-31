@@ -57,7 +57,7 @@ static void aKI_DrawKamakuraIndoorCandleRing(KAMAKURA_INDOOR_ACTOR* k_indoor, GA
     _texture_z_light_fog_prim_xlu(game->graph);
     Global_kankyo_set_room_prim(game);
     for (i = 0; i < aKI_CANDLE_NUM; i++) {
-        Mtx* mtx = GRAPH_ALLOC_TYPE(game->graph, Mtx, 1);
+        N64Mtx* mtx = GRAPH_ALLOC_TYPE(game->graph, N64Mtx, 1);
         
         scale = k_indoor->candle_ring[i].scale * 0.0001f;
 

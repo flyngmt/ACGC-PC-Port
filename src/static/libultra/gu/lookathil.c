@@ -155,7 +155,7 @@ void guLookAtHiliteF(float mf[4][4], LookAt *l, Hilite *h,
 	mf[3][3] = 1;
 }
 
-void guLookAtHilite (Mtx *m, LookAt *l, Hilite *h, 
+void guLookAtHilite (N64Mtx *m, LookAt *l, Hilite *h,
 		float xEye, float yEye, float zEye,
 		float xAt,  float yAt,  float zAt,
 		float xUp,  float yUp,  float zUp,

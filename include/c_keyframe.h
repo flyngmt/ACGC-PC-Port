@@ -292,7 +292,7 @@ extern int cKF_SkeletonInfo_R_play(cKF_SkeletonInfo_R_c* keyframe);
  */
 extern void cKF_Si3_draw_SV_R_child(GAME* game, cKF_SkeletonInfo_R_c* keyframe, int* joint_num,
                                     cKF_draw_callback prerender_callback, cKF_draw_callback postrender_callback,
-                                    void* arg, Mtx** mtxpp);
+                                    void* arg, N64Mtx** mtxpp);
 
 /**
  * Renders a skeleton before and after applying transformations, using callbacks for custom rendering logic.
@@ -304,7 +304,7 @@ extern void cKF_Si3_draw_SV_R_child(GAME* game, cKF_SkeletonInfo_R_c* keyframe, 
  * @param postrender_callback Function called after rendering the skeleton.
  * @param arg Additional arguments passed to the callbacks.
  */
-extern void cKF_Si3_draw_R_SV(GAME* game, cKF_SkeletonInfo_R_c* keyframe, Mtx* mtxp,
+extern void cKF_Si3_draw_R_SV(GAME* game, cKF_SkeletonInfo_R_c* keyframe, N64Mtx* mtxp,
                               cKF_draw_callback prerender_callback, cKF_draw_callback postrender_callback, void* arg);
 
 /**

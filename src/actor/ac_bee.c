@@ -372,7 +372,7 @@ static void aBEE_actor_draw(ACTOR* actorx, GAME* game) {
     GRAPH* graph;
     BEE_ACTOR* bee = (BEE_ACTOR*)actorx;
     int idx;
-    Mtx* mtx;
+    N64Mtx* mtx;
     Gfx* gfx;
 
     if (actorx->world.position.x < 0.0f || actorx->world.position.z < 0.0f) {

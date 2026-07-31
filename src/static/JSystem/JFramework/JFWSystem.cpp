@@ -20,8 +20,7 @@
 #include "pc_bswap.h"
 
 /* Font buffer loaded from DOL at runtime (replaces .s file's .incbin) */
-__attribute__((aligned(32)))
-unsigned char JUTResFONT_Ascfont_fix12[0x4160];
+unsigned char JUTResFONT_Ascfont_fix12[0x4160] ATTRIBUTE_ALIGN(32);
 
 /* BFN1 byte-swap: swap multi-byte header/block fields, skip glyph pixel data */
 static void bswap_bfn1(u8* data, u32 total_size) {
@@ -96,7 +95,7 @@ const ResFONT* JFWSystem::CSetUpParam::systemFontRes = (const ResFONT*)JUTResFON
 #else
 const ResFONT* JFWSystem::CSetUpParam::systemFontRes = &JUTResFONT_Ascfont_fix12;
 #endif
-const _GXRenderModeObj* JFWSystem::CSetUpParam::renderMode = &GXNtsc480IntDf;
+const GXRenderModeObj* JFWSystem::CSetUpParam::renderMode = &GXNtsc480IntDf;
 u32 JFWSystem::CSetUpParam::exConsoleBufferSize = 0x24F8;
 
 JKRHeap* JFWSystem::rootHeap;

@@ -1,4 +1,5 @@
-static int aTOU_actor_draw_before(GAME*,cKF_SkeletonInfo_R_c*, int idx, Gfx** gfxp,u8* dispbuf, void* actor, s_xyz* rotation, xyz_t* translation){
+static int aTOU_actor_draw_before(GAME* game, cKF_SkeletonInfo_R_c* keyframe, int idx, Gfx** gfxp, u8* dispbuf,
+                                  void* actor, s_xyz* rotation, xyz_t* translation) {
 
     if(idx == 4){
         *gfxp = NULL;
@@ -27,7 +28,7 @@ u8* dispbuf, void* actor, s_xyz* rotation, xyz_t* translation){
     TOUDAI_ACTOR* light = (TOUDAI_ACTOR*)actor; 
     
     GRAPH* graph = game->graph;
-    Mtx* work;
+    N64Mtx* work;
     u16* pal;
     Gfx* gfx; 
     int type;
@@ -73,14 +74,14 @@ static void aTOU_actor_draw(ACTOR* actor, GAME* game){
     Gfx* gfx;
     u16* pal;
     cKF_SkeletonInfo_R_c* keyf;
-    Mtx* mtx;
+    N64Mtx* mtx;
     xyz_t* pos;
     TOUDAI_ACTOR* light = (TOUDAI_ACTOR*)actor;
     
     graph = game->graph;
     pos = &light->actor_class.world.position;
     keyf = &light->keyframe;
-    mtx = GRAPH_ALLOC_TYPE(graph, Mtx, keyf->skeleton->num_shown_joints);
+    mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, keyf->skeleton->num_shown_joints);
  
     if(mtx != NULL){
         pal = Common_Get(clip.structure_clip)->get_pal_segment_proc(aSTR_PAL_TOUDAI);

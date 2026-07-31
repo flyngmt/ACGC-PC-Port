@@ -135,7 +135,7 @@ extern Gfx act_fukutama_modelT[];
 
 static void aGRBL_draw(aGRGR_ball_c* ball, GAME* game) {
     if (ball->status != aGRBL_STATUS_NONE) {
-        Mtx* mtx = GRAPH_ALLOC_TYPE(game->graph, Mtx, 1);
+        N64Mtx* mtx = GRAPH_ALLOC_TYPE(game->graph, N64Mtx, 1);
         GAME_PLAY* play = (GAME_PLAY*)game;
 
         _texture_z_light_fog_prim(game->graph);

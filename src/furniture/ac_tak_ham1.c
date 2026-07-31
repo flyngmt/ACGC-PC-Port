@@ -29,7 +29,7 @@ static u8* tak_ham1_texture_table[] = { int_tak_ham1_a1_tex_txt, int_tak_ham1_a2
 
 static void fTHM1_dw(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data) {
     cKF_SkeletonInfo_R_c* keyframe = &ftr_actor->keyframe;
-    Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
+    N64Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
     int frame = (int)ftr_actor->dynamic_work_f[0];
 
     OPEN_DISP(game->graph);

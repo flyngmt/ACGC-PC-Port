@@ -131,7 +131,7 @@ static void aLOT_actor_draw(ACTOR* actor, GAME* game) {
     LOTUS_ACTOR* lotus;
     GRAPH* graph;
     cKF_SkeletonInfo_R_c* keyframe;
-    Mtx* mtx;
+    N64Mtx* mtx;
     Gfx* gfx;
 
     lotus = (LOTUS_ACTOR*)actor;
@@ -139,7 +139,7 @@ static void aLOT_actor_draw(ACTOR* actor, GAME* game) {
     keyframe = &lotus->structure_class.keyframe;
 
     if (lotus->structure_class.arg0 >= 0) {
-        mtx = GRAPH_ALLOC_TYPE(graph, Mtx, keyframe->skeleton->num_shown_joints);
+        mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, keyframe->skeleton->num_shown_joints);
         if (mtx != NULL) {
             _texture_z_light_fog_prim_npc(graph);
 

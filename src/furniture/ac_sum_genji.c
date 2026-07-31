@@ -27,7 +27,7 @@ static Gfx* aSumgenji_GetPrimDisp(GAME* game, u8 prim_r, u8 prim_g, u8 prim_b, u
 
 static void aSumgenji_dw(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data) {
     cKF_SkeletonInfo_R_c* keyframe = &ftr_actor->keyframe;
-    Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
+    N64Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
     static u8 prim_a_table[] = {
        255, 255, 255, 255,
        240, 225, 210, 195,

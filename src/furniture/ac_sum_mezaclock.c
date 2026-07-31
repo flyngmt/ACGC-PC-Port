@@ -46,7 +46,7 @@ static int aSumMezaClock_DwBefore(GAME* game, cKF_SkeletonInfo_R_c* keyframe, in
 static void aSumMezaClock_Dw(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data) {
     int mtx_idx = game->frame_counter & 1;
     cKF_SkeletonInfo_R_c* keyframe = &ftr_actor->keyframe;
-    Mtx* mtx = ftr_actor->skeleton_mtx[mtx_idx];
+    N64Mtx* mtx = ftr_actor->skeleton_mtx[mtx_idx];
 
     cKF_Si3_draw_R_SV(game, keyframe, mtx, &aSumMezaClock_DwBefore, &aSumMezaClock_DwAfter, ftr_actor);
 }

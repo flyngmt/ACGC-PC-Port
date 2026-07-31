@@ -8,7 +8,7 @@
 #include "libforest/gbi_extensions.h"
 
 // clang-format off
-Mtx Mtx_clear = gdSPDefMtx(
+N64Mtx Mtx_clear = gdSPDefMtx(
     1.0f, 0.0f, 0.0f, 0.0f,
     0.0f, 1.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 1.0f, 0.0f,
@@ -531,7 +531,7 @@ void Matrix_softcv3_load(s_xyz* src, f32 x, f32 y, f32 z) {
     }
 }
 
-Mtx* _MtxF_to_Mtx(MtxF* src, Mtx* dest) {
+N64Mtx* _MtxF_to_Mtx(MtxF* src, N64Mtx* dest) {
     u16* m1 = (u16*)&dest->m[0][0];
     const f32 values[16] = {
         src->xx, src->yx, src->zx, src->wx,
@@ -561,12 +561,12 @@ Mtx* _MtxF_to_Mtx(MtxF* src, Mtx* dest) {
     return dest;
 }
 
-Mtx* _Matrix_to_Mtx(Mtx* dest) {
+N64Mtx* _Matrix_to_Mtx(N64Mtx* dest) {
     return _MtxF_to_Mtx(Matrix_now, dest);
 }
 
-Mtx* _Matrix_to_Mtx_new(GRAPH* graph) {
-    return _Matrix_to_Mtx(GRAPH_ALLOC(graph, sizeof(Mtx)));
+N64Mtx* _Matrix_to_Mtx_new(GRAPH* graph) {
+    return _Matrix_to_Mtx(GRAPH_ALLOC(graph, sizeof(N64Mtx)));
 }
 
 void Matrix_Position(xyz_t* input_position, xyz_t* output_position) {
@@ -631,7 +631,7 @@ void Matrix_copy_MtxF(MtxF* dest, MtxF* src) {
     dest->ww = src->ww;
 }
 
-void Matrix_MtxtoMtxF(Mtx* src, MtxF* dest) {
+void Matrix_MtxtoMtxF(N64Mtx* src, MtxF* dest) {
     u16* m1 = (u16*)&src->m[0][0];
     u16* m2 = (u16*)&src->m[2][0];
 
@@ -873,10 +873,10 @@ void Matrix_RotateVector(s16 angle, xyz_t* axis, u8 mode) {
     }
 }
 
-void suMtxMakeTS(Mtx* mtx, f32 scaleX, f32 scaleY, f32 scaleZ, f32 translateX, f32 translateY, f32 translateZ) {
+void suMtxMakeTS(N64Mtx* mtx, f32 scaleX, f32 scaleY, f32 scaleZ, f32 translateX, f32 translateY, f32 translateZ) {
 #ifdef TARGET_PC
     /* The original code uses s16/u16 struct overlay to write directly into the
-       N64 Mtx. This overlay assumes big-endian byte order within each int32,
+       N64 N64Mtx. This overlay assumes big-endian byte order within each int32,
        which is incorrect on little-endian. Use guMtxF2L which packs correctly. */
     float mf[4][4];
     guMtxIdentF(mf);
@@ -930,7 +930,7 @@ void suMtxMakeTS(Mtx* mtx, f32 scaleX, f32 scaleY, f32 scaleZ, f32 translateX, f
 }
 
 // S(RxRyRz)T where S is a scale matrix, Rx/Ry/Rz are rotations about the x/y/z axes, and T is a translation
-void suMtxMakeSRT(Mtx* mtx, f32 scaleX, f32 scaleY, f32 scaleZ, s16 rotX, s16 rotY, s16 rotZ, f32 translateX,
+void suMtxMakeSRT(N64Mtx* mtx, f32 scaleX, f32 scaleY, f32 scaleZ, s16 rotX, s16 rotY, s16 rotZ, f32 translateX,
                   f32 translateY, f32 translateZ) {
 #ifdef TARGET_PC
     float mf[4][4];
@@ -1027,7 +1027,7 @@ void suMtxMakeSRT(Mtx* mtx, f32 scaleX, f32 scaleY, f32 scaleZ, s16 rotX, s16 ro
 }
 
 // S(RzRxRy)T where S is a scale matrix, Rx/Ry/Rz are rotations, and T is a translation
-void suMtxMakeSRT_ZXY(Mtx* mtx, f32 scaleX, f32 scaleY, f32 scaleZ, s16 rotX, s16 rotY, s16 rotZ, f32 translateX,
+void suMtxMakeSRT_ZXY(N64Mtx* mtx, f32 scaleX, f32 scaleY, f32 scaleZ, s16 rotX, s16 rotY, s16 rotZ, f32 translateX,
                       f32 translateY, f32 translateZ) {
 #ifdef TARGET_PC
     float mf[4][4];

@@ -221,7 +221,7 @@ static void aNPC_actor_draw_sub(ACTOR* actorx, GAME* game) {
     NPC_ACTOR* nactorx = (NPC_ACTOR*)actorx;
     cKF_SkeletonInfo_R_c* kf_p = &nactorx->draw.main_animation.keyframe;
     GRAPH* graph = game->graph;
-    Mtx* mtx = GRAPH_ALLOC_TYPE(graph, Mtx, kf_p->skeleton->num_shown_joints);
+    N64Mtx* mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, kf_p->skeleton->num_shown_joints);
 
     if (mtx != NULL) {
         aNPC_draw_tex_data_c* draw_tex_p = &nactorx->draw.draw_tex_data;

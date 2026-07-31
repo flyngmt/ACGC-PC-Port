@@ -3,10 +3,10 @@ static void aTR0_actor_draw(ACTOR* actor, GAME* game) {
     GRAPH* graph = game->graph;
     cKF_SkeletonInfo_R_c* keyf;
     TRAIN0_ACTOR* train0 = (TRAIN0_ACTOR*)actor;
-    Mtx* mtx;
+    N64Mtx* mtx;
 
     keyf = &train0->keyframe;
-    mtx = GRAPH_ALLOC_TYPE(graph, Mtx, keyf->skeleton->num_shown_joints);
+    mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, keyf->skeleton->num_shown_joints);
     if (mtx != NULL) {
         _texture_z_light_fog_prim_npc(graph);
         Matrix_push();

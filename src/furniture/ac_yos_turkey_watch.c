@@ -16,7 +16,7 @@ static int fYTW_DwBefore(GAME* game, cKF_SkeletonInfo_R_c* keyframe, int joint_i
 
 static void fYTW_dw(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data) {
     cKF_SkeletonInfo_R_c* keyframe = &ftr_actor->keyframe;
-    Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
+    N64Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
 
     cKF_Si3_draw_R_SV(game, keyframe, mtx, &fYTW_DwBefore, &fYTW_DwAfter, ftr_actor);
 }

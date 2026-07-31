@@ -80,9 +80,9 @@ static void aTRD_actor_draw(ACTOR* actor, GAME* game) {
     TRAINDOOR_ACTOR* traindoor = (TRAINDOOR_ACTOR*)actor;
 
     cKF_SkeletonInfo_R_c* keyf = &traindoor->common_actor_class.anime.keyframe;
-    Mtx* mtxp;
+    N64Mtx* mtxp;
 
-    mtxp = GRAPH_ALLOC_TYPE(game->graph, Mtx, (u32)keyf->skeleton->num_shown_joints);
+    mtxp = GRAPH_ALLOC_TYPE(game->graph, N64Mtx, (u32)keyf->skeleton->num_shown_joints);
     if (mtxp != NULL) {
         _texture_z_light_fog_prim(game->graph);
         texture_z_light_prim_xlu_disp(game->graph);

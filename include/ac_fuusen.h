@@ -41,7 +41,7 @@ struct fuusen_actor_s {
   s_xyz work[5];
   s_xyz morph[5];
   int _254;
-  Mtx mtx[2][3];
+  N64Mtx mtx[2][3];
 };
 
 extern ACTOR_PROFILE Fuusen_Profile;

@@ -20,7 +20,7 @@ extern u8 int_sum_roboclk_eye2_TA_tex_txt[];
 static void aSumroboclk_dw(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data) {
     int mtx_idx = game->frame_counter & 1;
     cKF_SkeletonInfo_R_c* keyframe = &ftr_actor->keyframe;
-    Mtx* mtx = ftr_actor->skeleton_mtx[mtx_idx];
+    N64Mtx* mtx = ftr_actor->skeleton_mtx[mtx_idx];
     int tex_idx = (int)ftr_actor->dynamic_work_f[0] & 3;
     static u8* texture_table[] = {
         int_sum_roboclk_eye1_TA_tex_txt,

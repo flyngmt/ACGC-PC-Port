@@ -8,7 +8,7 @@ static void aTAM_actor_draw(ACTOR* actorx, GAME* game) {
   GRAPH* graph = game->graph;
   u16* pal = (*Common_Get(clip).structure_clip->get_pal_segment_proc)(tama->structure_class.structure_pal);
   Gfx* gfx;
-  Mtx* mtx;
+  N64Mtx* mtx;
 
   OPEN_DISP(graph);
   _texture_z_light_fog_prim(graph);

@@ -26,9 +26,9 @@ typedef void (*DVDERR_DRAW_PROC)();
 typedef struct dvderr_work_s {
   /* 0x000 */ Gfx gfx[100];               // display list buffer
   /* 0x320 */ Gfx* gfx_p;                 // current display list buffer write pointer
-  /* 0x328 */ Mtx ortho;                  // orthographic matrix
-  /* 0x368 */ Mtx projection;             // projection matrix
-  /* 0x3A8 */ Mtx modelview;              // modelview matrix
+  /* 0x328 */ N64Mtx ortho;                  // orthographic matrix
+  /* 0x368 */ N64Mtx projection;             // projection matrix
+  /* 0x3A8 */ N64Mtx modelview;              // modelview matrix
   /* 0x3E8 */ f32 scale;                  // scale for modelview matrix
 
   /* 0x3EC */ DVDERR_DRAW_PROC draw_proc; // current draw routine

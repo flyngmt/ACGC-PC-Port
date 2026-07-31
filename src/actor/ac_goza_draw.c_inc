@@ -10,7 +10,7 @@ static void aGOZ_actor_draw(ACTOR* actor, GAME* game) {
 
     STRUCTURE_ACTOR* goza;
     GRAPH* graph;
-    Mtx* mtx;
+    N64Mtx* mtx;
     int type;
     Gfx* poly_opa;
     Gfx* poly_xlu;

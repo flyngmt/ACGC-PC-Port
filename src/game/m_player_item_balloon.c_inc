@@ -231,7 +231,7 @@ static int Player_actor_Item_draw_balloon_After(GAME* game, cKF_SkeletonInfo_R_c
 }
 static void Player_actor_Item_draw_balloon(ACTOR* actor, GAME* game) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
-    Mtx* item_mtx;
+    N64Mtx* item_mtx;
     GAME_PLAY* play = (GAME_PLAY*)game;
     s16 angle;
     s16 rot;

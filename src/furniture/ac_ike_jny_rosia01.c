@@ -45,7 +45,7 @@ static void aIkeJnyRosia01_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* 
 }
 
 static void aIkeJnyRosia01_dw(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data) {
-    Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
+    N64Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
     OPEN_DISP(game->graph);
 
     gSPMatrix(NEXT_POLY_OPA_DISP, _Matrix_to_Mtx_new(game->graph), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);

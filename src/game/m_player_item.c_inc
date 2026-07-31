@@ -97,7 +97,7 @@ static void Player_actor_Item_draw(ACTOR* actor, GAME* game) {
 
         if (now_index == mPlayer_ITEM_MAIN_NONE) {
             if (mPlib_get_player_actor_main_index(game) == mPlayer_INDEX_WASH_CAR) {
-                Mtx* mtx;
+                N64Mtx* mtx;
 
                 _texture_z_light_fog_prim(graph);
                 Matrix_push();
@@ -120,7 +120,7 @@ static void Player_actor_Item_draw(ACTOR* actor, GAME* game) {
         } else {
             if (proc[now_index] != NULL) {
                 f32 scale = player->item_scale;
-                Mtx* mtx;
+                N64Mtx* mtx;
 
                 Matrix_push();
                 Matrix_put(&player->right_hand_mtx);

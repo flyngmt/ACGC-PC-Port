@@ -53,7 +53,7 @@ static u8 aSumSlot_aime_idx[] = {
 static void aSumSlot_dw(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data) {
     int mtx_idx = game->frame_counter & 1;
     cKF_SkeletonInfo_R_c* keyframe = &ftr_actor->keyframe;
-    Mtx* mtx = ftr_actor->skeleton_mtx[mtx_idx];
+    N64Mtx* mtx = ftr_actor->skeleton_mtx[mtx_idx];
     int idx = ftr_actor->tex_animation.frame >> 1;
 
     OPEN_DISP(game->graph);

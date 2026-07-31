@@ -553,7 +553,7 @@ int mfish_before_disp(GAME* game, cKF_SkeletonInfo_R_c* keyframe, int joint_idx,
 
 void mfish_onefish_dw(MUSEUM_FISH_PRIVATE_DATA* actor, GAME* gamex) {
     mfish_keyframe_c* skele;
-    Mtx* mtx;
+    N64Mtx* mtx;
     GRAPH* graph;
     GAME_PLAY* play;
 

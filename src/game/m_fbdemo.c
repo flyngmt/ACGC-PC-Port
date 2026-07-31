@@ -188,8 +188,8 @@ extern void fbdemo_draw(fbdemo_c* this, Gfx** gfxP) {
     /* Copy matrices into gfxalloc buffers to avoid seg2k0 collision with
        N64 segment range when struct is heap-allocated in 0x03-0x0F. */
     {
-        Mtx* proj_copy = (Mtx*)gfxalloc(&gfx, sizeof(Mtx));
-        Mtx* mv_copy = (Mtx*)gfxalloc(&gfx, sizeof(Mtx));
+        N64Mtx* proj_copy = (N64Mtx*)gfxalloc(&gfx, sizeof(N64Mtx));
+        N64Mtx* mv_copy = (N64Mtx*)gfxalloc(&gfx, sizeof(N64Mtx));
         *proj_copy = this->projection;
         *mv_copy = this->modelView1;
         gSPMatrix(gfx++, proj_copy, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);

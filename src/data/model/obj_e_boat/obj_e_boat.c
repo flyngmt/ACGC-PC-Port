@@ -175,10 +175,10 @@ static Gfx obj_e_boat_water2_model[] = {
     gsDPLoadTextureBlock_4b_Dolphin(obj_s_boat_water2_pic_i4, G_IM_FMT_I, 32, 32, 15, GX_REPEAT, GX_REPEAT, 0, 0),
     gsDPLoadTextureBlock_4b_Dolphin(obj_s_boat_water1_pic_i4, G_IM_FMT_I, 32, 32, 15, GX_REPEAT, GX_REPEAT, 0, 14),
     gsSPDisplayList(anime_2_model),
-    gsSPMatrix(anime_6_model + sizeof(Mtx) * 2, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW),
+    gsSPMatrix(anime_6_model + sizeof(N64Mtx) * 2, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW),
     gsSPLoadGeometryMode(G_ZBUFFER | G_SHADE | G_CULL_BACK | G_FOG | G_LIGHTING | G_SHADING_SMOOTH),
     gsSPVertex(&obj_e_boat_v[125], 5, 0),
-    gsSPMatrix(anime_6_model + sizeof(Mtx) * 3, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW),
+    gsSPMatrix(anime_6_model + sizeof(N64Mtx) * 3, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW),
     gsSPVertex(&obj_e_boat_v[130], 12, 5),
     gsSPNTrianglesInit_5b(8,       // tri count
                           1, 5, 6, // tri0
@@ -207,10 +207,10 @@ static Gfx obj_e_boat_water3_model[] = {
     gsDPLoadTextureBlock_4b_Dolphin(obj_s_boat_water2_pic_i4, G_IM_FMT_I, 32, 32, 15, GX_REPEAT, GX_REPEAT, 0, 0),
     gsDPLoadTextureBlock_4b_Dolphin(obj_s_boat_water1_pic_i4, G_IM_FMT_I, 32, 32, 15, GX_REPEAT, GX_REPEAT, 0, 14),
     gsSPDisplayList(anime_2_model),
-    gsSPMatrix(anime_6_model + sizeof(Mtx) * 3, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW),
+    gsSPMatrix(anime_6_model + sizeof(N64Mtx) * 3, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW),
     gsSPLoadGeometryMode(G_ZBUFFER | G_SHADE | G_CULL_BACK | G_FOG | G_LIGHTING | G_SHADING_SMOOTH),
     gsSPVertex(&obj_e_boat_v[98], 5, 0),
-    gsSPMatrix(anime_6_model + sizeof(Mtx) * 4, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW),
+    gsSPMatrix(anime_6_model + sizeof(N64Mtx) * 4, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW),
     gsSPVertex(&obj_e_boat_v[103], 22, 5),
     gsSPNTrianglesInit_5b(8,       // tri count
                           0, 1, 5, // tri0

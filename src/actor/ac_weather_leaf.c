@@ -74,7 +74,7 @@ static void aWeatherLeaf_make(ACTOR* actor, GAME* game) {
     }
 }
 
-static void aWeatherLeaf_ct(aWeather_Priv* priv, GAME*) {
+static void aWeatherLeaf_ct(aWeather_Priv* priv, GAME* game) {
     priv->work[0] = RANDOM_F(3.0f);
     priv->work[1] = RANDOM_F(65535.0f);
     priv->work[2] = RANDOM_F(65535.0f);
@@ -176,7 +176,7 @@ static void aWeatherLeaf_set(GAME* game) {
 void aWeatherLeaf_draw(aWeather_Priv* priv, GAME* game) {
     GAME_PLAY* play = (GAME_PLAY*)game;
 
-    Mtx* work;
+    N64Mtx* work;
     f32 scale;
     f32 min;
     xyz_t pos;
@@ -191,7 +191,7 @@ void aWeatherLeaf_draw(aWeather_Priv* priv, GAME* game) {
     if ((screen_pos.x >= 0.0f) && (screen_pos.x < SCREEN_WIDTH_F) && (screen_pos.y >= 0.0f) &&
         (screen_pos.y < SCREEN_HEIGHT_F)) {
 
-        work = GRAPH_ALLOC_TYPE(game->graph, Mtx, 1);
+        work = GRAPH_ALLOC_TYPE(game->graph, N64Mtx, 1);
 
         OPEN_DISP(game->graph);
 

@@ -93,7 +93,7 @@ static void aWeatherRain_make(ACTOR* actor, GAME* game) {
     }
 }
 
-static void aWeatherRain_ct(aWeather_Priv*, GAME*) {
+static void aWeatherRain_ct(aWeather_Priv* priv, GAME* game) {
 }
 
 static void aWeatherRain_MoveRain(aWeather_Priv* priv, GAME* game) {
@@ -173,7 +173,7 @@ void aWeatherRain_draw(aWeather_Priv* priv, GAME* game) {
     xyz_t pos;
     s16 angle;
     GRAPH* graph;
-    Mtx* work;
+    N64Mtx* work;
 
     angle = weather->current_yAngle;
     disp = 8 - priv->timer;
@@ -197,7 +197,7 @@ void aWeatherRain_draw(aWeather_Priv* priv, GAME* game) {
 
         CLOSE_DISP(graph);
     } else if (priv->work[0] == 0) {
-        work = GRAPH_ALLOC_TYPE(game->graph, Mtx, 1);
+        work = GRAPH_ALLOC_TYPE(game->graph, N64Mtx, 1);
 
         OPEN_DISP(play->game.graph);
 

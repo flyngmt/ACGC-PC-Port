@@ -34,7 +34,7 @@ struct balloon_actor_s {
     s_xyz work[Ac_Balloon_JOINT_NUM];
     s_xyz morph[Ac_Balloon_JOINT_NUM];
     int _244;
-    Mtx mtx[2][4];
+    N64Mtx mtx[2][4];
     int main_mode;
     int saved_type;
     int setup_mode;

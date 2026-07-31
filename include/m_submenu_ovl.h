@@ -213,7 +213,7 @@ struct submenu_overlay_s {
     /* 0x9FA */ u8 _9FA;
     /* 0x9FB */ u8 _9FB;
     /* 0x9FC */ int _9FC;
-    /* 0xA00 */ Mtx* projection_matrix;
+    /* 0xA00 */ N64Mtx* projection_matrix;
 };
 
 extern void mSM_menu_ovl_init(Submenu* submenu);

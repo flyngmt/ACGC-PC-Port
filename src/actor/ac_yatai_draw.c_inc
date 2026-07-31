@@ -10,7 +10,7 @@ static void aYAT_actor_draw(ACTOR* actor, GAME* game) {
 
     STRUCTURE_ACTOR* yatai;
     u16* pal;
-    Mtx* mtx;
+    N64Mtx* mtx;
     Gfx* gfx;
     GRAPH* graph;
 

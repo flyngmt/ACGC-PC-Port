@@ -219,7 +219,7 @@ static Gfx* aMSN_MakeBeltGFX(aMSN_Misin_c* misin, GAME* game) {
 
 static void aMSN_DrawMisin(aMSN_Misin_c* misin, GAME* game) {
     cKF_SkeletonInfo_R_c* keyframe = &misin->keyframe;
-    Mtx* mtx_p = misin->mtx[game->frame_counter & 1];
+    N64Mtx* mtx_p = misin->mtx[game->frame_counter & 1];
     Gfx* belt_gfx = aMSN_MakeBeltGFX(misin, game);
 
     _texture_z_light_fog_prim(game->graph);

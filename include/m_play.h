@@ -99,7 +99,7 @@ struct game_play_s {
     /* 0x2008 */ int next_scene_no;
     /* 0x200C */ MtxF projection_matrix;
     /* 0x204C */ MtxF billboard_matrix;
-    /* 0x208C */ Mtx* billboard_mtx_p;
+    /* 0x208C */ N64Mtx* billboard_mtx_p;
     /* 0x2090 */ u32 game_frame;
     /* 0x2094 */ u8 _2094;
     /* 0x2095 */ u8 actor_data_num;

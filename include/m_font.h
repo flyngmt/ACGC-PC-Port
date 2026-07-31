@@ -543,7 +543,7 @@ extern void mFont_SetCombineMode(GRAPH* graph, int revert_flag, int mode);
 extern f32 mFont_SetVertexRectangle(GAME* game, f32 x, f32 y, int s, int t, f32 scale_x, f32 scale_y, int mode);
 extern f32 mFont_SetLineStrings_AndSpace(GAME* game, u8* str, int len, f32 x, f32 y, int r, int g, int b, int a, int flag_revert, int flag_cut, int unused, f32 scale_x, f32 scale_y, int mode);
 extern f32 mFont_SetLineStrings(GAME* game, u8* str, int len, f32 x, f32 y, int r, int g, int b, int a, int flag_revert, int flag_cut, f32 scale_x, f32 scale_y, int mode);
-extern void mFont_CulcOrthoMatrix(Mtx* m);
+extern void mFont_CulcOrthoMatrix(N64Mtx* m);
 extern void mFont_SetMatrix(GRAPH* graph, int mode);
 extern void mFont_UnSetMatrix(GRAPH* graph, int mode);
 extern void mFont_Main_start(GRAPH* graph);

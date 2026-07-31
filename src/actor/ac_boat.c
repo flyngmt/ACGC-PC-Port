@@ -204,7 +204,7 @@ static void aBT_actor_draw(ACTOR* actorx, GAME* game) {
     scroll_gfx = two_tex_scroll_dolphin(graph, 0, 0, 0, 32, 32, 1, 0, _2C8 * 8.0f, 32, 32);
 
     if (scroll_gfx != NULL) {
-        Mtx* mtx = GRAPH_ALLOC_TYPE(graph, Mtx, keyframe->skeleton->num_shown_joints);
+        N64Mtx* mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, keyframe->skeleton->num_shown_joints);
 
         if (mtx != NULL) {
             Gfx* gfx;

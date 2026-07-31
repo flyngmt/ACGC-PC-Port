@@ -2088,11 +2088,11 @@ struct player_actor_s {
     /* 0x01E4 */ cKF_SkeletonInfo_R_c keyframe1;
     /* 0x0252 */ s_xyz joint_data[mPlayer_JOINT_NUM + 1];
     /* 0x02F4 */ s_xyz morph_data[mPlayer_JOINT_NUM + 1];
-    /* 0x0398 */ Mtx work_mtx[2][13];                /* swapped between frames */
+    /* 0x0398 */ N64Mtx work_mtx[2][13];                /* swapped between frames */
     /* 0x0A18 */ cKF_SkeletonInfo_R_c item_keyframe; /* for item animations */
     /* 0x0A88 */ s_xyz item_joint_data[8];
     /* 0x0AB8 */ s_xyz item_morph_data[8];
-    /* 0x0AE8 */ Mtx item_work_mtx[2][4]; /* swapped between frames */
+    /* 0x0AE8 */ N64Mtx item_work_mtx[2][4]; /* swapped between frames */
     /* 0x0CE8 */ mPlayer_eye_pattern_c eye_pattern_normal;
     /* 0x0CEC */ int blink_count;
     /* 0x0CF0 */ int eye_tex_idx;

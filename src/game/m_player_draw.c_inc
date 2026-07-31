@@ -186,7 +186,7 @@ static void Player_actor_draw_Normal(ACTOR* actorx, GAME* game) {
     int buf_idx = game->frame_counter % 2;
     int now_main_index = player->now_main_index;
     cKF_SkeletonInfo_R_c* kf = &player->keyframe0;
-    Mtx* mtx = player->work_mtx[buf_idx];
+    N64Mtx* mtx = player->work_mtx[buf_idx];
     u8* eye_tex_p;
     u8* mouth_tex_p;
     GRAPH* graph;

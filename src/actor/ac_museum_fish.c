@@ -970,7 +970,7 @@ void Museum_Fish_Kusa_Draw(ACTOR* actorx, GAME* game, int r5) {
     MUSEUM_FISH_ACTOR* actor = (MUSEUM_FISH_ACTOR*)actorx;
     GAME_PLAY* play = (GAME_PLAY*)game;
     if (mfish_cull_check(game, &kusa_pos[r5], 0.0f, 0.0f, 120.0f)) {
-        Mtx* mtx;
+        N64Mtx* mtx;
         if (play->game.frame_counter % 2 != 0) {
             mtx = actor->prvKusa[r5].mtx[0];
         } else {

@@ -56,7 +56,7 @@ typedef void (*EffectBG_MAKE_EFFECTBG_PROC)(GAME*, s16, s16, xyz_t*);
 
 typedef struct effectbg_entry_s {
     cKF_SkeletonInfo_R_c keyframe;
-    Mtx mtx[2][EffectBg_JOINT_ALL];
+    N64Mtx mtx[2][EffectBg_JOINT_ALL];
     xyz_t base_pos;
     xyz_t effect_pos;
     s_xyz work[EffectBg_JOINT_NUM];

@@ -2,11 +2,11 @@
 
 #include "boot.h"
 
-// __declspec(weak) void emu64_print::Vprintf(const char* fmt, std::__tag_va_List va_list) const {
+// DECL_WEAK void emu64_print::Vprintf(const char* fmt, std::__tag_va_List va_list) const {
 //     vprintf(fmt, va_list);
 // }
 
-__declspec(weak) void emu64_print::Printf0(const char* fmt, ...) {
+DECL_WEAK void emu64_print::Printf0(const char* fmt, ...) {
 #ifdef TARGET_PC
     extern int g_pc_verbose;
     if (!g_pc_verbose) return;
@@ -19,7 +19,7 @@ __declspec(weak) void emu64_print::Printf0(const char* fmt, ...) {
     va_end(list);
 }
 
-__declspec(weak) void emu64_print::Printf(const char* fmt, ...) {
+DECL_WEAK void emu64_print::Printf(const char* fmt, ...) {
     va_list list;
 
 #ifdef TARGET_PC
@@ -38,7 +38,7 @@ static const char* __unused__reorder_char0A(void) {
     return "\n";
 }
 
-void emu64::disp_matrix(MtxP mtx) {
+void emu64::disp_matrix(MtxPtr mtx) {
     static const u8 kakko[] = {'/', '\\', '/', '\\', '|', '|', '|', '|', '|', '|', '|', '|', '\\', '/', '\\', '/'};
     int i, j;
     for (i = 0; i < 4; i++) {
@@ -58,7 +58,7 @@ const char* emu64::segchk(uintptr_t segment_addr) {
     static char str[64];
     char buf[30];
     const char str0[] = "anime_4_txt+%4u";
-    const char str1[] = "anime_6_model+sizeof(Mtx)*%2u";
+    const char str1[] = "anime_6_model+sizeof(N64Mtx)*%2u";
 
 #ifdef TARGET_PC
     if (segment_addr > UINT32_MAX) {
@@ -112,7 +112,7 @@ const char* emu64::segchk(uintptr_t segment_addr) {
         } else {
             if (segment > anime_6_model && segment < (anime_6_model + ANIME_6_MODEL_SIZE)) {
                 int comb = segment - anime_6_model;
-                snprintf(buf, sizeof(buf) - 1, str1, comb / (int)sizeof(Mtx));
+                snprintf(buf, sizeof(buf) - 1, str1, comb / (int)sizeof(N64Mtx));
                 s = buf;
             } else {
                 s = nullptr;
@@ -483,7 +483,7 @@ void emu64::print_combine_tev(u64 combine_tev) {
                   this->combine_tev_alpha_name(c_tev->Ac1), this->combine_tev_alpha_name(c_tev->Ad1));
 }
 
-void emu64::print_guMtxXFM1F_dol2(MtxP mtx, GXProjectionType type, float x, float y, float z) {
+void emu64::print_guMtxXFM1F_dol2(MtxPtr mtx, GXProjectionType type, float x, float y, float z) {
     if (type == GX_PERSPECTIVE) {
         float s = -1.0f / z;
 

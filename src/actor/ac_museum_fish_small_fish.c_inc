@@ -182,7 +182,7 @@ BOOL mfish_sfish_before_disp(GAME* game, cKF_SkeletonInfo_R_c* keyframe, int joi
 
 void mfish_small_fish_dw(MUSEUM_FISH_PRIVATE_DATA* actor, GAME* gamex) {
     mfish_keyframe_c* skele = &actor->kf;
-    Mtx* mtxp;
+    N64Mtx* mtxp;
     s16 v;
     if (gamex->frame_counter & 1) {
         mtxp = skele->mtx[0];

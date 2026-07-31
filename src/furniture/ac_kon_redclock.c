@@ -25,7 +25,7 @@ static int aKonRedclock_DwBefore(GAME* game, cKF_SkeletonInfo_R_c* keyf, int joi
 }
 
 static void aKonRedclock_dw(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data){
-    Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
+    N64Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
     
     cKF_Si3_draw_R_SV(game, &ftr_actor->keyframe, mtx , aKonRedclock_DwBefore, aKonRedclock_DwAfter, ftr_actor);
 }

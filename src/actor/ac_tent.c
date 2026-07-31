@@ -189,7 +189,7 @@ static void aTnt_SetupAction(ACTOR* actor, int type) {
     tent->structure_class.action = type;
 }
 
-static int aTnt_ControlLight(ACTOR*) {
+static int aTnt_ControlLight(ACTOR* actor) {
     if (Common_Get(time.now_sec) >= 18000 && Common_Get(time.now_sec) < 64800) {
         return 0;
     }
@@ -249,7 +249,7 @@ static Gfx* aTnt_MakeWindowPrimDisplayList(ACTOR* actor, GAME* game) {
 extern Gfx obj_s_tent_model[];
 
 static void aTnt_actor_draw(ACTOR* actor, GAME* game) {
-    Mtx* m = _Matrix_to_Mtx_new(game->graph);
+    N64Mtx* m = _Matrix_to_Mtx_new(game->graph);
     Gfx* gfx = aTnt_MakeWindowPrimDisplayList(actor, game);
 
     if (gfx != NULL) {

@@ -149,9 +149,9 @@ static int Player_actor_Item_draw_windmill_After(GAME* game, cKF_SkeletonInfo_R_
 static void Player_actor_Item_draw_windmill(ACTOR* actor, GAME* game) {
     GAME_PLAY* play = (GAME_PLAY*)game;
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
-    Mtx* mtx;
+    N64Mtx* mtx;
     cKF_SkeletonInfo_R_c* keyf;
-    Mtx* item_mtx;
+    N64Mtx* item_mtx;
     GRAPH* graph;
     int ang;
 

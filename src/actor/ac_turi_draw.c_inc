@@ -7,7 +7,7 @@ static void aTUR_actor_draw(ACTOR* actorx, GAME* game) {
     GRAPH* graph = game->graph;
     TURI_ACTOR* turi = (TURI_ACTOR*)actorx;
     u16* pal_p = CLIP(structure_clip)->get_pal_segment_proc(turi->structure_class.structure_pal);
-    Mtx* mtx = _Matrix_to_Mtx_new(graph);
+    N64Mtx* mtx = _Matrix_to_Mtx_new(graph);
 
     if (mtx != NULL) {
         _texture_z_light_fog_prim_npc(graph);

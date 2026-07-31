@@ -68,7 +68,7 @@ struct garagara_actor_s {
     cKF_SkeletonInfo_R_c keyframe;
     s_xyz work[aGRGR_JOINT_NUM];
     s_xyz morph[aGRGR_JOINT_NUM];
-    Mtx mtx[2][aGRGR_JOINT_NUM];
+    N64Mtx mtx[2][aGRGR_JOINT_NUM];
     aGRGR_clip_c clip;
     u8* bank;
     int request_flag;

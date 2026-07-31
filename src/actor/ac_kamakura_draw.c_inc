@@ -4,7 +4,7 @@ extern Gfx obj_w_kamakura_window_model[];
 static void aKKR_actor_draw(ACTOR* actor, GAME* game) {
     STRUCTURE_ACTOR* kamakura;
     GRAPH* graph;
-    Mtx* mtx;
+    N64Mtx* mtx;
     f32 color;
     int r1;
     int g1;

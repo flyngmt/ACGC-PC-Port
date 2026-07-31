@@ -14,7 +14,7 @@ static int aTUK_actor_draw_after(GAME* game,cKF_SkeletonInfo_R_c* info, int idx,
 
     STRUCTURE_ACTOR* tukimi;
     GRAPH* graph;
-    Mtx* mtx;
+    N64Mtx* mtx;
     u16* pal;
     Gfx* gfx;
 
@@ -51,12 +51,12 @@ static void aTUK_actor_draw(ACTOR* actor, GAME* game) {
     STRUCTURE_ACTOR* tukimi;
     Gfx* gfx;
     u16* pal;
-    Mtx* mtx;
+    N64Mtx* mtx;
 
     graph = game->graph;
     tukimi = (STRUCTURE_ACTOR*)actor;
     keyframe = &tukimi->keyframe;
-    mtx = GRAPH_ALLOC_TYPE(graph, Mtx, keyframe->skeleton->num_shown_joints);
+    mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, keyframe->skeleton->num_shown_joints);
     if (mtx != NULL) {
         pal = Common_Get(clip.structure_clip)->get_pal_segment_proc(tukimi->structure_pal);
 

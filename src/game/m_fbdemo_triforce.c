@@ -71,8 +71,8 @@ void fbdemo_triforce_draw(fbdemo_triforce* this, Gfx** gfxP) {
      buffer (above 0x10000000) instead of the heap (which can collide with
      N64 segment range 0x03-0x0F, causing seg2k0 misidentification). */
   {
-    Mtx* persp_copy = (Mtx*)gfxalloc(&gfx, sizeof(Mtx));
-    Mtx* lookat_copy = (Mtx*)gfxalloc(&gfx, sizeof(Mtx));
+    N64Mtx* persp_copy = (N64Mtx*)gfxalloc(&gfx, sizeof(N64Mtx));
+    N64Mtx* lookat_copy = (N64Mtx*)gfxalloc(&gfx, sizeof(N64Mtx));
     *persp_copy = this->perspmtx;
     *lookat_copy = this->lookatmtx;
     gSPMatrix(gfx++, persp_copy, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
@@ -86,7 +86,7 @@ void fbdemo_triforce_draw(fbdemo_triforce* this, Gfx** gfxP) {
   gSPMatrix(gfx++, &this->lookatmtx, G_MTX_MUL | G_MTX_PROJECTION);
 #endif
   t = gfxalloc(&gfx, 0x40);
-  guScale((Mtx*)t, 0.019f, 0.019f, 1.0f);
+  guScale((N64Mtx*)t, 0.019f, 0.019f, 1.0f);
 
   gSPMatrix(gfx++, t, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
 

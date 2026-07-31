@@ -37,7 +37,7 @@ static void aSumRoboconpo_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* g
 static void aSumRoboconpo_dw(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data) {
     GAME_PLAY* play = (GAME_PLAY*)game;
     cKF_SkeletonInfo_R_c* keyframe = &ftr_actor->keyframe;
-    Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
+    N64Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
 
     static u8* anime_table[] = {
         int_sum_roboconpo_face1_TA_tex_txt,

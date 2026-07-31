@@ -232,7 +232,7 @@ static void aLS_PoleDraw(aLS_pole_c* pole, GAME* game) {
     Gfx* primcolor_gfx = aLS_MakeRoomPrimcolorDisplayList(game);
 
     if (primcolor_gfx != NULL) {
-        Mtx* m = pole->mtx[game->frame_counter & 1];
+        N64Mtx* m = pole->mtx[game->frame_counter & 1];
 
         _texture_z_light_fog_prim(game->graph);
         _texture_z_light_fog_prim_shadow(game->graph);
@@ -257,7 +257,7 @@ static void aLS_SwitchDraw(aLS_switch_c* sw, GAME* game) {
     Gfx* primcolor_gfx = aLS_MakeRoomPrimcolorDisplayList(game);
 
     if (primcolor_gfx != NULL) {
-        Mtx* m = sw->mtx[game->frame_counter & 1];
+        N64Mtx* m = sw->mtx[game->frame_counter & 1];
 
         _texture_z_light_fog_prim(game->graph);
 

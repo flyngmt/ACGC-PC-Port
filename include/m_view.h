@@ -32,10 +32,10 @@ typedef struct view_s {
 
   Vp viewport;
 
-  Mtx mtx_projection;
-  Mtx mtx_viewing;
-  Mtx* p_projection;
-  Mtx* p_viewing;
+  N64Mtx mtx_projection;
+  N64Mtx mtx_viewing;
+  N64Mtx* p_projection;
+  N64Mtx* p_viewing;
 
   struct stretch_s {
     xyz_t target_rotate;

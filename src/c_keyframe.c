@@ -769,7 +769,7 @@ extern int cKF_SkeletonInfo_R_play(cKF_SkeletonInfo_R_c* keyframe) {
 
 extern void cKF_Si3_draw_SV_R_child(GAME* game, cKF_SkeletonInfo_R_c* keyframe, int* joint_num,
                                     cKF_draw_callback prerender_callback, cKF_draw_callback postrender_callback,
-                                    void* arg, Mtx** mtxpp) {
+                                    void* arg, N64Mtx** mtxpp) {
     int i;
     int an_flag;
     Gfx* joint_m;
@@ -869,10 +869,10 @@ extern void cKF_Si3_draw_SV_R_child(GAME* game, cKF_SkeletonInfo_R_c* keyframe, 
     Matrix_pull();
 }
 
-extern void cKF_Si3_draw_R_SV(GAME* game, cKF_SkeletonInfo_R_c* keyframe, Mtx* mtxp,
+extern void cKF_Si3_draw_R_SV(GAME* game, cKF_SkeletonInfo_R_c* keyframe, N64Mtx* mtxp,
                               cKF_draw_callback prerender_callback, cKF_draw_callback postrender_callback, void* arg) {
     int joint_num;
-    Mtx* mtx_p = mtxp;
+    N64Mtx* mtx_p = mtxp;
 
     if (mtxp != NULL) {
         GRAPH* graph = game->graph;

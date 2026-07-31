@@ -107,7 +107,7 @@ static void aNogFan_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u
 static void aNogFan_dw(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data) {
     int idx;
     cKF_SkeletonInfo_R_c* keyf;
-    Mtx* mtx;
+    N64Mtx* mtx;
 
     keyf = &ftr_actor->keyframe;
 

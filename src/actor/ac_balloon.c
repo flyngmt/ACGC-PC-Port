@@ -188,7 +188,7 @@ static void Ac_Balloon_draw_normal(ACTOR* actorx, GAME* game) {
     s16 angle_y;
     BALLOON_ACTOR* balloon = (BALLOON_ACTOR*)actorx;
     int idx = game->frame_counter & 1;
-    Mtx* mtx = balloon->mtx[idx];
+    N64Mtx* mtx = balloon->mtx[idx];
     GRAPH* graph = game->graph;
     xyz_t* pos = &actorx->world.position;
 

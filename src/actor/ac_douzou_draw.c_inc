@@ -77,7 +77,7 @@ static void aDOU_actor_draw(ACTOR* actor, GAME* game) {
     cKF_SkeletonInfo_R_c* keyframe = &douzou->keyframe;
     u16* pal = (*Common_Get(clip).structure_clip->get_pal_segment_proc)(aSTR_PAL_DOUZOU_DAI);
     int disp_joints = keyframe->skeleton->num_shown_joints;
-    Mtx* m;
+    N64Mtx* m;
     int type;
     int eye_type;
     int mouth_type;
@@ -87,7 +87,7 @@ static void aDOU_actor_draw(ACTOR* actor, GAME* game) {
 
     for (i = 0; i < mHS_HOUSE_NUM; i++) {
         if (aDOU_set_check(i)) {
-            m = GRAPH_ALLOC_TYPE(graph, Mtx, disp_joints);
+            m = GRAPH_ALLOC_TYPE(graph, N64Mtx, disp_joints);
 
             if (m == NULL) {
                 return;

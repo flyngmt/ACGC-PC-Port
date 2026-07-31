@@ -150,7 +150,7 @@ static void aDUM_actor_draw(ACTOR* actor, GAME* game) {
     u16* pal;
     int type;
     Gfx* gfx;
-    Mtx* cur;
+    N64Mtx* cur;
 
     type = dump->season == mTM_SEASON_WINTER;
     pal = Common_Get(clip.structure_clip)->get_pal_segment_proc(aSTR_PAL_DUMP);

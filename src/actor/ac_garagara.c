@@ -171,7 +171,7 @@ static void Garagara_Actor_draw(ACTOR* actorx, GAME* game) {
     GARAGARA_ACTOR* garagara = (GARAGARA_ACTOR*)actorx;
     cKF_SkeletonInfo_R_c* kf_p = &garagara->keyframe;
     int idx = game->frame_counter & 1;
-    Mtx* mtx = garagara->mtx[idx];
+    N64Mtx* mtx = garagara->mtx[idx];
     xyz_t* pos = &actorx->world.position;
 
     _texture_z_light_fog_prim(game->graph);

@@ -54,10 +54,10 @@ static f32 mSM_dt_triangle(int period) {
 }
 
 static void mSM_setup_view(Submenu* submenu, GRAPH* graph, int init_flag) {
-    Mtx* mtx;
+    N64Mtx* mtx;
 
     if (init_flag) {
-        mtx = GRAPH_ALLOC_TYPE(graph, Mtx, 1);
+        mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, 1);
         mFont_CulcOrthoMatrix(mtx);
         submenu->overlay->projection_matrix = mtx;
     } else {
@@ -108,8 +108,8 @@ static void mSM_change_view(GRAPH* graph, f32 eye_dist, f32 y_lookAt, f32 vp_x, 
     };
 
     Vp* viewport = GRAPH_ALLOC_TYPE(graph, Vp, 1);
-    Mtx* mtx = GRAPH_ALLOC_TYPE(graph, Mtx, 1);
-    Mtx* view_mtx = GRAPH_ALLOC_TYPE(graph, Mtx, 1);
+    N64Mtx* mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, 1);
+    N64Mtx* view_mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, 1);
     u16 persp_norm;
     f32 y_eye;
     f32 z_eye;
@@ -345,8 +345,8 @@ static void mSM_set_drawMode(GRAPH* graph, PreRender* prerender, f32 eye_dist, f
 
     {
         Vp* vp = GRAPH_ALLOC_TYPE(graph, Vp, 1);
-        Mtx* projMtx = GRAPH_ALLOC_TYPE(graph, Mtx, 1);
-        Mtx* viewMtx = GRAPH_ALLOC_TYPE(graph, Mtx, 1);
+        N64Mtx* projMtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, 1);
+        N64Mtx* viewMtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, 1);
         u16 perspNorm;
 
         if (vp == NULL) {

@@ -236,7 +236,7 @@ struct furniture_actor_s {
     cKF_SkeletonInfo_R_c keyframe; /* for actor animations */
     s_xyz joint[9];
     s_xyz morph[9];
-    Mtx skeleton_mtx[2][12];
+    N64Mtx skeleton_mtx[2][12];
     cKF_TextureAnimation_c tex_animation; /* used for texture animations like TVs */
     xyz_t scale;
     f32 birth_scale_modifier; /* modifies scale for "birth" animation */

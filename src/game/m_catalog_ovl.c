@@ -706,7 +706,7 @@ static void mCL_DrawSkelShape(mCL_Item_c* item, aFTR_PROFILE* profile, GAME* gam
     if (profile->rig != NULL) {
         cKF_SkeletonInfo_R_c* keyframe = &item->ftr_actor.keyframe;
         int mtx_idx = game->frame_counter & 1;
-        Mtx* mtx = item->ftr_actor.skeleton_mtx[mtx_idx];
+        N64Mtx* mtx = item->ftr_actor.skeleton_mtx[mtx_idx];
 
         cKF_Si3_draw_R_SV(game, keyframe, mtx, NULL, NULL, NULL);
     }

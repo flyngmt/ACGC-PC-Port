@@ -597,7 +597,7 @@ extern f32 mFont_SetLineStrings(
   );
 }
 
-extern void mFont_CulcOrthoMatrix(Mtx* m) {
+extern void mFont_CulcOrthoMatrix(N64Mtx* m) {
   guOrtho(
     m,
     NHALF_SCR_WIDTH * mFont_SCALE_F, HALF_SCR_WIDTH * mFont_SCALE_F,
@@ -608,7 +608,7 @@ extern void mFont_CulcOrthoMatrix(Mtx* m) {
 }
 
 extern void mFont_SetMatrix(GRAPH* graph, int mode) {
-  static Mtx mtx_projection;
+  static N64Mtx mtx_projection;
   static int first = TRUE;
 
   if (first) {

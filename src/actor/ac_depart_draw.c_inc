@@ -34,7 +34,7 @@ static int aDPT_actor_draw_after(GAME* game, cKF_SkeletonInfo_R_c* keyframe, int
 
     DEPART_ACTOR* depart;
     GRAPH* graph;
-    Mtx* mtx;
+    N64Mtx* mtx;
     int winter;
     int l;
     int r;
@@ -79,7 +79,7 @@ static int aDPT_actor_draw_after(GAME* game, cKF_SkeletonInfo_R_c* keyframe, int
 static void aDPT_actor_draw(ACTOR* actor, GAME* game) {
     GRAPH* graph;
     cKF_SkeletonInfo_R_c* keyframe;
-    Mtx* mtx;
+    N64Mtx* mtx;
     u16* pal;
     GAME_PLAY* play;
     DEPART_ACTOR* depart;
@@ -89,7 +89,7 @@ static void aDPT_actor_draw(ACTOR* actor, GAME* game) {
     depart = (DEPART_ACTOR*)actor;
     keyframe = &depart->struct_class.keyframe;
 
-    mtx = GRAPH_ALLOC_TYPE(graph, Mtx, (u32)keyframe->skeleton->num_shown_joints);
+    mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, (u32)keyframe->skeleton->num_shown_joints);
     if (mtx == NULL) {
         return;
     }

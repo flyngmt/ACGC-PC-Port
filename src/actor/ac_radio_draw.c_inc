@@ -1,7 +1,7 @@
 static void aRAD_actor_draw(ACTOR* actor, GAME* game){
     RADIO_ACTOR* radio = (RADIO_ACTOR*)actor;
  
-    Mtx* cur;
+    N64Mtx* cur;
     GRAPH* graph = game->graph;
     u16* pal;
     Gfx* gfx;

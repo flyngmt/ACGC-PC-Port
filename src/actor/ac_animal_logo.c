@@ -613,11 +613,11 @@ static void aAL_press_start_draw(ANIMAL_LOGO_ACTOR* actor, GRAPH* graph) {
 }
 
 static void aAL_skl_draw(GAME* game, cKF_SkeletonInfo_R_c* skl_keyframe) {
-  Mtx* m;
+  N64Mtx* m;
 
   OPEN_DISP(game->graph);
 
-  m = GRAPH_ALLOC_TYPE(game->graph, Mtx, skl_keyframe->skeleton->num_shown_joints);
+  m = GRAPH_ALLOC_TYPE(game->graph, N64Mtx, skl_keyframe->skeleton->num_shown_joints);
   if (m != NULL) {
     cKF_Si3_draw_R_SV(game, skl_keyframe, m, NULL, NULL, NULL);
   }

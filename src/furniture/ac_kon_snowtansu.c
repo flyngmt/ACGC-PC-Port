@@ -27,7 +27,7 @@ static void aKonSnowtansu_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* g
 
 
 static void aKonSnowtansu_dw(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data){
-    Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
+    N64Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
 
     OPEN_DISP(game->graph);
 

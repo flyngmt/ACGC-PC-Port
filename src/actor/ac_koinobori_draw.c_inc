@@ -18,7 +18,7 @@ static void aKOI_actor_draw(ACTOR* actor, GAME* game) {
     KOINOBORI_ACTOR* koinobori;
     GRAPH* graph;
     cKF_SkeletonInfo_R_c* keyframe;
-    Mtx* mtx;
+    N64Mtx* mtx;
     u16* pal;
     Gfx* gfx;
 
@@ -26,7 +26,7 @@ static void aKOI_actor_draw(ACTOR* actor, GAME* game) {
     koinobori = (KOINOBORI_ACTOR*)actor;
     graph = game->graph;
     keyframe = &koinobori->structure_class.keyframe;
-    mtx = GRAPH_ALLOC_TYPE(graph, Mtx, keyframe->skeleton->num_shown_joints);
+    mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, keyframe->skeleton->num_shown_joints);
 
     if (mtx != NULL) {
         pal = Common_Get(clip.structure_clip)->get_pal_segment_proc(aSTR_PAL_KOINOBORI_A);

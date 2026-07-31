@@ -313,7 +313,7 @@ static int aHC_DrawClockAfter(GAME* game, cKF_SkeletonInfo_R_c* keyframe, int jo
 static void aHC_DrawClock(ACTOR* actorx, GAME* game) {
     HOUSE_CLOCK_ACTOR* house_clock = (HOUSE_CLOCK_ACTOR*)actorx;
     int idx = game->frame_counter & 1;
-    Mtx* mtx = house_clock->clock.mtx[idx];
+    N64Mtx* mtx = house_clock->clock.mtx[idx];
 
     _texture_z_light_fog_prim(game->graph);
     OPEN_DISP(game->graph);

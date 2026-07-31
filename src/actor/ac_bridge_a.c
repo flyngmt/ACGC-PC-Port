@@ -190,7 +190,7 @@ static int aBridgeA_before_disp(GAME* game, cKF_SkeletonInfo_R_c* keyframe, int 
 
 static void aBridgeA_actor_draw(ACTOR* actorx, GAME* game) {
     STRUCTURE_ACTOR* bridge = (STRUCTURE_ACTOR*)actorx;
-    Mtx* mtx_p = (Mtx*)GRAPH_ALLOC_TYPE(game->graph, Mtx, bridge->keyframe.skeleton->num_shown_joints);
+    N64Mtx* mtx_p = (N64Mtx*)GRAPH_ALLOC_TYPE(game->graph, N64Mtx, bridge->keyframe.skeleton->num_shown_joints);
 
     _texture_z_light_fog_prim(game->graph);
     cKF_Si3_draw_R_SV(game, &bridge->keyframe, mtx_p, &aBridgeA_before_disp, NULL, actorx);

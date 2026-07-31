@@ -62,7 +62,7 @@ static void eSibuki_mv(eEC_Effect_c* effect, GAME* game) {
 
 static void eSibuki_dw(eEC_Effect_c* effect, GAME* game) {
     GRAPH* graph;
-    Mtx* mtx;
+    N64Mtx* mtx;
     f32 scale_mult;
     xyz_t pos = effect->position;
     xyz_t scale = effect->scale;
@@ -73,7 +73,7 @@ static void eSibuki_dw(eEC_Effect_c* effect, GAME* game) {
     idx = (s16)k;
 
     if (eSibuki_DrawSibukiPtn[idx] != NULL) {
-        mtx = (Mtx*)GRAPH_ALLOC_TYPE(game->graph, Mtx, 1);
+        mtx = (N64Mtx*)GRAPH_ALLOC_TYPE(game->graph, N64Mtx, 1);
 
         graph = game->graph;
         OPEN_DISP(graph);

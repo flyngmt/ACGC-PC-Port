@@ -74,11 +74,11 @@ static int aCOU_actor_draw_before(GAME* game, cKF_SkeletonInfo_R_c* keyframe, in
 static void aCOU_actor_draw(ACTOR* actorx, GAME* game) {
     GRAPH* graph = game->graph;
     cKF_SkeletonInfo_R_c* keyframe;
-    Mtx* mtx;
+    N64Mtx* mtx;
     COUNT_ACTOR* actor = (COUNT_ACTOR*)actorx;
 
     keyframe = &actor->structure_class.keyframe;
-    mtx = GRAPH_ALLOC_TYPE(graph, Mtx, keyframe->skeleton->num_shown_joints);
+    mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, keyframe->skeleton->num_shown_joints);
     if (mtx != NULL) {
         Gfx* scroll = two_tex_scroll(graph, 0, 16, 0, 16, 16, 1, 72, actor->structure_class.arg1, 16, 16);
         

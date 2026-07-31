@@ -43,7 +43,7 @@ static void aCOU_actor_draw(ACTOR* actorx, GAME* game) {
     cKF_SkeletonInfo_R_c* keyframe = &actor->keyframe;
     int disp_joint_num = keyframe->skeleton->num_shown_joints;
     u16* palette = CLIP(structure_clip)->get_pal_segment_proc(aSTR_PAL_COUNT02);
-    Mtx* mtx;
+    N64Mtx* mtx;
     int digit0;
     int digit1;
     int i;
@@ -51,7 +51,7 @@ static void aCOU_actor_draw(ACTOR* actorx, GAME* game) {
 
     _texture_z_light_fog_prim_npc(graph);
     for (i = 0; i < 4; i++) {
-        mtx = GRAPH_ALLOC_TYPE(graph, Mtx, disp_joint_num);
+        mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, disp_joint_num);
         if (mtx == NULL) {
             break;
         }

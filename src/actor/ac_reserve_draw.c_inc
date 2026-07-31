@@ -13,7 +13,7 @@ void aRSV_actor_draw(ACTOR* actor, GAME* game) {
     GRAPH* graph;
     int isWinter;
     Gfx* gfx;
-    Mtx* mtx;
+    N64Mtx* mtx;
     bIT_ShadowData_c* data;
     int check;
     u16* pal;

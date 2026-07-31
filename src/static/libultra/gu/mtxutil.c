@@ -1,6 +1,6 @@
 #include "libultra/gu.h"
 
-void guMtxF2L(float mf[4][4], Mtx *m)
+void guMtxF2L(float mf[4][4], N64Mtx *m)
 {
 	int	i, j;
 	int	e1,e2;
@@ -30,7 +30,7 @@ void guMtxIdentF(float mf[4][4])
 }
 
 
-void guMtxIdent(Mtx *m)
+void guMtxIdent(N64Mtx *m)
 {
         float	mf[4][4];
 

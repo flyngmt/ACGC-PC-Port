@@ -345,7 +345,7 @@ void mfish_bass_mv(MUSEUM_FISH_PRIVATE_DATA* actor, GAME* gamex) {
 
 void mfish_bass_dw(MUSEUM_FISH_PRIVATE_DATA* actor, GAME* gamex) {
     mfish_keyframe_c* skele;
-    Mtx* mtx;
+    N64Mtx* mtx;
     GRAPH* graph;
     GAME_PLAY* play;
 

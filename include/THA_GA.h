@@ -36,9 +36,9 @@ extern void* THA_GA_nextPtr1(THA_GA* tha_ga); /* @unused */
 extern Gfx* THA_GA_NEXT_DISP(THA_GA* tha_ga); /* @unused */
 extern void* THA_GA_getHeadPtr(THA_GA* tha_ga); /* @unused */
 extern void THA_GA_setHeadPtr(THA_GA* tha_ga, void *p); /* @unused */
-extern Mtx* THA_GA_alloc(THA_GA* tha_ga, size_t n); /* @unused */
-extern Mtx* THA_GA_allocMtxN(THA_GA* tha_ga, size_t n); /* @unused */
-extern Mtx* THA_GA_allocMtx1(THA_GA* tha_ga); /* @unused */
+extern N64Mtx* THA_GA_alloc(THA_GA* tha_ga, size_t n); /* @unused */
+extern N64Mtx* THA_GA_allocMtxN(THA_GA* tha_ga, size_t n); /* @unused */
+extern N64Mtx* THA_GA_allocMtx1(THA_GA* tha_ga); /* @unused */
 extern Vtx* THA_GA_allocVtxN(THA_GA* tha_ga, size_t n); /* @unused */
 extern Vtx* THA_GA_allocVtx1(THA_GA* tha_ga); /* @unused */
 

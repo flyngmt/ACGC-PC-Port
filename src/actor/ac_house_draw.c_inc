@@ -92,7 +92,7 @@ static int aHUS_actor_draw_after(GAME* game, cKF_SkeletonInfo_R_c* keyframe, int
     int r;
     int g;
     int b;
-    Mtx* mtx;
+    N64Mtx* mtx;
     xyz_t posR;
     xyz_t posL;
     int mod_l;
@@ -250,7 +250,7 @@ static void aHUS_actor_draw_ta_clr(ACTOR* actorx, GAME* game) {
 static void aHUS_actor_draw(ACTOR* actorx, GAME* game) {
     GRAPH* graph;
     cKF_SkeletonInfo_R_c* keyframe;
-    Mtx* mtx;
+    N64Mtx* mtx;
     u16* pal;
     HOUSE_ACTOR* house;
 
@@ -258,7 +258,7 @@ static void aHUS_actor_draw(ACTOR* actorx, GAME* game) {
     house = (HOUSE_ACTOR*)actorx;
     keyframe = &house->keyframe;
 
-    mtx = GRAPH_ALLOC_TYPE(graph, Mtx, (u32)keyframe->skeleton->num_shown_joints);
+    mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, (u32)keyframe->skeleton->num_shown_joints);
     if (mtx == NULL) {
         return;
     }

@@ -11,7 +11,7 @@
 #include "dolphin/os.h"
 // #include "va_args.h"
 #include "jsyswrap.h"
-#include "dolphin/PPCArch.h"
+#include <dolphin/base/PPCArch.h>
 
 #ifdef TARGET_PC
 #include "pc_platform.h"
@@ -26,15 +26,15 @@
 // this one is absolutely necessary for a ton of function calls to be inlined
 #pragma inline_max_size(10000)
 
-static void guMtxXFM1F_dol(MtxP mtx, float x, float y, float z, float* ox, float* oy, float* oz);
-static void guMtxXFM1F_dol7(MtxP mtx, float x, float y, float z, float* ox, float* oy, float* oz);
-static void guMtxXFM1F_dol2(MtxP mtx, GXProjectionType type, float x, float y, float z, float* ox, float* oy, float* oz);
-static void guMtxXFM1F_dol2w(MtxP mtx, GXProjectionType type, float x, float y, float z, float* ox, float* oy, float* oz,
+static void guMtxXFM1F_dol(MtxPtr mtx, float x, float y, float z, float* ox, float* oy, float* oz);
+static void guMtxXFM1F_dol7(MtxPtr mtx, float x, float y, float z, float* ox, float* oy, float* oz);
+static void guMtxXFM1F_dol2(MtxPtr mtx, GXProjectionType type, float x, float y, float z, float* ox, float* oy, float* oz);
+static void guMtxXFM1F_dol2w(MtxPtr mtx, GXProjectionType type, float x, float y, float z, float* ox, float* oy, float* oz,
                       float* ow);
-static float guMtxXFM1F_dol3(MtxP mtx, GXProjectionType type, float z);
-static void guMtxXFM1F_dol6w(MtxP mtx, GXProjectionType type, float x, float y, float z, float w, float* ox, float* oy,
+static float guMtxXFM1F_dol3(MtxPtr mtx, GXProjectionType type, float z);
+static void guMtxXFM1F_dol6w(MtxPtr mtx, GXProjectionType type, float x, float y, float z, float w, float* ox, float* oy,
                       float* oz, float* ow);
-void guMtxXFM1F_dol6w1(MtxP mtx, GXProjectionType type, float x, float y, float z, float w, float* ox, float* oy,
+void guMtxXFM1F_dol6w1(MtxPtr mtx, GXProjectionType type, float x, float y, float z, float w, float* ox, float* oy,
                        float* oz);
 
 static aflags_c aflags;
@@ -131,20 +131,20 @@ static texture_cache_t texture_cache_bss = {
 static GXColor black_color = { 0, 0, 0, 0 };
 static GXColor white_color = { 255, 255, 255, 255 };
 
-static char* doltexwrapmode[] = { "CLAMP", "REPEAT", "MIRROR", "?" };
+static const char* doltexwrapmode[] = { "CLAMP", "REPEAT", "MIRROR", "?" };
 
-static char* dolfmttbl2[4][5] = {
+static const char* dolfmttbl2[4][5] = {
     { "CMPR", "Z", "CI", "IA", "I" },
     { "RGBA?", "Z", "CI", "IA", "I" },
     { "RGB4A3", "YUV", "CI", "IA", "RGB565" },
     { "RGBA8888", "Z", "CI?", "IA?", "RGB?" },
 };
 
-static char* dolfmttbl[] = { "I4", "I8", "IA4", "IA8", "RGB565", "RGB5A3", "RGBA8", "CMPR" };
+static const char* dolfmttbl[] = { "I4", "I8", "IA4", "IA8", "RGB565", "RGB5A3", "RGBA8", "CMPR" };
 
 typedef struct {
     u32 value;
-    char* name;
+    const char* name;
     u32 mask;
 } GeometryModeParameterInfo;
 
@@ -171,8 +171,8 @@ static const GeometryModeParameterInfo geomtbl[NUM_GEOMETRYMODE_FLAGS] = {
 
 typedef struct {
     u32 mask;
-    char* enabled;
-    char* disabled;
+    const char* enabled;
+    const char* disabled;
 } MatrixInfo;
 
 static const MatrixInfo gmtxtbl[] = {
@@ -187,7 +187,7 @@ typedef struct {
 } OtherModeOpt;
 
 typedef struct {
-    char* name;
+    const char* name;
     int shift;
     int len;
     OtherModeOpt opts[4];
@@ -345,7 +345,10 @@ static const OthermodeParameterInfo l_tbl[] = {
 #include "../src/static/libforest/emu64/emu64_print.cpp"
 
 /* Helper function to convert N64 texture format to Dolphin format */
-__declspec(section ".rodata") const u16 emu64::fmtxtbl[8][4] = {
+#if defined(__MWERKS__)
+__declspec(section ".rodata")
+#endif
+const u16 emu64::fmtxtbl[8][4] = {
     { GX_TF_CMPR, 0xffff, GX_TF_RGB5A3, GX_TF_RGBA8 }, /* G_IM_FMT_RGBA */
     { 0xffff, 0xffff, 0xffff, 0xffff },                /* G_IM_FMT_YUV */
     { GX_TF_C4, GX_TF_C8, 0xA, 0xffff },               /* G_IM_FMT_CI */
@@ -551,7 +554,7 @@ f32 PsendoArcSinConvert(f32 arcsin) {
 
 
 static void emu64_init2(GXRenderModeObj* render_mode) {
-    GC_Mtx m;
+    Mtx m;
     int i;
 
     // __GXSetIndirectMask(0);
@@ -775,7 +778,7 @@ void emu64::emu64_cleanup() {
     GXSetAlphaUpdate(GX_TRUE);
 }
 
-__declspec(weak) inline void get_blk_wd_ht(unsigned int siz, unsigned int* blk_wd, unsigned int* blk_ht) {
+DECL_WEAK inline void get_blk_wd_ht(unsigned int siz, unsigned int* blk_wd, unsigned int* blk_ht) {
     static const u8 blk_tbl[4][2] = {
         { 8, 8 }, // G_IM_SIZ_4b
         { 8, 4 }, // G_IM_SIZ_8b
@@ -824,7 +827,7 @@ void emu64::printInfo() {
 
 // @HACK
 // #pragma dont_inline on
-void emu64::panic(char* msg, char* file, int line) {
+void emu64::panic(const char* msg, const char* file, int line) {
     if (file) {
         this->Printf0(VT_COL(RED, WHITE) "emu64 PANIC!! in %s line %d" VT_RST "\n", file, line);
     } else {
@@ -2530,12 +2533,12 @@ void emu64::texture_gen(int tex) {
     };
     // clang-format on
 
-    GC_Mtx mm; /* Model-view matrix */
-    GC_Mtx ml; /* Look-at matrix */
-    GC_Mtx mf; /* Finalized texture matrix */
-    GC_Mtx ms; /* Scale matrix */
-    GC_Mtx mt; /* Translation matrix */
-    GC_Mtx mn; /* Scale-Translation normalization matrix */
+    Mtx mm; /* Model-view matrix */
+    Mtx ml; /* Look-at matrix */
+    Mtx mf; /* Finalized texture matrix */
+    Mtx ms; /* Scale matrix */
+    Mtx mt; /* Translation matrix */
+    Mtx mn; /* Scale-Translation normalization matrix */
 
     /* Setup lookat matrix */
 
@@ -2629,7 +2632,7 @@ void emu64::texture_matrix() {
 
     EMU64_ASSERTLINE_DEBUG(this, 4036);
     if (this->texture_gfx.on != 0) {
-        GC_Mtx m;
+        Mtx m;
         u16 uls0;
         u16 ult0;
 
@@ -2745,7 +2748,7 @@ void emu64::set_position(unsigned int vtx) {
 
     if ((emu_vtx->flag & MTX_NONSHARED) != MTX_SHARED) {
         if (!this->using_nonshared_mtx) {
-            GC_Mtx& m = this->position_mtx_stack[this->mtx_stack_size];
+            Mtx& m = this->position_mtx_stack[this->mtx_stack_size];
 
             if (aflags[AFLAGS_USE_GUVECMULT]) {
                 guMtxXFM1F_dol(m, emu_vtx->position.x, emu_vtx->position.y, emu_vtx->position.z, &emu_vtx->position.x,
@@ -4571,7 +4574,7 @@ void emu64::dl_G_MTX() {
         if ((this->print_commands & EMU64_PRINTF3_FLAG) != 0) {
             EMU64_LOGF("%08x %08x %08x\n", gfx_copy.w1, this->seg2k0(matrix_address),
                        this->seg2k0(matrix_address));
-            this->disp_matrix((MtxP)this->seg2k0(matrix_address));
+            this->disp_matrix((MtxPtr)this->seg2k0(matrix_address));
         }
     }
 
@@ -4603,14 +4606,14 @@ void emu64::dl_G_MTX() {
             }
         }
 #endif
-        GC_Mtx mtx34;
+        Mtx mtx34;
         Mtx44 mtx44; /* float-based matrix */
 
         /* Convert our s16.u16 matrix into a f32 matrix. */
-        N64Mtx_to_DOLMtx((Mtx*)mtx, mtx34);
+        N64Mtx_to_DOLMtx((N64Mtx*)mtx, mtx34);
 
         if ((mtx_gfx->type & G_MTX_PROJECTION) != G_MTX_MODELVIEW) { /* Projection */
-            N64Mtx_to_DOLMtx((Mtx*)mtx, mtx44);
+            N64Mtx_to_DOLMtx((N64Mtx*)mtx, mtx44);
             if ((mtx_gfx->type & G_MTX_LOAD) != G_MTX_MUL) {
                 if ((u16)(*mtx)[1][3] == 0) { /* If the last entry is 0, this should be a perspective projection.
                                                  Otherwise, it's likely an orthographic projection. */
@@ -4647,10 +4650,10 @@ void emu64::dl_G_MTX() {
                 this->dirty_flags[EMU64_DIRTY_FLAG_PROJECTION_MTX] = true;
                 this->dirty_flags[EMU64_DIRTY_FLAG_FOG] = true;
             } else {
-                bcopy(mtx44, &this->position_mtx, sizeof(GC_Mtx)); /* Last row of Mtx44 is ignored */
+                bcopy(mtx44, &this->position_mtx, sizeof(Mtx)); /* Last row of Mtx44 is ignored */
             }
         } else { /* Modelview */
-            GC_Mtx& concat_src = this->model_view_mtx_stack[this->mtx_stack_size];
+            Mtx& concat_src = this->model_view_mtx_stack[this->mtx_stack_size];
 
             if ((mtx_gfx->type & G_MTX_PUSH) == G_MTX_NOPUSH) {
                 if (this->mtx_stack_size < MTX_STACK_SIZE - 1) {
@@ -4661,15 +4664,15 @@ void emu64::dl_G_MTX() {
                 }
             }
 
-            GC_Mtx& model_view_src = this->model_view_mtx_stack[this->mtx_stack_size];
+            Mtx& model_view_src = this->model_view_mtx_stack[this->mtx_stack_size];
             if ((mtx_gfx->type & G_MTX_LOAD) != G_MTX_MUL) {
-                bcopy(mtx34, model_view_src, sizeof(GC_Mtx));
+                bcopy(mtx34, model_view_src, sizeof(Mtx));
             } else {
                 MTXConcat(concat_src, mtx34, model_view_src);
             }
 
             if (aflags[AFLAGS_COPY_POSITION_MTX] == 0) {
-                GC_Mtx& src = this->model_view_mtx_stack[mtx_stack_size];
+                Mtx& src = this->model_view_mtx_stack[mtx_stack_size];
 
                 for (int i = 0; i < 3; i++) {
                     this->model_view_mtx[i][0] = src[i][0];
@@ -4753,7 +4756,7 @@ void emu64::dl_G_VTX() {
 #endif
         Vertex* emu_vtx_p = &this->vertices[v0];
 
-        GC_Mtx& position_mtx = this->position_mtx_stack[this->mtx_stack_size];
+        Mtx& position_mtx = this->position_mtx_stack[this->mtx_stack_size];
         if ((this->print_commands & (1 << 5)) != 0) {
             /* NOTE: They print a 4x4 matrix, but position matrix is only 3x4. */
             this->disp_matrix(position_mtx);
@@ -5524,7 +5527,7 @@ void emu64::dl_G_GEOMETRYMODE() {
 
 /* TODO: where should these go? s1, s2, and s3 are after but these are after s */
 static emu64 emu64_class;
-char* emu64::warningString[EMU64_WARNING_COUNT];
+const char* emu64::warningString[EMU64_WARNING_COUNT];
 u32 emu64::warningTime[EMU64_WARNING_COUNT];
 
 void emu64::dl_G_MOVEWORD() {

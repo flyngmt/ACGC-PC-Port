@@ -369,7 +369,7 @@ static void aFLAG_actor_draw(ACTOR* actor, GAME* game) {
     GRAPH* graph;
     cKF_SkeletonInfo_R_c* keyframe;
     Gfx* gfx;
-    Mtx* mtx;
+    N64Mtx* mtx;
     STRUCTURE_ACTOR* flag;
     u16* pal;
     u8* texture;
@@ -377,7 +377,7 @@ static void aFLAG_actor_draw(ACTOR* actor, GAME* game) {
     flag = (STRUCTURE_ACTOR*)actor;
     graph = game->graph;
     keyframe = &flag->keyframe;
-    mtx = GRAPH_ALLOC_TYPE(graph, Mtx, keyframe->skeleton->num_shown_joints);
+    mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, keyframe->skeleton->num_shown_joints);
     if (mtx != NULL) {
         _texture_z_light_fog_prim_npc(graph);
         _texture_z_light_fog_prim_xlu(graph);

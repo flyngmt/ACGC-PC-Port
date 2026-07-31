@@ -86,7 +86,7 @@ f32 eEL_CalcAdjust_F(f32 now, f32 start, f32 end, f32 start_val, f32 end_val) {
 
 static void eEL_AutoMatrixXlu(GAME* game, xyz_t* pos, xyz_t* scale) {
     GAME_PLAY* play = (GAME_PLAY*)game;
-    Mtx* mtx = (Mtx*)GRAPH_ALLOC_TYPE(game->graph, Mtx, 1);
+    N64Mtx* mtx = (N64Mtx*)GRAPH_ALLOC_TYPE(game->graph, N64Mtx, 1);
     f32 adj_scale;
 
     OPEN_DISP(game->graph);

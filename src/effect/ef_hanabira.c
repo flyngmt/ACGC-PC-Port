@@ -82,7 +82,7 @@ static void eHanabira_mv(eEC_Effect_c* effect, GAME* game) {
 }
 
 static void eHanabira_dw(eEC_Effect_c* effect, GAME* game) {
-    Mtx* m = GRAPH_ALLOC(game->graph, 0x40);
+    N64Mtx* m = GRAPH_ALLOC(game->graph, 0x40);
     int v = (u8)eEL_CalcAdjust_F(effect->lifetime, 0.0f, 20.0f, 0.f, 255.f);
     OPEN_DISP(game->graph);
     _texture_z_light_fog_prim_xlu(game->graph);

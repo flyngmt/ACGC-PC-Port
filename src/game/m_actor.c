@@ -1049,7 +1049,7 @@ extern ACTOR* Actor_info_fgName_search(Actor_info* actor_info, mActor_name_t fgN
 }
 
 extern Gfx* HiliteReflect_new(xyz_t* pos, xyz_t* eye, xyz_t* light_direction, GRAPH* graph, Gfx* gfx, Hilite** hilite) {
-    static Mtx work_view_matrix;
+    static N64Mtx work_view_matrix;
 
     LookAt* lookat = GRAPH_ALLOC_TYPE(graph, LookAt, 1);
     int pos_eye_equal = FALSE;

@@ -40,7 +40,7 @@ typedef struct misin_misin_s {
     cKF_SkeletonInfo_R_c keyframe;
     s_xyz work[17];
     s_xyz morph[17];
-    Mtx mtx[2][16] ATTRIBUTE_ALIGN(8);
+    N64Mtx mtx[2][16] ATTRIBUTE_ALIGN(8);
 } aMSN_Misin_c;
 
 struct misin_actor_s {

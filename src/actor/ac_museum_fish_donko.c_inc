@@ -113,7 +113,7 @@ BOOL mfish_donko_before_disp(GAME* game, cKF_SkeletonInfo_R_c* keyframe, int joi
 
 void mfish_donko_dw(MUSEUM_FISH_PRIVATE_DATA* actor, GAME* gamex) {
     mfish_keyframe_c* skele = &actor->kf;
-    Mtx* mtxp;
+    N64Mtx* mtxp;
     if (gamex->frame_counter & 1) {
         mtxp = skele->mtx[0];
     } else {

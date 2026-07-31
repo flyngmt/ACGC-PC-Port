@@ -108,7 +108,7 @@ static int aMHS_actor_draw_after(GAME* game, cKF_SkeletonInfo_R_c* keyframe, int
     int g;
     int b;
     int a;
-    Mtx* mtx;
+    N64Mtx* mtx;
     Gfx* gfx;
 
     // Draw window frame shadow last
@@ -209,7 +209,7 @@ static void aMHS_actor_draw(ACTOR* actorx, GAME* game) {
 
     GRAPH* graph;
     cKF_SkeletonInfo_R_c* keyframe;
-    Mtx* mtx;
+    N64Mtx* mtx;
     int door_original;
     int pl_no;
     bIT_ShadowData_c** shadow_data_pp;
@@ -223,7 +223,7 @@ static void aMHS_actor_draw(ACTOR* actorx, GAME* game) {
     keyframe = &my_house->keyframe;
     door_original = Save_Get(homes[my_house->action]).door_original;
     pl_no = mHS_get_pl_no_detail(my_house->action);
-    mtx = GRAPH_ALLOC_TYPE(graph, Mtx, keyframe->skeleton->num_shown_joints);
+    mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, keyframe->skeleton->num_shown_joints);
 
     if (mtx != NULL) {
         aMHS_actor_draw_ta_set(my_house, (GAME*)play);

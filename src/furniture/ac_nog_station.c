@@ -173,7 +173,7 @@ static u16* fMSM_palette_table[] = {
 static void fNSN_dw(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data) {
     int mtx_idx = game->frame_counter & 1;
     cKF_SkeletonInfo_R_c* keyframe = &ftr_actor->keyframe;
-    Mtx* mtx = ftr_actor->skeleton_mtx[mtx_idx];
+    N64Mtx* mtx = ftr_actor->skeleton_mtx[mtx_idx];
     int station_idx = (ftr_actor->name - 0x42A) & 15;
     u16* pal = fMSM_palette_table[station_idx];
 

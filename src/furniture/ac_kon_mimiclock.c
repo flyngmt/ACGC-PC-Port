@@ -25,7 +25,7 @@ static int aKonMimiclock_DwBefore(GAME* game, cKF_SkeletonInfo_R_c* keyf, int jo
 }
 
 static void aKonMimiclock_dw(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data){
-    Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
+    N64Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
     
     _texture_z_light_fog_prim(game->graph);
     _texture_z_light_fog_prim_xlu(game->graph);

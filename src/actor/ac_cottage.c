@@ -920,7 +920,7 @@ static int Cottage_actor_draw_after(GAME* game, cKF_SkeletonInfo_R_c* keyframe, 
                                     u8* joint_flags, void* arg, s_xyz* joint_rot, xyz_t* joint_pos) {
 
     GRAPH* graph;
-    Mtx* mtx;
+    N64Mtx* mtx;
     const COTTAGE_DATA* cottage_data;
     int l;
     int r;
@@ -976,7 +976,7 @@ static int Cottage_actor_draw_after(GAME* game, cKF_SkeletonInfo_R_c* keyframe, 
 static void Cottage_actor_draw(ACTOR* actor, GAME* game) {
     GRAPH* graph;
     cKF_SkeletonInfo_R_c* keyframe;
-    Mtx* mtx;
+    N64Mtx* mtx;
     const COTTAGE_DATA* cottage_data;
     Gfx* gfx;
     u16* pal;
@@ -989,7 +989,7 @@ static void Cottage_actor_draw(ACTOR* actor, GAME* game) {
     cottage_data = Cottage_data_get(cottage);
     keyframe = &cottage->keyframe;
 
-    mtx = GRAPH_ALLOC_TYPE(graph, Mtx, (u32)keyframe->skeleton->num_shown_joints);
+    mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, (u32)keyframe->skeleton->num_shown_joints);
     if (mtx == NULL) {
         return;
     }

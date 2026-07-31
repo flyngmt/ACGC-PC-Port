@@ -33,7 +33,7 @@ typedef struct house_clock_s {
     cKF_SkeletonInfo_R_c keyframe;
     s_xyz work[aHC_JOINT_NUM];
     s_xyz morph[aHC_JOINT_NUM];
-    Mtx mtx[2][aHC_ALL_JOINT_NUM];
+    N64Mtx mtx[2][aHC_ALL_JOINT_NUM];
 } aHC_clock_c;
 
 typedef struct house_clock_actor_s HOUSE_CLOCK_ACTOR;

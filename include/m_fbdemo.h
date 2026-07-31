@@ -12,9 +12,9 @@ typedef struct {
     /* 0x0C */ xy_t* vtxData;
     /* 0x10 */ Vtx* vtxFrame1;
     /* 0x14 */ Vtx* vtxFrame2;
-    /* 0x18 */ Mtx projection;
-    /* 0x58 */ Mtx modelView1;
-    /* 0x98 */ Mtx modelView2;
+    /* 0x18 */ N64Mtx projection;
+    /* 0x58 */ N64Mtx modelView1;
+    /* 0x98 */ N64Mtx modelView2;
     /* 0xD8 */ Gfx* gfx; // "gfxtbl"
     /* 0xDC */ u16* zBuffer;
 } fbdemo_c; // size = 0xE0

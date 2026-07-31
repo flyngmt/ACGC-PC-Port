@@ -36,27 +36,27 @@ static inline void guScaleF(float mf[4][4], float x, float y, float z) {
     mf[3][3] = 1.0;
 }
 
-void guMtxF2L(float mf[4][4], Mtx *m);
+void guMtxF2L(float mf[4][4], N64Mtx *m);
 
-void guTranslate(Mtx *m, float x, float y, float z);
-void guScale(Mtx *m, float x, float y, float z);
+void guTranslate(N64Mtx *m, float x, float y, float z);
+void guScale(N64Mtx *m, float x, float y, float z);
 
-void guMtxIdent(Mtx *m);
+void guMtxIdent(N64Mtx *m);
 void guNormalize(float* x, float* y, float* z); 
-void guOrtho(Mtx *m, float l, float r, float b, float t, float n, float f, float scale);
+void guOrtho(N64Mtx *m, float l, float r, float b, float t, float n, float f, float scale);
 
-void guRotate(Mtx* m, float a, float x, float y, float z);
+void guRotate(N64Mtx* m, float a, float x, float y, float z);
 
- void guLookAt(Mtx *m, 
+ void guLookAt(N64Mtx *m,
 			float xEye, float yEye, float zEye,
 			float xAt,  float yAt,  float zAt,
 			float xUp,  float yUp,  float zUp);
 			
-void guPerspective(Mtx *m, u16 *perspNorm, float fovy, 
+void guPerspective(N64Mtx *m, u16 *perspNorm, float fovy,
 			  float aspect, float near, float far, float scale);
 			  
 			  
-void guLookAtHilite (Mtx *m, LookAt *l, Hilite *h, 
+void guLookAtHilite (N64Mtx *m, LookAt *l, Hilite *h,
 		float xEye, float yEye, float zEye,
 		float xAt,  float yAt,  float zAt,
 		float xUp,  float yUp,  float zUp,

@@ -28,7 +28,7 @@ typedef struct banti_anim_s {
 
 typedef struct banti_callback_s {
   Gfx** gfx_pp;
-  Mtx* mtx;
+  N64Mtx* mtx;
   int state;
 } Banti_callback_c;
 

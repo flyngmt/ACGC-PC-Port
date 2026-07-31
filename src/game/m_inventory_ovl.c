@@ -571,7 +571,7 @@ static void mIV_pl_shape_move(Submenu* submenu) {
 
 static void mIV_pl_shape_item_draw_net(Submenu* submenu, GAME* game) {
     cKF_SkeletonInfo_R_c* item_kf = &submenu->overlay->inventory_ovl->item_keyframe;
-    Mtx* mtx = (Mtx*)GRAPH_ALLOC_TYPE(game->graph, Mtx, item_kf->skeleton->num_shown_joints);
+    N64Mtx* mtx = (N64Mtx*)GRAPH_ALLOC_TYPE(game->graph, N64Mtx, item_kf->skeleton->num_shown_joints);
 
     if (mtx != NULL) {
         cKF_Si3_draw_R_SV(game, item_kf, mtx, NULL, NULL, NULL);
@@ -746,7 +746,7 @@ extern Gfx inv_uki2_model[]; // golden rod
 static void mIV_pl_shape_item_draw_rod(Submenu* submenu, GAME* game) {
     mSM_Segment_c* seg = &submenu->overlay->segment;
     cKF_SkeletonInfo_R_c* item_kf = &submenu->overlay->inventory_ovl->item_keyframe;
-    Mtx* mtx = (Mtx*)GRAPH_ALLOC_TYPE(game->graph, Mtx, item_kf->skeleton->num_shown_joints);
+    N64Mtx* mtx = (N64Mtx*)GRAPH_ALLOC_TYPE(game->graph, N64Mtx, item_kf->skeleton->num_shown_joints);
 
     if (mtx != NULL) {
         xyz_t pos;
@@ -829,7 +829,7 @@ static int mIV_pl_shape_item_draw_balloon_After(GAME* game, cKF_SkeletonInfo_R_c
 
 static void mIV_pl_shape_item_draw_balloon(Submenu* submenu, GAME* game) {
     cKF_SkeletonInfo_R_c* item_kf = &submenu->overlay->inventory_ovl->item_keyframe;
-    Mtx* mtx = (Mtx*)GRAPH_ALLOC_TYPE(game->graph, Mtx, item_kf->skeleton->num_shown_joints);
+    N64Mtx* mtx = (N64Mtx*)GRAPH_ALLOC_TYPE(game->graph, N64Mtx, item_kf->skeleton->num_shown_joints);
 
     if (mtx != NULL) {
         static xyz_t dummy_eye = { 0.0f, 0.0f, 1.0f };
@@ -851,7 +851,7 @@ static void mIV_pl_shape_item_draw_balloon(Submenu* submenu, GAME* game) {
 
 static void mIV_pl_shape_item_draw_windmill(Submenu* submenu, GAME* game) {
     cKF_SkeletonInfo_R_c* item_kf = &submenu->overlay->inventory_ovl->item_keyframe;
-    Mtx* mtx = (Mtx*)GRAPH_ALLOC_TYPE(game->graph, Mtx, item_kf->skeleton->num_shown_joints);
+    N64Mtx* mtx = (N64Mtx*)GRAPH_ALLOC_TYPE(game->graph, N64Mtx, item_kf->skeleton->num_shown_joints);
 
     if (mtx != NULL) {
         cKF_Si3_draw_R_SV(game, item_kf, mtx, NULL, NULL, NULL);
@@ -1089,7 +1089,7 @@ static void mIV_pl_shape_draw(Submenu* submenu, GAME* game) {
     mSM_Segment_c* seg = &submenu->overlay->segment;
     cKF_SkeletonInfo_R_c* main_kf = &submenu->overlay->inventory_ovl->player_main_keyframe;
     GRAPH* graph = game->graph;
-    Mtx* mtx = (Mtx*)GRAPH_ALLOC_TYPE(graph, Mtx, main_kf->skeleton->num_shown_joints);
+    N64Mtx* mtx = (N64Mtx*)GRAPH_ALLOC_TYPE(graph, N64Mtx, main_kf->skeleton->num_shown_joints);
     u8* eye_tex_p = NULL;
     u8* mouth_tex_p = NULL;
     int anim_idx = mIV_Get_pl_main_anime_index(seg->player_main_anime_idx);

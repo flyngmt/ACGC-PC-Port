@@ -134,14 +134,14 @@ static void aTKT_actor_move(ACTOR* actor, GAME* game) {
 static void aTKT_actor_draw(ACTOR* actor, GAME* game) {
     cKF_SkeletonInfo_R_c* keyf;
     GRAPH* graph;
-    Mtx* mtx;
+    N64Mtx* mtx;
     Gfx* gfx;
     KEITAI_ACTOR* keitai;
 
     keitai = (KEITAI_ACTOR*)actor;
     keyf = &keitai->keyframe;
     graph = game->graph;
-    mtx = GRAPH_ALLOC_TYPE(graph, Mtx, keyf->skeleton->num_shown_joints);
+    mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, keyf->skeleton->num_shown_joints);
 
     if (mtx != NULL) {
         if (keitai->tools_class.init_matrix == TRUE) {

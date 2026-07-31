@@ -24,7 +24,7 @@ extern u16 hnw_face[];
 
 static void mHP_haniwaPortrait_shape_draw(Submenu* submenu, mSM_MenuInfo_c* menu_info, GAME* game) {
   GRAPH* graph = game->graph;
-  Mtx* mtx = GRAPH_ALLOC_TYPE(graph, Mtx, submenu->overlay->hanwiaPortrait_ovl->keyframe.skeleton->num_shown_joints);
+  N64Mtx* mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, submenu->overlay->hanwiaPortrait_ovl->keyframe.skeleton->num_shown_joints);
 
   if (mtx != NULL) {
     _texture_z_light_fog_prim(game->graph);

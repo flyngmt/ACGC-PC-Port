@@ -1,7 +1,7 @@
 static void aMIK_actor_draw(ACTOR* actor, GAME* game){
     MIKUJI_ACTOR* mikuji = (MIKUJI_ACTOR*)actor;
 
-    Mtx* cur;
+    N64Mtx* cur;
     GRAPH* graph = game->graph;
     u16* pal;
     Gfx* gfx;

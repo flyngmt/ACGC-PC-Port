@@ -1,79 +1,81 @@
+#include <dolphin/types.h>
+
 #ifdef TARGET_PC
-unsigned short chn_4_pal[0x20 / sizeof(unsigned short)] __attribute__((aligned(32)));
+unsigned short chn_4_pal[0x20 / sizeof(unsigned short)] ATTRIBUTE_ALIGN(32);
 #else
-extern unsigned short chn_4_pal[] __attribute__((aligned(32))) = {
+extern unsigned short chn_4_pal[] ATTRIBUTE_ALIGN(32) = {
 #include "assets/npc/tex/chn_4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-unsigned char chn_4_eye1_TA_tex_txt[0x100] __attribute__((aligned(32)));
+unsigned char chn_4_eye1_TA_tex_txt[0x100] ATTRIBUTE_ALIGN(32);
 #else
-extern unsigned char chn_4_eye1_TA_tex_txt[] __attribute__((aligned(32))) = {
+extern unsigned char chn_4_eye1_TA_tex_txt[] ATTRIBUTE_ALIGN(32) = {
 #include "assets/npc/tex/chn_4_eye1_TA_tex_txt.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-unsigned char chn_4_eye2_TA_tex_txt[0x100] __attribute__((aligned(32)));
+unsigned char chn_4_eye2_TA_tex_txt[0x100] ATTRIBUTE_ALIGN(32);
 #else
-extern unsigned char chn_4_eye2_TA_tex_txt[] __attribute__((aligned(32))) = {
+extern unsigned char chn_4_eye2_TA_tex_txt[] ATTRIBUTE_ALIGN(32) = {
 #include "assets/npc/tex/chn_4_eye2_TA_tex_txt.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-unsigned char chn_4_eye3_TA_tex_txt[0x100] __attribute__((aligned(32)));
+unsigned char chn_4_eye3_TA_tex_txt[0x100] ATTRIBUTE_ALIGN(32);
 #else
-extern unsigned char chn_4_eye3_TA_tex_txt[] __attribute__((aligned(32))) = {
+extern unsigned char chn_4_eye3_TA_tex_txt[] ATTRIBUTE_ALIGN(32) = {
 #include "assets/npc/tex/chn_4_eye3_TA_tex_txt.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-unsigned char chn_4_eye4_TA_tex_txt[0x100] __attribute__((aligned(32)));
+unsigned char chn_4_eye4_TA_tex_txt[0x100] ATTRIBUTE_ALIGN(32);
 #else
-extern unsigned char chn_4_eye4_TA_tex_txt[] __attribute__((aligned(32))) = {
+extern unsigned char chn_4_eye4_TA_tex_txt[] ATTRIBUTE_ALIGN(32) = {
 #include "assets/npc/tex/chn_4_eye4_TA_tex_txt.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-unsigned char chn_4_eye5_TA_tex_txt[0x100] __attribute__((aligned(32)));
+unsigned char chn_4_eye5_TA_tex_txt[0x100] ATTRIBUTE_ALIGN(32);
 #else
-extern unsigned char chn_4_eye5_TA_tex_txt[] __attribute__((aligned(32))) = {
+extern unsigned char chn_4_eye5_TA_tex_txt[] ATTRIBUTE_ALIGN(32) = {
 #include "assets/npc/tex/chn_4_eye5_TA_tex_txt.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-unsigned char chn_4_eye6_TA_tex_txt[0x100] __attribute__((aligned(32)));
+unsigned char chn_4_eye6_TA_tex_txt[0x100] ATTRIBUTE_ALIGN(32);
 #else
-extern unsigned char chn_4_eye6_TA_tex_txt[] __attribute__((aligned(32))) = {
+extern unsigned char chn_4_eye6_TA_tex_txt[] ATTRIBUTE_ALIGN(32) = {
 #include "assets/npc/tex/chn_4_eye6_TA_tex_txt.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-unsigned char chn_4_eye7_TA_tex_txt[0x100] __attribute__((aligned(32)));
+unsigned char chn_4_eye7_TA_tex_txt[0x100] ATTRIBUTE_ALIGN(32);
 #else
-extern unsigned char chn_4_eye7_TA_tex_txt[] __attribute__((aligned(32))) = {
+extern unsigned char chn_4_eye7_TA_tex_txt[] ATTRIBUTE_ALIGN(32) = {
 #include "assets/npc/tex/chn_4_eye7_TA_tex_txt.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-unsigned char chn_4_eye8_TA_tex_txt[0x100] __attribute__((aligned(32)));
+unsigned char chn_4_eye8_TA_tex_txt[0x100] ATTRIBUTE_ALIGN(32);
 #else
-extern unsigned char chn_4_eye8_TA_tex_txt[] __attribute__((aligned(32))) = {
+extern unsigned char chn_4_eye8_TA_tex_txt[] ATTRIBUTE_ALIGN(32) = {
 #include "assets/npc/tex/chn_4_eye8_TA_tex_txt.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-unsigned char chn_4_tmem_txt[0x4C0] __attribute__((aligned(32)));
+unsigned char chn_4_tmem_txt[0x4C0] ATTRIBUTE_ALIGN(32);
 #else
-extern unsigned char chn_4_tmem_txt[] __attribute__((aligned(32))) = {
+extern unsigned char chn_4_tmem_txt[] ATTRIBUTE_ALIGN(32) = {
 #include "assets/npc/tex/chn_4_tmem_txt.inc"
 };
 #endif

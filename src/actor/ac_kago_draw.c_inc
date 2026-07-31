@@ -10,7 +10,7 @@ static void aKAG_actor_draw(ACTOR* actor, GAME* game) {
     
     u16* pal = (*Common_Get(clip).structure_clip->get_pal_segment_proc)(kago->structure_class.structure_pal);
     Gfx* gfx;
-    Mtx* mtx;
+    N64Mtx* mtx;
     
     OPEN_DISP(graph);
 

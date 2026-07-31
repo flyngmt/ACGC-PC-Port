@@ -53,7 +53,7 @@ static int aPOFF_actor_draw_after(GAME* game, cKF_SkeletonInfo_R_c* keyframe, in
 
     STRUCTURE_ACTOR* office;
     GRAPH* graph;
-    Mtx* mtx;
+    N64Mtx* mtx;
     int angle;
     int winter;
     int l;
@@ -130,7 +130,7 @@ static void aPOFF_actor_draw_ta_clr(STRUCTURE_ACTOR* office, GAME_PLAY* play) {
 static void aPOFF_actor_draw(ACTOR* actor, GAME* game) {
     GRAPH* graph;
     cKF_SkeletonInfo_R_c* keyframe;
-    Mtx* mtx;
+    N64Mtx* mtx;
     Gfx* gfx;
     u16* pal;
     GAME_PLAY* play;
@@ -141,7 +141,7 @@ static void aPOFF_actor_draw(ACTOR* actor, GAME* game) {
     office = (STRUCTURE_ACTOR*)actor;
     keyframe = &office->keyframe;
 
-    mtx = GRAPH_ALLOC_TYPE(graph, Mtx, (u32)keyframe->skeleton->num_shown_joints);
+    mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, (u32)keyframe->skeleton->num_shown_joints);
     if (mtx != NULL) {
         pal = Common_Get(clip).structure_clip->get_pal_segment_proc(aSTR_PAL_POST_OFFICE);
 

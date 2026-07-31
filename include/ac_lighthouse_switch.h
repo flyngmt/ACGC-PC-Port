@@ -25,7 +25,7 @@ typedef struct lighthouse_switch_s {
     cKF_SkeletonInfo_R_c keyframe;
     s_xyz work[aLS_SWITCH_JOINT_NUM+1];
     s_xyz morph[aLS_SWITCH_JOINT_NUM+1];
-    Mtx mtx[2][aLS_SWITCH_JOINT_NUM+1];
+    N64Mtx mtx[2][aLS_SWITCH_JOINT_NUM+1];
 } aLS_switch_c;
 
 #define aLS_POLE_JOINT_NUM 10
@@ -42,7 +42,7 @@ typedef struct lighthouse_pole_s {
     cKF_SkeletonInfo_R_c keyframe;
     s_xyz work[aLS_POLE_JOINT_NUM+1];
     s_xyz morph[aLS_POLE_JOINT_NUM+1];
-    Mtx mtx[2][aLS_POLE_ALL_JOINT_NUM+1];
+    N64Mtx mtx[2][aLS_POLE_ALL_JOINT_NUM+1];
 } aLS_pole_c;
 
 typedef struct lighthouse_switch_actor_s LIGHTHOUSE_SWITCH_ACTOR;

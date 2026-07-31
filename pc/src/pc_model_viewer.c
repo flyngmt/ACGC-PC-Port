@@ -588,9 +588,9 @@ static void mv_draw_common_setup(GAME_MODEL_VIEWER* mv) {
     /* Viewport, projection, lookAt, modelview */
     {
         Vp* vp = GRAPH_ALLOC_TYPE(g, Vp, 1);
-        Mtx* proj_mtx = GRAPH_ALLOC_TYPE(g, Mtx, 1);
-        Mtx* look_mtx = GRAPH_ALLOC_TYPE(g, Mtx, 1);
-        Mtx* mv_mtx = GRAPH_ALLOC_TYPE(g, Mtx, 1);
+        N64Mtx* proj_mtx = GRAPH_ALLOC_TYPE(g, N64Mtx, 1);
+        N64Mtx* look_mtx = GRAPH_ALLOC_TYPE(g, N64Mtx, 1);
+        N64Mtx* mv_mtx = GRAPH_ALLOC_TYPE(g, N64Mtx, 1);
         u16 perspNorm;
         f32 near_plane = (cat == MV_CAT_STRUCTURES) ? 10.0f : 1.0f;
         f32 far_plane  = (cat == MV_CAT_STRUCTURES) ? 50000.0f : 5000.0f;
@@ -694,7 +694,7 @@ static void mv_draw_structures(GAME_MODEL_VIEWER* mv) {
 
     /* Draw skeleton */
     {
-        Mtx* joint_mtx = GRAPH_ALLOC_TYPE(g, Mtx, 64);
+        N64Mtx* joint_mtx = GRAPH_ALLOC_TYPE(g, N64Mtx, 64);
         Matrix_push();
         Matrix_translate(0.0f, 0.0f, 0.0f, 0);
         cKF_Si3_draw_R_SV(game, &mv->skeleton_info, joint_mtx, NULL, NULL, NULL);
@@ -746,7 +746,7 @@ static void mv_draw_npc(GAME_MODEL_VIEWER* mv) {
 
     /* Draw skeleton with NPC scale */
     {
-        Mtx* joint_mtx = GRAPH_ALLOC_TYPE(g, Mtx, 64);
+        N64Mtx* joint_mtx = GRAPH_ALLOC_TYPE(g, N64Mtx, 64);
         Matrix_push();
         Matrix_translate(0.0f, 0.0f, 0.0f, MTX_LOAD);
         Matrix_scale(npc->scale, npc->scale, npc->scale, MTX_MULT);
@@ -775,7 +775,7 @@ static void mv_draw_fish(GAME_MODEL_VIEWER* mv) {
 
     /* Draw skeleton with fish scale */
     {
-        Mtx* joint_mtx = GRAPH_ALLOC_TYPE(g, Mtx, 64);
+        N64Mtx* joint_mtx = GRAPH_ALLOC_TYPE(g, N64Mtx, 64);
         Matrix_push();
         Matrix_translate(0.0f, 0.0f, 0.0f, MTX_LOAD);
         Matrix_scale(FISH_SCALE, FISH_SCALE, FISH_SCALE, MTX_MULT);

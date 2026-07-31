@@ -15,7 +15,7 @@ void mfish_hasu_mv(mfish_hasu_c* actor, GAME* gamex) {
 }
 
 void mfish_hasu_dw(mfish_hasu_c* actor, GAME* gamex) {
-    Mtx* mtxp;
+    N64Mtx* mtxp;
     if (gamex->frame_counter & 1) {
         mtxp = actor->mtx[0];
     } else {
@@ -187,7 +187,7 @@ BOOL hasu_after_disp(GAME* game, cKF_SkeletonInfo_R_c* keyframe, int joint_idx, 
 void mfish_kaeru_dw(MUSEUM_FISH_PRIVATE_DATA* actor, GAME* gamex) {
     mfish_keyframe_c* skele = &actor->kf;
     mfish_hasu_c* keyframe = actor->hasu_p;
-    Mtx *mtxp, *mtxp2;
+    N64Mtx *mtxp, *mtxp2;
     if (gamex->frame_counter & 1) {
         mtxp = skele->mtx[0];
         mtxp2 = keyframe->mtx[0];

@@ -13,9 +13,9 @@ typedef struct {
     /* 0x00C */ u16 texX;
     /* 0x00E */ u16 texY;
     /* 0x010 */ u16 normal;
-    /* 0x018 */ Mtx projection;
-    /* 0x058 */ Mtx lookAt;
-    /* 0x098 */ Mtx modelView[2][3];
+    /* 0x018 */ N64Mtx projection;
+    /* 0x058 */ N64Mtx lookAt;
+    /* 0x098 */ N64Mtx modelView[2][3];
 } fbdemo_wipe1; // size = 0x218
 
 

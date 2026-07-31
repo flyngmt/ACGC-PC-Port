@@ -172,7 +172,7 @@ static void eBushHappa_dw(eEC_Effect_c* effect, GAME* game) {
             palm_pal = field_pal->palm_tree_pal;
         }
         if (((cedar_pal != NULL) && (golden_pal != NULL)) || (effect->arg1 <= 3)) {
-            Mtx* mtx = GRAPH_ALLOC_TYPE(game->graph, Mtx, 1);            
+            N64Mtx* mtx = GRAPH_ALLOC_TYPE(game->graph, N64Mtx, 1);
             graph = game->graph;
             _texture_z_light_fog_prim_xlu(graph);
             suMtxMakeSRT_ZXY(mtx, effect->scale.x, effect->scale.y, effect->scale.z, effect->effect_specific[0], 0,

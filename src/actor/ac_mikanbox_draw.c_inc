@@ -53,7 +53,7 @@ extern Gfx obj_e_mikanbox_model[];
 static void aMIK_actor_draw(ACTOR* actorx, GAME* game) {
     GRAPH* graph = game->graph;
     u16* pal = (u16*)CLIP(structure_clip)->get_pal_segment_proc(aSTR_PAL_MIKANBOX);
-    Mtx* mtx = _Matrix_to_Mtx_new(graph);
+    N64Mtx* mtx = _Matrix_to_Mtx_new(graph);
 
     if (mtx != NULL) {
         _texture_z_light_fog_prim_npc(graph);

@@ -299,7 +299,7 @@ void minsect_kuwagata_mv(MUSEUM_INSECT_PRIVATE_DATA* actor, GAME* game) {
 }
 
 void minsect_kuwagata_dw(MUSEUM_INSECT_PRIVATE_DATA* actor, GAME* game) {
-    Mtx* mtx;
+    N64Mtx* mtx;
     _texture_z_light_fog_prim(game->graph);
     if (game->frame_counter & 1) {
         mtx = &actor->_08->_70;

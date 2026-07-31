@@ -550,7 +550,7 @@ static void aFSN_actor_draw(ACTOR* actorx, GAME* game) {
   static xyz_t offset0 = { 0.0f, 0.0f, 0.0f };
 
   FUUSEN_ACTOR* fuusen = (FUUSEN_ACTOR*)actorx;
-  Mtx* mtx = fuusen->mtx[game->frame_counter & 1];
+  N64Mtx* mtx = fuusen->mtx[game->frame_counter & 1];
   GAME_PLAY* play = (GAME_PLAY*)game;
   GRAPH* graph = game->graph;
   Gfx* gfx;

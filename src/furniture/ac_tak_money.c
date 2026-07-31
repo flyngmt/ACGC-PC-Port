@@ -80,7 +80,7 @@ static void fTMny_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8*
 static void fTMny_dw(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data) {
     GAME_PLAY* play = (GAME_PLAY*)game;
     cKF_SkeletonInfo_R_c* keyframe = &ftr_actor->keyframe;
-    Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
+    N64Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
 
     OPEN_DISP(game->graph);
 

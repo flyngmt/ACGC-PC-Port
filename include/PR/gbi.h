@@ -1185,10 +1185,10 @@ typedef long Mtx_t[4][4];
 typedef union {
     Mtx_t		m;
     long long int	force_structure_alignment;
-} Mtx;
+} N64Mtx;
 
 #ifdef TARGET_PC
-_GBI_STATIC_ASSERT(sizeof(Mtx) == 64, "N64 Mtx ABI must remain 64 bytes");
+_GBI_STATIC_ASSERT(sizeof(N64Mtx) == 64, "N64 N64Mtx ABI must remain 64 bytes");
 #endif
 
 /*
@@ -1995,12 +1995,12 @@ _GBI_STATIC_ASSERT(sizeof(Gfx) == 16, "PC Gfx slots must preserve the native-poi
 
 #ifdef	F3DEX_GBI_2
 # define	gSPMatrix(pkt, m, p)	\
-		gDma2p((pkt),G_MTX,(m),sizeof(Mtx),(p)^G_MTX_PUSH,0)
+		gDma2p((pkt),G_MTX,(m),sizeof(N64Mtx),(p)^G_MTX_PUSH,0)
 # define	gsSPMatrix(m, p)	\
-		gsDma2p(     G_MTX,(m),sizeof(Mtx),(p)^G_MTX_PUSH,0)
+		gsDma2p(     G_MTX,(m),sizeof(N64Mtx),(p)^G_MTX_PUSH,0)
 #else	/* F3DEX_GBI_2 */
-# define	gSPMatrix(pkt, m, p)	gDma1p(pkt, G_MTX, m, sizeof(Mtx), p)
-# define	gsSPMatrix(m, p)	gsDma1p(G_MTX, m, sizeof(Mtx), p)
+# define	gSPMatrix(pkt, m, p)	gDma1p(pkt, G_MTX, m, sizeof(N64Mtx), p)
+# define	gsSPMatrix(m, p)	gsDma1p(G_MTX, m, sizeof(N64Mtx), p)
 #endif	/* F3DEX_GBI_2 */
 
 #if	defined(F3DEX_GBI_2)
@@ -2495,11 +2495,11 @@ _GBI_STATIC_ASSERT(sizeof(Gfx) == 16, "PC Gfx slots must preserve the native-poi
  */
 #ifdef	F3DEX_GBI_2
 #define	gSPForceMatrix(pkt, mptr)					\
-{	gDma2p((pkt),G_MOVEMEM,(mptr),sizeof(Mtx),G_MV_MATRIX,0);	\
+{	gDma2p((pkt),G_MOVEMEM,(mptr),sizeof(N64Mtx),G_MV_MATRIX,0);	\
 	gMoveWd((pkt), G_MW_FORCEMTX,0,0x00010000);			\
 }
 #define	gsSPForceMatrix(mptr)						\
-	gsDma2p(G_MOVEMEM,(mptr),sizeof(Mtx),G_MV_MATRIX,0),		\
+	gsDma2p(G_MOVEMEM,(mptr),sizeof(N64Mtx),G_MV_MATRIX,0),		\
 	gsMoveWd(G_MW_FORCEMTX,0,0x00010000)
 	
 #else	/* F3DEX_GBI_2 */

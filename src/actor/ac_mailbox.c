@@ -175,7 +175,7 @@ static void aMBX_actor_draw(ACTOR* actorx, GAME* game) {
     cKF_SkeletonInfo_R_c* kf0 = &actor->kf0;
     GRAPH* graph = game->graph;
     GAME_PLAY* play = (GAME_PLAY*)game;
-    Mtx* mtx = GRAPH_ALLOC_TYPE(graph, Mtx, kf0->skeleton->num_shown_joints);
+    N64Mtx* mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, kf0->skeleton->num_shown_joints);
 
     if (mtx != NULL) {
         _texture_z_light_fog_prim(graph);

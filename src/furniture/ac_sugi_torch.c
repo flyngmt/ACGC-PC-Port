@@ -75,7 +75,7 @@ static Gfx* fSGT_GetTwoTileGfx(int x0, int y0, int x1, int y1, GAME* game) {
 
 static void fSGT_dw(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data) {
     cKF_SkeletonInfo_R_c* keyframe = &ftr_actor->keyframe;
-    Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
+    N64Mtx* mtx = ftr_actor->skeleton_mtx[game->frame_counter & 1];
     int ctr_ofs = (int)ftr_actor->dynamic_work_f[0];
     Gfx* scroll_gfx = fSGT_GetTwoTileGfx(0, 0, 0, -ctr_ofs * 8, game);
 

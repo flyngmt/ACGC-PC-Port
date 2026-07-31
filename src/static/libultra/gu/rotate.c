@@ -44,7 +44,7 @@ void guRotateF(float mf[4][4], float a, float x, float y, float z)
 	mf[0][1] = ab+zxsine;
 }
 
-void guRotate(Mtx *m, float a, float x, float y, float z) {
+void guRotate(N64Mtx *m, float a, float x, float y, float z) {
     float mf[4][4];
     guRotateF(mf, a, x, y, z);
     guMtxF2L(mf, m);
