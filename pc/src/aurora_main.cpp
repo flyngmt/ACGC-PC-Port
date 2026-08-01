@@ -10,6 +10,7 @@
 #include "pc_assets.h"
 #include "pc_platform.h"
 #include "aurora_debug.h"
+#include "acgc/app_info.hpp"
 #include "acgc/data.hpp"
 #include "acgc/legacy_input.hpp"
 #include "acgc/settings.hpp"
@@ -515,7 +516,7 @@ int main(int argc, char* argv[]) {
     }
 
     AuroraConfig config{};
-    config.appName = "Animal Crossing";
+    config.appName = acgc::AppInfo.appName.data();
     config.userPath = user_path.empty() ? nullptr : user_path.c_str();
     config.cachePath = cache_path.empty() ? nullptr : cache_path.c_str();
     config.windowPosX = -1;
