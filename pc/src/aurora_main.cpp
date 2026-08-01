@@ -18,6 +18,7 @@
 #include "m_kankyo.h"
 #include "borealis/aurora_log.h"
 #include "borealis/cli.hpp"
+#include "borealis/crash.hpp"
 #include "borealis/io.hpp"
 #include "borealis/log.hpp"
 
@@ -447,6 +448,7 @@ int main(int argc, char* argv[]) {
     }
     borealis::log::init(log_options);
     PortLogGuard log_guard;
+    borealis::crash::install();
     if (const char* log_path = borealis::log::file_path()) {
         MainLog.info("Logging to {}", log_path);
     } else {
