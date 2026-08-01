@@ -1,17 +1,26 @@
 #include "acgc/ui/settings.hpp"
 
+#include "acgc/data.hpp"
 #include "acgc/settings.hpp"
 #include "acgc/texture_replacements.hpp"
 #include "acgc/ui/bool_button.hpp"
 #include "acgc/ui/controller_config.hpp"
+#include "acgc/ui/modal.hpp"
 #include "acgc/ui/number_button.hpp"
 #include "acgc/ui/pane.hpp"
+
+#include "borealis/io.hpp"
 
 #include <aurora/gfx.h>
 #include "extern/aurora/lib/window.hpp"
 
+#include <SDL3/SDL_dialog.h>
+#include <SDL3/SDL_init.h>
+
 #include <array>
+#include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
 extern "C" int g_pc_frame_limit_override;
@@ -58,6 +67,81 @@ Rml::String msaa_label(int samples)
 {
     return samples <= 1 ? "Off" : std::to_string(samples) + "x";
 }
+
+#if ACGC_CAN_CHANGE_DATA_FOLDER
+
+/* Live view of the configured data folder plus the pending-restart notice. */
+class DataFolderPathText : public Component {
+public:
+    explicit DataFolderPathText(Rml::Element* parent) : Component(append(parent, "div")) {}
+
+    void update() override
+    {
+        Rml::String rml = "Current data folder:<br/>" +
+                          escape(data::abbreviated_path_string(data::configured_data_path()));
+        if (data::is_data_path_restart_pending()) {
+            rml += "<br/><br/>Restart the game to move data to the new folder.";
+        }
+        if (rml != mCurrentRml) {
+            mRoot->SetInnerRML(rml);
+            mCurrentRml = rml;
+        }
+        Component::update();
+    }
+
+private:
+    Rml::String mCurrentRml;
+};
+
+void show_data_folder_error_modal(std::string_view message)
+{
+    auto dismiss = [](Modal& modal) { modal.pop(); };
+    push_document(std::make_unique<Modal>(Modal::Props{
+        .title = "Data Folder Not Changed",
+        .bodyRml = escape(message),
+        .actions = {
+            ModalAction{
+                .label = "OK",
+                .onPressed = dismiss,
+            },
+        },
+        .onDismiss = dismiss,
+        .icon = "warning",
+    }));
+    if (auto* doc = top_document()) {
+        doc->focus();
+    }
+}
+
+void apply_data_folder_selection(void* userdata)
+{
+    std::unique_ptr<std::string> selection(static_cast<std::string*>(userdata));
+
+    std::string dataPathError;
+    if (data::set_custom_data_path(selection->c_str(), &dataPathError)) {
+        return;
+    }
+    if (dataPathError.empty()) {
+        dataPathError = "The selected folder could not be used as the data folder.";
+    }
+    show_data_folder_error_modal(dataPathError);
+}
+
+/* SDL may invoke dialog callbacks off the main thread; the UI (and the
+ * descriptor write it triggers) must run on it. */
+void data_folder_dialog_callback(void*, const char* const* filelist, int)
+{
+    if (filelist == nullptr || filelist[0] == nullptr) {
+        return; /* Canceled or failed; nothing to apply. */
+    }
+
+    auto selection = std::make_unique<std::string>(filelist[0]);
+    if (SDL_RunOnMainThread(&apply_data_folder_selection, selection.get(), false)) {
+        selection.release();
+    }
+}
+
+#endif // ACGC_CAN_CHANGE_DATA_FOLDER
 
 } // namespace
 
@@ -176,7 +260,7 @@ SettingsWindow::SettingsWindow()
                     texture_replacements::reload();
                 });
                 pane.add_text("Loads Dolphin-format DDS and PNG replacements recursively from " +
-                              texture_replacements::directory().string() +
+                              borealis::io::fs_path_to_string(texture_replacements::directory()) +
                               ". Aurora indexes filenames at startup and loads image data on demand. "
                               "Legacy preload/cache values remain accepted in config for compatibility.");
             });
@@ -273,6 +357,46 @@ SettingsWindow::SettingsWindow()
         add_bool(left, right, current.enhancements.pillarboxNes, "NES 4:3 Aspect",
                  "Keep embedded NES games at their original 4:3 aspect ratio.");
     });
+
+#if ACGC_CAN_CHANGE_DATA_FOLDER
+    add_tab("Data", [this](Rml::Element* content) {
+        auto& left = add_child<Pane>(content, Pane::Type::Controlled);
+        auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
+
+        left.register_control(
+            left.add_select_button({
+                .key = "Data Folder",
+                .getValue = [] {
+                    return Rml::String(data::abbreviated_path_string(data::configured_data_path()));
+                },
+                .isModified = [] { return data::is_data_path_restart_pending(); },
+            }),
+            right, [](Pane& pane) {
+                pane.add_text("The data folder is where the game stores saves, settings, "
+                              "input mappings, texture packs, and NES ROMs.");
+                pane.add_child<DataFolderPathText>();
+#if ACGC_CAN_OPEN_DATA_FOLDER
+                pane.add_button("Open Data Folder").on_pressed([] {
+                    data::open_data_path();
+                });
+#endif
+                pane.add_button("Change Data Folder").on_pressed([] {
+                    const std::string current = borealis::io::fs_path_to_string(data::configured_data_path());
+                    SDL_ShowOpenFolderDialog(&data_folder_dialog_callback, nullptr,
+                                             aurora::window::get_sdl_window(),
+                                             current.empty() ? nullptr : current.c_str(), false);
+                });
+                pane.add_button(ControlledButton::Props{
+                    .text = "Reset to Default",
+                    .isDisabled = [] { return data::is_default_data_path(); },
+                }).on_pressed([] {
+                    data::reset_data_path();
+                });
+                pane.add_text("Changes take effect after restarting the game; recognized data "
+                              "moves to the new folder on the next launch.");
+            });
+    });
+#endif // ACGC_CAN_CHANGE_DATA_FOLDER
 }
 
 void SettingsWindow::hide(bool close)

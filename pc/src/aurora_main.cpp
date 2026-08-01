@@ -10,12 +10,16 @@
 #include "pc_assets.h"
 #include "pc_platform.h"
 #include "aurora_debug.h"
+#include "acgc/data.hpp"
 #include "acgc/legacy_input.hpp"
 #include "acgc/settings.hpp"
 #include "acgc/texture_replacements.hpp"
 #include "acgc/ui/ui.hpp"
 #include "m_kankyo.h"
-#include "port/logging.h"
+#include "borealis/aurora_log.h"
+#include "borealis/cli.hpp"
+#include "borealis/io.hpp"
+#include "borealis/log.hpp"
 
 #include <chrono>
 #include <cstdint>
@@ -110,18 +114,25 @@ struct WindowDimensions {
     int height = 960;
 };
 
-bool s_show_help = false;
+constexpr borealis::Log MainLog{"acgc"};
+constexpr borealis::Log ConfigLog{"acgc::config"};
+constexpr borealis::Log VideoLog{"acgc::video"};
+constexpr borealis::Log ClockLog{"acgc::clock"};
+constexpr borealis::Log WeatherLog{"acgc::weather"};
+constexpr borealis::Log UiLog{"acgc::ui"};
+constexpr borealis::Log DvdLog{"acgc::dvd"};
+constexpr borealis::Log AssetsLog{"acgc::assets"};
+
 bool s_uber_shader_requested = false;
-bool s_log_level_explicit = false;
 bool s_frame_limit_explicit = false;
 bool s_window_size_explicit = false;
-AuroraLogLevel s_log_level = LOG_INFO;
-std::string s_log_directory;
-std::string s_user_directory;
+borealis::LogLevel s_log_level = borealis::LogLevel::Info;
+std::filesystem::path s_log_directory;
+std::filesystem::path s_user_directory;
 
 struct PortLogGuard {
     ~PortLogGuard() {
-        port_log_shutdown();
+        borealis::log::shutdown();
     }
 };
 
@@ -135,25 +146,6 @@ struct SettingsGuard {
         acgc::shutdown_settings();
     }
 };
-
-void print_usage() {
-    std::printf("Usage: AnimalCrossing [options] [disc image]\n");
-    std::printf("  --disc PATH          Open an RVZ, ISO, or GCM image (default: game.rvz)\n");
-    std::printf("  --window-size WxH    Set the initial window size (minimum 320x240)\n");
-    std::printf("  --widescreen         Start at 1280x720\n");
-    std::printf("  --profile [N]        Show performance diagnostics\n");
-    std::printf("  --model-viewer [N]   Launch the model viewer at optional structure N\n");
-    std::printf("  --framelimit N       Set a software frame limit (0 = uncapped)\n");
-    std::printf("  --no-framelimit      Run uncapped\n");
-    std::printf("  --time H[:M[:S]]     Override the in-game clock\n");
-    std::printf("  --date M/D[/Y]       Override the in-game date\n");
-    std::printf("  --rain [intensity]   Force light, normal, or heavy rain\n");
-    std::printf("  --verbose, -v        Enable additional game diagnostics\n");
-    std::printf("  --log-level LEVEL    Set debug, info, warning, or error logging\n");
-    std::printf("  --log-dir PATH       Override the rotating log-file directory\n");
-    std::printf("  --user-dir PATH      Override configuration, saves, mappings, and logs\n");
-    std::printf("  --help, -h           Show this help\n");
-}
 
 bool parse_nonnegative_integer(const char* text, int* value) {
     if (text == nullptr || value == nullptr) {
@@ -178,119 +170,6 @@ int parse_rain_intensity(const char* text) {
     if (std::strcmp(text, "heavy") == 0)
         return mEnv_WEATHER_INTENSITY_HEAVY;
     return -1;
-}
-
-bool parse_log_level(const char* text, AuroraLogLevel* level) {
-    if (text == nullptr || level == nullptr)
-        return false;
-    if (std::strcmp(text, "debug") == 0)
-        *level = LOG_DEBUG;
-    else if (std::strcmp(text, "info") == 0)
-        *level = LOG_INFO;
-    else if (std::strcmp(text, "warning") == 0 || std::strcmp(text, "warn") == 0)
-        *level = LOG_WARNING;
-    else if (std::strcmp(text, "error") == 0)
-        *level = LOG_ERROR;
-    else
-        return false;
-    return true;
-}
-
-bool runtime_options_from_args(int argc, char* argv[]) {
-    for (int i = 1; i < argc; ++i) {
-        if (std::strcmp(argv[i], "--help") == 0 || std::strcmp(argv[i], "-h") == 0) {
-            s_show_help = true;
-        } else if (std::strcmp(argv[i], "--verbose") == 0 || std::strcmp(argv[i], "-v") == 0) {
-            g_pc_verbose = 1;
-        } else if (std::strcmp(argv[i], "--log-level") == 0) {
-            if (i + 1 >= argc || !parse_log_level(argv[++i], &s_log_level)) {
-                std::fprintf(stderr, "--log-level expects debug, info, warning, or error\n");
-                return false;
-            }
-            s_log_level_explicit = true;
-        } else if (std::strcmp(argv[i], "--log-dir") == 0) {
-            if (i + 1 >= argc || argv[i + 1][0] == '\0') {
-                std::fprintf(stderr, "--log-dir expects a directory path\n");
-                return false;
-            }
-            s_log_directory = argv[++i];
-        } else if (std::strcmp(argv[i], "--user-dir") == 0) {
-            if (i + 1 >= argc || argv[i + 1][0] == '\0') {
-                std::fprintf(stderr, "--user-dir expects a directory path\n");
-                return false;
-            }
-            s_user_directory = argv[++i];
-        } else if (std::strcmp(argv[i], "--no-framelimit") == 0) {
-            g_pc_frame_limit_override = 0;
-            s_frame_limit_explicit = true;
-        } else if (std::strcmp(argv[i], "--framelimit") == 0) {
-            int limit = -1;
-            if (i + 1 >= argc || !parse_nonnegative_integer(argv[++i], &limit)) {
-                std::fprintf(stderr, "--framelimit expects a nonnegative integer\n");
-                return false;
-            }
-            g_pc_frame_limit_override = limit;
-            s_frame_limit_explicit = true;
-        } else if (std::strcmp(argv[i], "--profile") == 0) {
-            /* Aurora's live diagnostics replace the OpenGL console profiler. */
-            g_pc_debug_ui_visible = 1;
-            int ignored_interval = 0;
-            if (i + 1 < argc && parse_nonnegative_integer(argv[i + 1], &ignored_interval)) {
-                ++i;
-            }
-        } else if (std::strcmp(argv[i], "--uber-shader") == 0) {
-            s_uber_shader_requested = true;
-        } else if (std::strcmp(argv[i], "--time") == 0) {
-            if (i + 1 >= argc) {
-                std::fprintf(stderr, "--time expects H[:M[:S]]\n");
-                return false;
-            }
-            int hour = -1;
-            int minute = -1;
-            int second = -1;
-            std::sscanf(argv[++i], "%d:%d:%d", &hour, &minute, &second);
-            if (hour < 0 || hour > 23 || minute > 59 || second > 59) {
-                std::fprintf(stderr, "--time expects H[:M[:S]] in the 24-hour clock\n");
-                return false;
-            }
-            g_pc_time_override = hour;
-            if (minute >= 0)
-                g_pc_min_override = minute;
-            if (second >= 0)
-                g_pc_sec_override = second;
-        } else if (std::strcmp(argv[i], "--date") == 0) {
-            if (i + 1 >= argc) {
-                std::fprintf(stderr, "--date expects M/D[/Y]\n");
-                return false;
-            }
-            int month = -1;
-            int day = -1;
-            int year = -1;
-            std::sscanf(argv[++i], "%d/%d/%d", &month, &day, &year);
-            if (month < 1 || month > 12 || day < 1 || day > 31 || (year >= 0 && year < 2000)) {
-                std::fprintf(stderr, "--date expects M/D[/Y] with year 2000 or later\n");
-                return false;
-            }
-            g_pc_date_month = month;
-            g_pc_date_day = day;
-            if (year >= 0)
-                g_pc_date_year = year;
-        } else if (std::strcmp(argv[i], "--rain") == 0) {
-            g_pc_weather_override = mEnv_WEATHER_RAIN;
-            g_pc_weather_intensity_override = mEnv_WEATHER_INTENSITY_HEAVY;
-            if (i + 1 < argc) {
-                const int intensity = parse_rain_intensity(argv[i + 1]);
-                if (intensity >= 0) {
-                    g_pc_weather_intensity_override = intensity;
-                    ++i;
-                }
-            }
-        }
-    }
-    if (g_pc_verbose && !s_log_level_explicit) {
-        s_log_level = LOG_DEBUG;
-    }
-    return true;
 }
 
 void apply_frame_limit() {
@@ -334,38 +213,168 @@ bool parse_window_dimensions(const char* text, WindowDimensions* dimensions) {
     return true;
 }
 
-bool window_dimensions_from_args(int argc, char* argv[], WindowDimensions* dimensions) {
-    for (int i = 1; i < argc; ++i) {
-        if (std::strcmp(argv[i], "--widescreen") == 0) {
-            dimensions->width = 1280;
-            dimensions->height = 720;
-            s_window_size_explicit = true;
-        } else if (std::strcmp(argv[i], "--window-size") == 0) {
-            if (i + 1 >= argc || !parse_window_dimensions(argv[++i], dimensions)) {
-                std::fprintf(stderr, "--window-size expects WIDTHxHEIGHT (minimum 320x240)\n");
-                return false;
+struct CommandLine {
+    WindowDimensions window{};
+    std::string discPath = "game.rvz";
+};
+
+enum class ParseOutcome { Run, Exit, Failed };
+
+/**
+ * Options taking an optional value (--profile, --model-viewer, --rain) use
+ * cxxopts implicit values, so an explicit value must be attached with '=':
+ * "--rain=light", not "--rain light".
+ */
+ParseOutcome parse_command_line(int argc, char* argv[], CommandLine* out) {
+    cxxopts::Options options{"AnimalCrossing", "PC port of Animal Crossing"};
+    borealis::cli::add_standard_options(options, {.console = false});
+    options.add_options()
+        ("h,help", "Show this help")
+        ("v,verbose", "Enable additional game diagnostics",
+            cxxopts::value<bool>()->default_value("false")->implicit_value("true"))
+        ("disc", "Open an RVZ, ISO, or GCM image (default: game.rvz)",
+            cxxopts::value<std::string>())
+        ("window-size", "Set the initial window size, WIDTHxHEIGHT (minimum 320x240)",
+            cxxopts::value<std::string>())
+        ("widescreen", "Start at 1280x720",
+            cxxopts::value<bool>()->default_value("false")->implicit_value("true"))
+        ("profile", "Show performance diagnostics (optional =N interval, ignored)",
+            cxxopts::value<std::string>()->implicit_value(""))
+        ("model-viewer", "Launch the model viewer, optionally at =N",
+            cxxopts::value<std::string>()->implicit_value(""))
+        ("framelimit", "Set a software frame limit (0 = uncapped)", cxxopts::value<std::string>())
+        ("no-framelimit", "Run uncapped",
+            cxxopts::value<bool>()->default_value("false")->implicit_value("true"))
+        ("time", "Override the in-game clock, H[:M[:S]]", cxxopts::value<std::string>())
+        ("date", "Override the in-game date, M/D[/Y]", cxxopts::value<std::string>())
+        ("rain", "Force rain, optionally =light, =normal or =heavy",
+            cxxopts::value<std::string>()->implicit_value("heavy"))
+        ("uber-shader", "Accepted for OpenGL-backend compatibility; ignored",
+            cxxopts::value<bool>()->default_value("false")->implicit_value("true"));
+    options.parse_positional({"disc"});
+    options.positional_help("[disc image]");
+    // argv is also handed to aurora and SDL, so unknown options must survive.
+    options.allow_unrecognised_options();
+
+    cxxopts::ParseResult parsed;
+    borealis::cli::Standard standard;
+    try {
+        parsed = options.parse(argc, argv);
+        standard = borealis::cli::read_standard(parsed);
+    } catch (const cxxopts::exceptions::exception& e) {
+        std::fprintf(stderr, "%s\n", e.what());
+        return ParseOutcome::Failed;
+    }
+
+    if (parsed.count("help")) {
+        std::printf("%s", options.help().c_str());
+        return ParseOutcome::Exit;
+    }
+
+    if (standard.level) {
+        s_log_level = *standard.level;
+    }
+    s_log_directory = standard.logDirectory;
+    s_user_directory = standard.userDirectory;
+
+    g_pc_verbose = parsed["verbose"].as<bool>() ? 1 : 0;
+    if (g_pc_verbose && !standard.level) {
+        s_log_level = borealis::LogLevel::Debug;
+    }
+
+    if (parsed.count("disc")) {
+        out->discPath = parsed["disc"].as<std::string>();
+    }
+
+    if (parsed["widescreen"].as<bool>()) {
+        out->window.width = 1280;
+        out->window.height = 720;
+        s_window_size_explicit = true;
+    }
+    if (parsed.count("window-size")) {
+        if (!parse_window_dimensions(parsed["window-size"].as<std::string>().c_str(),
+                &out->window)) {
+            std::fprintf(stderr, "--window-size expects WIDTHxHEIGHT (minimum 320x240)\n");
+            return ParseOutcome::Failed;
+        }
+        s_window_size_explicit = true;
+    }
+
+    if (parsed["no-framelimit"].as<bool>()) {
+        g_pc_frame_limit_override = 0;
+        s_frame_limit_explicit = true;
+    }
+    if (parsed.count("framelimit")) {
+        int limit = -1;
+        if (!parse_nonnegative_integer(parsed["framelimit"].as<std::string>().c_str(), &limit)) {
+            std::fprintf(stderr, "--framelimit expects a nonnegative integer\n");
+            return ParseOutcome::Failed;
+        }
+        g_pc_frame_limit_override = limit;
+        s_frame_limit_explicit = true;
+    }
+
+    if (parsed.count("profile")) {
+        /* Aurora's live diagnostics replace the OpenGL console profiler. */
+        g_pc_debug_ui_visible = 1;
+    }
+    s_uber_shader_requested = parsed["uber-shader"].as<bool>();
+
+    if (parsed.count("model-viewer")) {
+        g_pc_model_viewer = 1;
+        const auto index = parsed["model-viewer"].as<std::string>();
+        int start = -1;
+        if (!index.empty()) {
+            if (!parse_nonnegative_integer(index.c_str(), &start)) {
+                std::fprintf(stderr, "--model-viewer expects a nonnegative structure index\n");
+                return ParseOutcome::Failed;
             }
-            s_window_size_explicit = true;
+            g_pc_model_viewer_start = start;
         }
     }
-    return true;
-}
 
-bool parse_model_viewer_index(const char* text, int* index) {
-    return parse_nonnegative_integer(text, index);
-}
-
-void model_viewer_from_args(int argc, char* argv[]) {
-    for (int i = 1; i < argc; ++i) {
-        if (std::strcmp(argv[i], "--model-viewer") == 0) {
-            g_pc_model_viewer = 1;
-            int index = -1;
-            if (i + 1 < argc && parse_model_viewer_index(argv[i + 1], &index)) {
-                g_pc_model_viewer_start = index;
-                ++i;
-            }
+    if (parsed.count("time")) {
+        int hour = -1;
+        int minute = -1;
+        int second = -1;
+        std::sscanf(parsed["time"].as<std::string>().c_str(), "%d:%d:%d", &hour, &minute, &second);
+        if (hour < 0 || hour > 23 || minute > 59 || second > 59) {
+            std::fprintf(stderr, "--time expects H[:M[:S]] in the 24-hour clock\n");
+            return ParseOutcome::Failed;
         }
+        g_pc_time_override = hour;
+        if (minute >= 0)
+            g_pc_min_override = minute;
+        if (second >= 0)
+            g_pc_sec_override = second;
     }
+
+    if (parsed.count("date")) {
+        int month = -1;
+        int day = -1;
+        int year = -1;
+        std::sscanf(parsed["date"].as<std::string>().c_str(), "%d/%d/%d", &month, &day, &year);
+        if (month < 1 || month > 12 || day < 1 || day > 31 || (year >= 0 && year < 2000)) {
+            std::fprintf(stderr, "--date expects M/D[/Y] with year 2000 or later\n");
+            return ParseOutcome::Failed;
+        }
+        g_pc_date_month = month;
+        g_pc_date_day = day;
+        if (year >= 0)
+            g_pc_date_year = year;
+    }
+
+    if (parsed.count("rain")) {
+        const int intensity = parse_rain_intensity(parsed["rain"].as<std::string>().c_str());
+        if (intensity < 0) {
+            std::fprintf(stderr, "--rain expects light, normal or heavy\n");
+            return ParseOutcome::Failed;
+        }
+        g_pc_weather_override = mEnv_WEATHER_RAIN;
+        g_pc_weather_intensity_override = intensity;
+    }
+
+    return ParseOutcome::Run;
 }
 
 void update_render_size() {
@@ -379,58 +388,9 @@ void update_render_size() {
     if (g_pc_window_w != static_cast<int>(width) || g_pc_window_h != static_cast<int>(height)) {
         g_pc_window_w = static_cast<int>(width);
         g_pc_window_h = static_cast<int>(height);
-        port_log_printf(LOG_INFO, "acgc::video", "Render size %ux%u (aspect factor %.4f)", width, height,
-                        pc_widescreen_get_aspect_factor());
+        VideoLog.info("Render size {}x{} (aspect factor {:.4f})", width, height,
+                      pc_widescreen_get_aspect_factor());
     }
-}
-
-const char* disc_path_from_args(int argc, char* argv[]) {
-    for (int i = 1; i < argc; ++i) {
-        if (std::strcmp(argv[i], "--disc") == 0 && i + 1 < argc) {
-            return argv[i + 1];
-        }
-        if (std::strcmp(argv[i], "--window-size") == 0 && i + 1 < argc) {
-            ++i;
-            continue;
-        }
-        if (std::strcmp(argv[i], "--widescreen") == 0) {
-            continue;
-        }
-        if (std::strcmp(argv[i], "--model-viewer") == 0) {
-            int index = -1;
-            if (i + 1 < argc && parse_model_viewer_index(argv[i + 1], &index)) {
-                ++i;
-            }
-            continue;
-        }
-        if (std::strcmp(argv[i], "--framelimit") == 0 || std::strcmp(argv[i], "--time") == 0 ||
-            std::strcmp(argv[i], "--date") == 0 || std::strcmp(argv[i], "--log-level") == 0 ||
-            std::strcmp(argv[i], "--log-dir") == 0 || std::strcmp(argv[i], "--user-dir") == 0) {
-            if (i + 1 < argc)
-                ++i;
-            continue;
-        }
-        if (std::strcmp(argv[i], "--rain") == 0) {
-            if (i + 1 < argc && parse_rain_intensity(argv[i + 1]) >= 0)
-                ++i;
-            continue;
-        }
-        if (std::strcmp(argv[i], "--profile") == 0) {
-            int ignored_interval = 0;
-            if (i + 1 < argc && parse_nonnegative_integer(argv[i + 1], &ignored_interval))
-                ++i;
-            continue;
-        }
-        if (std::strcmp(argv[i], "--no-framelimit") == 0 || std::strcmp(argv[i], "--uber-shader") == 0 ||
-            std::strcmp(argv[i], "--verbose") == 0 ||
-            std::strcmp(argv[i], "-v") == 0 || std::strcmp(argv[i], "--help") == 0 || std::strcmp(argv[i], "-h") == 0) {
-            continue;
-        }
-        if (argv[i][0] != '-') {
-            return argv[i];
-        }
-    }
-    return "game.rvz";
 }
 
 void configure_default_keyboard_input() {
@@ -463,45 +423,41 @@ void configure_default_keyboard_input() {
 } // namespace
 
 int main(int argc, char* argv[]) {
-    WindowDimensions windowDimensions;
-    if (!runtime_options_from_args(argc, argv) || !window_dimensions_from_args(argc, argv, &windowDimensions)) {
-        return 2;
-    }
-    if (s_show_help) {
-        print_usage();
+    CommandLine commandLine;
+    switch (parse_command_line(argc, argv, &commandLine)) {
+    case ParseOutcome::Exit:
         return 0;
+    case ParseOutcome::Failed:
+        return 2;
+    case ParseOutcome::Run:
+        break;
     }
-    model_viewer_from_args(argc, argv);
+    WindowDimensions windowDimensions = commandLine.window;
 
-    std::string user_path = s_user_directory;
-    if (user_path.empty()) {
-        if (char* path = SDL_GetPrefPath(nullptr, "Animal Crossing")) {
-            user_path = path;
-            SDL_free(path);
-        }
+    const auto log_root =
+        s_user_directory.empty() ? acgc::data::cache_path() : s_user_directory;
+    borealis::log::Options log_options{
+        .level = s_log_level,
+        .fileDirectory = log_root / "logs",
+        .filePrefix = "animal-crossing",
+    };
+    // --log-dir, when given, replaces the derived directory outright.
+    if (!s_log_directory.empty()) {
+        log_options.fileDirectory = s_log_directory;
     }
-    if (user_path.empty()) {
-        std::error_code error;
-        user_path = std::filesystem::current_path(error).string();
-    }
-    std::string log_directory = s_log_directory;
-    if (log_directory.empty() && !user_path.empty()) {
-        log_directory = (std::filesystem::path(user_path) / "logs").string();
-    }
-    PortLogConfig log_config{};
-    log_config.log_directory = log_directory.c_str();
-    log_config.filename_prefix = "animal-crossing";
-    log_config.minimum_level = s_log_level;
-    log_config.max_retained_files = 10;
-    log_config.max_retained_bytes = 100ull * 1024ull * 1024ull;
-    log_config.write_console = true;
-    port_log_initialize(&log_config);
+    borealis::log::init(log_options);
     PortLogGuard log_guard;
-    if (const char* log_path = port_log_file_path()) {
-        port_log_printf(LOG_INFO, "acgc", "Logging to %s", log_path);
+    if (const char* log_path = borealis::log::file_path()) {
+        MainLog.info("Logging to {}", log_path);
     } else {
-        port_log_printf(LOG_WARNING, "acgc", "File logging is unavailable; continuing with console logging");
+        MainLog.warn("File logging is unavailable; continuing with console logging");
     }
+
+    const std::string user_directory_arg = borealis::io::fs_path_to_string(s_user_directory);
+    const acgc::data::Paths data_paths =
+        acgc::data::initialize(user_directory_arg.empty() ? nullptr : user_directory_arg.c_str());
+    const std::string user_path = borealis::io::fs_path_to_string(data_paths.userPath);
+    const std::string cache_path = borealis::io::fs_path_to_string(data_paths.cachePath);
 
     std::vector<std::filesystem::path> legacy_settings{
         std::filesystem::path(user_path) / "settings.ini",
@@ -515,7 +471,7 @@ int main(int argc, char* argv[]) {
         .saveOnExit = settings_result.canonicalResult != acgc::config::LoadResult::Invalid,
     };
     if (settings_result.importedLegacy) {
-        port_log_printf(LOG_INFO, "acgc::config", "Legacy settings migration completed");
+        ConfigLog.info("Legacy settings migration completed");
     }
 
     std::vector<std::filesystem::path> legacy_input{
@@ -537,29 +493,29 @@ int main(int argc, char* argv[]) {
     }
 
     if (s_uber_shader_requested) {
-        port_log_printf(LOG_WARNING, "acgc",
-                        "--uber-shader is an OpenGL-backend option and has no Aurora equivalent; ignoring it");
+        MainLog.warn("--uber-shader is an OpenGL-backend option and has no Aurora equivalent; ignoring it");
     }
     if (g_pc_frame_limit_override >= 0) {
-        port_log_printf(LOG_INFO, "acgc::video", "Software frame limit: %d%s", g_pc_frame_limit_override,
-                        g_pc_frame_limit_override == 0 ? " (uncapped)" : " FPS");
+        VideoLog.info("Software frame limit: {}{}", g_pc_frame_limit_override,
+                      g_pc_frame_limit_override == 0 ? " (uncapped)" : " FPS");
     }
     if (g_pc_time_override >= 0) {
-        port_log_printf(LOG_INFO, "acgc::clock", "Override: hour=%d minute=%d second=%d", g_pc_time_override,
-                        g_pc_min_override, g_pc_sec_override);
+        ClockLog.info("Override: hour={} minute={} second={}", g_pc_time_override,
+                      g_pc_min_override, g_pc_sec_override);
     }
     if (g_pc_date_month > 0) {
-        port_log_printf(LOG_INFO, "acgc::clock", "Override: month=%d day=%d year=%d", g_pc_date_month, g_pc_date_day,
-                        g_pc_date_year);
+        ClockLog.info("Override: month={} day={} year={}", g_pc_date_month, g_pc_date_day,
+                      g_pc_date_year);
     }
     if (g_pc_weather_override >= 0) {
-        port_log_printf(LOG_INFO, "acgc::weather", "Override: weather=%d intensity=%d", g_pc_weather_override,
+        WeatherLog.info("Override: weather={} intensity={}", g_pc_weather_override,
                         g_pc_weather_intensity_override);
     }
 
     AuroraConfig config{};
     config.appName = "Animal Crossing";
     config.userPath = user_path.empty() ? nullptr : user_path.c_str();
+    config.cachePath = cache_path.empty() ? nullptr : cache_path.c_str();
     config.windowPosX = -1;
     config.windowPosY = -1;
     config.windowWidth = windowDimensions.width;
@@ -574,8 +530,8 @@ int main(int argc, char* argv[]) {
      * legacy uncapped mode do not depend on the monitor's refresh rate. */
     config.vsync = s_frame_limit_explicit ? false : settings.video.vsync.value();
     config.pauseOnFocusLost = false;
-    config.logCallback = &port_log_callback;
-    config.logLevel = s_log_level;
+    config.logCallback = borealis::log::aurora_callback();
+    config.logLevel = borealis::log::to_aurora_level(s_log_level);
     config.imGuiInitCallback = &ac_debug_imgui_init;
 
     aurora_initialize(argc, argv, &config);
@@ -591,20 +547,20 @@ int main(int argc, char* argv[]) {
     configure_default_keyboard_input();
     acgc::apply_runtime_settings(false);
     if (!acgc::ui::initialize()) {
-        port_log_printf(LOG_ERROR, "acgc::ui", "Could not initialize the Aurora host menu");
+        UiLog.error("Could not initialize the Aurora host menu");
         aurora_shutdown();
         return 1;
     }
-    const char* disc_path = disc_path_from_args(argc, argv);
+    const char* disc_path = commandLine.discPath.c_str();
     if (!aurora_dvd_open(disc_path)) {
-        port_log_printf(LOG_ERROR, "acgc::dvd", "Could not open disc image: %s", disc_path);
+        DvdLog.error("Could not open disc image: {}", disc_path);
         acgc::ui::shutdown();
         aurora_shutdown();
         return 1;
     }
 
     if (!pc_assets_init()) {
-        port_log_printf(LOG_ERROR, "acgc::assets", "Could not load game assets from: %s", disc_path);
+        AssetsLog.error("Could not load game assets from: {}", disc_path);
         aurora_dvd_close();
         acgc::ui::shutdown();
         aurora_shutdown();

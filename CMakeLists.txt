@@ -18,7 +18,7 @@ set(AURORA_ENABLE_DVD ON CACHE BOOL "" FORCE)
 set(AURORA_ENABLE_CARD ON CACHE BOOL "" FORCE)
 set(AURORA_ENABLE_RMLUI ON CACHE BOOL "" FORCE)
 add_subdirectory(extern/aurora EXCLUDE_FROM_ALL)
-add_subdirectory(libs/port_logging)
+add_subdirectory(extern/borealis EXCLUDE_FROM_ALL)
 
 include(FetchContent)
 find_package(nlohmann_json 3.11 QUIET)
@@ -184,6 +184,7 @@ list(FILTER GAME_CXX_SOURCES EXCLUDE REGEX ".*/jsyswrapper_main\\.cpp$")
 # =============================================================================
 set(PC_SOURCES
     ${PC_ROOT}/src/acgc_config.cpp
+    ${PC_ROOT}/src/acgc_data.cpp
     ${PC_ROOT}/src/acgc_legacy_input.cpp
     ${PC_ROOT}/src/acgc_settings.cpp
     ${PC_ROOT}/src/acgc_texture_replacements.cpp
@@ -374,7 +375,8 @@ endif ()
 
 target_link_libraries(acgc PRIVATE
     nlohmann_json::nlohmann_json
-    port::logging
+    borealis::cli
+    borealis::log
     aurora::card
     aurora::core
     aurora::dvd

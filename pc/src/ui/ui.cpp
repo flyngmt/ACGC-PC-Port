@@ -9,7 +9,7 @@
 #include <SDL3/SDL_video.h>
 #include "extern/aurora/lib/window.hpp"
 
-#include "port/logging.h"
+#include "borealis/log.hpp"
 
 #include <algorithm>
 #include <array>
@@ -17,6 +17,8 @@
 #include <ranges>
 #include <span>
 #include <unordered_set>
+
+constexpr borealis::Log Log{"acgc::ui"};
 
 extern "C" {
 extern int g_pc_paused;
@@ -94,11 +96,11 @@ bool load_host_font()
                               Rml::Style::FontWeight::Normal, true)) {
             Rml::LoadFontFace(path, "ACGC UI", Rml::Style::FontStyle::Normal,
                               Rml::Style::FontWeight::Bold, false);
-            port_log_printf(LOG_INFO, "acgc::ui", "Loaded host UI font: %s", path);
+            Log.info("Loaded host UI font: {}", path);
             return true;
         }
     }
-    port_log_printf(LOG_ERROR, "acgc::ui", "No usable host font was found");
+    Log.error("No usable host font was found");
     return false;
 }
 
@@ -106,7 +108,7 @@ void sync_pause_state()
 {
     const bool shouldPause = any_document_visible() && g_pc_nes_active == 0;
     if (sWasPausingGame != shouldPause) {
-        port_log_printf(LOG_INFO, "acgc::ui", "Host menu %s; gameplay %s",
+        Log.info("Host menu {}; gameplay {}",
                         shouldPause ? "opened" : "closed",
                         shouldPause ? "paused" : "resumed");
     }
@@ -130,7 +132,7 @@ bool initialize() noexcept
 
     sInitialized = true;
     push_document(std::make_unique<MenuBar>(), false);
-    port_log_printf(LOG_INFO, "acgc::ui", "Aurora RmlUi host menu initialized");
+    Log.info("Aurora RmlUi host menu initialized");
     return true;
 }
 

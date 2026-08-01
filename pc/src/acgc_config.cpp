@@ -1,12 +1,15 @@
 #include "acgc/config.hpp"
 
 #include "pc_platform.h"
-#include "port/logging.h"
+#include "borealis/io.hpp"
+#include "borealis/log.hpp"
 
 #include <cstring>
 #include <fstream>
 #include <map>
 #include <system_error>
+
+constexpr borealis::Log Log{"acgc::config"};
 
 namespace acgc::config {
 namespace {
@@ -14,11 +17,6 @@ namespace {
 std::map<std::string, ConfigVarBase*, std::less<>> s_registered;
 std::filesystem::path s_userDirectory;
 nlohmann::json s_root = nlohmann::json::object();
-
-std::string path_string(const std::filesystem::path& path) {
-    const std::u8string utf8 = path.u8string();
-    return { reinterpret_cast<const char*>(utf8.data()), utf8.size() };
-}
 
 } // namespace
 
@@ -68,7 +66,7 @@ std::filesystem::path config_path() {
 void register_var(ConfigVarBase& var) {
     const auto [it, inserted] = s_registered.emplace(var.name(), &var);
     if (!inserted && it->second != &var) {
-        port_log_printf(LOG_ERROR, "acgc::config", "Duplicate configuration variable '%s'", var.name());
+        Log.error("Duplicate configuration variable '{}'", var.name());
         return;
     }
     var.mark_registered();
@@ -97,7 +95,7 @@ LoadResult load() {
         if (!std::filesystem::exists(path, error)) {
             return LoadResult::Missing;
         }
-        port_log_printf(LOG_WARNING, "acgc::config", "Could not open configuration '%s'", path_string(path).c_str());
+        Log.warn("Could not open configuration '{}'", borealis::io::fs_path_to_string(path).c_str());
         return LoadResult::Invalid;
     }
 
@@ -114,18 +112,18 @@ LoadResult load() {
             try {
                 var->implementation()->load(*var, *value);
             } catch (const std::exception& error) {
-                port_log_printf(LOG_WARNING, "acgc::config", "Ignoring invalid setting '%s': %s", name.c_str(),
+                Log.warn("Ignoring invalid setting '{}': {}", name.c_str(),
                                 error.what());
             }
         }
     } catch (const std::exception& error) {
-        port_log_printf(LOG_WARNING, "acgc::config", "Could not parse configuration '%s': %s",
-                        path_string(path).c_str(), error.what());
+        Log.warn("Could not parse configuration '{}': {}",
+                        borealis::io::fs_path_to_string(path).c_str(), error.what());
         s_root = nlohmann::json::object();
         return LoadResult::Invalid;
     }
 
-    port_log_printf(LOG_INFO, "acgc::config", "Loaded %s", path_string(path).c_str());
+    Log.info("Loaded {}", borealis::io::fs_path_to_string(path).c_str());
     return LoadResult::Loaded;
 }
 
@@ -134,8 +132,8 @@ bool save() {
     std::error_code error;
     std::filesystem::create_directories(path.parent_path(), error);
     if (error) {
-        port_log_printf(LOG_WARNING, "acgc::config", "Could not create configuration directory '%s': %s",
-                        path_string(path.parent_path()).c_str(), error.message().c_str());
+        Log.warn("Could not create configuration directory '{}': {}",
+                        borealis::io::fs_path_to_string(path.parent_path()).c_str(), error.message().c_str());
         return false;
     }
 
@@ -151,14 +149,14 @@ bool save() {
     {
         std::ofstream stream(temporary, std::ios::trunc);
         if (!stream) {
-            port_log_printf(LOG_WARNING, "acgc::config", "Could not write configuration '%s'",
-                            path_string(temporary).c_str());
+            Log.warn("Could not write configuration '{}'",
+                            borealis::io::fs_path_to_string(temporary).c_str());
             return false;
         }
         stream << s_root.dump(2) << '\n';
         if (!stream) {
-            port_log_printf(LOG_WARNING, "acgc::config", "Failed while writing configuration '%s'",
-                            path_string(temporary).c_str());
+            Log.warn("Failed while writing configuration '{}'",
+                            borealis::io::fs_path_to_string(temporary).c_str());
             return false;
         }
     }
@@ -171,8 +169,8 @@ bool save() {
         std::filesystem::rename(temporary, path, error);
     }
     if (error) {
-        port_log_printf(LOG_WARNING, "acgc::config", "Could not replace configuration '%s': %s",
-                        path_string(path).c_str(), error.message().c_str());
+        Log.warn("Could not replace configuration '{}': {}",
+                        borealis::io::fs_path_to_string(path).c_str(), error.message().c_str());
         std::filesystem::remove(temporary, error);
         return false;
     }

@@ -3,7 +3,8 @@
 #include <dolphin/pad.h>
 #include <SDL3/SDL.h>
 
-#include "port/logging.h"
+#include "borealis/io.hpp"
+#include "borealis/log.hpp"
 
 #include <algorithm>
 #include <array>
@@ -13,6 +14,8 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+
+constexpr borealis::Log Log{"acgc::input"};
 
 namespace acgc {
 namespace {
@@ -227,7 +230,7 @@ bool apply_keyboard_value(LegacyBindings& bindings, const std::string& key, cons
 
     const int code = keyboard_code(value);
     if (code == SDL_SCANCODE_UNKNOWN) {
-        port_log_printf(LOG_WARNING, "acgc::input", "Ignoring unknown legacy key '%s' for %s",
+        Log.warn("Ignoring unknown legacy key '{}' for {}",
                         value.c_str(), key.c_str());
         return true;
     }
@@ -276,17 +279,13 @@ PADDefaultMapping make_controller_mapping(const std::unordered_map<std::string, 
         mapping.buttons[i] = {PAD_NATIVE_BUTTON_INVALID, descriptor.padButton};
 
         if (input.kind == NativeInputKind::Invalid) {
-            port_log_printf(LOG_WARNING, "acgc::input", "Ignoring unknown legacy controller input '%.*s' for %.*s",
-                            static_cast<int>(text.size()), text.data(),
-                            static_cast<int>(descriptor.key.size()), descriptor.key.data());
+            Log.warn("Ignoring unknown legacy controller input '{}' for {}", text, descriptor.key);
             input = native_input(descriptor.defaultValue);
         }
         if (input.kind == NativeInputKind::Axis &&
             descriptor.padButton != PAD_TRIGGER_L && descriptor.padButton != PAD_TRIGGER_R) {
-            port_log_printf(LOG_WARNING, "acgc::input",
-                            "Aurora cannot map legacy trigger axis '%.*s' to digital input %.*s; using its default",
-                            static_cast<int>(text.size()), text.data(),
-                            static_cast<int>(descriptor.key.size()), descriptor.key.data());
+            Log.warn("Aurora cannot map legacy trigger axis '{}' to digital input {}; using its default",
+                     text, descriptor.key);
             input = native_input(descriptor.defaultValue);
         }
 
@@ -333,8 +332,8 @@ LegacyInputLoadResult prepare_legacy_input(
 
     const auto values = read_ini(result.sourcePath);
     if (values.empty()) {
-        port_log_printf(LOG_WARNING, "acgc::input", "Legacy input file is empty: %s",
-                        result.sourcePath.string().c_str());
+        Log.warn("Legacy input file is empty: {}",
+                        borealis::io::fs_path_to_string(result.sourcePath).c_str());
         return result;
     }
 
@@ -367,8 +366,8 @@ LegacyInputLoadResult prepare_legacy_input(
 
     result.loaded = result.keyboardPending || result.controllerDefaultsApplied;
     if (result.loaded) {
-        port_log_printf(LOG_INFO, "acgc::input", "Loaded legacy input mappings from %s",
-                        result.sourcePath.string().c_str());
+        Log.info("Loaded legacy input mappings from {}",
+                        borealis::io::fs_path_to_string(result.sourcePath).c_str());
     }
     return result;
 }
@@ -381,7 +380,7 @@ bool apply_legacy_keyboard_input()
 
     u32 existingCount = 0;
     if (PADGetKeyButtonBindings(0, &existingCount) != nullptr) {
-        port_log_printf(LOG_INFO, "acgc::input", "Keeping existing Aurora keyboard bindings");
+        Log.info("Keeping existing Aurora keyboard bindings");
         s_preparedKeyboard.reset();
         return false;
     }
@@ -393,7 +392,7 @@ bool apply_legacy_keyboard_input()
     PADSetKeyboardActive(0, TRUE);
     PADSerializeMappings();
     s_preparedKeyboard.reset();
-    port_log_printf(LOG_INFO, "acgc::input", "Migrated legacy keyboard bindings to Aurora");
+    Log.info("Migrated legacy keyboard bindings to Aurora");
     return true;
 }
 

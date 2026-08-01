@@ -86,8 +86,11 @@ void pc_platform_init(void);
 void pc_platform_shutdown(void);
 void pc_platform_swap_buffers(void);
 int  pc_platform_poll_events(void);
-/* Resolve a port-owned relative path below the configured --user-dir. */
+/* Resolve a port-owned relative path below the active data directory. */
 int  pc_platform_user_path(const char* relative_path, char* output, size_t output_size);
+/* Resolve a relative path below the executable directory (SDL_GetBasePath).
+ * Used to import data from pre-Aurora installations regardless of CWD. */
+int  pc_platform_base_path(const char* relative_path, char* output, size_t output_size);
 
 /* EXE image range for seg2k0 pointer disambiguation (vs N64 segment addresses) */
 extern unsigned int pc_image_base;

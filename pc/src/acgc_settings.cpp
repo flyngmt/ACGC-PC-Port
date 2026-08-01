@@ -5,7 +5,8 @@
 #include "dolphin/pad.h"
 #include "m_player_lib.h"
 #include "pc_settings.h"
-#include "port/logging.h"
+#include "borealis/io.hpp"
+#include "borealis/log.hpp"
 
 #include <algorithm>
 #include <charconv>
@@ -13,6 +14,8 @@
 #include <optional>
 #include <set>
 #include <string_view>
+
+constexpr borealis::Log Log{"acgc::config"};
 
 extern "C" {
 void pc_audio_set_master_volume(int volume);
@@ -24,12 +27,6 @@ PCSettings g_pc_settings = {
 
 namespace acgc {
 namespace {
-
-std::string path_string(const std::filesystem::path& path)
-{
-    const std::u8string utf8 = path.u8string();
-    return {reinterpret_cast<const char*>(utf8.data()), utf8.size()};
-}
 
 std::string_view trim(std::string_view value)
 {
@@ -101,12 +98,12 @@ bool import_legacy_file(const std::filesystem::path& path)
     }
 
     if (imported == 0) {
-        port_log_printf(LOG_WARNING, "acgc::config", "Legacy settings file '%s' contained no recognized values",
-                        path_string(path).c_str());
+        Log.warn("Legacy settings file '{}' contained no recognized values",
+                        borealis::io::fs_path_to_string(path).c_str());
         return false;
     }
-    port_log_printf(LOG_INFO, "acgc::config", "Imported %d settings from legacy file %s",
-                    imported, path_string(path).c_str());
+    Log.info("Imported {} settings from legacy file {}",
+                    imported, borealis::io::fs_path_to_string(path).c_str());
     return true;
 }
 

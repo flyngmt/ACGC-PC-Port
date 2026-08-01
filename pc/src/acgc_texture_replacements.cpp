@@ -3,9 +3,14 @@
 #include <dolphin/gx/GXStruct.h>
 #include <aurora/texture.hpp>
 
-#include "port/logging.h"
+#include "acgc/config.hpp"
+#include "acgc/data.hpp"
+#include "borealis/io.hpp"
+#include "borealis/log.hpp"
 
 #include <system_error>
+
+constexpr borealis::Log Log{"acgc::textures"};
 
 namespace acgc::texture_replacements {
 namespace {
@@ -22,9 +27,27 @@ void unload()
 
 const std::filesystem::path& directory()
 {
-    // Preserve the retired port's boundary exactly: packs live beside the
-    // process working directory, not under the per-user config directory.
-    static const std::filesystem::path path = std::filesystem::current_path() / "texture_pack";
+    // Packs live in the data directory. Pre-Aurora installs resolved
+    // texture_pack/ against the CWD (usually the executable directory), so
+    // fall back to those roots while the data directory has no pack.
+    static const std::filesystem::path path = [] {
+        std::error_code ec;
+        const std::filesystem::path primary = acgc::config::user_directory() / "texture_pack";
+        if (std::filesystem::is_directory(primary, ec)) {
+            return primary;
+        }
+        ec.clear();
+        if (const auto legacy = std::filesystem::current_path(ec) / "texture_pack";
+            !ec && std::filesystem::is_directory(legacy, ec)) {
+            return legacy;
+        }
+        ec.clear();
+        if (const auto legacy = acgc::data::base_path_relative("texture_pack");
+            std::filesystem::is_directory(legacy, ec)) {
+            return legacy;
+        }
+        return primary;
+    }();
     return path;
 }
 
@@ -40,18 +63,18 @@ void reload()
     if (!std::filesystem::is_directory(root, ec)) {
         unload();
         if (ec) {
-            port_log_printf(LOG_WARNING, "acgc::textures", "Could not inspect %s: %s",
-                            root.string().c_str(), ec.message().c_str());
+            Log.warn("Could not inspect {}: {}",
+                            borealis::io::fs_path_to_string(root).c_str(), ec.message().c_str());
         } else {
-            port_log_printf(LOG_INFO, "acgc::textures", "Texture pack directory not found: %s",
-                            root.string().c_str());
+            Log.info("Texture pack directory not found: {}",
+                            borealis::io::fs_path_to_string(root).c_str());
         }
         return;
     }
 
     aurora::texture::reload_replacement_directory(root, s_directoryGroup);
-    port_log_printf(LOG_INFO, "acgc::textures", "Loaded %zu texture replacement(s) from %s",
-                    registration_count(), root.string().c_str());
+    Log.info("Loaded {} texture replacement(s) from {}",
+                    registration_count(), borealis::io::fs_path_to_string(root).c_str());
 }
 
 void shutdown()

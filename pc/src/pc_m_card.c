@@ -770,18 +770,34 @@ static void pc_save_copy_companions(const char* source, const char* destination)
     pc_save_copy_gci_if_absent(source_path, PC_GCI_TMP_PATH);
 }
 
-/* Import both pre-card-directory and pre-user-directory layouts. */
+/* Import both pre-card-directory and pre-user-directory layouts. The old
+ * port resolved paths against the CWD, which matches the executable
+ * directory only for double-click launches, so try both roots. */
 static void pc_save_migrate_legacy(void) {
-    const char* sources[] = {
-        PC_GCI_PATH_LEGACY,
-        PC_CWD_CARD_A_GCI_PATH,
-        PC_CWD_CARD_A_PREFIXED_GCI_PATH,
-        PC_CWD_FLAT_GCI_PATH,
-    };
+    char exe_card_a[PC_SAVE_PATH_MAX] = {0};
+    char exe_card_a_prefixed[PC_SAVE_PATH_MAX] = {0};
+    char exe_flat[PC_SAVE_PATH_MAX] = {0};
+    const char* sources[7];
+    int count = 0;
     int i;
 
+    sources[count++] = PC_GCI_PATH_LEGACY;
+    sources[count++] = PC_CWD_CARD_A_GCI_PATH;
+    sources[count++] = PC_CWD_CARD_A_PREFIXED_GCI_PATH;
+    sources[count++] = PC_CWD_FLAT_GCI_PATH;
+    if (pc_platform_base_path(PC_CWD_CARD_A_GCI_PATH, exe_card_a, sizeof(exe_card_a))) {
+        sources[count++] = exe_card_a;
+    }
+    if (pc_platform_base_path(PC_CWD_CARD_A_PREFIXED_GCI_PATH, exe_card_a_prefixed,
+                              sizeof(exe_card_a_prefixed))) {
+        sources[count++] = exe_card_a_prefixed;
+    }
+    if (pc_platform_base_path(PC_CWD_FLAT_GCI_PATH, exe_flat, sizeof(exe_flat))) {
+        sources[count++] = exe_flat;
+    }
+
     pc_ensure_save_dirs();
-    for (i = 0; i < (int)(sizeof(sources) / sizeof(sources[0])); i++) {
+    for (i = 0; i < count; i++) {
         if (pc_save_copy_gci_if_absent(sources[i], PC_GCI_PATH)) {
             pc_save_copy_companions(sources[i], PC_GCI_PATH);
             break;
@@ -906,7 +922,9 @@ static int pc_card_b_find_town(void) {
 /* --- Memory card API implementation --- */
 
 void mCD_init_card(void) {
-    CARDInit("GAFE", "01");
+    /* Aurora's CARD emulation is unused: town saves go through the GCI code
+     * in this file and the Famicom code takes its TARGET_PC paths, so
+     * CARDInit would only format an empty "USA/Card A" folder nothing reads. */
 }
 
 void mCD_InitAll(void) {

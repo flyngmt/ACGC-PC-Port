@@ -66,23 +66,45 @@ all four ports. F1 remains reserved for the optional ImGui diagnostics.
 | `--disc PATH` | Open an RVZ, ISO, or GCM image; defaults to `game.rvz` |
 | `--window-size WxH` | Set the initial window size |
 | `--widescreen` | Start at 1280x720 instead of 4:3 |
-| `--profile [N]` | Show performance diagnostics |
-| `--model-viewer [index]` | Launch the model viewer at an optional structure index |
+| `--profile[=N]` | Show performance diagnostics |
+| `--model-viewer[=index]` | Launch the model viewer at an optional structure index |
 | `--framelimit N` | Set a software frame limit; 0 is uncapped |
 | `--no-framelimit` | Run uncapped |
 | `--time H[:M[:S]]` | Override the in-game clock |
 | `--date M/D[/Y]` | Override the in-game date |
-| `--rain [intensity]` | Force light, normal, or heavy rain |
+| `--rain[=intensity]` | Force `light`, `normal`, or `heavy` rain (default `heavy`) |
 | `--verbose`, `-v` | Enable additional game diagnostics and debug logging |
-| `--log-level LEVEL` | Select `debug`, `info`, `warning`, or `error` |
+| `--log-level LEVEL`, `-L` | Select `trace`, `debug`, `info`, `warning`, `error`, or `fatal` |
 | `--log-dir PATH` | Override the rotating log-file directory |
 | `--user-dir PATH` | Override the directory used for configuration, mappings, saves, and logs |
+| `--help`, `-h` | Show the generated option list |
+
+Options whose value is optional (`--profile`, `--model-viewer`, `--rain`) must attach
+it with `=`: `--rain=light`, not `--rain light`.
 
 Run `AnimalCrossing --help` for the authoritative option list. Logging defaults
-to a rotating `logs` directory below Aurora's per-user Animal Crossing data
-directory, with ten files and a combined 100 MiB retention limit.
+to a rotating `logs` directory below the per-user cache directory, with ten
+files and a combined 100 MiB retention limit.
 
-Host settings are persisted in `config.json` under that same user directory.
+## Data Folder
+
+The data folder holds saves, `config.json`, input mappings, `texture_pack/`,
+and `nes_roms/`. Its default location is:
+
+| Platform | Default data folder |
+|---|---|
+| Windows | The executable's folder (matching the pre-Aurora port); falls back to `%APPDATA%\Animal Crossing\` when that folder is not writable |
+| macOS | `~/Library/Application Support/Animal Crossing/` |
+| Linux | `~/.local/share/Animal Crossing/` |
+
+Settings > Data can open the folder, move data to a custom folder, or reset it;
+recognized data files migrate to the new location on the next launch. The
+location is recorded in a `data_location.json` descriptor searched next to the
+executable first, then in the platform pref path. `--user-dir` overrides
+everything for a single session. Regenerable caches (`pipeline_cache.db`,
+`dawn_cache.db`, logs) always stay in the platform pref path.
+
+Host settings are persisted in `config.json` under the data folder.
 On first launch, an existing `settings.ini` and `keybindings.ini` are imported;
 canonical JSON and Aurora input mappings take precedence thereafter.
 
@@ -107,9 +129,13 @@ or window stretch.
 
 ## Save Data
 
-Save files use Aurora's per-user card storage and the standard GCI-compatible
-format. Embedded NES common data is stored beside the active card slot as
-`DobutsunomoriP_F_SAVE.sav`, with atomic replacement and one `.bak1` fallback.
+The home town lives at `save/card_a/DobutsunomoriP_MURA.gci` below the data
+folder, in the standard GCI-compatible format with atomic writes and rotating
+`.bak1`–`.bak3` backups; visited towns use `save/card_b/`. Saves from the
+pre-Aurora port (and Dolphin exports dropped into `save/card_a/`) are found
+automatically. Embedded NES common data is stored beside the active card slot
+as `DobutsunomoriP_F_SAVE.sav`, with atomic replacement and one `.bak1`
+fallback.
 
 ## Credits
 

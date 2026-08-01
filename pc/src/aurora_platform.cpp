@@ -3,11 +3,13 @@
 #include <dolphin/gx/GXAurora.h>
 #include <dolphin/os.h>
 
+#include "acgc/data.hpp"
 #include "boot.h"
 #include "GBA/gba.h"
 #include "pc_platform.h"
 #include "pc_settings.h"
-#include "port/logging.h"
+#include "borealis/io.hpp"
+#include "borealis/log_c.h"
 
 #include <SDL3/SDL.h>
 
@@ -494,16 +496,16 @@ void OSReport(const char* format, ...) {
 }
 
 void OSVReport(const char* format, va_list arguments) {
-    port_log_vprintf(LOG_INFO, "game", format, arguments);
+    borealis_log_vprintf(BOREALIS_LOG_INFO, "game", format, arguments);
 }
 
 void OSPanic(const char* file, int line, const char* format, ...) {
-    port_log_printf(LOG_ERROR, "game", "Animal Crossing panic at %s:%d", file, line);
+    borealis_log_printf(BOREALIS_LOG_ERROR, "game", "Animal Crossing panic at %s:%d", file, line);
     va_list arguments;
     va_start(arguments, format);
-    port_log_vprintf(LOG_ERROR, "game", format, arguments);
+    borealis_log_vprintf(BOREALIS_LOG_ERROR, "game", format, arguments);
     va_end(arguments);
-    port_log_printf(LOG_FATAL, "game", "Aborting after OSPanic");
+    borealis_log_printf(BOREALIS_LOG_FATAL, "game", "Aborting after OSPanic");
     std::abort();
 }
 
@@ -731,7 +733,7 @@ int pc_card_scan_for_gci(s32 channel, char* out_path, int out_size) {
     }
     const std::filesystem::path directory = directory_path;
     const auto is_valid_gci = [](const std::filesystem::path& path) {
-        FILE* file = open_file(path.string().c_str(), "rb");
+        FILE* file = open_file(borealis::io::fs_path_to_string(path).c_str(), "rb");
         if (file == nullptr) {
             return false;
         }
@@ -742,7 +744,7 @@ int pc_card_scan_for_gci(s32 channel, char* out_path, int out_size) {
         return valid;
     };
     const auto return_path = [out_path, out_size](const std::filesystem::path& path) {
-        const std::string path_string = path.string();
+        const std::string path_string = borealis::io::fs_path_to_string(path);
         if (path_string.size() + 1 > static_cast<size_t>(out_size)) {
             return 0;
         }
@@ -771,8 +773,8 @@ int pc_card_scan_for_gci(s32 channel, char* out_path, int out_size) {
                 continue;
             }
             OSReport("[PC] Imported legacy Card %c save '%s' -> '%s' (source retained)\n",
-                     channel == 1 ? 'B' : 'A', entry.path().string().c_str(),
-                     imported_path.string().c_str());
+                     channel == 1 ? 'B' : 'A', borealis::io::fs_path_to_string(entry.path()).c_str(),
+                     borealis::io::fs_path_to_string(imported_path).c_str());
             return return_path(imported_path);
         }
         return 0;
@@ -782,11 +784,15 @@ int pc_card_scan_for_gci(s32 channel, char* out_path, int out_size) {
         return 1;
     }
 
-    /* The custom port stored cards below the process working directory. Keep
-     * those files intact while importing them into Aurora's user directory. */
-    const std::filesystem::path legacy_directory = relative_path;
-    std::error_code error;
-    if (std::filesystem::exists(legacy_directory, error)) {
+    const std::filesystem::path legacy_directories[] = {
+        relative_path,
+        acgc::data::base_path_relative(relative_path),
+    };
+    for (const auto& legacy_directory : legacy_directories) {
+        std::error_code error;
+        if (legacy_directory.empty() || !std::filesystem::exists(legacy_directory, error)) {
+            continue;
+        }
         error.clear();
         if (!std::filesystem::equivalent(directory, legacy_directory, error) &&
             scan_directory(legacy_directory, true)) {
