@@ -76,7 +76,7 @@ all four ports. F1 remains reserved for the optional ImGui diagnostics.
 | `--verbose`, `-v` | Enable additional game diagnostics and debug logging |
 | `--log-level LEVEL`, `-L` | Select `trace`, `debug`, `info`, `warning`, `error`, or `fatal` |
 | `--log-dir PATH` | Override the rotating log-file directory |
-| `--user-dir PATH` | Override the directory used for configuration, mappings, saves, and logs |
+| `--user-dir PATH` | Override the directory used for configuration, mappings, and saves |
 | `--help`, `-h` | Show the generated option list |
 
 Options whose value is optional (`--profile`, `--model-viewer`, `--rain`) must attach
@@ -100,8 +100,8 @@ and `nes_roms/`. Its default location is:
 Settings > Data can open the folder, move data to a custom folder, or reset it;
 recognized data files migrate to the new location on the next launch. The
 location is recorded in a `data_location.json` descriptor searched next to the
-executable first, then in the platform pref path. `--user-dir` overrides
-everything for a single session. Regenerable caches (`pipeline_cache.db`,
+executable first, then in the platform pref path. `--user-dir` overrides the
+data folder for a single session. Regenerable caches (`pipeline_cache.db`,
 `dawn_cache.db`, logs) always stay in the platform pref path.
 
 Host settings are persisted in `config.json` under the data folder.

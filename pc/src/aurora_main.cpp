@@ -436,8 +436,8 @@ int main(int argc, char* argv[]) {
     }
     WindowDimensions windowDimensions = commandLine.window;
 
-    const auto log_root =
-        s_user_directory.empty() ? acgc::data::cache_path() : s_user_directory;
+    const acgc::data::Paths data_paths = acgc::data::initialize(s_user_directory);
+    const auto& log_root = data_paths.cachePath;
     borealis::log::Options log_options{
         .level = s_log_level,
         .fileDirectory = log_root / "logs",
@@ -456,9 +456,6 @@ int main(int argc, char* argv[]) {
         MainLog.warn("File logging is unavailable; continuing with console logging");
     }
 
-    const std::string user_directory_arg = borealis::io::fs_path_to_string(s_user_directory);
-    const acgc::data::Paths data_paths =
-        acgc::data::initialize(user_directory_arg.empty() ? nullptr : user_directory_arg.c_str());
     const std::string user_path = borealis::io::fs_path_to_string(data_paths.userPath);
     const std::string cache_path = borealis::io::fs_path_to_string(data_paths.cachePath);
 

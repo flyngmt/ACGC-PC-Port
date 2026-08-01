@@ -377,6 +377,7 @@ target_link_libraries(acgc PRIVATE
     nlohmann_json::nlohmann_json
     borealis::cli
     borealis::crash
+    borealis::data
     borealis::log
     aurora::card
     aurora::core
