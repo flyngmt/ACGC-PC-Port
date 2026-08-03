@@ -259,10 +259,10 @@ ParseOutcome parse_command_line(int argc, char* argv[], CommandLine* out) {
     options.allow_unrecognised_options();
 
     cxxopts::ParseResult parsed;
-    borealis::cli::Standard standard;
+    borealis::cli::StandardOptions standard;
     try {
         parsed = options.parse(argc, argv);
-        standard = borealis::cli::read_standard(parsed);
+        standard = borealis::cli::parse(parsed);
     } catch (const cxxopts::exceptions::exception& e) {
         std::fprintf(stderr, "%s\n", e.what());
         return ParseOutcome::Failed;
@@ -276,8 +276,8 @@ ParseOutcome parse_command_line(int argc, char* argv[], CommandLine* out) {
     if (standard.level) {
         s_log_level = *standard.level;
     }
-    s_log_directory = standard.logDirectory;
-    s_user_directory = standard.userDirectory;
+    s_log_directory = standard.logDir;
+    s_user_directory = standard.userDir;
 
     g_pc_verbose = parsed["verbose"].as<bool>() ? 1 : 0;
     if (g_pc_verbose && !standard.level) {
