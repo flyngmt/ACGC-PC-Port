@@ -5,6 +5,9 @@
 #include "jaudio_NES/rate.h"
 #include "jaudio_NES/audiocommon.h"
 
+#define CLAMP(x, min, max) ((x) < (min) ? (min) : ((x) > (max) ? (max) : (x)))
+#define CLAMP_S16(x) CLAMP(x, -0x8000, 0x7FFF)
+
 static u8 DMEM[0x1000] ATTRIBUTE_ALIGN(32);
 static u32 ADPCM_BOOKBUF_SIZE = 0;
 static s16 ADPCM_BOOKBUF[8][16] ATTRIBUTE_ALIGN(32);
@@ -61,35 +64,599 @@ extern void RspStart2(void* task, s32 tasks, s32 mode) {
 
 #define DMEM_OFS(ofs) ((s16*)&((u8*)DMEM)[(ofs)])
 
+/*
+ * Discrete per-command implementations of the RSP audio ABI, used by RspStart below.
+ * These mirror the behavior of the equivalent `case` blocks in RspStart exactly. The state
+ * that RspStart keeps as locals shared across cases within a single call (DMEM in/out/count,
+ * the loadcache source/offset, the loop point, the envelope ramp params, and the FIR
+ * coefficient table set up by aFirLoadTable) is kept here as file static state instead,
+ * since it must persist across the discrete per-command calls.
+ */
+static u16 sDMEMIn;
+static u16 sDMEMOut;
+static u16 sDMEMCount;
+static void* sLoopPoint;
+static u8* sLoadCacheSrc;
+static u16 sLoadCacheOffset;
+static s16 sEnvRampRev;
+static s16 sEnvRampL;
+static s16 sEnvRampR;
+static u16 sEnvRevVol;
+static u16 sEnvVolL;
+static u16 sEnvVolR;
+static s16* sFirCoefTable;
+static s32 sFirCoefCount;
+
+// A_LOADCACHE (special to GC?): prefetches `len` bytes from `src` into the data cache and
+// remembers (src, offset) so a later A_ADPCM/A_S8DEC command can compute its input pointer
+// as src + DMEMIn - offset.
+// cmdHi: [31:24] cmd, [23:16] len>>4, [15:0] offset
+// cmdLo: src address
+static void Rsp_LoadCache(u32 cmdHi, uintptr_t cmdAddr) {
+    sLoadCacheSrc = (u8*)cmdAddr;
+    sLoadCacheOffset = cmdHi & 0xFFFF;
+    DCTouchRange((void*)cmdAddr, ((cmdHi >> 16) & 0xFF) * 16);
+}
+
+// A_ADPCM: decodes ADPCM-compressed input bytes (from the LOADCACHE source, or looped/history
+// history when flagged) into 16-bit PCM samples written to DMEM at sDMEMOut+32, one 16-sample
+// block at a time. Each block starts with a header byte selecting a 16-entry predictor/filter
+// table from ADPCM_BOOKBUF and a shift amount, decodes 8 nibbles (or 4 crumbs) per half-block,
+// and predicts each sample from the two prior decoded samples plus a weighted sum of the
+// still-undecoded residuals in the same half-block. The last decoded block is copied back to
+// cmdAddr as history for the next call.
+// cmdHi: [31:24] cmd, [23:16] flags (1=clear history, 2=loop point, 4=4-bit/crumb samples)
+// cmdAddr: source address (ignored when flags&1 or flags&2), also the history save destination
+static void Rsp_Adpcm(u32 cmdHi, uintptr_t cmdAddr) {
+    u8 flags = cmdHi >> 16;
+    s16 block[16];
+    s32 stage1[8];
+    s32 stage2[8];
+    s32 j;
+    s16 header;
+    s32 shift;
+    u16 outOffset = sDMEMOut + 32;
+    u8* inPtr;
+    s16* outPtr = (s16*)&DMEM[outOffset];
+    s16* coefTable;
+    s16 prev1;
+    s16 prev2;
+    u16 blockCount = (sDMEMCount + 31) / 32;
+    s32 acc;
+    s32 k;
+    s16* lastBlock;
+
+    if (flags & 1) {
+        // clear history
+        Jac_bzero(&DMEM[sDMEMOut], 16 * sizeof(s16));
+    } else if (flags & 2) {
+        // copy from loop_point
+        Jac_bcopy(sLoopPoint, &DMEM[sDMEMOut], 16 * sizeof(s16));
+    } else {
+        // copy from address in command
+        Jac_bcopy((void*)cmdAddr, &DMEM[sDMEMOut], 16 * sizeof(s16));
+    }
+
+    // prev1/prev2 must be read after the history block above is (re)written, since they seed
+    // the predictor from its last two samples.
+    prev1 = outPtr[-1];
+    prev2 = outPtr[-2];
+    inPtr = sLoadCacheSrc + sDMEMIn - sLoadCacheOffset;
+    for (j = 0; j < blockCount; j++) {
+        coefTable = ADPCM_BOOKBUF[0];
+        header = (s16)*inPtr++;
+        shift = (header >> 4);
+
+        header &= 0xF;
+        coefTable += header * 16;
+        if (flags & 4) {
+            for (k = 0; k < 4; k++) {
+                s16 nibbles = *inPtr++;
+                block[k * 4 + 0] = AD2[(nibbles >> 6) & 3];
+                block[k * 4 + 1] = AD2[(nibbles >> 4) & 3];
+                block[k * 4 + 2] = AD2[(nibbles >> 2) & 3];
+                block[k * 4 + 3] = AD2[(nibbles >> 0) & 3];
+            }
+        } else {
+            for (k = 0; k < 8; k++) {
+                s16 nibbles = *inPtr++;
+                block[k * 2 + 0] = AD4[(nibbles >> 4) & 0xF];
+                block[k * 2 + 1] = AD4[(nibbles >> 0) & 0xF];
+            }
+        }
+        for (k = 0; k < 8; k++) {
+            stage1[k] = block[k] << shift;
+            s32 l;
+#ifdef TARGET_PC
+            acc = stage1[k] << 11;
+            acc += prev1 * coefTable[k + 8];
+            acc += prev2 * coefTable[k];
+            for (l = 0; l < k; l++) {
+                acc += stage1[l] * coefTable[k - l + 7];
+            }
+            acc >>= 11;
+#else
+            acc = (prev1 * coefTable[k + 8] / 0x800) + (prev2 * coefTable[k] / 0x800) + stage1[k];
+            for (l = 0; l < k; l++) {
+                acc += stage1[l] * coefTable[k - l + 7] / 0x800;
+            }
+#endif
+            block[k] = CLAMP_S16(acc);
+        }
+        prev1 = block[7];
+        prev2 = block[6];
+        for (k = 0; k < 8; k++) {
+            stage2[k] = block[k + 8] << shift;
+            s32 l;
+#ifdef TARGET_PC
+            acc = stage2[k] << 11;
+            acc += prev1 * coefTable[k + 8];
+            acc += prev2 * coefTable[k];
+            for (l = 0; l < k; l++) {
+                acc += stage2[l] * coefTable[k - l + 7];
+            }
+            acc >>= 11;
+#else
+            acc = (prev1 * coefTable[k + 8] / 0x800) + (prev2 * coefTable[k] / 0x800) + stage2[k];
+            for (l = 0; l < k; l++) {
+                acc += stage2[l] * coefTable[k - l + 7] / 0x800;
+            }
+#endif
+            block[k + 8] = CLAMP_S16(acc);
+        }
+        prev1 = block[15];
+        prev2 = block[14];
+        for (k = 0; k < 16; k++) {
+            *outPtr++ = block[k];
+        }
+    }
+    lastBlock = outPtr - 16;
+    Jac_bcopy(lastBlock, (void*)cmdAddr, 16 * sizeof(s16));
+}
+
+// A_CLEARBUFF: zeroes `size` bytes of DMEM starting at `addr`.
+// cmdHi: [31:24] cmd, [15:0] addr
+// cmdLo: [15:0] size
+static void Rsp_ClearBuff(u32 cmdHi, u32 cmdLo) {
+    u16 addr = cmdHi & 0xFFFF;
+    u16 size = cmdLo & 0xFFFF;
+    Jac_bzero(&DMEM[addr], size);
+}
+
+// A_RESAMPLE: resamples mono audio from DMEM sDMEMIn to DMEM sDMEMOut using a 4-tap FIR
+// polyphase filter (RES_FILTER), stepping the input position by a fixed-point `pitch` per
+// output sample. `pitchAccu` and the 4-sample circular history buffer are persisted in the
+// command's state block (cmdLo) across calls so the resample position/filter history carries
+// over between audio frames.
+// cmdHi: [31:24] cmd, [15:0] pitch (16.16 fixed-point step)
+// cmdLo: state block address: history[8] + pitchAccu (or zero to reset state), also the save destination
+static void Rsp_Resample(u32 cmdHi, uintptr_t cmdAddr) {
+    s16 history[8];
+    s16* inPtr;
+    s32 j;
+    s16* outPtr;
+    u32 pitchAccu;
+    s32 circularBufIdx;
+    s16* filterCoefs;
+    s32 sampleA;
+    s32 pitch;
+    s32 sampleB;
+    u16 sampleCount;
+
+    sampleCount = sDMEMCount >> 1;
+    pitch = cmdHi & 0xFFFF;
+    if ((cmdHi >> 16) & 1) {
+        Jac_bzero(history, 8 * sizeof(s16));
+        pitchAccu = 0;
+    } else {
+        Jac_bcopy((void*)cmdAddr, history, 8 * sizeof(s16));
+        pitchAccu = history[4] & 0x7FFF;
+    }
+    inPtr = (s16*)&DMEM[sDMEMIn];
+    outPtr = (s16*)&DMEM[sDMEMOut];
+    circularBufIdx = 4;
+
+    for (j = 0; j < sampleCount >> 1; j++) {
+        filterCoefs = RES_FILTER[(pitchAccu >> 9) & 0x7FFFFF];
+        sampleA = filterCoefs[3] * history[circularBufIdx - 1] + filterCoefs[2] * history[circularBufIdx - 2] + filterCoefs[1] * history[circularBufIdx - 3] + filterCoefs[0] * history[circularBufIdx - 4];
+        pitchAccu += pitch;
+        while (pitchAccu >= 0x8000) {
+            history[circularBufIdx] = *inPtr++;
+            history[circularBufIdx - 4] = history[circularBufIdx];
+            circularBufIdx++;
+            pitchAccu -= 0x8000;
+            if (circularBufIdx == 8) {
+                circularBufIdx = 4;
+            }
+        }
+        filterCoefs = RES_FILTER[(pitchAccu >> 9) & 0x7FFFFF];
+        sampleB = filterCoefs[3] * history[circularBufIdx - 1] + filterCoefs[2] * history[circularBufIdx - 2] + filterCoefs[1] * history[circularBufIdx - 3] + filterCoefs[0] * history[circularBufIdx - 4];
+        pitchAccu += pitch;
+        while (pitchAccu >= 0x8000) {
+            history[circularBufIdx] = *inPtr++;
+            history[circularBufIdx - 4] = history[circularBufIdx];
+            circularBufIdx++;
+            pitchAccu -= 0x8000;
+            if (circularBufIdx == 8) {
+                circularBufIdx = 4;
+            }
+        }
+        sampleA >>= 15;
+        *outPtr++ = CLAMP_S16(sampleA);
+        sampleB >>= 15;
+        *outPtr++ = CLAMP_S16(sampleB);
+    }
+    history[circularBufIdx] = pitchAccu & 0x7FFF;
+    Jac_bcopy(&history[circularBufIdx - 4], (void*)cmdAddr, 8 * sizeof(s16));
+}
+
+// A_SETBUFF: sets the shared DMEM input offset, output offset, and sample count consumed by
+// later ADPCM/RESAMPLE/PCM8DEC commands in this batch.
+// cmdHi: [31:24] cmd, [15:0] DMEMIn
+// cmdLo: [31:16] DMEMOut, [15:0] DMEMCount
+static void Rsp_SetBuff(u32 cmdHi, u32 cmdLo) {
+    sDMEMIn = cmdHi & 0xFFFF;
+    sDMEMOut = (cmdLo >> 16) & 0xFFFF;
+    sDMEMCount = cmdLo & 0xFFFF;
+}
+
+// A_DUPLICATE: copies `count` chunks of 0x80 bytes each from `src` to `dst` within DMEM,
+// advancing both pointers by 0x80 after each chunk.
+// cmdHi: [31:24] cmd, [23:16] count, [15:0] src
+// cmdLo: [31:16] dst
+static void Rsp_Duplicate(u32 cmdHi, u32 cmdLo) {
+    s32 j;
+    u16 src = cmdHi & 0xFFFF;
+    u16 dst = cmdLo >> 16;
+    s32 count = (cmdHi >> 16) & 0xFF;
+
+    for (j = 0; j < count; j++) {
+        Jac_bcopy(&DMEM[src], &DMEM[dst], 0x80);
+        src += 0x80;
+        dst += 0x80;
+    }
+}
+
+// A_DMEMMOVE: copies `size` bytes within DMEM from `src` to `dst`.
+// cmdHi: [31:24] cmd, [15:0] src
+// cmdLo: [31:16] dst, [15:0] size
+static void Rsp_DmemMove(u32 cmdHi, u32 cmdLo) {
+    u16 src = cmdHi & 0xFFFF;
+    u16 dst = cmdLo >> 16;
+    u16 size = cmdLo & 0xFFFF;
+    Jac_bcopy(&DMEM[src], &DMEM[dst], size);
+}
+
+// A_LOADADPCM: loads the ADPCM predictor/filter table used by Rsp_Adpcm from `src` into
+// ADPCM_BOOKBUF.
+// cmdHi: [31:24] cmd, [15:0] size (bytes)
+// cmdLo: src address
+static void Rsp_LoadAdpcm(u32 cmdHi, uintptr_t cmdAddr) {
+    Jac_bcopy((void*)cmdAddr, ADPCM_BOOKBUF, cmdHi & 0xFFFF);
+    ADPCM_BOOKBUF_SIZE = cmdHi & 0xFFFF;
+}
+
+// A_ADDMIXER / A_MIXER: mixes `count*8` samples from `src` into `dst` in DMEM, scaling each
+// source sample by a Q15 `gain` before accumulating (dst[i] += (src[i] * gain) >> 15).
+// cmdHi: [31:24] cmd, [23:16] count (in units of 8 samples), [15:0] gain (Q15)
+// cmdLo: [31:16] src offset, [15:0] dst offset
+static void Rsp_Mixer(u32 cmdHi, u32 cmdLo) {
+    s16* src = DMEM_OFS(cmdLo >> 16);
+    s16* dst = DMEM_OFS(cmdLo & 0xFFFF);
+    s32 count = (cmdHi >> 16) & 0xFF;
+    s16 gain = cmdHi & 0xFFFF;
+    s32 j;
+
+    for (j = 0; j < count * 8; j++) {
+        s16 sample = *src++;
+        s32 mixed = *dst;
+        mixed += (sample * gain) >> 15;
+        *dst++ = CLAMP_S16(mixed);
+    }
+}
+
+// A_INTERLEAVE: resamples/interleaves the two mono DMEM buffers `inL`/`inR` into a stereo
+// output buffer via Jac_Resample16 (a separate, unrelated resampler from Rsp_Resample's
+// RES_FILTER one). `isFirstBlock` is true only for the very first call ever, to reset the
+// resampler's persistent phase/history state.
+// cmdHi: [31:24] cmd, [23:16] count>>3, [15:0] out
+// cmdLo: [31:16] inL, [15:0] inR
+static void Rsp_Interleave(u32 cmdHi, u32 cmdLo) {
+    u16 inL = cmdLo >> 16;
+    u16 inR = cmdLo & 0xFFFF;
+    u16 out = cmdHi & 0xFFFF;
+    u16 count = ((cmdHi >> 16) & 0xFF) << 3;
+    s16* pInL;
+    s16* pInR;
+    s16* pOut;
+    static s32 isFirstBlock = TRUE;
+    static u16 finalr_phase;
+    static s16* finalr_state;
+
+    if (isFirstBlock == TRUE) {
+        finalr_state = FINALR_STATE_BUF;
+    }
+
+    pInL = DMEM_OFS(inL);
+    pInR = DMEM_OFS(inR);
+    pOut = DMEM_OFS(out);
+    Jac_Resample16(pInR, pInL, pOut, count, JAC_FRAMESAMPLES >> 2, finalr_state, &finalr_phase, isFirstBlock);
+    isFirstBlock = FALSE;
+}
+
+// A_SETLOOP: remembers the sample loop point later A_ADPCM/A_S8DEC commands copy their
+// history from when their "loop point" flag bit is set.
+// cmdLo: loop point address
+static void Rsp_SetLoop(uintptr_t cmdAddr) {
+    sLoopPoint = (void*)cmdAddr;
+}
+
+// ??? (unnamed/unidentified command): repeatedly copies `stride`-byte chunks within DMEM
+// from `src` to `dst`, `count` times, advancing both pointers by `stride` each time.
+// cmdHi: [31:24] cmd, [23:16] count, [15:0] dst
+// cmdLo: [31:16] src, [15:0] stride
+static void Rsp_Unk16(u32 cmdHi, u32 cmdLo) {
+    s32 stride;
+    u32 dst;
+    u32 src;
+    s32 j;
+    s32 count;
+    dst = cmdHi & 0xFFFF;
+    src = cmdLo >> 16;
+    stride = cmdLo & 0xFFFF;
+    count = (cmdHi >> 16) & 0xFF;
+    for (j = 0; j < count; j++) {
+        Jac_bcopy(&DMEM[(u16)dst], &DMEM[(u16)src], stride);
+        dst += stride;
+        src += stride;
+    }
+}
+
+// A_INTERL: downsamples by discarding every other 16-bit sample, copying `count` samples
+// from `src` to `dst` while advancing src by 2 samples per dst sample.
+// cmdHi: [31:24] cmd, [15:0] count
+// cmdLo: [31:16] src, [15:0] dst
+static void Rsp_HalfCut(u32 cmdHi, u32 cmdLo) {
+    s16* src = (s16*)&DMEM[cmdLo >> 16];
+    s16* dst = (s16*)&DMEM[cmdLo & 0xFFFF];
+    s32 count = cmdHi & 0xFFFF;
+    s32 j;
+
+    for (j = 0; j < count; j++) {
+        *dst = *src;
+        src += 2;
+        dst += 1;
+    }
+}
+
+// A_LOADBUFF2: copies `count*16` bytes from `src` into DMEM at `dst`.
+// cmdHi: [31:24] cmd, [23:16] count, [15:0] dst
+// cmdLo: src address
+static void Rsp_LoadBuffer2(u32 cmdHi, uintptr_t cmdAddr) {
+    u16 size = ((cmdHi >> 16) & 0xFF) * 16;
+    Jac_bcopy((void*)cmdAddr, (s16*)&DMEM[cmdHi & 0xFFFF], size);
+}
+
+// A_SAVEBUFF2: copies `count*16` bytes from DMEM at `src` to `dst`. Inverse of Rsp_LoadBuffer2.
+// cmdHi: [31:24] cmd, [23:16] count, [15:0] src
+// cmdAddr: dst address
+static void Rsp_SaveBuffer2(u32 cmdHi, uintptr_t cmdAddr) {
+    u16 size = ((cmdHi >> 16) & 0xFF) * 16;
+    Jac_bcopy(DMEM_OFS(cmdHi & 0xFFFF), (void*)cmdAddr, size);
+}
+
+// A_ENVSETUP1 (aSetEnvParam): sets the reverb volume and the per-4-samples ramp rates that
+// Rsp_EnvMixer applies to the reverb volume and the L/R envelope volumes.
+// cmdHi: [31:24] cmd, [23:16] revVol, [15:0] rampRev
+// cmdLo: [31:16] rampL, [15:0] rampR
+static void Rsp_SetEnvParam(u32 cmdHi, u32 cmdLo) {
+    u8 revVol = cmdHi >> 16;
+    sEnvRampRev = cmdHi & 0xFFFF;
+    sEnvRampL = cmdLo >> 16;
+    sEnvRampR = cmdLo & 0xFFFF;
+    sEnvRevVol = revVol << 8;
+}
+
+// A_ENVSETUP2 (aSetEnvParam2): sets the current L/R envelope volumes that Rsp_EnvMixer scales
+// dry samples by before ramping them via A_ENVSETUP1's rates.
+// cmdLo: [31:16] volL, [15:0] volR
+static void Rsp_SetEnvParam2(u32 cmdLo) {
+    sEnvVolL = cmdLo >> 16;
+    sEnvVolR = cmdLo & 0xFFFF;
+}
+
+// A_ENVMIXER: applies the envelope set up by A_ENVSETUP1/A_ENVSETUP2 to `sampleCount` mono dry
+// samples read from `dryPtr`, mixing each sample scaled by the current L/R volume into the
+// `outL`/`outR` dry accumulators, and additionally scaled by the reverb volume into the
+// `wetL`/`wetR` accumulators. Every 4 samples, the L/R volumes and reverb volume are advanced
+// by their configured ramp rates. `negateVolL`/`negateVolR` optionally invert the polarity of
+// the L-/R-scaled contributions (e.g. for out-of-phase reverb sends).
+// cmdHi: [31:24] cmd, [23:16] dry buffer offset>>4, [15:8] sampleCount, [1] negateVolL, [0] negateVolR
+// cmdLo: [31:24] outL offset>>4, [23:16] outR offset>>4, [15:8] wetL offset>>4, [7:0] wetR offset>>4
+static void Rsp_EnvMixer(u32 cmdHi, u32 cmdLo) {
+    s32 touchSize;
+    s16* dryPtr;
+    s16* outL;
+    s16* outR;
+    s16* wetL;
+    s16* wetR;
+    s32 j;
+    u16 pairCount;
+    u8 negateVolL;
+    u8 negateVolR;
+    u8 sampleCount;
+    // Cached locally so the loop below can keep them in registers instead of reloading from
+    // static storage every sample pair; written back to the shared state once at the end.
+    u16 volL = sEnvVolL;
+    u16 volR = sEnvVolR;
+    u16 revVol = sEnvRevVol;
+
+    negateVolL = cmdHi & 2;
+    negateVolR = cmdHi & 1;
+    sampleCount = (u8)(cmdHi >> 8);
+
+    touchSize = sampleCount << 1;
+    dryPtr = (s16*)&DMEM[((cmdHi >> 16) & 0xFF) * 16];
+    outL = (s16*)&DMEM[((cmdLo >> 24) & 0xFF) * 16];
+    outR = (s16*)&DMEM[((cmdLo >> 16) & 0xFF) * 16];
+    DCTouchRange(outL, touchSize);
+    DCTouchRange(outR, touchSize);
+    wetL = (s16*)&DMEM[(cmdLo >> 4) & 0xFF0];
+    wetR = (s16*)&DMEM[(cmdLo << 4) & 0xFF0];
+    DCTouchRange(wetL, touchSize);
+    DCTouchRange(wetR, touchSize);
+
+    pairCount = sampleCount >> 1;
+    for (j = 0; j < pairCount; j++) {
+        s16 sample0 = *dryPtr++;
+        s32 sample1 = *dryPtr++;
+
+        s32 sample0ByVolL = (sample0 * volL) >> 16;
+        s32 sample0ByVolR = (sample0 * volR) >> 16;
+        s32 sample1ByVolL = (sample1 * volL) >> 16;
+        s32 sample1ByVolR = (sample1 * volR) >> 16;
+        if (negateVolL) {
+            sample0ByVolL = -sample0ByVolL;
+            sample1ByVolL = -sample1ByVolL;
+        }
+        if (negateVolR) {
+            sample0ByVolR = -sample0ByVolR;
+            sample1ByVolR = -sample1ByVolR;
+        }
+
+        s32 outL0 = outL[0] + sample0ByVolL;
+        s32 outL1 = outL[1] + sample1ByVolL;
+        s32 outR0 = outR[0] + sample0ByVolR;
+        s32 outR1 = outR[1] + sample1ByVolR;
+
+        *outL++ = CLAMP_S16(outL0);
+        *outL++ = CLAMP_S16(outL1);
+        *outR++ = CLAMP_S16(outR0);
+        *outR++ = CLAMP_S16(outR1);
+
+        s32 wetRawL0 = sample0ByVolL * revVol;
+        s32 wetRawR0 = sample0ByVolR * revVol;
+        s32 wetRawL1 = sample1ByVolL * revVol;
+        s32 wetRawR1 = sample1ByVolR * revVol;
+        f32 wet0FromVolL = (wetRawL0 >> 16) + (wetRawL0 >> 18) + (wetRawL0 >> 19);
+        f32 wet0FromVolR = (wetRawR0 >> 16) + (wetRawR0 >> 18) + (wetRawR0 >> 19);
+        f32 wet1FromVolL = (wetRawL1 >> 16) + (wetRawL1 >> 18) + (wetRawL1 >> 19);
+        f32 wet1FromVolR = (wetRawR1 >> 16) + (wetRawR1 >> 18) + (wetRawR1 >> 19);
+
+        s32 wetL0 = wetL[0] + wet0FromVolL;
+        s32 wetL1 = wetL[1] + wet1FromVolL;
+        s32 wetR0 = wetR[0] + wet0FromVolR;
+        s32 wetR1 = wetR[1] + wet1FromVolR;
+        *wetL++ = CLAMP_S16(wetL0);
+        *wetL++ = CLAMP_S16(wetL1);
+        *wetR++ = CLAMP_S16(wetR0);
+        *wetR++ = CLAMP_S16(wetR1);
+        if ((j & 3) == 3) {
+            volL += sEnvRampL;
+            volR += sEnvRampR;
+            revVol += sEnvRampRev;
+        }
+    }
+
+    sEnvVolL = volL;
+    sEnvVolR = volR;
+    sEnvRevVol = revVol;
+}
+
+// A_S8DEC: decodes 8-bit PCM input bytes (from the LOADCACHE source, or looped/cleared history
+// when flagged) into 16-bit samples by shifting each byte left 8, writing them to DMEM at
+// sDMEMOut+32. The untouched history block at sDMEMOut is copied back to cmdLo unchanged, for
+// symmetry with Rsp_Adpcm's history save (though here it's just the setup block, not the
+// newly decoded tail).
+// cmdHi: [31:24] cmd, [23:16] flags (1=clear history, 2=loop point)
+// cmdLo: source address (ignored when flags&1 or flags&2), also the history save destination
+static void Rsp_Pcm8Dec(u32 cmdHi, uintptr_t cmdAddr) {
+    u8 flags = cmdHi >> 16;
+
+    if (flags & 1) {
+        // clear history
+        Jac_bzero(DMEM_OFS(sDMEMOut), 16 * sizeof(s16));
+    } else if (flags & 2) {
+        // copy from loop_point
+        Jac_bcopy(sLoopPoint, DMEM_OFS(sDMEMOut), 16 * sizeof(s16));
+    } else {
+        // copy from address in command
+        Jac_bcopy((void*)cmdAddr, DMEM_OFS(sDMEMOut), 16 * sizeof(s16));
+    }
+
+    u16 decodeOffset = sDMEMOut + 32;
+    s16* dst = (s16*)&DMEM[decodeOffset];
+    u8* src = sLoadCacheSrc + sDMEMIn - sLoadCacheOffset;
+    u16 count = sDMEMCount >> 1;
+    s32 j;
+
+    for (j = 0; j < count; j++) {
+        *dst++ = (*src++) << 8;
+    }
+
+    Jac_bcopy(&DMEM[sDMEMOut], (void*)cmdAddr, 32);
+}
+
+// A_FILTER: an 8-tap FIR filter applied in place to DMEM samples at `dst`, using the
+// coefficient table most recently loaded via aFirLoadTable (flags&2). The filter keeps an
+// 8-sample circular history buffer, seeded from `cmdAddr` (or cleared, if flagged) and saved
+// back to `cmdAddr` afterward.
+// cmdHi: [31:24] cmd, [23:16] flags (2=load coefficient table instead of filtering,
+//        1=clear history when filtering), [15:0] dst offset (filtering) or coefficient count*2 (loading)
+// cmdAddr: history seed/save address (filtering) or coefficient table address (loading)
+static void Rsp_FirFilter(u32 cmdHi, uintptr_t cmdAddr) {
+    s16 history[16];
+    s16 taps[16];
+    u8 flags;
+    s16* dst;
+    s32 circularIdx;
+    s16 oldSample;
+    s32 acc;
+    s32 j;
+    s32 k;
+
+    flags = cmdHi >> 16;
+    if (flags & 2) {
+        // aFirLoadTable: stash the coefficient table for later A_FILTER commands to use
+        sFirCoefTable = (s16*)cmdAddr;
+        sFirCoefCount = (cmdHi & 0xFFFF) >> 1;
+    } else {
+        dst = (s16*)&DMEM[cmdHi & 0xFFFF];
+        if (flags & 1) {
+            for (j = 0; j < 16; j++) {
+                history[j] = 0;
+            }
+        } else {
+            Jac_bcopy((void*)cmdAddr, history, 16 * sizeof(s16));
+        }
+        for (j = 0; j < 8; j++) {
+            taps[j] = sFirCoefTable[j] >> 3;
+            taps[j + 8] = taps[j];
+        }
+        circularIdx = 0;
+        for (j = 0; j < sFirCoefCount; j++) {
+            acc = 0;
+            for (k = 0; k < 8; k++) {
+                acc += history[k] * taps[k + 8 - circularIdx];
+            }
+            acc >>= 12;
+            oldSample = *dst;
+            *dst++ = CLAMP_S16(acc);
+            history[circularIdx++] = oldSample;
+            if (circularIdx == 8) {
+                circularIdx = 0;
+            }
+        }
+        Jac_bcopy(history, (void*)cmdAddr, 16 * sizeof(s16));
+    }
+}
+
 extern s32 RspStart(void* task_commands, s32 allTasks) {
     Acmd* pTaskCmds = (Acmd*)task_commands;
-    static BOOL init = TRUE;
-    s32 i; // r30
-    u32 cmdLo; // r29
+    s32 i;
+    u32 cmdLo;
     u32 cmdHi;
     uintptr_t cmdAddr;
-    u16 DMEMCount; // r28
-    u16 DMEMIn; // r27
-    u16 DMEMOut; // r26
-    s32 temp0;
-    u32 temp1;
-    u32 temp2;
-    void* loop_point; // r1+0x134
-    s16 envParam1_1;
-    s16 envParam1_2;
-    s16 envParam1_3;
-    u16 envParam1_0;
-    u16 envParam2_0;
-    u16 envParam2_1;
-    u16 sp12C;
-    u8* sp128;
-    s16 sp9C[16];
-    s32 sp7C[8];
-    s32 sp5C[8];
-
-    if (init) {
-        init = FALSE;
-    }
 
     for (i = 0; i < allTasks; i++) {
         cmdLo = pTaskCmds->words.w1;
@@ -102,569 +669,91 @@ extern s32 RspStart(void* task_commands, s32 allTasks) {
         pTaskCmds++;
 
         switch (cmdHi >> 24) {
-            case A_CMD_LOADCACHE: // A_LOADCACHE (special to GC?)
-                sp128 = (u8*)cmdAddr;
-                sp12C = cmdHi & 0xFFFF;
-                DCTouchRange((void*)cmdAddr, ((cmdHi >> 16) & 0xFF) * 16);
+            case A_CMD_LOADCACHE:
+                Rsp_LoadCache(cmdHi, cmdAddr);
                 break;
 
-            case A_CMD_SPNOOP: // A_SPNOOP
+            case A_CMD_SPNOOP:
                 break;
 
-            case A_CMD_ADPCM: { // A_ADPCM
-                u8 flags = cmdHi >> 16;
-                if (flags & 1) {
-                    // clear history
-                    Jac_bzero(&DMEM[DMEMOut], 16 * sizeof(s16));
-                } else if (flags & 2) {
-                    // copy from loop_point
-                    Jac_bcopy(loop_point, &DMEM[DMEMOut], 16 * sizeof(s16));
-                } else {
-                    // copy from address in command
-                    Jac_bcopy((void*)cmdAddr, &DMEM[DMEMOut], 16 * sizeof(s16));
-                }
-
-                s16* var_r17 = (s16*)&DMEM[(u16)(DMEMOut + 32)];
-                s16 var_r5 = var_r17[-1];
-                s16 var_r0 = var_r17[-2];
-                u8* var_r18 = sp128 + DMEMIn - sp12C;
-                u16 sp13C = (DMEMCount + 31) / 32;
-                s32 var_r12;
-                s32 j;
-                s32 k;
-                s32 l;
-                for (j = 0; j < sp13C; j++) {
-                    s16 temp_r4 = *var_r18++;
-                    s32 temp_r19 = temp_r4 >> 4;
-                    s16* temp_r16 = ADPCM_BOOKBUF[temp_r4 & 0xF];
-                    if (flags & 4) {
-                        for (k = 0; k < 4; k++) {
-                            s16 temp_r14_2 = *var_r18++;
-                            sp9C[k * 4 + 0] = AD2[(temp_r14_2 >> 6) & 3];
-                            sp9C[k * 4 + 1] = AD2[(temp_r14_2 >> 4) & 3];
-                            sp9C[k * 4 + 2] = AD2[(temp_r14_2 >> 2) & 3];
-                            sp9C[k * 4 + 3] = AD2[(temp_r14_2 >> 0) & 3];
-                        }
-                    } else {
-                        for (k = 0; k < 8; k++) {
-                            s16 temp_r14_2 = *var_r18++;;
-                            sp9C[k * 2 + 0] = AD4[(temp_r14_2 >> 4) & 0xF];
-                            sp9C[k * 2 + 1] = AD4[(temp_r14_2 >> 0) & 0xF];
-                        }
-                    }
-                    for (k = 0; k < 8; k++) {
-                        sp7C[k] = sp9C[k] << temp_r19;
-#ifdef TARGET_PC
-                        /* Match reference RSP: accumulate at full precision, single >> 11.
-                         * Original code did per-term / 0x800 which truncates toward zero
-                         * and loses precision per term. Real RSP uses arithmetic >> 11. */
-                        {
-                            s32 accu = (s32)sp7C[k] << 11;
-                            accu += (s32)var_r5 * temp_r16[k + 8];
-                            accu += (s32)var_r0 * temp_r16[k];
-                            for (l = 0; l < k; l++) {
-                                accu += (s32)sp7C[l] * temp_r16[k - l + 7];
-                            }
-                            var_r12 = accu >> 11;
-                        }
-#else
-                        var_r12 = sp7C[k] + (var_r5 * temp_r16[k + 8] / 0x800) + (var_r0 * temp_r16[k] / 0x800);
-                        for (l = 0; l < k; l++) {
-                            var_r12 += sp7C[l] * temp_r16[k - l + 7] / 0x800;
-                        }
-#endif
-                        if (var_r12 > 0x7FFF) {
-                            var_r12 = 0x7FFF;
-                        }
-                        if (var_r12 < -0x8000) {
-                            var_r12 = -0x8000;
-                        }
-                        sp9C[k] = var_r12;
-                    }
-                    var_r5 = sp9C[7];
-                    var_r0 = sp9C[6];
-                    for (k = 0; k < 8; k++) {
-                        sp5C[k] = sp9C[k + 8] << temp_r19;
-#ifdef TARGET_PC
-                        {
-                            s32 accu = (s32)sp5C[k] << 11;
-                            accu += (s32)var_r5 * temp_r16[k + 8];
-                            accu += (s32)var_r0 * temp_r16[k];
-                            for (l = 0; l < k; l++) {
-                                accu += (s32)sp5C[l] * temp_r16[k - l + 7];
-                            }
-                            var_r12 = accu >> 11;
-                        }
-#else
-                        var_r12 = (var_r5 * temp_r16[k + 8] / 0x800) + (var_r0 * temp_r16[k] / 0x800) + sp5C[k];
-                        for (l = 0; l < k; l++) {
-                            var_r12 += sp5C[l] * temp_r16[k - l + 7] / 0x800;
-                        }
-#endif
-                        if (var_r12 > 0x7FFF) {
-                            var_r12 = 0x7FFF;
-                        }
-                        if (var_r12 < -0x8000) {
-                            var_r12 = -0x8000;
-                        }
-                        sp9C[k + 8] = var_r12;
-                    }
-                    var_r5 = sp9C[15];
-                    var_r0 = sp9C[14];
-                    for (k = 0; k < 16; k++) {
-                        *var_r17++ = sp9C[k];
-                    }
-                }
-                Jac_bcopy(var_r17 - 16, (void*)cmdAddr, 16 * sizeof(s16));
-                break;
-            }
-
-            case A_CMD_CLEARBUFF: // A_CLEARBUFF
-                u16 addr = cmdHi & 0xFFFF;
-                u16 size = cmdLo & 0xFFFF;
-                Jac_bzero(&DMEM[addr], size);
+            case A_CMD_ADPCM:
+                Rsp_Adpcm(cmdHi, cmdAddr);
                 break;
 
-            case A_CMD_RESAMPLE: { // A_RESAMPLE
-                s16 spC[8];
-                s16* var_r4;
-                s16* var_r6;
-                u32 var_r7;
-                s32 var_r8;
-                s32 var_r9;
-                s32 var_r14;
-                s32 var_r15;
-                u16 count;
-                s16* temp_r9_2;
-                s32 j;
-
-                count = DMEMCount >> 1;
-                var_r14 = cmdHi & 0xFFFF;
-                if ((cmdHi >> 16) & 1) {
-                    Jac_bzero(spC, 8 * sizeof(s16));
-                    var_r7 = 0;
-                } else {
-                    Jac_bcopy((void*)cmdAddr, spC, 8 * sizeof(s16));
-                    var_r7 = spC[4] & 0x7FFF;
-                }
-                var_r4 = (s16*)&DMEM[DMEMIn];
-                var_r6 = (s16*)&DMEM[DMEMOut];
-                var_r8 = 4;
-
-                for (j = 0; j < count >> 1; j++) {
-                    temp_r9_2 = RES_FILTER[(var_r7 >> 9) & 0x7FFFFF];
-                    var_r9 = temp_r9_2[3] * spC[var_r8 - 1] + temp_r9_2[2] * spC[var_r8 - 2] + temp_r9_2[1] * spC[var_r8 - 3] + temp_r9_2[0] * spC[var_r8 - 4];
-                    var_r7 += var_r14;
-                    while (var_r7 >= 0x8000) {
-                        spC[var_r8] = *var_r4++;
-                        spC[var_r8 - 4] = spC[var_r8];
-                        var_r8++;
-                        var_r7 -= 0x8000;
-                        if (var_r8 == 8) {
-                            var_r8 = 4;
-                        }
-                    }
-                    temp_r9_2 = RES_FILTER[(var_r7 >> 9) & 0x7FFFFF];
-                    var_r15 = temp_r9_2[3] * spC[var_r8 - 1] + temp_r9_2[2] * spC[var_r8 - 2] + temp_r9_2[1] * spC[var_r8 - 3] + temp_r9_2[0] * spC[var_r8 - 4];
-                    var_r7 += var_r14;
-                    while (var_r7 >= 0x8000) {
-                        spC[var_r8] = *var_r4++;
-                        spC[var_r8 - 4] = spC[var_r8];
-                        var_r8++;
-                        var_r7 -= 0x8000;
-                        if (var_r8 == 8) {
-                            var_r8 = 4;
-                        }
-                    }
-                    var_r9 >>= 15;
-                    if (var_r9 > 0x7FFF) {
-                        var_r9 = 0x7FFF;
-                    }
-                    if (var_r9 < -0x8000) {
-                        var_r9 = -0x8000;
-                    }
-                    *var_r6++ = var_r9;
-                    var_r15 >>= 15;
-                    if (var_r15 > 0x7FFF) {
-                        var_r15 = 0x7FFF;
-                    }
-                    if (var_r15 < -0x8000) {
-                        var_r15 = -0x8000;
-                    }
-                    *var_r6++ = var_r15;
-                }
-                spC[var_r8] = var_r7 & 0x7FFF;
-                Jac_bcopy(&spC[var_r8 - 4], (void*)cmdAddr, 8 * sizeof(s16));
-                break;
-            }
-
-            case A_CMD_SETBUFF: // A_SETBUFF
-                DMEMIn = cmdHi & 0xFFFF;
-                DMEMOut = (cmdLo >> 16) & 0xFFFF;
-                DMEMCount = cmdLo & 0xFFFF;
+            case A_CMD_CLEARBUFF:
+                Rsp_ClearBuff(cmdHi, cmdLo);
                 break;
 
-            case A_CMD_DUPLICATE: { // A_DUPLICATE
-                u16 src = cmdHi & 0xFFFF;
-                u16 dst = cmdLo >> 16;
-                s32 count = (cmdHi >> 16) & 0xFF;
-                s32 j;
-
-                for (j = 0; j < count; j++) {
-                    Jac_bcopy(&DMEM[src], &DMEM[dst], 0x80);
-                    src += 0x80;
-                    dst += 0x80;
-                }
-                break;
-            }
-            
-            case A_CMD_UNK3: // Velocity convolution — GC RSP microcode unknown, treat as no-op
+            case A_CMD_RESAMPLE:
+                Rsp_Resample(cmdHi, cmdAddr);
                 break;
 
-            case A_CMD_RESAMPLE_ZOH: { // Zero-order hold resampling (no interpolation)
-                u16 pitch = cmdHi & 0xFFFF;
-                s16* src = DMEM_OFS(DMEMIn);
-                s16* dst = DMEM_OFS(DMEMOut);
-                u16 count = DMEMCount >> 1;
-                u32 pos = cmdLo & 0xFFFF; // initial fractional position
-                s32 j;
-
-                for (j = 0; j < count; j++) {
-                    dst[j] = src[pos >> 15];
-                    pos += pitch;
-                }
-                break;
-            }
-
-            case A_CMD_DMEMMOVE: { // A_DMEMMOVE
-                u16 src = cmdHi & 0xFFFF;
-                u16 dst = cmdLo >> 16;
-                u16 size = cmdLo & 0xFFFF;
-                Jac_bcopy(&DMEM[src], &DMEM[dst], size);
-                break;
-            }
-
-            case A_CMD_LOADADPCM: // A_LOADADPCM
-                Jac_bcopy((void*)cmdAddr, ADPCM_BOOKBUF, cmdHi & 0xFFFF);
-                ADPCM_BOOKBUF_SIZE = cmdHi & 0xFFFF;
-                break;
-            
-            case A_CMD_ADDMIXER: // A_ADDMIXER
-            case A_CMD_MIXER: { // A_MIXER
-                s16* src = DMEM_OFS(cmdLo >> 16);
-                s16* dst = DMEM_OFS(cmdLo & 0xFFFF);
-                s32 count = (cmdHi >> 16) & 0xFF;
-                s16 m = cmdHi & 0xFFFF;
-                s32 j;
-
-                for (j = 0; j < count * 8; j++) {
-                    s16 v0 = *src++;
-                    s32 mixed = *dst + ((v0 * m) >> 15);
-                    if (mixed > 0x7FFF) {
-                        mixed = 0x7FFF;
-                    }
-                    if (mixed < -0x8000) {
-                        mixed = -0x8000;
-                    }
-
-                    *dst++ = mixed;
-                }
-                break;
-            }
-
-            case A_CMD_INTERLEAVE: { // A_INTERLEAVE
-                u16 inL = cmdLo >> 16;
-                u16 inR = cmdLo & 0xFFFF;
-                u16 out = cmdHi & 0xFFFF;
-                u16 count = ((cmdHi >> 16) & 0xFF) << 3;
-                s16* pInL;
-                s16* pInR;
-                s16* pOut;
-                static s32 flag = TRUE;
-                static u16 finalr_phase;
-                static s16* finalr_state;
-
-
-                if (flag == TRUE) {
-                    finalr_state = FINALR_STATE_BUF;
-                }
-
-                pInL = DMEM_OFS(inL);
-                pInR = DMEM_OFS(inR);
-                pOut = DMEM_OFS(out);
-
-                Jac_Resample16(pInL, pInR, pOut, count, JAC_FRAMESAMPLES >> 2, finalr_state, &finalr_phase, flag);
-                flag = FALSE;
-                break;
-            }
-
-            case A_CMD_DISTFILTER: // Gain/distortion filter — disabled for testing
+            case A_CMD_SETBUFF:
+                Rsp_SetBuff(cmdHi, cmdLo);
                 break;
 
-            case A_CMD_SETLOOP: // A_SETLOOP
-                loop_point = (void*)cmdAddr;
+            case A_CMD_DUPLICATE:
+                Rsp_Duplicate(cmdHi, cmdLo);
                 break;
 
-            case A_CMD_UNK16: { // ???
-                u8 count = (cmdHi >> 16) & 0xFF;
-                u32 dst = cmdHi & 0xFFFF;
-                u32 src = cmdLo >> 16;
-                s32 stride = cmdLo & 0xFFFF;
-                s32 j;
-                for (j = 0; j < count; j++) {
-                    Jac_bcopy(&DMEM[(u16)dst], &DMEM[(u16)src], stride);
-                    dst += stride;
-                    src += stride;
-                }
-                break;
-            }
-
-            case A_CMD_HALFCUT: { // A_INTERL
-                s32 count = cmdHi & 0xFFFF;
-                s16* src = (s16*)&DMEM[cmdLo >> 16];
-                s16* dst = (s16*)&DMEM[cmdLo & 0xFFFF];
-                s32 j;
-
-                for (j = 0; j < count; j++) {
-                    *dst = *src;
-                    src += 2;
-                    dst += 1;
-                }
-                break;
-            }
-
-            case A_CMD_LOADBUFFER2: { // A_LOADBUFF2
-                u16 size = ((cmdHi >> 16) & 0xFF) * 16;
-                Jac_bcopy((void*)cmdAddr, (s16*)&DMEM[cmdHi & 0xFFFF], size);
-                break;
-            }
-
-            case A_CMD_SAVEBUFFER2: { // A_SAVEBUFF2
-                u16 size = ((cmdHi >> 16) & 0xFF) * 16;
-                Jac_bcopy(DMEM_OFS(cmdHi & 0xFFFF), (void*)cmdAddr, size);
-                break;
-            }
-
-            case A_CMD_SETENVPARAM: { // A_ENVSETUP1
-                u8 temp = cmdHi >> 16;
-                envParam1_1 = cmdHi & 0xFFFF;
-                envParam1_2 = cmdLo >> 16;
-                envParam1_3 = cmdLo & 0xFFFF;
-                envParam1_0 = temp << 8;
-                break;
-            }
-
-            case A_CMD_SETENVPARAM2: // A_ENVSETUP2
-                envParam2_0 = cmdLo >> 16;
-                envParam2_1 = cmdLo & 0xFFFF;
+            case A_CMD_DMEMMOVE:
+                Rsp_DmemMove(cmdHi, cmdLo);
                 break;
 
-            case A_CMD_ENVMIXER: { // A_ENVMIXER
-                s32 var_r16;
-                s16* var_r17;
-                s16* var_r18;
-                s16* var_r19;
-                s16* var_r20;
-                s16* var_r21;
-                u16 count;
-                s32 j;
-
-                temp1 = cmdHi & 2; // this should not be stored to stack
-                temp2 = cmdHi & 1;
-                temp0 = (cmdHi >> 8) & 0xFF;
-
-                var_r16 = temp0 << 1;
-                var_r17 = (s16*)&DMEM[((cmdHi >> 16) & 0xFF) * 16];
-                var_r18 = (s16*)&DMEM[((cmdLo >> 24) & 0xFF) * 16];
-                var_r19 = (s16*)&DMEM[((cmdLo >> 16) & 0xFF) * 16];
-                DCTouchRange(var_r18, var_r16);
-                DCTouchRange(var_r19, var_r16);
-                var_r20 = (s16*)&DMEM[((cmdLo >> 8) & 0xFF) * 16];
-                var_r21 = (s16*)&DMEM[(cmdLo & 0xFF) * 16];
-                DCTouchRange(var_r20, var_r16);
-                DCTouchRange(var_r21, var_r16);
-
-                count = temp0 >> 1;
-                for (j = 0; j < count; j++) {
-                    s16 temp_r0_6 = *var_r17++;
-                    s16 temp_r5_2 = *var_r17++;
-                    s32 var_r4_7 = (temp_r0_6 * envParam2_0) >> 16;
-                    s32 var_r12_2 = (temp_r0_6 * envParam2_1) >> 16;
-                    s32 var_r14_2 = (temp_r5_2 * envParam2_0) >> 16;
-                    s32 var_r16_3 = (temp_r5_2 * envParam2_1) >> 16;
-                    if (temp1) { // temp1 should not be stored to stack, needs r15
-                        var_r4_7 = -var_r4_7;
-                        var_r14_2 = -var_r14_2;
-                    }
-                    if (temp2) {
-                        var_r12_2 = -var_r12_2;
-                        var_r16_3 = -var_r16_3;
-                    }
-                    // TODO: weird math
-                    s32 var_r0_3 = var_r18[0] + var_r4_7;
-                    s32 var_r3_2 = var_r18[1] + var_r14_2;
-                    s32 var_r4_8 = var_r19[0] + var_r12_2;
-                    s32 var_r5_6 = var_r19[1] + var_r16_3;
-                    f32 var_f2 = ((var_r4_7 * envParam1_0) >> 16) + ((var_r4_7 * envParam1_0) >> 18) + ((var_r4_7 * (u16)envParam1_0) >> 19);
-                    f32 var_f5 = ((var_r12_2 * envParam1_0) >> 16) + ((var_r12_2 * envParam1_0) >> 18) + ((var_r12_2 * (u16)envParam1_0) >> 19);
-                    f32 var_f4 = ((var_r14_2 * envParam1_0) >> 16) + ((var_r14_2 * envParam1_0) >> 18) + ((var_r14_2 * (u16)envParam1_0) >> 19);
-                    f32 var_f6 = ((var_r16_3 * envParam1_0) >> 16) + ((var_r16_3 * envParam1_0) >> 18) + ((var_r16_3 * (u16)envParam1_0) >> 19);
-                    if (var_r0_3 > 0x7FFF) {
-                        var_r0_3 = 0x7FFF;
-                    }
-                    if (var_r0_3 < -0x8000) {
-                        var_r0_3 = -0x8000;
-                    }
-                    if (var_r3_2 > 0x7FFF) {
-                        var_r3_2 = 0x7FFF;
-                    }
-                    if (var_r3_2 < -0x8000) {
-                        var_r3_2 = -0x8000;
-                    }
-                    if (var_r4_8 > 0x7FFF) {
-                        var_r4_8 = 0x7FFF;
-                    }
-                    if (var_r4_8 < -0x8000) {
-                        var_r4_8 = -0x8000;
-                    }
-                    if (var_r5_6 > 0x7FFF) {
-                        var_r5_6 = 0x7FFF;
-                    }
-                    if (var_r5_6 < -0x8000) {
-                        var_r5_6 = -0x8000;
-                    }
-                    *var_r18++ = var_r0_3;
-                    *var_r18++ = var_r3_2;
-                    *var_r19++ = var_r4_8;
-                    *var_r19++ = var_r5_6;
-
-                    s32 var_r3_3 = var_r20[0] + var_f2;
-                    s32 var_r4_9 = var_r20[1] + var_f4;
-                    s32 var_r5_7 = var_r21[0] + var_f5;
-                    s32 var_r7_4 = var_r21[1] + var_f6;
-                    if (var_r3_3 > 0x7FFF) {
-                        var_r3_3 = 0x7FFF;
-                    }
-                    if (var_r3_3 < -0x8000) {
-                        var_r3_3 = -0x8000;
-                    }
-                    if (var_r4_9 > 0x7FFF) {
-                        var_r4_9 = 0x7FFF;
-                    }
-                    if (var_r4_9 < -0x8000) {
-                        var_r4_9 = -0x8000;
-                    }
-                    if (var_r5_7 > 0x7FFF) {
-                        var_r5_7 = 0x7FFF;
-                    }
-                    if (var_r5_7 < -0x8000) {
-                        var_r5_7 = -0x8000;
-                    }
-                    if (var_r7_4 > 0x7FFF) {
-                        var_r7_4 = 0x7FFF;
-                    }
-                    if (var_r7_4 < -0x8000) {
-                        var_r7_4 = -0x8000;
-                    }
-                    *var_r20++ = var_r3_3;
-                    *var_r20++ = var_r4_9;
-                    *var_r21++ = var_r5_7;
-                    *var_r21++ = var_r7_4;
-                    if ((j & 3) == 3) {
-                        /* Original decomp had envParam1_1 and envParam1_3 swapped here */
-                        envParam2_0 += envParam1_2;
-                        envParam2_1 += envParam1_3; 
-                        envParam1_0 += envParam1_1; 
-                    }
-                }
+            case A_CMD_LOADADPCM:
+                Rsp_LoadAdpcm(cmdHi, cmdAddr);
                 break;
-            }
 
-            case A_CMD_PCM8DEC: { // A_S8DEC
-                u8 flags = cmdHi >> 16;
-
-                if (flags & 1) {
-                    // clear history
-                    Jac_bzero(DMEM_OFS(DMEMOut), 16 * sizeof(s16));
-                } else if (flags & 2) {
-                    // copy from loop_point
-                    Jac_bcopy(loop_point, DMEM_OFS(DMEMOut), 16 * sizeof(s16));
-                } else {
-                    // copy from address in command
-                    Jac_bcopy((void*)cmdAddr, DMEM_OFS(DMEMOut), 16 * sizeof(s16));
-                }
-
-                u16 temp1 = DMEMOut + 32;
-                s16* dst = (s16*)&DMEM[temp1];
-                u8* src = sp128 + DMEMIn - sp12C;
-                s32 j;
-
-                for (j = 0; j < DMEMCount >> 1; j++) {
-                    *dst++ = (*src++) << 8;
-                }
-
-                u16 temp2 = DMEMOut;
-                temp2 += 32;
-                Jac_bcopy(&DMEM[temp2 - 32], (void*)cmdAddr, 32);
+            case A_CMD_ADDMIXER:
+            case A_CMD_MIXER:
+                Rsp_Mixer(cmdHi, cmdLo);
                 break;
-            }
 
-            case A_CMD_FIRFILTER: { // A_FILTER
-                s16 sp3C[16];
-                s16 sp1C[16];
-                u8 flags;
-                static s32 sp124;
-                static s16* sp120;
-                s16* var_r14_3;
-                s32 var_r8_3;
-                s16 temp_r3_7;
-                s32 var_r9;
-                s32 j;
-                s32 k;
-
-                flags = cmdHi >> 16;
-                if (flags & 2) {
-                    sp120 = (s16*)cmdAddr;
-                    sp124 = (cmdHi & 0xFFFF) >> 1;
-                } else {
-                    var_r14_3 = (s16*)&DMEM[cmdHi & 0xFFFF];
-                    if (flags & 1) {
-                        for (j = 0; j < 16; j++) {
-                            sp3C[j] = 0;
-                        }
-                    } else {
-                        Jac_bcopy((void*)cmdAddr, sp3C, 16 * sizeof(s16));
-                    }
-                    for (j = 0; j < 8; j++) {
-                        sp1C[j] = sp120[j] >> 3;
-                        sp1C[j + 8] = sp1C[j];
-                    }
-                    var_r8_3 = 0;
-                    for (j = 0; j < sp124; j++) {
-                        var_r9 = 0;
-                        for (k = 0; k < 8; k++) {
-                            var_r9 += sp3C[k] * sp1C[k + 8 - var_r8_3];
-                        }
-                        var_r9 >>= 12;
-                        if (var_r9 > 0x7FFF) {
-                            var_r9 = 0x7FFF;
-                        }
-                        if (var_r9 < -0x8000) {
-                            var_r9 = -0x8000;
-                        }
-                        temp_r3_7 = *var_r14_3;
-                        *var_r14_3++ = var_r9;
-                        sp3C[var_r8_3++] = temp_r3_7;
-                        if (var_r8_3 == 8) {
-                            var_r8_3 = 0;
-                        }
-                    }
-                    Jac_bcopy(sp3C, (void*)cmdAddr, 16 * sizeof(s16));
-                }
+            case A_CMD_INTERLEAVE:
+                Rsp_Interleave(cmdHi, cmdLo);
                 break;
-            }
 
-            case A_CMD_EXIT: // ??? (special to GC?)
+            case A_CMD_SETLOOP:
+                Rsp_SetLoop(cmdAddr);
+                break;
+
+            case A_CMD_UNK16:
+                Rsp_Unk16(cmdHi, cmdLo);
+                break;
+
+            case A_CMD_HALFCUT:
+                Rsp_HalfCut(cmdHi, cmdLo);
+                break;
+
+            case A_CMD_LOADBUFFER2:
+                Rsp_LoadBuffer2(cmdHi, cmdAddr);
+                break;
+
+            case A_CMD_SAVEBUFFER2:
+                Rsp_SaveBuffer2(cmdHi, cmdAddr);
+                break;
+
+            case A_CMD_SETENVPARAM:
+                Rsp_SetEnvParam(cmdHi, cmdLo);
+                break;
+
+            case A_CMD_SETENVPARAM2:
+                Rsp_SetEnvParam2(cmdLo);
+                break;
+
+            case A_CMD_ENVMIXER:
+                Rsp_EnvMixer(cmdHi, cmdLo);
+                break;
+
+            case A_CMD_PCM8DEC:
+                Rsp_Pcm8Dec(cmdHi, cmdAddr);
+                break;
+
+            case A_CMD_FIRFILTER:
+                Rsp_FirFilter(cmdHi, cmdAddr);
+                break;
+
+            case A_CMD_EXIT:
                 return i + 1;
         }
     }

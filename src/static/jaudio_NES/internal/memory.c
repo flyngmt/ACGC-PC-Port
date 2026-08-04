@@ -815,7 +815,7 @@ void Nas_SetBPFilter(s16* a, s32 b, s32 c) {
         Nas_SetLPFilter(a, b);
         return;
     } else if (b == 0) {
-        Nas_SetLPFilter(a, c);
+        Nas_SetHPFilter(a, c);
         return;
     }
     k = 0;
