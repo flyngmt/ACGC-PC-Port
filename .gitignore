@@ -32,7 +32,6 @@ objdiff.json
 compile_commands.json
 
 # Miscellaneous
-/*.txt
 !requirements.txt
 *.exe
 
