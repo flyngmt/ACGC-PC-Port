@@ -1,5 +1,6 @@
 #include "input.hpp"
 
+#include "acgc/game_input_block.hpp"
 #include "ui.hpp"
 
 #include <RmlUi/Core.h>
@@ -51,7 +52,6 @@ struct TouchTapState {
 	bool failed        = false;
 };
 
-bool sPadInputBlocked = false;
 std::array<GamepadRepeatState, SDL_GAMEPAD_BUTTON_COUNT> sGamepadButtonRepeats;
 std::array<GamepadRepeatState, kGamepadAxisDirectionCount> sGamepadAxisRepeats;
 std::array<u32, PAD_MAX_CONTROLLERS> sPadHoldMasks;
@@ -690,23 +690,12 @@ void process_axis_direction(Rml::Context& context, const SDL_GamepadAxisEvent& e
 
 void sync_input_block() noexcept
 {
-	const bool shouldBlock = any_document_visible();
-	if (sPadInputBlocked == shouldBlock) {
-		return;
-	}
-
-	PADBlockInput(shouldBlock);
-	sPadInputBlocked = shouldBlock;
+	acgc::set_input_blocked(acgc::InputBlockReason::HostUi, any_document_visible());
 }
 
 void release_input_block() noexcept
 {
-	if (!sPadInputBlocked) {
-		return;
-	}
-
-	PADBlockInput(false);
-	sPadInputBlocked = false;
+	acgc::set_input_blocked(acgc::InputBlockReason::HostUi, false);
 }
 
 void reset_input_state() noexcept

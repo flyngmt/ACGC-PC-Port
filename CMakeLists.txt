@@ -186,6 +186,7 @@ set(PC_SOURCES
     ${PC_ROOT}/src/acgc_config.cpp
     ${PC_ROOT}/src/acgc_data.cpp
     ${PC_ROOT}/src/acgc_disc.cpp
+    ${PC_ROOT}/src/acgc_game_input_block.cpp
     ${PC_ROOT}/src/acgc_legacy_input.cpp
     ${PC_ROOT}/src/acgc_settings.cpp
     ${PC_ROOT}/src/acgc_texture_replacements.cpp
@@ -218,6 +219,7 @@ set(PC_SOURCES
     ${PC_ROOT}/src/pc_save_bswap.c
     ${PC_ROOT}/src/pc_nes_fixnes.c
     ${PC_ROOT}/src/pc_assets.c
+    ${PC_ROOT}/src/pc_typing.cpp
 )
 
 # =============================================================================
