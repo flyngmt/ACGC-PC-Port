@@ -2592,18 +2592,6 @@ static void mED_editor_ovl_draw(Submenu* submenu, GAME* game) {
         CLOSE_DISP(game->graph);
     }
 
-#ifdef TARGET_PC
-    {
-        static u8 typing_on[] = "Keyboard Typing (Tab): On";
-        static u8 typing_off[] = "Keyboard Typing (Tab): Off";
-        u8* text = pc_typing_is_active() ? typing_on : typing_off;
-        int length = (int)(pc_typing_is_active() ? sizeof(typing_on) - 1 : sizeof(typing_off) - 1);
-
-        (*overlay->set_char_matrix_proc)(game->graph);
-        mFont_SetLineStrings(game, text, length, 80.0f, 8.0f, 255, 255, 255, 180, FALSE, FALSE, 0.6f, 0.6f,
-                             mFont_MODE_POLY);
-    }
-#endif
 }
 
 extern void mED_editor_ovl_set_proc(Submenu* submenu) {

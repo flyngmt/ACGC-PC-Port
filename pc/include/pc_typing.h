@@ -23,6 +23,7 @@ void pc_typing_handle_event(const SDL_Event* event);
 void pc_typing_cancel(void);
 
 void pc_typing_set_editor_active(int active);
+int pc_typing_is_editor_active(void);
 int pc_typing_is_active(void);
 int pc_typing_queue_pop(int* output);
 

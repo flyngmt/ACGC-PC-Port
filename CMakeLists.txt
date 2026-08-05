@@ -205,6 +205,7 @@ set(PC_SOURCES
     ${PC_ROOT}/src/ui/menu_bar.cpp
     ${PC_ROOT}/src/ui/modal.cpp
     ${PC_ROOT}/src/ui/number_button.cpp
+    ${PC_ROOT}/src/ui/overlay.cpp
     ${PC_ROOT}/src/ui/pane.cpp
     ${PC_ROOT}/src/ui/prelaunch.cpp
     ${PC_ROOT}/src/ui/select_button.cpp

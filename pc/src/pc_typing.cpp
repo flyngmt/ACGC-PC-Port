@@ -218,6 +218,11 @@ int pc_typing_is_active(void)
     return s_typing_active ? 1 : 0;
 }
 
+int pc_typing_is_editor_active(void)
+{
+    return s_editor_active ? 1 : 0;
+}
+
 int pc_typing_queue_pop(int* output)
 {
     if (output == nullptr || s_queue.empty()) {

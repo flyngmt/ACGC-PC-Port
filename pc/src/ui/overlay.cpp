@@ -1,0 +1,118 @@
+#include "acgc/ui/overlay.hpp"
+
+#include "pc_typing.h"
+
+#include <algorithm>
+#include <cmath>
+
+namespace acgc::ui {
+namespace {
+
+constexpr float kReferenceWidth = 640.0f;
+constexpr float kReferenceHeight = 480.0f;
+constexpr float kReferenceMargin = 20.0f;
+constexpr float kReferenceFontSize = 16.0f;
+
+const Rml::String kDocumentSource = R"RML(
+<rml>
+<head>
+    <link type="text/rcss" href="res/rml/overlay.rcss" />
+</head>
+<body>
+    <typing-status id="typing-status">
+        <label>Keyboard typing</label>
+        <key>Tab</key>
+        <state id="typing-state">Off</state>
+    </typing-status>
+</body>
+</rml>
+)RML";
+
+} // namespace
+
+Overlay::Overlay()
+    : Document(kDocumentSource, true, DocumentScope::Overlay)
+    , mTypingStatus(mDocument ? mDocument->GetElementById("typing-status") : nullptr)
+    , mTypingState(mDocument ? mDocument->GetElementById("typing-state") : nullptr)
+{
+}
+
+void Overlay::show()
+{
+    if (mDocument != nullptr) {
+        mDocument->Show(Rml::ModalFlag::None, Rml::FocusFlag::None, Rml::ScrollFlag::None);
+    }
+}
+
+void Overlay::update()
+{
+    update_layout();
+
+    const bool editorActive = pc_typing_is_editor_active() != 0;
+    const bool typingActive = pc_typing_is_active() != 0;
+
+    if (mTypingStatus != nullptr && editorActive != mWasEditorActive) {
+        if (editorActive) {
+            mTypingStatus->SetAttribute("open", "");
+        } else {
+            mTypingStatus->RemoveAttribute("open");
+        }
+        mWasEditorActive = editorActive;
+    }
+
+    if (mTypingStatus != nullptr && typingActive != mWasTypingActive) {
+        if (typingActive) {
+            mTypingStatus->SetAttribute("active", "");
+        } else {
+            mTypingStatus->RemoveAttribute("active");
+        }
+        if (mTypingState != nullptr) {
+            mTypingState->SetInnerRML(typingActive ? "On" : "Off");
+        }
+        mWasTypingActive = typingActive;
+    }
+}
+
+void Overlay::update_layout()
+{
+    if (mDocument == nullptr || mTypingStatus == nullptr) {
+        return;
+    }
+
+    Rml::Context* context = mDocument->GetContext();
+    if (context == nullptr) {
+        return;
+    }
+
+    const Rml::Vector2i dimensions = context->GetDimensions();
+    const float dpRatio = context->GetDensityIndependentPixelRatio();
+    if (dimensions.x <= 0 || dimensions.y <= 0 || dpRatio <= 0.0f) {
+        return;
+    }
+
+    const float logicalWidth = static_cast<float>(dimensions.x) / dpRatio;
+    const float logicalHeight = static_cast<float>(dimensions.y) / dpRatio;
+    const float scale = std::min(logicalWidth / kReferenceWidth, logicalHeight / kReferenceHeight);
+    const float fontSize = kReferenceFontSize * scale;
+
+    const Insets safeInsets = safe_area_insets(context);
+    const float margin = kReferenceMargin * dpRatio * scale;
+    const float top = std::round(std::max(margin, safeInsets.top));
+    const float left = std::round(std::max(margin, safeInsets.left));
+
+    if (std::abs(fontSize - mAppliedFontSize) > 0.001f) {
+        mTypingStatus->SetProperty(
+            Rml::PropertyId::FontSize, Rml::Property(fontSize, Rml::Unit::DP));
+        mAppliedFontSize = fontSize;
+    }
+    if (top != mAppliedTop) {
+        mTypingStatus->SetProperty(Rml::PropertyId::Top, Rml::Property(top, Rml::Unit::PX));
+        mAppliedTop = top;
+    }
+    if (left != mAppliedLeft) {
+        mTypingStatus->SetProperty(Rml::PropertyId::Left, Rml::Property(left, Rml::Unit::PX));
+        mAppliedLeft = left;
+    }
+}
+
+} // namespace acgc::ui

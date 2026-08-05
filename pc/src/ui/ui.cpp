@@ -3,6 +3,7 @@
 #include "acgc/ui/document.hpp"
 #include "acgc/ui/input.hpp"
 #include "acgc/ui/menu_bar.hpp"
+#include "acgc/ui/overlay.hpp"
 
 #include <aurora/rmlui.hpp>
 #include <SDL3/SDL_keyboard.h>
@@ -32,6 +33,7 @@ namespace {
 bool sInitialized = false;
 bool sWasPausingGame = false;
 std::vector<std::unique_ptr<Document>> sDocumentStack;
+std::vector<std::unique_ptr<Document>> sPassiveDocuments;
 
 struct ScopedStyles {
     DocumentScope scope;
@@ -54,11 +56,15 @@ std::vector<const Rml::StyleSheetContainer*> scoped_sheets(DocumentScope scope)
 void restyle_scope(DocumentScope scope)
 {
     const auto sheets = scoped_sheets(scope);
-    for (auto& document : sDocumentStack) {
-        if (document && document->scope() == scope && !document->closed()) {
-            document->restyle(sheets);
+    const auto restyle_documents = [&sheets, scope](auto& documents) {
+        for (auto& document : documents) {
+            if (document && document->scope() == scope && !document->closed()) {
+                document->restyle(sheets);
+            }
         }
-    }
+    };
+    restyle_documents(sDocumentStack);
+    restyle_documents(sPassiveDocuments);
 }
 
 bool load_ui_fonts()
@@ -119,6 +125,7 @@ bool initialize() noexcept
 
     sInitialized = true;
     push_document(std::make_unique<MenuBar>(), false);
+    push_document(std::make_unique<Overlay>());
     Log.info("Aurora RmlUi host menu initialized");
     return true;
 }
@@ -126,6 +133,7 @@ bool initialize() noexcept
 void shutdown() noexcept
 {
     sDocumentStack.clear();
+    sPassiveDocuments.clear();
     sScopedStyles.clear();
     input::reset_input_state();
     input::release_input_block();
@@ -160,17 +168,26 @@ void update() noexcept
     }
 
     input::update_input();
-    const std::size_t count = sDocumentStack.size();
-    for (std::size_t i = 0; i < count && i < sDocumentStack.size(); ++i) {
-        if (auto* document = sDocumentStack[i].get(); document && !document->closed()) {
-            document->update();
+    const auto updateDocuments = [](auto& documents) {
+        const std::size_t count = documents.size();
+        for (std::size_t i = 0; i < count && i < documents.size(); ++i) {
+            if (auto* document = documents[i].get(); document && !document->closed()) {
+                document->update();
+            }
         }
-    }
+    };
+    updateDocuments(sDocumentStack);
+    updateDocuments(sPassiveDocuments);
 
     const auto [first, last] = std::ranges::remove_if(sDocumentStack, [](const auto& document) {
         return document->closed();
     });
     sDocumentStack.erase(first, last);
+    const auto [passiveFirst, passiveLast] =
+        std::ranges::remove_if(sPassiveDocuments, [](const auto& document) {
+            return document->closed();
+        });
+    sPassiveDocuments.erase(passiveFirst, passiveLast);
 
     if (auto* context = aurora::rmlui::get_context(); context &&
         (context->GetFocusElement() == nullptr || context->GetFocusElement() == context->GetRootElement())) {
@@ -188,7 +205,11 @@ void update() noexcept
 Document& push_document(std::unique_ptr<Document> document, bool show) noexcept
 {
     Document& result = *document;
-    sDocumentStack.push_back(std::move(document));
+    if (result.passive()) {
+        sPassiveDocuments.push_back(std::move(document));
+    } else {
+        sDocumentStack.push_back(std::move(document));
+    }
     if (show) {
         result.show();
     }
