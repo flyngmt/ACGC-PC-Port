@@ -57,6 +57,9 @@ extern "C" {
 #define anime_6_model SEGMENT_ADDR(ANIME_6_TXT_SEG, 0)
 #define anime_6_mdl ((N64Mtx*)anime_6_model)
 
+/* Convert a display-list command index to a byte offset. Causes issues at 64 bit otherwise. */
+#define GFX_COMMAND_OFFSET(command_index) ((command_index) * sizeof(Gfx))
+
 /* New Microcode Command Ids */
 #define G_TRIN 0x09
 #define G_TRIN_INDEPEND 0x0A
