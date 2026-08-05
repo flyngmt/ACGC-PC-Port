@@ -1394,15 +1394,16 @@ extern void mPlib_Clear_change_data_from_submenu(void) {
 extern void mPlib_request_main_give_from_submenu(mActor_name_t item, int after_mode, int present_flag,
                                                  int surface_flag) {
     mPlayer_change_data_from_submenu_c* change_data_from_submenu_p = mPlib_Get_change_data_from_submenu_p();
-    mPlayer_request_give_c* req_give_p = &change_data_from_submenu_p->request_main_data.give;
+    mPlayer_request_give_from_submenu_c* req_give_p =
+        &change_data_from_submenu_p->request_main_data.give_from_submenu;
 
     change_data_from_submenu_p->requested_main_index = mPlayer_INDEX_GIVE;
     change_data_from_submenu_p->requested_index_pending = TRUE;
 
     req_give_p->item = item;
-    req_give_p->mode = after_mode;
+    req_give_p->mode_after = after_mode;
     req_give_p->present_flag = present_flag;
-    req_give_p->on_surface_flag = surface_flag;
+    req_give_p->counter_flag = surface_flag;
 }
 
 extern void mPlib_request_main_putin_scoop_from_submenu(const xyz_t* pos_p, mActor_name_t item, int gold_scoop_flag) {
