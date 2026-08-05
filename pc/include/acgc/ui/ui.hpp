@@ -20,6 +20,7 @@ enum class DocumentScope {
     None,
     Window,
     MenuBar,
+    Prelaunch,
 };
 
 // Animal Crossing does not currently expose host-menu sound hooks, but the
@@ -37,8 +38,8 @@ constexpr inline std::uint32_t kSoundItemEnable = 0;
 constexpr inline std::uint32_t kSoundItemDisable = 0;
 inline void play_menu_sound(std::uint32_t) noexcept {}
 
-// Internal sentinel used for controller/touch/menu-command dispatch. Keeping
-// it away from F1 preserves the port's established ImGui debug toggle.
+// Internal sentinel used for controller, touch, and menu-command dispatch.
+// Physical keyboard shortcuts are translated to this key before dispatch.
 constexpr inline Rml::Input::KeyIdentifier kMenuKey = Rml::Input::KI_F24;
 
 struct Insets {

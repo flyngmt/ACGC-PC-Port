@@ -3,15 +3,18 @@
 }
 
 body {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
     overflow: visible;
     width: 100%;
     height: 100%;
     margin: 0;
-    padding: 0;
-    font-family: "ACGC UI";
+    padding: 0 16dp;
+    font-family: "ACGC Body";
     font-weight: normal;
     font-size: 18dp;
-    color: #ECFDF5;
+    color: #655b47;
 }
 
 button {
@@ -20,23 +23,29 @@ button {
 }
 
 popup {
-    width: 100%;
     display: flex;
-    align-items: stretch;
-    height: 64dp;
-    border-radius: 0 0 20dp 20dp;
-    background-color: rgba(16, 18, 22, 5%);
-    /* border-bottom: 2dp #10B981; */
-    backdrop-filter: blur(6dp) glass(20dp 35dp 0.2 rgba(20, 22, 26, 10%) 1.15 0.15 0.01);
-    transform: translateY(-64dp);
-    transition: transform 0.2s cubic-in-out;
+    position: relative;
+    flex: 0 0 auto;
+    width: auto;
+    max-width: 100%;
+    height: 72dp;
+    margin-top: 18dp;
     overflow: hidden;
+    color: #655b47;
+    background-color: #fffbe7;
+    border: 4dp #f5e7bd;
+    border-radius: 36dp;
+    box-shadow: 0 10dp 28dp 2dp rgba(54, 45, 29, 42%);
+    filter: opacity(0);
+    transform: translateY(-104dp);
+    transition: filter transform 0.18s cubic-in-out;
 }
 
 popup[open] {
+    filter: opacity(1);
     transform: translateY(0);
 }
 
 popup tab-bar {
-    flex: 1 1 0;
+    flex: 0 0 auto;
 }

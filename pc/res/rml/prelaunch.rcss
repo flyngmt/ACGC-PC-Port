@@ -1,0 +1,289 @@
+*, *:before, *:after {
+    box-sizing: border-box;
+}
+
+body {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: "ACGC Body";
+    font-weight: normal;
+    font-size: 18dp;
+    color: #655b47;
+    filter: opacity(0);
+    transition: filter 0.35s linear-in-out;
+    z-index: -1;
+}
+
+.background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #f3e4b9;
+}
+
+body[open] {
+    filter: opacity(1);
+}
+
+content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 40dp;
+    filter: opacity(0);
+    transition: filter 0.18s linear-in-out;
+}
+
+content[open] {
+    filter: opacity(1);
+}
+
+menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 34dp;
+    width: 100%;
+}
+
+hero {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+hero img {
+    width: 264dp;
+    height: 264dp;
+}
+
+#menu-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    gap: 14dp;
+}
+
+#menu-list button {
+    min-width: 142dp;
+    height: 54dp;
+    padding: 0 24dp;
+    line-height: 54dp;
+    text-align: center;
+    white-space: nowrap;
+    font-family: "ACGC Heading";
+    font-weight: bold;
+    font-size: 19dp;
+    color: #655b47;
+    background-color: rgba(255, 255, 255, 62%);
+    border-radius: 27dp;
+    transition: background-color color transform 0.1s linear-in-out;
+    cursor: pointer;
+    focus: auto;
+}
+
+#menu-list button:hover,
+#menu-list button:focus-visible {
+    color: #5f4e32;
+    background-color: #ffe27a;
+    transform: scale(1.04);
+}
+
+#menu-list button:active {
+    background-color: #ffc742;
+    transform: scale(0.98);
+}
+
+disc-info,
+version-info {
+    position: absolute;
+    bottom: 34dp;
+    display: flex;
+    flex-direction: column;
+    gap: 4dp;
+    min-height: 54dp;
+    padding: 12dp 18dp;
+    background-color: rgba(255, 255, 255, 58%);
+    border-radius: 27dp;
+    font-size: 16dp;
+}
+
+disc-info {
+    left: 34dp;
+    align-items: flex-start;
+    text-align: left;
+}
+
+version-info {
+    right: 34dp;
+    align-items: flex-end;
+    text-align: right;
+}
+
+#disc-status {
+    display: flex;
+    align-items: center;
+    gap: 7dp;
+}
+
+#disc-status icon {
+    display: block;
+    width: 20dp;
+    height: 20dp;
+    font-family: "Material Symbols Rounded";
+    font-weight: normal;
+    font-size: 20dp;
+}
+
+#disc-status[status=good] {
+    color: #198d79;
+}
+
+#disc-status[status=good] icon {
+    decorator: text("&#xe5ca;" center center);
+}
+
+#disc-status[status=bad] {
+    color: #9a7350;
+}
+
+#disc-status[status=bad] icon {
+    decorator: text("&#xe88f;" center center);
+}
+
+#disc-status[status=verifying] {
+    color: #247c9a;
+}
+
+#disc-status[status=verifying] icon {
+    decorator: text("&#xe8b5;" center center);
+}
+
+#disc-status[status=mismatch] {
+    color: #d97821;
+}
+
+#disc-status[status=mismatch] icon {
+    decorator: text("&#xe002;" center center);
+}
+
+.detail {
+    color: rgba(101, 91, 71, 70%);
+    font-size: 14dp;
+}
+
+.version {
+    font-family: "ACGC Heading";
+    font-weight: bold;
+}
+
+.update {
+    display: none;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8dp;
+    color: rgba(101, 91, 71, 70%);
+    font-size: 14dp;
+}
+
+.update[state=checking],
+.update[state=failed] {
+    display: block;
+}
+
+.update[state=available] {
+    display: flex;
+}
+
+#update-download {
+    display: none;
+    margin: 0;
+    padding: 2dp 8dp;
+    color: #fffdf3;
+    background-color: #e98424;
+    border-radius: 12dp;
+    font-family: "ACGC Body";
+    font-weight: normal;
+    font-size: 14dp;
+    cursor: pointer;
+    focus: auto;
+}
+
+.update[state=available] #update-download {
+    display: flex;
+    align-items: center;
+    gap: 3dp;
+}
+
+#update-download:hover,
+#update-download:focus-visible {
+    background-color: #f5a33b;
+}
+
+#update-download icon {
+    display: block;
+    width: 16dp;
+    height: 16dp;
+    font-family: "Material Symbols Rounded";
+    font-weight: normal;
+    decorator: text("&#xe5c8;" center center);
+}
+
+.intro-item {
+    opacity: 0;
+    transform: translateY(10dp);
+    transition: opacity transform 0.3s 0.1s cubic-in-out;
+}
+
+body.animate-in .intro-item {
+    opacity: 1;
+    transform: translateY(0dp);
+}
+
+.delay-0 { transition: opacity transform 0.3s 0.05s cubic-in-out; }
+.delay-1 { transition: opacity transform 0.3s 0.12s cubic-in-out; }
+.delay-2 { transition: opacity transform 0.3s 0.19s cubic-in-out; }
+.delay-3 { transition: opacity transform 0.3s 0.26s cubic-in-out; }
+.delay-4 { transition: opacity transform 0.3s 0.33s cubic-in-out; }
+.delay-5 { transition: opacity transform 0.3s 0.40s cubic-in-out; }
+
+@media (max-height: 640dp) {
+    content {
+        padding: 20dp;
+    }
+
+    menu {
+        gap: 22dp;
+    }
+
+    hero img {
+        width: 190dp;
+        height: 190dp;
+    }
+
+    #menu-list button {
+        min-width: 112dp;
+        height: 46dp;
+        padding: 0 18dp;
+        line-height: 46dp;
+        font-size: 16dp;
+    }
+
+    disc-info,
+    version-info {
+        bottom: 18dp;
+        min-height: 44dp;
+        padding: 8dp 13dp;
+    }
+
+    disc-info { left: 18dp; }
+    version-info { right: 18dp; }
+}

@@ -4,7 +4,6 @@ tab-bar {
     min-width: 0;
     overflow: auto hidden;
     clip: always;
-    text-transform: uppercase;
 }
 
 tab-bar scrollbarhorizontal,
@@ -18,77 +17,80 @@ tab-bar scrollbarhorizontal sliderbar {
 
 tab-bar tab {
     flex: 0 0 auto;
-    padding: 0 24dp;
-    line-height: 64dp;
+    margin: 4dp;
+    padding: 0 20dp;
+    line-height: 56dp;
     white-space: nowrap;
-    decorator: vertical-gradient(#14b8a600 #14b8a600);
-    transition: decorator 0.1s linear-in-out, opacity 0.1s linear-in-out;
+    color: #74684f;
+    background-color: rgba(255, 226, 122, 0%);
+    border-radius: 24dp;
+    transition: background-color 0.1s linear-in-out, transform 0.08s linear-in-out;
     cursor: pointer;
-    opacity: 0.5;
-    font-family: "ACGC UI";
+    focus: auto;
+    font-family: "ACGC Heading";
     font-weight: bold;
-    font-size: 18dp;
-}
-
-tab-bar tab:selected {
-    opacity: 1;
-    border-bottom: 4dp #10B981;
-    font-effect: glow(0dp 4dp 0dp 4dp black);
+    font-size: 17dp;
 }
 
 tab-bar tab:focus-visible,
 tab-bar tab:hover {
-    opacity: 1;
-    font-effect: glow(0dp 4dp 0dp 4dp black);
-    decorator: vertical-gradient(#14b8a600 #14b8a626);
+    color: #65543c;
+    background-color: #ffe27a;
+}
+
+tab-bar tab:selected {
+    color: #fffdf3;
+    background-color: #e98424;
 }
 
 tab-bar tab:active {
-    decorator: vertical-gradient(#14b8a600 #14b8a626);
+    color: #65543c;
+    background-color: #ffc742;
+    transform: scale(0.97);
 }
 
 tab-bar[closable] tab-end-spacer {
     display: block;
-    flex: 0 0 64dp;
-    width: 64dp;
+    flex: 0 0 68dp;
+    width: 68dp;
     pointer-events: none;
 }
 
 tab-bar[closable] close,
 window > close {
     display: block;
-    position: fixed;
+    position: absolute;
     top: 8dp;
     right: 8dp;
     z-index: 1;
     width: 48dp;
     height: 48dp;
-    font-family: "ACGC UI";
+    font-family: "Material Symbols Rounded";
     font-weight: normal;
     font-size: 24dp;
-    color: rgba(224, 219, 200, 70%);
-    backdrop-filter: blur(2dp);
-    border-radius: 6dp;
-    decorator: text("X" center center);
-    transition: color background-color 0.12s linear-in-out;
+    color: #fffdf3;
+    background-color: #e98424;
+    border-radius: 24dp;
+    decorator: text("&#xe5cd;" center center);
+    transition: background-color 0.1s linear-in-out, transform 0.08s linear-in-out;
     cursor: pointer;
+    focus: auto;
 }
 
 tab-bar[closable] close:hover,
 tab-bar[closable] close:focus-visible,
 window > close:hover,
 window > close:focus-visible {
-    color: #fff;
-    background-color: rgba(4, 120, 87, 20%);
+    background-color: #ffc742;
+}
+
+tab-bar[closable] close:active,
+window > close:active {
+    background-color: #ef942c;
+    transform: scale(0.94);
 }
 
 window > close {
     top: 16dp;
     right: 16dp;
-}
-
-tab-bar[closable] close:active,
-window > close:active {
-    color: #fff;
-    background-color: rgba(4, 120, 87, 40%);
 }

@@ -36,7 +36,6 @@ MenuBar::MenuBar()
         .onClose = [this] { hide(false); },
         .autoSelect = false,
     });
-    mTabBar->add_tab("Resume", [this] { hide(false); });
     mTabBar->add_tab("Settings", [this] { push(std::make_unique<SettingsWindow>()); });
     mTabBar->add_tab("Controllers", [this] { push(std::make_unique<ControllerConfigWindow>()); });
     mTabBar->add_tab("Quit", [this] {

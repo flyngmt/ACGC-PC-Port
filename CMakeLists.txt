@@ -185,6 +185,7 @@ list(FILTER GAME_CXX_SOURCES EXCLUDE REGEX ".*/jsyswrapper_main\\.cpp$")
 set(PC_SOURCES
     ${PC_ROOT}/src/acgc_config.cpp
     ${PC_ROOT}/src/acgc_data.cpp
+    ${PC_ROOT}/src/acgc_disc.cpp
     ${PC_ROOT}/src/acgc_legacy_input.cpp
     ${PC_ROOT}/src/acgc_settings.cpp
     ${PC_ROOT}/src/acgc_texture_replacements.cpp
@@ -204,6 +205,7 @@ set(PC_SOURCES
     ${PC_ROOT}/src/ui/modal.cpp
     ${PC_ROOT}/src/ui/number_button.cpp
     ${PC_ROOT}/src/ui/pane.cpp
+    ${PC_ROOT}/src/ui/prelaunch.cpp
     ${PC_ROOT}/src/ui/select_button.cpp
     ${PC_ROOT}/src/ui/settings.cpp
     ${PC_ROOT}/src/ui/string_button.cpp
@@ -378,7 +380,10 @@ target_link_libraries(acgc PRIVATE
     borealis::cli
     borealis::crash
     borealis::data
+    borealis::disc
+    borealis::file_select
     borealis::log
+    borealis::update
     aurora::card
     aurora::core
     aurora::dvd

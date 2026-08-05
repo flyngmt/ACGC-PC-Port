@@ -53,11 +53,11 @@ present, otherwise it installs these defaults:
 SDL3 game controllers are supported through Aurora, including hotplug and
 persisted mappings.
 
-Press Escape on a keyboard, Back/Select on a controller, or R + Start to open
+Press F1 on a keyboard, Back/Select on a controller, or R + Start to open
 the Aurora-native host menu. A/B confirm and cancel, the D-pad or left stick
 navigates, and L/R changes tabs. The menu pauses gameplay, exposes live video,
 audio, gameplay, and dead-zone settings, and includes controller remapping for
-all four ports. F1 remains reserved for the optional ImGui diagnostics.
+all four ports. F3 toggles the optional ImGui diagnostics.
 
 ## Command Line Options
 

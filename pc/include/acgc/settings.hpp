@@ -2,6 +2,7 @@
 
 #include "acgc/config.hpp"
 
+#include <cstdint>
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -10,7 +11,22 @@ namespace acgc {
 
 using config::ConfigVar;
 
+enum class DiscVerificationState : std::uint8_t {
+    Unknown = 0,
+    Success,
+    HashMismatch,
+};
+
 struct UserSettings {
+    struct Backend {
+        ConfigVar<std::string> discPath;
+        ConfigVar<DiscVerificationState> discVerification;
+        ConfigVar<bool> skipPrelaunch;
+        ConfigVar<bool> checkForUpdates;
+
+        Backend();
+    } backend;
+
     struct Video {
         ConfigVar<int> windowWidth;
         ConfigVar<int> windowHeight;

@@ -120,7 +120,7 @@ void draw_input_window()
     draw_axis("C-stick X", pad.substickX);
     draw_axis("C-stick Y", pad.substickY);
     ImGui::Text("Triggers L/R: %3u / %3u", pad.triggerLeft, pad.triggerRight);
-    ImGui::TextDisabled("F1 hides the debug UI");
+    ImGui::TextDisabled("F3 hides the debug UI");
     ImGui::End();
 }
 
@@ -138,7 +138,7 @@ void ac_debug_imgui_init(const AuroraWindowSize*)
 
 void ac_debug_imgui_draw(void)
 {
-    if (ImGui::IsKeyPressed(ImGuiKey_F1, false)) {
+    if (ImGui::IsKeyPressed(ImGuiKey_F3, false)) {
         g_pc_debug_ui_visible = !g_pc_debug_ui_visible;
     }
     if (!g_pc_debug_ui_visible) {
@@ -151,7 +151,7 @@ void ac_debug_imgui_draw(void)
             ImGui::MenuItem("Renderer", nullptr, &s_showRenderer);
             ImGui::MenuItem("Input", nullptr, &s_showInput);
             ImGui::Separator();
-            if (ImGui::MenuItem("Hide (F1)")) {
+            if (ImGui::MenuItem("Hide (F3)")) {
                 g_pc_debug_ui_visible = 0;
             }
             ImGui::EndMenu();

@@ -3,6 +3,7 @@
 #include <aurora/event.h>
 #include <aurora/gfx.h>
 #include <aurora/main.h>
+#include <dolphin/gx.h>
 #include <dolphin/gx/GXAurora.h>
 #include <dolphin/pad.h>
 #include <dolphin/vi.h>
@@ -13,9 +14,11 @@
 #include "aurora_debug.h"
 #include "acgc/app_info.hpp"
 #include "acgc/data.hpp"
+#include "acgc/disc.hpp"
 #include "acgc/legacy_input.hpp"
 #include "acgc/settings.hpp"
 #include "acgc/texture_replacements.hpp"
+#include "acgc/ui/prelaunch.hpp"
 #include "acgc/ui/ui.hpp"
 #include "m_kankyo.h"
 #include "borealis/aurora_log.h"
@@ -30,6 +33,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
+#include <memory>
 #include <string>
 #include <thread>
 #include <vector>
@@ -228,7 +232,8 @@ bool parse_window_dimensions(const char* text, WindowDimensions* dimensions) {
 
 struct CommandLine {
     WindowDimensions window{};
-    std::string discPath = "game.rvz";
+    std::string discPath;
+    bool discPathExplicit = false;
 };
 
 enum class ParseOutcome { Run, Exit, Failed };
@@ -245,7 +250,7 @@ ParseOutcome parse_command_line(int argc, char* argv[], CommandLine* out) {
         ("h,help", "Show this help")
         ("v,verbose", "Enable additional game diagnostics",
             cxxopts::value<bool>()->default_value("false")->implicit_value("true"))
-        ("disc", "Open an RVZ, ISO, or GCM image (default: game.rvz)",
+        ("disc", "Open an RVZ, ISO, or GCM image without the prelaunch menu",
             cxxopts::value<std::string>())
         ("window-size", "Set the initial window size, WIDTHxHEIGHT (minimum 320x240)",
             cxxopts::value<std::string>())
@@ -297,6 +302,7 @@ ParseOutcome parse_command_line(int argc, char* argv[], CommandLine* out) {
 
     if (parsed.count("disc")) {
         out->discPath = parsed["disc"].as<std::string>();
+        out->discPathExplicit = true;
     }
 
     if (parsed["widescreen"].as<bool>()) {
@@ -433,6 +439,40 @@ void configure_default_keyboard_input() {
     PADSetKeyboardActive(0, TRUE);
 }
 
+bool run_prelaunch()
+{
+    acgc::ui::push_document(std::make_unique<acgc::ui::Prelaunch>());
+    bool paused = false;
+    auto& state = acgc::ui::prelaunch_state();
+    while (!state.launchRequested && !state.quitRequested) {
+        const AuroraEvent* event = aurora_update();
+        while (event != nullptr && event->type != AURORA_NONE) {
+            if (event->type == AURORA_EXIT) {
+                state.quitRequested = true;
+            } else if (event->type == AURORA_PAUSED) {
+                paused = true;
+            } else if (event->type == AURORA_UNPAUSED) {
+                paused = false;
+            } else if (event->type == AURORA_SDL_EVENT) {
+                acgc::ui::handle_event(event->sdl);
+            } else if (event->type == AURORA_CONTROLLER_ADDED) {
+                acgc::apply_runtime_settings(false);
+            }
+            ++event;
+        }
+        if (state.quitRequested || paused || !aurora_begin_frame()) {
+            continue;
+        }
+        update_render_size();
+        GXSetCopyClear({243, 228, 185, 255}, 0xFFFFFF);
+        acgc::ui::update();
+        ac_debug_imgui_draw();
+        aurora_end_frame();
+        apply_frame_limit();
+    }
+    return state.launchRequested;
+}
+
 } // namespace
 
 int main(int argc, char* argv[]) {
@@ -562,16 +602,46 @@ int main(int argc, char* argv[]) {
         aurora_shutdown();
         return 1;
     }
-    const char* disc_path = commandLine.discPath.c_str();
-    if (!aurora_dvd_open(disc_path)) {
-        DvdLog.error("Could not open disc image: {}", disc_path);
+    std::string discPath;
+    bool launch = false;
+    if (commandLine.discPathExplicit) {
+        acgc::disc::DiscInfo info{};
+        if (acgc::disc::inspect(commandLine.discPath, info) == acgc::disc::ValidationError::Success) {
+            discPath = commandLine.discPath;
+            launch = true;
+        } else {
+            DvdLog.warn("Command-line disc is not a supported Animal Crossing image: {}; opening prelaunch menu",
+                        commandLine.discPath);
+        }
+    }
+
+    if (!launch) {
+        acgc::ui::ensure_prelaunch_initialized();
+        auto& state = acgc::ui::prelaunch_state();
+        if (settings.backend.skipPrelaunch.value() && state.configuredDiscCanLaunch) {
+            discPath = state.configuredDiscPath;
+            launch = true;
+        } else if (run_prelaunch()) {
+            discPath = state.activeDiscPath;
+            launch = !discPath.empty();
+        }
+    }
+
+    if (!launch) {
+        acgc::ui::shutdown();
+        aurora_shutdown();
+        return 0;
+    }
+
+    if (!aurora_dvd_open(discPath.c_str())) {
+        DvdLog.error("Could not open disc image: {}", discPath);
         acgc::ui::shutdown();
         aurora_shutdown();
         return 1;
     }
 
     if (!pc_assets_init()) {
-        AssetsLog.error("Could not load game assets from: {}", disc_path);
+        AssetsLog.error("Could not load game assets from: {}", discPath);
         aurora_dvd_close();
         acgc::ui::shutdown();
         aurora_shutdown();

@@ -110,6 +110,11 @@ bool import_legacy_file(const std::filesystem::path& path)
 void sanitize_settings()
 {
     auto& current = settings();
+    const auto verification = static_cast<int>(current.backend.discVerification.value());
+    if (verification < static_cast<int>(DiscVerificationState::Unknown) ||
+        verification > static_cast<int>(DiscVerificationState::HashMismatch)) {
+        current.backend.discVerification.set_value(DiscVerificationState::Unknown);
+    }
     current.video.windowWidth.set_value(std::clamp(current.video.windowWidth.value(), 320, 16384));
     current.video.windowHeight.set_value(std::clamp(current.video.windowHeight.value(), 240, 16384));
     current.video.windowMode.set_value(std::clamp(current.video.windowMode.value(), 0, 2));
@@ -123,6 +128,14 @@ void sanitize_settings()
 }
 
 } // namespace
+
+UserSettings::Backend::Backend()
+    : discPath("backend.discPath", std::string("game.rvz"))
+    , discVerification("backend.discVerification", DiscVerificationState::Unknown)
+    , skipPrelaunch("backend.skipPrelaunch", false)
+    , checkForUpdates("backend.checkForUpdates", true)
+{
+}
 
 UserSettings::Video::Video()
     : windowWidth("video.windowWidth", 1280)
@@ -163,6 +176,10 @@ UserSettings& settings()
 void register_settings()
 {
     auto& current = settings();
+    config::register_var(current.backend.discPath);
+    config::register_var(current.backend.discVerification);
+    config::register_var(current.backend.skipPrelaunch);
+    config::register_var(current.backend.checkForUpdates);
     config::register_var(current.video.windowWidth);
     config::register_var(current.video.windowHeight);
     config::register_var(current.video.windowMode);

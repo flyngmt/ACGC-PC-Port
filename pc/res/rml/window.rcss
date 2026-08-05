@@ -7,11 +7,11 @@ body {
     width: 100%;
     height: 100%;
     padding: 64dp;
-    font-family: "ACGC UI";
+    font-family: "ACGC Body";
     font-weight: normal;
     font-style: normal;
-    font-size: 15dp;
-    color: #ECFDF5;
+    font-size: 16dp;
+    color: #655b47;
 }
 
 b {
@@ -27,25 +27,20 @@ window {
     max-width: 1088dp;
     max-height: 768dp;
     margin: auto;
-    border-radius: 20dp;
     overflow: hidden;
-    border: 1dp rgba(255, 255, 255, 35%);
-    /* glass(<bezel> <refraction> <specular> <tint> <saturation> <profile> <dome>) */
-    backdrop-filter: blur(6dp) glass(15dp 50dp 0.3 rgba(20, 22, 26, 25%) 1.15 0.15 0.01);
-    box-shadow: 0 6dp 26dp 2dp rgba(0, 0, 0, 60%);
+    background-color: #fffbe7;
+    border: 4dp #f5e7bd;
+    border-radius: 36dp;
+    box-shadow: 0 14dp 36dp 2dp rgba(54, 45, 29, 42%);
     filter: opacity(0);
-    transform: scale(0.9);
+    transform: scale(0.96);
     transform-origin: center;
-    transition: filter transform 0.2s cubic-in-out;
+    transition: filter transform 0.18s cubic-in-out;
 }
 
 window.small {
     height: auto;
     width: auto;
-}
-
-window.modal {
-    max-width: 640dp;
 }
 
 window[open] {
@@ -57,15 +52,19 @@ window[open] {
     body {
         padding: 16dp;
     }
+
     window {
+        border-radius: 28dp;
         box-shadow: none;
     }
 }
 
 window tab-bar {
-    flex: 0 0 64dp;
-    height: 64dp;
-    background-color: rgba(217, 217, 217, 10%);
+    flex: 0 0 72dp;
+    height: 72dp;
+    padding: 4dp 8dp;
+    background-color: #f8edcf;
+    border-bottom: 2dp #ead9ad;
 }
 
 window content {
@@ -82,15 +81,16 @@ window content pane {
     flex: 1 1 0;
     min-width: 0;
     min-height: 0;
-    padding: 24dp;
+    padding: 26dp;
     padding-bottom: 0dp;
-    gap: 8dp;
+    gap: 10dp;
     overflow: hidden auto;
-    font-size: 20dp;
+    font-size: 19dp;
 }
 
-window content pane:not(:last-of-type) {
-    border-right: 2dp rgba(217, 217, 217, 10%);
+window content pane:last-of-type {
+    background-color: #fff3d2;
+    border-left: 2dp #efe1ba;
 }
 
 window content pane > * {
@@ -98,26 +98,25 @@ window content pane > * {
 }
 
 window content pane:last-of-type > div {
-    line-height: 1.625;
+    line-height: 1.55;
 }
 
 .data-folder-current {
     display: block;
     font-size: 16dp;
-    color: rgba(224, 219, 200, 65%);
+    color: rgba(101, 91, 71, 68%);
 }
 
 window content pane > spacer {
     display: block;
-    /* Completes the 24dp bottom inset after the pane's 8dp gap. */
     flex: 0 0 16dp;
     height: 16dp;
     pointer-events: none;
 }
 
 scrollbarvertical {
-    width: 8dp;
-    margin: 4dp 4dp 4dp 0;
+    width: 10dp;
+    margin: 6dp 5dp 6dp 0;
 }
 
 scrollbarvertical sliderarrowdec,
@@ -127,32 +126,27 @@ scrollbarvertical sliderarrowinc {
 }
 
 scrollbarvertical slidertrack {
-    width: 8dp;
+    width: 10dp;
+    background-color: rgba(212, 185, 125, 25%);
+    border-radius: 5dp;
 }
 
 scrollbarvertical sliderbar {
-    width: 8dp;
-    min-height: 24dp;
-    background-color: rgba(224, 219, 200, 45%);
-    border-radius: 2dp;
-    transition: background-color 0.2s cubic-in-out;
+    width: 10dp;
+    min-height: 28dp;
+    background-color: rgba(211, 139, 46, 55%);
+    border-radius: 5dp;
+    transition: background-color 0.14s linear-in-out;
 }
 
 scrollbarvertical sliderbar:hover,
 scrollbarvertical sliderbar:active {
-    background-color: rgba(16, 185, 129, 80%);
+    background-color: #ef942c;
 }
 
-scrollbarhorizontal {
-    height: 0;
-}
-
+scrollbarhorizontal,
 scrollbarhorizontal sliderarrowdec,
-scrollbarhorizontal sliderarrowinc {
-    width: 0;
-    height: 0;
-}
-
+scrollbarhorizontal sliderarrowinc,
 scrollbarhorizontal slidertrack,
 scrollbarhorizontal sliderbar {
     width: 0;
@@ -160,50 +154,48 @@ scrollbarhorizontal sliderbar {
 }
 
 .section-heading {
-    font-family: "ACGC UI";
+    font-family: "ACGC Heading";
     font-weight: bold;
-    text-transform: uppercase;
-    font-size: 22dp;
-    opacity: 0.5;
+    font-size: 20dp;
+    color: #d97821;
+    letter-spacing: 0.5dp;
 }
 
 .section-heading:not(:first-of-type) {
-    padding-top: 12dp;
+    padding-top: 14dp;
 }
 
 button {
+    padding: 9dp 18dp;
     text-align: center;
-    background-color: rgba(17, 16, 10, 50%);
-    opacity: 0.9;
-    padding: 8dp 16dp;
-    border-radius: 14dp;
-    box-shadow: rgba(217, 217, 217, 10%) 0 0 0 1dp;
-    font-size: 20dp;
-    transition: background-color 0.1s linear-in-out, opacity 0.1s linear-in-out;
+    font-family: "ACGC Body";
+    font-size: 19dp;
+    font-weight: normal;
+    color: #655b47;
+    background-color: rgba(255, 255, 255, 52%);
+    border-radius: 22dp;
+    transition: background-color 0.1s linear-in-out, transform 0.08s linear-in-out;
     cursor: pointer;
     focus: auto;
-    font-weight: 500;
 }
 
 button:not(:disabled):hover,
 button:not(:disabled):focus-visible {
-    background-color: rgba(4, 120, 87, 20%);
-    box-shadow: #10B981 0 0 0 2dp;
+    background-color: #ffe27a;
 }
 
 button:not(:disabled):selected {
-    opacity: 1;
-    background-color: rgba(4, 120, 87, 40%);
+    color: #fffdf3;
+    background-color: #e98424;
 }
 
 button:not(:disabled):active {
-    opacity: 1;
-    background-color: rgba(4, 120, 87, 40%);
-    box-shadow: #10B981 0 0 0 2dp;
+    background-color: #ffc742;
+    transform: scale(0.98);
 }
 
 button:disabled {
-    opacity: 0.35;
+    opacity: 0.38;
     cursor: default;
 }
 
@@ -215,69 +207,71 @@ button.modal-btn {
 select-button {
     display: flex;
     align-items: center;
-    gap: 8dp;
-    background-color: rgba(17, 16, 10, 50%);
-    opacity: 0.9;
-    padding: 8dp 16dp;
-    border-radius: 14dp;
-    box-shadow: rgba(217, 217, 217, 10%) 0 0 0 1dp;
-    transition: background-color 0.1s linear-in-out, opacity 0.1s linear-in-out;
+    gap: 10dp;
+    min-height: 48dp;
+    padding: 9dp 16dp;
+    color: #655b47;
+    background-color: rgba(255, 255, 255, 52%);
+    border-radius: 22dp;
+    transition: background-color 0.1s linear-in-out, transform 0.08s linear-in-out;
     cursor: pointer;
     focus: auto;
 }
 
 select-button:not(:disabled):hover,
 select-button:not(:disabled):focus-visible {
-    background-color: rgba(4, 120, 87, 20%);
-    box-shadow: #10B981 0 0 0 2dp;
+    background-color: #ffe27a;
 }
 
 select-button:not(:disabled):selected {
-    opacity: 1;
-    background-color: rgba(4, 120, 87, 40%);
+    background-color: #ffd25a;
 }
 
 select-button:not(:disabled):active {
-    opacity: 1;
-    background-color: rgba(4, 120, 87, 40%);
-    box-shadow: #10B981 0 0 0 2dp;
+    background-color: #ffc742;
+    transform: scale(0.99);
 }
 
 select-button:disabled {
-    opacity: 0.35;
+    opacity: 0.38;
     cursor: default;
 }
 
 select-button key {
-    font-family: "ACGC UI";
-    font-weight: bold;
-    font-size: 18dp;
-    text-transform: uppercase;
     flex: 0 1 auto;
+    font-family: "ACGC Heading";
+    font-weight: bold;
+    font-size: 17dp;
+    color: #655b47;
 }
 
 select-button value {
     flex: 1 1 auto;
     text-align: right;
-    font-size: 20dp;
+    font-size: 19dp;
+    color: #74684f;
 }
 
 select-button value.modified {
-    font-weight: 600;
+    font-weight: bold;
+    color: #009c9b;
 }
 
 select-button input {
     text-align: right;
-    font-size: 20dp;
+    font-family: "ACGC Body";
+    font-size: 19dp;
+    color: #655b47;
+    background-color: transparent;
 }
 
 icon {
+    display: inline-block;
     width: 1em;
     height: 1em;
-    font-family: "ACGC UI";
-    font-weight: normal;
-    display: inline-block;
     vertical-align: middle;
+    font-family: "Material Symbols Rounded";
+    font-weight: normal;
 }
 
 icon.warning {
@@ -303,192 +297,58 @@ icon.question-mark {
 progress {
     display: block;
     width: 100%;
-    height: 6dp;
-    border-radius: 3dp;
-    background-color: rgba(255, 255, 255, 10%);
-    margin: 6dp 0 2dp 0;
+    height: 8dp;
+    margin: 4dp 0;
+    background-color: rgba(255, 255, 255, 14%);
+    border-radius: 4dp;
 }
 
-progress.progress-done fill {
-    background-color: #44aa22;
-    border-radius: 3dp;
+progress fill {
+    background-color: #ffd65a;
+    border-radius: 4dp;
 }
 
-progress.progress-ongoing fill {
-    background-color: #2255bb;
-    border-radius: 3dp;
-}
-
-progress.progress-bronze fill {
-    background-color: #a8652c;
-    border-radius: 3dp;
-}
-
-progress.progress-silver fill {
-    background-color: #97a3ad;
-    border-radius: 3dp;
-}
-
-progress.progress-gold fill {
-    background-color: #d4a72c;
-    border-radius: 3dp;
-}
-
-progress.progress-platinum fill {
-    background-color: #5fd3c8;
-    border-radius: 3dp;
-}
-
-progress.progress-leaf fill {
-    background-color: #5fbf46;
-    border-radius: 3dp;
-}
-
-progress.progress-bud fill {
-    background-color: #e2739b;
-    border-radius: 3dp;
-}
-
-progress.progress-flower fill {
-    background-color: #f2e4d0;
-    border-radius: 3dp;
-}
-
-.achievement-total {
-    position: absolute;
-    top: 0;
-    right: 64dp;
-    height: 64dp;
-    line-height: 64dp;
-    font-family: "ACGC UI";
-    font-weight: 700;
-    font-size: 16dp;
-    color: rgba(224, 219, 200, 55%);
-    pointer-events: none;
-}
-
-.achievement-row {
+.verification-progress {
     display: flex;
-    align-items: flex-start;
+    flex-direction: column;
     gap: 10dp;
-    padding: 12dp 0;
-    border-bottom: 1dp rgba(146, 135, 91, 30%);
+    width: 100%;
 }
 
-.achievement-info {
+.verification-file {
     display: block;
-    flex: 1 1 0;
-    min-width: 0;
+    font-size: 18dp;
+    color: #f4ffff;
 }
 
-.achievement-header {
-    display: flex;
-    align-items: center;
-}
-
-.achievement-name {
-    flex: 1;
-    font-weight: bold;
-}
-
-.achievement-name.unlocked {
-    color: #C2A42D;
-}
-
-.achievement-badge {
-    font-size: 14dp;
-    opacity: 0.7;
-}
-
-.achievement-badge.unlocked {
-    color: #44cc55;
-    opacity: 1;
-}
-
-.achievement-badge.locked {
-    color: #cc4444;
-    opacity: 1;
-}
-
-.achievement-name.hidden {
-    color: rgba(224, 219, 200, 50%);
-}
-
-.achievement-badge.hidden {
-    color: rgba(224, 219, 200, 50%);
-    opacity: 1;
-}
-
-.achievement-badge.tier-bronze {
-    color: #c07a3a;
-    opacity: 1;
-}
-
-.achievement-badge.tier-silver {
-    color: #b4bec8;
-    opacity: 1;
-}
-
-.achievement-badge.tier-gold {
-    color: #e0b33c;
-    opacity: 1;
-}
-
-.achievement-badge.tier-platinum {
-    color: #7fe3d8;
-    opacity: 1;
-}
-
-.achievement-badge.tier-leaf {
-    color: #77cf5e;
-    opacity: 1;
-}
-
-.achievement-badge.tier-bud {
-    color: #ec87ab;
-    opacity: 1;
-}
-
-.achievement-badge.tier-flower {
-    color: #f2e4d0;
-    opacity: 1;
-}
-
-.achievement-desc {
+.verification-detail {
     display: block;
-    color: rgba(224, 219, 200, 55%);
-    font-size: 16dp;
-    margin: 4dp 0 0 0;
+    font-size: 15dp;
+    color: rgba(226, 244, 249, 72%);
 }
 
-.achievement-progress {
-    display: block;
-    font-size: 13dp;
-    color: rgba(224, 219, 200, 45%);
+window.modal {
+    max-width: 680dp;
+    color: #f4ffff;
+    background-color: rgba(29, 57, 81, 94%);
+    border: 4dp rgba(164, 201, 217, 72%);
+    border-radius: 42dp;
+    box-shadow: 0 16dp 42dp 4dp rgba(4, 17, 29, 60%);
 }
 
-button.achievement-clear {
-    flex: 0 0 auto;
-    align-self: center;
-    font-size: 14dp;
-    padding: 2dp 8dp;
-    opacity: 0.45;
+window.modal.danger {
+    border-color: #ef942c;
 }
 
 .modal-dialog {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 24dp;
-    gap: 20dp;
-    flex: 0 1 auto;
     width: 100%;
+    padding: 32dp;
+    gap: 22dp;
+    flex: 0 1 auto;
     text-align: left;
-    font-effect: glow(0dp 4dp 0dp 4dp black);
-}
-
-window.modal.danger {
-    border: 2dp #852221;
 }
 
 .modal-header {
@@ -502,21 +362,29 @@ window.modal.danger {
 }
 
 .modal-header icon {
-    font-size: 24dp;
+    flex: 0 0 36dp;
+    width: 36dp;
+    height: 36dp;
+    line-height: 36dp;
+    text-align: center;
+    font-size: 25dp;
+    color: #ffd65a;
+    background-color: rgba(255, 255, 255, 12%);
+    border-radius: 18dp;
 }
 
 .modal-title {
     display: block;
-    font-family: "ACGC UI";
-    font-weight: 700;
-    text-transform: uppercase;
-    font-size: 18dp;
     flex: 1 1 auto;
+    font-family: "ACGC Heading";
+    font-weight: bold;
+    font-size: 24dp;
+    color: #f4ffff;
 }
 
 window.modal.danger .modal-title,
 window.modal.danger .modal-header icon {
-    color: #B3261E;
+    color: #ffd65a;
 }
 
 .modal-body {
@@ -524,60 +392,15 @@ window.modal.danger .modal-header icon {
     width: 100%;
     flex: 0 1 auto;
     min-width: 0;
-    font-size: 20dp;
-    color: #FFFFFF;
+    font-size: 21dp;
+    line-height: 1.5;
+    color: #f4ffff;
     font-weight: normal;
 }
 
 .modal-body span.tip {
-    font-size: 14dp;
-    color: #92875B;
-}
-
-.verification-progress {
-    display: flex;
-    flex-direction: column;
-    gap: 10dp;
-    width: 100%;
-}
-
-.verification-file {
-    display: block;
-    font-size: 17dp;
-    color: #FFFFFF;
-}
-
-progress.verification-progress-bar {
-    height: 8dp;
-    margin: 2dp 0 0 0;
-}
-
-.verification-detail {
-    display: block;
-    font-size: 14dp;
-    color: rgba(224, 219, 200, 65%);
-}
-
-.preset-grid {
-    display: flex;
-    flex-direction: row;
-    gap: 20dp;
-    flex: 0 1 auto;
-    align-items: flex-start;
-    width: 100%;
-}
-
-.preset-col {
-    display: flex;
-    flex-flow: column;
-    gap: 12dp;
-    flex: 1 1 0;
-}
-
-.preset-desc {
-    display: block;
-    font-size: 16dp;
-    text-align: center;
+    font-size: 15dp;
+    color: rgba(226, 244, 249, 72%);
 }
 
 .modal-actions {
@@ -585,8 +408,25 @@ progress.verification-progress-bar {
     flex-direction: row;
     flex-wrap: nowrap;
     align-items: stretch;
-    gap: 12dp;
+    gap: 14dp;
     width: 100%;
     flex: 0 0 auto;
     padding-top: 4dp;
+}
+
+window.modal button {
+    color: #4f493d;
+    background-color: #fff1a8;
+}
+
+window.modal button:not(:disabled):hover,
+window.modal button:not(:disabled):focus-visible {
+    color: #4f493d;
+    background-color: #ffd65a;
+}
+
+window.modal button:not(:disabled):selected,
+window.modal button:not(:disabled):active {
+    color: #4f493d;
+    background-color: #ffc429;
 }

@@ -9,10 +9,10 @@
 #include <SDL3/SDL_video.h>
 #include "extern/aurora/lib/window.hpp"
 
+#include "borealis/io.hpp"
 #include "borealis/log.hpp"
 
 #include <algorithm>
-#include <array>
 #include <filesystem>
 #include <ranges>
 #include <span>
@@ -61,47 +61,34 @@ void restyle_scope(DocumentScope scope)
     }
 }
 
-bool load_host_font()
+bool load_ui_fonts()
 {
-#if defined(_WIN32)
-    constexpr std::array candidates{
-        "C:/Windows/Fonts/segoeui.ttf",
-        "C:/Windows/Fonts/arial.ttf",
-    };
-#elif defined(__APPLE__)
-    constexpr std::array candidates{
-        "/System/Library/Fonts/SFNSRounded.ttf",
-        "/System/Library/Fonts/SFNS.ttf",
-        "/System/Library/Fonts/Supplemental/Arial.ttf",
-    };
-#elif defined(__ANDROID__)
-    constexpr std::array candidates{
-        "/system/fonts/Roboto-Regular.ttf",
-        "/system/fonts/NotoSans-Regular.ttf",
-    };
-#else
-    constexpr std::array candidates{
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf",
-        "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
-    };
-#endif
+    const std::string bodyPath = borealis::io::fs_path_to_string(
+        resource_path("fonts/FOT-SeuratPro-B.otf"));
+    const std::string headingPath = borealis::io::fs_path_to_string(
+        resource_path("fonts/FOT-RodinBokutohPro-EB.otf"));
+    const std::string symbolsPath = borealis::io::fs_path_to_string(
+        resource_path("fonts/MaterialSymbolsRounded-Regular.ttf"));
 
-    for (const char* path : candidates) {
-        std::error_code error;
-        if (!std::filesystem::is_regular_file(path, error)) {
-            continue;
-        }
-        if (Rml::LoadFontFace(path, "ACGC UI", Rml::Style::FontStyle::Normal,
-                              Rml::Style::FontWeight::Normal, true)) {
-            Rml::LoadFontFace(path, "ACGC UI", Rml::Style::FontStyle::Normal,
-                              Rml::Style::FontWeight::Bold, false);
-            Log.info("Loaded host UI font: {}", path);
-            return true;
-        }
+    const bool bodyLoaded = Rml::LoadFontFace(
+        bodyPath, "ACGC Body", Rml::Style::FontStyle::Normal,
+        Rml::Style::FontWeight::Normal, true);
+    const bool bodyBoldLoaded = Rml::LoadFontFace(
+        bodyPath, "ACGC Body", Rml::Style::FontStyle::Normal,
+        Rml::Style::FontWeight::Bold, false);
+    const bool headingLoaded = Rml::LoadFontFace(
+        headingPath, "ACGC Heading", Rml::Style::FontStyle::Normal,
+        Rml::Style::FontWeight::Bold, false);
+    const bool symbolsLoaded = Rml::LoadFontFace(
+        symbolsPath, "Material Symbols Rounded", Rml::Style::FontStyle::Normal,
+        Rml::Style::FontWeight::Normal, false);
+    if (!bodyLoaded || !bodyBoldLoaded || !headingLoaded || !symbolsLoaded) {
+        Log.error("Could not load the bundled Animal Crossing UI fonts");
+        return false;
     }
-    Log.error("No usable host font was found");
-    return false;
+
+    Log.info("Loaded bundled Animal Crossing UI fonts");
+    return true;
 }
 
 void sync_pause_state()
@@ -126,7 +113,7 @@ bool initialize() noexcept
     if (sInitialized) {
         return true;
     }
-    if (!aurora::rmlui::is_initialized() || !load_host_font()) {
+    if (!aurora::rmlui::is_initialized() || !load_ui_fonts()) {
         return false;
     }
 
@@ -153,12 +140,7 @@ void handle_event(const SDL_Event& event) noexcept
         return;
     }
 
-    // Escape is the desktop equivalent of Bacopa's menu command. Aurora sends
-    // keyboard events to RmlUi before forwarding them here, so a visible menu
-    // may already have handled Escape and hidden itself. In that case,
-    // sWasPausingGame is still true until sync_pause_state() below; do not
-    // immediately reopen the menu we just closed.
-    if (event.type == SDL_EVENT_KEY_DOWN && !event.key.repeat && event.key.key == SDLK_ESCAPE &&
+    if (event.type == SDL_EVENT_KEY_DOWN && !event.key.repeat && event.key.key == SDLK_F1 &&
         !any_document_visible() && !sWasPausingGame) {
         if (auto* context = aurora::rmlui::get_context()) {
             context->ProcessKeyDown(kMenuKey, 0);

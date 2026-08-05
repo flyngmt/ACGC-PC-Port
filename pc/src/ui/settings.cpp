@@ -147,11 +147,60 @@ void data_folder_dialog_callback(void*, const char* const* filelist, int)
 
 SettingsWindow::SettingsWindow()
 {
+    add_tab("Animal Crossing", [this](Rml::Element* content) {
+        auto& current = settings();
+        auto& left = add_child<Pane>(content, Pane::Type::Controlled);
+        auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
+
+#if ACGC_CAN_CHANGE_DATA_FOLDER
+        left.add_section("Data");
+        left.register_control(
+            left.add_select_button({
+                .key = "Data Folder",
+                .getValue = [] {
+                    return Rml::String(data::abbreviated_path_string(data::configured_data_path()));
+                },
+                .isModified = [] { return data::is_data_path_restart_pending(); },
+            }),
+            right, [](Pane& pane) {
+                pane.add_text("The data folder is where the game stores saves, settings, "
+                              "input mappings, texture packs, and NES ROMs.");
+                pane.add_child<DataFolderPathText>();
+#if ACGC_CAN_OPEN_DATA_FOLDER
+                pane.add_button("Open Data Folder").on_pressed([] {
+                    data::open_data_path();
+                });
+#endif
+                pane.add_button("Change Data Folder").on_pressed([] {
+                    const std::string current = borealis::io::fs_path_to_string(data::configured_data_path());
+                    SDL_ShowOpenFolderDialog(&data_folder_dialog_callback, nullptr,
+                                             aurora::window::get_sdl_window(),
+                                             current.empty() ? nullptr : current.c_str(), false);
+                });
+                pane.add_button(ControlledButton::Props{
+                    .text = "Reset to Default",
+                    .isDisabled = [] { return data::is_default_data_path(); },
+                }).on_pressed([] {
+                    data::reset_data_path();
+                });
+                pane.add_text("Changes take effect after restarting the game; recognized data "
+                              "moves to the new folder on the next launch.");
+            });
+#endif
+
+        left.add_section("Startup");
+        add_bool(left, right, current.backend.skipPrelaunch, "Skip Prelaunch Menu",
+                 "Launch the last verified disc image immediately on future starts.");
+        add_bool(left, right, current.backend.checkForUpdates, "Check for Updates",
+                 "Check GitHub releases when the prelaunch menu opens. No personal data is collected.");
+    });
+
     add_tab("Video", [this](Rml::Element* content) {
         auto& current = settings();
         auto& left = add_child<Pane>(content, Pane::Type::Controlled);
         auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
 
+        left.add_section("Display");
         left.register_control(
             left.add_child<BoolButton>(BoolButton::Props{
                 .key = "Fullscreen",
@@ -170,23 +219,6 @@ SettingsWindow::SettingsWindow()
         add_bool(left, right, current.video.vsync, "Vertical Sync",
                  "Synchronize presentation with the display refresh rate.",
                  [](bool value) { aurora_enable_vsync(value); });
-
-        left.register_control(
-            left.add_child<NumberButton>(NumberButton::Props{
-                .key = "Frame Limit",
-                .getValue = [&current] { return current.video.maxFrameRate.value(); },
-                .setValue = [&current](int value) {
-                    current.video.maxFrameRate.set_value(value);
-                    g_pc_frame_limit_override = value;
-                    persist();
-                },
-                .isModified = [&current] { return modified(current.video.maxFrameRate); },
-                .min = 0,
-                .max = 480,
-                .step = 5,
-                .suffix = " FPS",
-            }),
-            right, [](Pane& pane) { pane.add_text("Set to 0 for uncapped presentation."); });
 
         left.register_control(
             left.add_select_button({
@@ -229,6 +261,24 @@ SettingsWindow::SettingsWindow()
                 pane.add_text("Window dimensions apply immediately while windowed.");
             });
 
+        left.add_section("Performance");
+        left.register_control(
+            left.add_child<NumberButton>(NumberButton::Props{
+                .key = "Frame Limit",
+                .getValue = [&current] { return current.video.maxFrameRate.value(); },
+                .setValue = [&current](int value) {
+                    current.video.maxFrameRate.set_value(value);
+                    g_pc_frame_limit_override = value;
+                    persist();
+                },
+                .isModified = [&current] { return modified(current.video.maxFrameRate); },
+                .min = 0,
+                .max = 480,
+                .step = 5,
+                .suffix = " FPS",
+            }),
+            right, [](Pane& pane) { pane.add_text("Set to 0 for uncapped presentation."); });
+
         left.register_control(
             left.add_select_button({
                 .key = "Multisample Antialiasing",
@@ -248,6 +298,7 @@ SettingsWindow::SettingsWindow()
                 pane.add_text("MSAA changes take effect after restarting the game.");
             });
 
+        left.add_section("Textures");
         left.register_control(
             left.add_select_button({
                 .key = "Texture Pack",
@@ -270,6 +321,7 @@ SettingsWindow::SettingsWindow()
         auto& current = settings();
         auto& left = add_child<Pane>(content, Pane::Type::Controlled);
         auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
+        left.add_section("Volume");
         left.register_control(
             left.add_child<NumberButton>(NumberButton::Props{
                 .key = "Master Volume",
@@ -284,18 +336,60 @@ SettingsWindow::SettingsWindow()
             right, [](Pane& pane) { pane.add_text("Adjust the host audio stream gain immediately."); });
     });
 
-    add_tab("Controls", [this](Rml::Element* content) {
+    add_tab("Gameplay", [this](Rml::Element* content) {
         auto& current = settings();
         auto& left = add_child<Pane>(content, Pane::Type::Controlled);
         auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
 
+        left.add_section("Original Experience");
+        left.register_control(
+            left.add_child<BoolButton>(BoolButton::Props{
+                .key = "Resetti",
+                .getValue = [&current] { return !current.enhancements.disableResetti.value(); },
+                .setValue = [&current](bool value) {
+                    current.enhancements.disableResetti.set_value(!value);
+                    persist(true);
+                },
+                .isModified = [&current] { return modified(current.enhancements.disableResetti); },
+            }),
+            right, [](Pane& pane) { pane.add_text("Enable the normal Resetti consequence after quitting without saving."); });
+
+        left.add_section("Quality of Life");
+        left.register_control(
+            left.add_child<BoolButton>(BoolButton::Props{
+                .key = "Single-Player Shop Upgrades",
+                .getValue = [&current] { return current.enhancements.disableShopVisitorRequirement.value(); },
+                .setValue = [&current](bool value) {
+                    current.enhancements.disableShopVisitorRequirement.set_value(value);
+                    persist(true);
+                },
+                .isModified = [&current] { return modified(current.enhancements.disableShopVisitorRequirement); },
+            }),
+            right, [](Pane& pane) { pane.add_text("Remove the visiting-player requirement from the final Nook shop upgrade."); });
+
+        add_bool(left, right, current.enhancements.borderlessAcres, "Borderless Acres",
+                 "Remove acre-boundary movement restrictions. Enabling it refreshes nearby collision state.",
+                 [](bool) { apply_runtime_settings(true); });
+        add_bool(left, right, current.enhancements.pillarboxNes, "NES 4:3 Aspect",
+                 "Keep embedded NES games at their original 4:3 aspect ratio.");
+    });
+
+    add_tab("Controller", [this](Rml::Element* content) {
+        auto& current = settings();
+        auto& left = add_child<Pane>(content, Pane::Type::Controlled);
+        auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
+
+        left.add_section("Configuration");
         left.register_control(
             left.add_button("Configure Controllers").on_pressed([this] {
                 push(std::make_unique<ControllerConfigWindow>());
             }),
             right, [](Pane& pane) {
-                pane.add_text("Configure keyboard and controller buttons, sticks, triggers, dead zones, and rumble for all four ports.");
+                pane.add_text("Choose devices and configure keyboard and controller buttons, "
+                              "sticks, triggers, dead zones, and rumble for all four ports.");
             });
+
+        left.add_section("Dead Zones");
         left.register_control(
             left.add_child<NumberButton>(NumberButton::Props{
                 .key = "Control Stick Deadzone",
@@ -321,82 +415,6 @@ SettingsWindow::SettingsWindow()
             }),
             right, [](Pane& pane) { pane.add_text("Global C-stick deadzone for newly connected and active controllers."); });
     });
-
-    add_tab("Gameplay", [this](Rml::Element* content) {
-        auto& current = settings();
-        auto& left = add_child<Pane>(content, Pane::Type::Controlled);
-        auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
-
-        left.register_control(
-            left.add_child<BoolButton>(BoolButton::Props{
-                .key = "Resetti",
-                .getValue = [&current] { return !current.enhancements.disableResetti.value(); },
-                .setValue = [&current](bool value) {
-                    current.enhancements.disableResetti.set_value(!value);
-                    persist(true);
-                },
-                .isModified = [&current] { return modified(current.enhancements.disableResetti); },
-            }),
-            right, [](Pane& pane) { pane.add_text("Enable the normal Resetti consequence after quitting without saving."); });
-
-        left.register_control(
-            left.add_child<BoolButton>(BoolButton::Props{
-                .key = "Single-Player Shop Upgrades",
-                .getValue = [&current] { return current.enhancements.disableShopVisitorRequirement.value(); },
-                .setValue = [&current](bool value) {
-                    current.enhancements.disableShopVisitorRequirement.set_value(value);
-                    persist(true);
-                },
-                .isModified = [&current] { return modified(current.enhancements.disableShopVisitorRequirement); },
-            }),
-            right, [](Pane& pane) { pane.add_text("Remove the visiting-player requirement from the final Nook shop upgrade."); });
-
-        add_bool(left, right, current.enhancements.borderlessAcres, "Borderless Acres",
-                 "Remove acre-boundary movement restrictions. Enabling it refreshes nearby collision state.",
-                 [](bool) { apply_runtime_settings(true); });
-        add_bool(left, right, current.enhancements.pillarboxNes, "NES 4:3 Aspect",
-                 "Keep embedded NES games at their original 4:3 aspect ratio.");
-    });
-
-#if ACGC_CAN_CHANGE_DATA_FOLDER
-    add_tab("Data", [this](Rml::Element* content) {
-        auto& left = add_child<Pane>(content, Pane::Type::Controlled);
-        auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
-
-        left.register_control(
-            left.add_select_button({
-                .key = "Data Folder",
-                .getValue = [] {
-                    return Rml::String(data::abbreviated_path_string(data::configured_data_path()));
-                },
-                .isModified = [] { return data::is_data_path_restart_pending(); },
-            }),
-            right, [](Pane& pane) {
-                pane.add_text("The data folder is where the game stores saves, settings, "
-                              "input mappings, texture packs, and NES ROMs.");
-                pane.add_child<DataFolderPathText>();
-#if ACGC_CAN_OPEN_DATA_FOLDER
-                pane.add_button("Open Data Folder").on_pressed([] {
-                    data::open_data_path();
-                });
-#endif
-                pane.add_button("Change Data Folder").on_pressed([] {
-                    const std::string current = borealis::io::fs_path_to_string(data::configured_data_path());
-                    SDL_ShowOpenFolderDialog(&data_folder_dialog_callback, nullptr,
-                                             aurora::window::get_sdl_window(),
-                                             current.empty() ? nullptr : current.c_str(), false);
-                });
-                pane.add_button(ControlledButton::Props{
-                    .text = "Reset to Default",
-                    .isDisabled = [] { return data::is_default_data_path(); },
-                }).on_pressed([] {
-                    data::reset_data_path();
-                });
-                pane.add_text("Changes take effect after restarting the game; recognized data "
-                              "moves to the new folder on the next launch.");
-            });
-    });
-#endif // ACGC_CAN_CHANGE_DATA_FOLDER
 }
 
 void SettingsWindow::hide(bool close)
