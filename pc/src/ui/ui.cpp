@@ -153,10 +153,13 @@ void handle_event(const SDL_Event& event) noexcept
         return;
     }
 
-    // Escape is the desktop equivalent of Bacopa's menu command. Once a
-    // document is open, it remains a normal Cancel event handled by RmlUi.
+    // Escape is the desktop equivalent of Bacopa's menu command. Aurora sends
+    // keyboard events to RmlUi before forwarding them here, so a visible menu
+    // may already have handled Escape and hidden itself. In that case,
+    // sWasPausingGame is still true until sync_pause_state() below; do not
+    // immediately reopen the menu we just closed.
     if (event.type == SDL_EVENT_KEY_DOWN && !event.key.repeat && event.key.key == SDLK_ESCAPE &&
-        !any_document_visible()) {
+        !any_document_visible() && !sWasPausingGame) {
         if (auto* context = aurora::rmlui::get_context()) {
             context->ProcessKeyDown(kMenuKey, 0);
             context->ProcessKeyUp(kMenuKey, 0);
