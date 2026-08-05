@@ -5,6 +5,7 @@
 #include <aurora/main.h>
 #include <dolphin/gx/GXAurora.h>
 #include <dolphin/pad.h>
+#include <dolphin/vi.h>
 #include <SDL3/SDL.h>
 
 #include "pc_assets.h"
@@ -64,6 +65,13 @@ unsigned int pc_image_end = 0;
 
 static bool s_frame_started = false;
 
+static void pc_speedhack_toggle() {
+    g_pc_speedhack_enabled = !g_pc_speedhack_enabled;
+    if (g_pc_verbose) {
+        std::printf("[PC] speedhack %s\n", g_pc_speedhack_enabled ? "5x" : "off");
+    }
+}
+
 bool ac_aurora_begin_frame() {
     /* Display-list markers may leave this in transition/UI mode. The legacy
      * renderer reset it before every frame, before JSystem submits GX state. */
@@ -81,6 +89,9 @@ bool ac_aurora_begin_frame() {
         if (event->type == AURORA_EXIT) {
             g_pc_running = 0;
         } else if (event->type == AURORA_SDL_EVENT) {
+            if (event->sdl.type == SDL_EVENT_KEY_DOWN && !event->sdl.key.repeat && event->sdl.key.key == SDLK_F3) {
+                pc_speedhack_toggle();
+            }
             acgc::ui::handle_event(event->sdl);
         } else if (event->type == AURORA_CONTROLLER_ADDED) {
             acgc::apply_runtime_settings(false);
