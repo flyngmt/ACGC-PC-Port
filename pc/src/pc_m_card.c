@@ -85,6 +85,24 @@ static char l_pc_gci_path_legacy[PC_SAVE_PATH_MAX];
 #define GCI_SAVE_BACK_OFFSET (OTHERS_SIZE + sizeof(Save))  /* 0x4C000 */
 #define GCI_SECTOR_SIZE      mCD_MEMCARD_SECTORSIZE /* 0x2000 */
 
+/* Make sure save file is correctly formatted. */
+_Static_assert(sizeof(mNW_original_design_c) == 0x220, "mNW_original_design_c disk layout changed");
+_Static_assert(offsetof(mQst_base_c, time_limit) == 0x04, "mQst_base_c.time_limit disk offset changed");
+_Static_assert(sizeof(mQst_base_c) == 0x0C, "mQst_base_c disk layout changed");
+_Static_assert(sizeof(mQst_delivery_c) == 0x28, "mQst_delivery_c disk layout changed");
+_Static_assert(sizeof(mQst_errand_c) == 0x58, "mQst_errand_c disk layout changed");
+_Static_assert(sizeof(mQst_contest_c) == 0x28, "mQst_contest_c disk layout changed");
+_Static_assert(sizeof(Private_c) == 0x2440, "Private_c disk layout changed");
+_Static_assert(offsetof(Save_t, land_info) == 0x9120, "Save_t.land_info disk offset changed");
+_Static_assert(sizeof(Save_t) == 0x242A0, "Save_t disk layout changed");
+_Static_assert(sizeof(Save) == 0x26000, "Save disk layout changed");
+_Static_assert(sizeof(mCD_keep_original_c) == 0xCCA0, "mCD_keep_original_c disk layout changed");
+_Static_assert(sizeof(mCD_keep_mail_c) == 0xBAC0, "mCD_keep_mail_c disk layout changed");
+_Static_assert(sizeof(mCD_keep_diary_c) == 0xBA20, "mCD_keep_diary_c disk layout changed");
+_Static_assert(OTHERS_SIZE == 0x26000, "GCI auxiliary block layout changed");
+_Static_assert(GCI_SAVE_MAIN_OFFSET == 0x26000, "GCI main save offset changed");
+_Static_assert(GCI_SAVE_BACK_OFFSET == 0x4C000, "GCI backup save offset changed");
+
 int pc_save_loaded = 0;
 static int pc_save_ready = 0;
 

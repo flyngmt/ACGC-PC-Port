@@ -199,31 +199,30 @@ static void swap_Mail_array(Mail_c* mail, u32 count) {
     for (i = 0; i < count; i++) swap_Mail(&mail[i]);
 }
 
-/* mQst_base_c u32 bitfield: direction-aware repack.
- * BE: quest_type[31:30], quest_kind[29:24], time_limit_enabled[23], progress[22:19], give_reward[18], unused[17:16]
- * LE: quest_type[1:0], quest_kind[7:2], time_limit_enabled[8], progress[12:9], give_reward[13], unused[15:14] */
+/* mQst_base_c two-byte bitfield within a four-byte storage unit: direction-aware repack.
+ * BE: quest_type[15:14], quest_kind[13:8], time_limit_enabled[7], progress[6:3], give_reward[2], unused[1:0]
+ * LE: quest_type[1:0], quest_kind[7:2], time_limit_enabled[8], progress[12:9], give_reward[13], unused[15:14].
+ * Bytes 2-3 are padding and must be left untouched for an exact round trip. */
 static void swap_mQst_base(mQst_base_c* qb, pc_bswap_dir_t dir) {
     u8* b = (u8*)qb;
     u32 raw;
     u32 quest_type, quest_kind, time_limit_enabled, progress, give_reward, unused_bits;
 
     if (dir == PC_BSWAP_FROM_BE) {
-        raw = ((u32)b[0] << 24) | ((u32)b[1] << 16) | ((u32)b[2] << 8) | b[3];
-        quest_type          = (raw >> 30) & 0x3;
-        quest_kind          = (raw >> 24) & 0x3F;
-        time_limit_enabled  = (raw >> 23) & 0x1;
-        progress            = (raw >> 19) & 0xF;
-        give_reward         = (raw >> 18) & 0x1;
-        unused_bits         = (raw >> 16) & 0x3;
+        raw = ((u32)b[0] << 8) | b[1];
+        quest_type          = (raw >> 14) & 0x3;
+        quest_kind          = (raw >> 8) & 0x3F;
+        time_limit_enabled  = (raw >> 7) & 0x1;
+        progress            = (raw >> 3) & 0xF;
+        give_reward         = (raw >> 2) & 0x1;
+        unused_bits         = raw & 0x3;
 
         raw = quest_type | (quest_kind << 2) | (time_limit_enabled << 8)
             | (progress << 9) | (give_reward << 13) | (unused_bits << 14);
         b[0] = (u8)(raw);
         b[1] = (u8)(raw >> 8);
-        b[2] = (u8)(raw >> 16);
-        b[3] = (u8)(raw >> 24);
     } else {
-        raw = b[0] | ((u32)b[1] << 8) | ((u32)b[2] << 16) | ((u32)b[3] << 24);
+        raw = b[0] | ((u32)b[1] << 8);
         quest_type          = raw & 0x3;
         quest_kind          = (raw >> 2) & 0x3F;
         time_limit_enabled  = (raw >> 8) & 0x1;
@@ -231,12 +230,10 @@ static void swap_mQst_base(mQst_base_c* qb, pc_bswap_dir_t dir) {
         give_reward         = (raw >> 13) & 0x1;
         unused_bits         = (raw >> 14) & 0x3;
 
-        raw = (quest_type << 30) | (quest_kind << 24) | (time_limit_enabled << 23)
-            | (progress << 19) | (give_reward << 18) | (unused_bits << 16);
-        b[0] = (u8)(raw >> 24);
-        b[1] = (u8)(raw >> 16);
-        b[2] = (u8)(raw >> 8);
-        b[3] = (u8)(raw);
+        raw = (quest_type << 14) | (quest_kind << 8) | (time_limit_enabled << 7)
+            | (progress << 3) | (give_reward << 2) | unused_bits;
+        b[0] = (u8)(raw >> 8);
+        b[1] = (u8)(raw);
     }
 
     swap_lbRTC_time(&qb->time_limit);

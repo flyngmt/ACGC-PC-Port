@@ -147,7 +147,11 @@ typedef struct {
 #define mCD_KEEP_ORIGINAL_COUNT 12
 #define mCD_KEEP_ORIGINAL_FOLDER_NAME_LEN 12
 
+#ifdef _MSC_VER
+typedef __declspec(align(32)) struct {
+#else
 typedef struct {
+#endif
     u16 checksum;
     u16 landid;
     u8 folder_names[mCD_KEEP_ORIGINAL_PAGE_COUNT][mCD_KEEP_ORIGINAL_FOLDER_NAME_LEN];
@@ -161,7 +165,11 @@ typedef struct {
 #define mCD_KEEP_MAIL_COUNT 20
 #define mCD_KEEP_MAIL_FOLDER_NAME_LEN 12
 
+#ifdef _MSC_VER
+typedef __declspec(align(32)) struct {
+#else
 typedef struct {
+#endif
     u16 checksum;
     u16 landid;
     u8 folder_names[mCD_KEEP_MAIL_PAGE_COUNT][mCD_KEEP_MAIL_FOLDER_NAME_LEN];
@@ -173,7 +181,11 @@ typedef struct {
 #define mCD_KEEP_DIARY_COUNT PLAYER_NUM
 #define mCD_KEEP_DIARY_ENTRY_COUNT lbRTC_MONTHS_MAX
 
+#ifdef _MSC_VER
+typedef __declspec(align(32)) struct {
+#else
 typedef struct {
+#endif
     u16 checksum;
     mDi_entry_c entries[mCD_KEEP_DIARY_COUNT][mCD_KEEP_DIARY_ENTRY_COUNT];
 } mCD_keep_diary_c ATTRIBUTE_ALIGN(32);
