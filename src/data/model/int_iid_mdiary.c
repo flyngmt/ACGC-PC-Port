@@ -7,9 +7,9 @@
 
 extern Vtx int_iid_mdiary_v[];
 #ifdef TARGET_PC
-u8 int_iid_mdiary[0x20] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 int_iid_mdiary[0x20];
 #else
-u8 int_iid_mdiary[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 int_iid_mdiary[] = {
 #include "assets/int_iid_mdiary.inc"
 };
 #endif

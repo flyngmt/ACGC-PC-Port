@@ -6,113 +6,113 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u16 tyo_win_icon2_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 tyo_win_icon2_pal[0x20 / sizeof(u16)];
 #else
-u16 tyo_win_icon2_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 tyo_win_icon2_pal[] = {
 #include "assets/tyo_win_icon2_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 tyo_win_nuno_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 tyo_win_nuno_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 tyo_win_nuno_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 tyo_win_nuno_tex_rgb_ci4_pal[] = {
 #include "assets/tyo_win_nuno_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 tyo_win_sw1_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 tyo_win_sw1_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 tyo_win_sw1_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 tyo_win_sw1_tex_rgb_ci4_pal[] = {
 #include "assets/tyo_win_sw1_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 tyo_win_sw2_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 tyo_win_sw2_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 tyo_win_sw2_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 tyo_win_sw2_tex_rgb_ci4_pal[] = {
 #include "assets/tyo_win_sw2_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 tyo_win_sw3_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 tyo_win_sw3_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 tyo_win_sw3_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 tyo_win_sw3_tex_rgb_ci4_pal[] = {
 #include "assets/tyo_win_sw3_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 fkm_win_fuki2_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 fkm_win_fuki2_tex[0x800];
 #else
-static u8 fkm_win_fuki2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 fkm_win_fuki2_tex[] = {
 #include "assets/tyo_win/fkm_win_fuki2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 tyo_win_balance_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 tyo_win_balance_tex[0x200];
 #else
-u8 tyo_win_balance_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 tyo_win_balance_tex[] = {
 #include "assets/tyo_win_balance_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 fri_win_bell_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 fri_win_bell_tex[0x100];
 #else
-static u8 fri_win_bell_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 fri_win_bell_tex[] = {
 #include "assets/tyo_win/fri_win_bell_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 fri_win_cash_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 fri_win_cash_tex[0x200];
 #else
-static u8 fri_win_cash_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 fri_win_cash_tex[] = {
 #include "assets/tyo_win/fri_win_cash_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 tyo_win_icon_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 tyo_win_icon_tex[0x800];
 #else
-u8 tyo_win_icon_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 tyo_win_icon_tex[] = {
 #include "assets/tyo_win_icon_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 fkm_win_w4_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 fkm_win_w4_tex[0x80];
 #else
-static u8 fkm_win_w4_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 fkm_win_w4_tex[] = {
 #include "assets/tyo_win/fkm_win_w4_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 fkm_win_w3_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 fkm_win_w3_tex[0x200];
 #else
-static u8 fkm_win_w3_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 fkm_win_w3_tex[] = {
 #include "assets/tyo_win/fkm_win_w3_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 fkm_win_w2_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 fkm_win_w2_tex[0x200];
 #else
-static u8 fkm_win_w2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 fkm_win_w2_tex[] = {
 #include "assets/tyo_win/fkm_win_w2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 fkm_win_w1_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 fkm_win_w1_tex[0x400];
 #else
-static u8 fkm_win_w1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 fkm_win_w1_tex[] = {
 #include "assets/tyo_win/fkm_win_w1_tex.inc"
 };
 #endif
@@ -126,9 +126,9 @@ u8 tyo_win_deposit_tex_rgb_ia8[] = {
 #endif
 
 #ifdef TARGET_PC
-u8 tyo_win_withdraw_tex[0x1000] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 tyo_win_withdraw_tex[0x1000];
 #else
-u8 tyo_win_withdraw_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 tyo_win_withdraw_tex[] = {
 #include "assets/tyo_win_withdraw_tex.inc"
 };
 #endif

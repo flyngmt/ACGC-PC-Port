@@ -12,9 +12,9 @@ extern u8 lat_letter01_03_tex[];
 extern u8 lat_letter01_04_tex[];
 extern u8 lat_tegami_fusen_tex[];
 #ifdef TARGET_PC
-Vtx lat_letter01_v[0x300 / sizeof(Vtx)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) Vtx lat_letter01_v[0x300 / sizeof(Vtx)];
 #else
-Vtx lat_letter01_v[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) Vtx lat_letter01_v[] = {
 #include "assets/lat_letter01_v.inc"
 };
 #endif

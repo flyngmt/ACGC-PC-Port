@@ -7,9 +7,9 @@
 
 extern Vtx act_mus_raigyo_a1_v[];
 #ifdef TARGET_PC
-static u16 int_sum_raigyo_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 int_sum_raigyo_pal[0x20 / sizeof(u16)];
 #else
-static u16 int_sum_raigyo_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 int_sum_raigyo_pal[] = {
 #include "assets/act_mus_raigyo_a1/int_sum_raigyo_pal.inc"
 };
 #endif

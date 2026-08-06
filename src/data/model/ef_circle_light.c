@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 ef_circle_light_tex_4i4[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_circle_light_tex_4i4[0x200];
 #else
-u8 ef_circle_light_tex_4i4[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_circle_light_tex_4i4[] = {
 #include "assets/ef_circle_light_tex_4i4.inc"
 };
 #endif

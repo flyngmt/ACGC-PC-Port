@@ -4,9 +4,9 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-u16 tol_axe_1_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 tol_axe_1_pal[0x20 / sizeof(u16)];
 #else
-u16 tol_axe_1_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 tol_axe_1_pal[] = {
 #include "assets/tol_axe_1_pal.inc"
 };
 #endif
@@ -74,9 +74,9 @@ Gfx tol_axe_1_model[] = {
 };
 
 #ifdef TARGET_PC
-u16 tol_axe_1_b_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 tol_axe_1_b_pal[0x20 / sizeof(u16)];
 #else
-u16 tol_axe_1_b_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 tol_axe_1_b_pal[] = {
 #include "assets/tol_axe_1_b_pal.inc"
 };
 #endif
@@ -144,9 +144,9 @@ Gfx tol_axe_1_b_model[] = {
 };
 
 #ifdef TARGET_PC
-u16 tol_axe_1_c_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 tol_axe_1_c_pal[0x20 / sizeof(u16)];
 #else
-u16 tol_axe_1_c_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 tol_axe_1_c_pal[] = {
 #include "assets/tol_axe_1_c_pal.inc"
 };
 #endif
@@ -213,9 +213,9 @@ Gfx tol_axe_1_c_model[] = {
 };
 
 #ifdef TARGET_PC
-u16 tol_axe_2_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 tol_axe_2_pal[0x20 / sizeof(u16)];
 #else
-u16 tol_axe_2_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 tol_axe_2_pal[] = {
 #include "assets/tol_axe_2_pal.inc"
 };
 #endif
@@ -283,9 +283,9 @@ Gfx tol_axe_2_model[] = {
 };
 
 #ifdef TARGET_PC
-u16 act_m_net1_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 act_m_net1_pal[0x20 / sizeof(u16)];
 #else
-u16 act_m_net1_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 act_m_net1_pal[] = {
 #include "assets/act_m_net1_pal.inc"
 };
 #endif
@@ -407,9 +407,9 @@ cKF_Joint_R_c cKF_je_r_tol_net_1_tbl[] = {
 cKF_Skeleton_R_c cKF_bs_r_tol_net_1 = { ARRAY_COUNT(cKF_je_r_tol_net_1_tbl), 3, cKF_je_r_tol_net_1_tbl };
 
 #ifdef TARGET_PC
-u16 tol_net_2_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 tol_net_2_pal[0x20 / sizeof(u16)];
 #else
-u16 tol_net_2_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 tol_net_2_pal[] = {
 #include "assets/tol_net_2_pal.inc"
 };
 #endif
@@ -678,9 +678,9 @@ cKF_Animation_R_c cKF_ba_r_tol_net_1_yatta_m1 = { cKF_ckcb_r_tol_net_1_yatta_m1_
                                                   53 };
 
 #ifdef TARGET_PC
-static u16 tol_sao_1_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_sao_1_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_sao_1_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_sao_1_pal[] = {
 #include "assets/player_tool/tol_sao_1_pal.inc"
 };
 #endif
@@ -787,9 +787,9 @@ cKF_Joint_R_c cKF_je_r_tol_sao_1_tbl[] = { { NULL, 1, cKF_JOINT_FLAG_DISP_OPA, {
 cKF_Skeleton_R_c cKF_bs_r_tol_sao_1 = { ARRAY_COUNT(cKF_je_r_tol_sao_1_tbl), 4, cKF_je_r_tol_sao_1_tbl };
 
 #ifdef TARGET_PC
-static u16 tol_sao_2_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_sao_2_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_sao_2_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_sao_2_pal[] = {
 #include "assets/player_tool/tol_sao_2_pal.inc"
 };
 #endif
@@ -1023,9 +1023,9 @@ cKF_Animation_R_c cKF_ba_r_tol_sao_1_not_sao_swing1 = { cKF_ckcb_r_tol_sao_1_not
                                                         34 };
 
 #ifdef TARGET_PC
-u16 act_m_scoop_1_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 act_m_scoop_1_pal[0x20 / sizeof(u16)];
 #else
-u16 act_m_scoop_1_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 act_m_scoop_1_pal[] = {
 #include "assets/act_m_scoop_1_pal.inc"
 };
 #endif
@@ -1125,9 +1125,9 @@ Gfx tol_scoop_1_model[] = {
 };
 
 #ifdef TARGET_PC
-u16 tol_scoop_2_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 tol_scoop_2_pal[0x20 / sizeof(u16)];
 #else
-u16 tol_scoop_2_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 tol_scoop_2_pal[] = {
 #include "assets/tol_scoop_2_pal.inc"
 };
 #endif
@@ -1227,9 +1227,9 @@ Gfx tol_scoop_2_model[] = {
 };
 
 #ifdef TARGET_PC
-static u8 tol_balloon1_wire_tex_txt[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 tol_balloon1_wire_tex_txt[0x80];
 #else
-static u8 tol_balloon1_wire_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 tol_balloon1_wire_tex_txt[] = {
 #include "assets/player_tool/tol_balloon1_wire_tex_txt.inc"
 };
 #endif
@@ -1343,9 +1343,9 @@ cKF_Joint_R_c cKF_je_r_tol_balloon1_tbl[] = { { NULL, 1, cKF_JOINT_FLAG_DISP_OPA
 cKF_Skeleton_R_c cKF_bs_r_tol_balloon1 = { ARRAY_COUNT(cKF_je_r_tol_balloon1_tbl), 4, cKF_je_r_tol_balloon1_tbl };
 
 #ifdef TARGET_PC
-u8 tol_balloonB_wire_tex_txt[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 tol_balloonB_wire_tex_txt[0x80];
 #else
-u8 tol_balloonB_wire_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 tol_balloonB_wire_tex_txt[] = {
 #include "assets/tol_balloonB_wire_tex_txt.inc"
 };
 #endif
@@ -1459,9 +1459,9 @@ cKF_Joint_R_c cKF_je_r_tol_balloon2_tbl[] = { { NULL, 1, cKF_JOINT_FLAG_DISP_OPA
 cKF_Skeleton_R_c cKF_bs_r_tol_balloon2 = { ARRAY_COUNT(cKF_je_r_tol_balloon2_tbl), 4, cKF_je_r_tol_balloon2_tbl };
 
 #ifdef TARGET_PC
-u8 tol_balloonC_wire_tex_txt[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 tol_balloonC_wire_tex_txt[0x80];
 #else
-u8 tol_balloonC_wire_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 tol_balloonC_wire_tex_txt[] = {
 #include "assets/tol_balloonC_wire_tex_txt.inc"
 };
 #endif
@@ -1577,9 +1577,9 @@ cKF_Joint_R_c cKF_je_r_tol_balloon3_tbl[] = {
 cKF_Skeleton_R_c cKF_bs_r_tol_balloon3 = { ARRAY_COUNT(cKF_je_r_tol_balloon3_tbl), 4, cKF_je_r_tol_balloon3_tbl };
 
 #ifdef TARGET_PC
-u8 tol_balloonD_wire_tex_txt[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 tol_balloonD_wire_tex_txt[0x80];
 #else
-u8 tol_balloonD_wire_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 tol_balloonD_wire_tex_txt[] = {
 #include "assets/tol_balloonD_wire_tex_txt.inc"
 };
 #endif
@@ -1693,9 +1693,9 @@ cKF_Joint_R_c cKF_je_r_tol_balloon4_tbl[] = { { NULL, 1, cKF_JOINT_FLAG_DISP_OPA
 cKF_Skeleton_R_c cKF_bs_r_tol_balloon4 = { ARRAY_COUNT(cKF_je_r_tol_balloon4_tbl), 4, cKF_je_r_tol_balloon4_tbl };
 
 #ifdef TARGET_PC
-u8 tol_balloonE_wire_tex_txt[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 tol_balloonE_wire_tex_txt[0x80];
 #else
-u8 tol_balloonE_wire_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 tol_balloonE_wire_tex_txt[] = {
 #include "assets/tol_balloonE_wire_tex_txt.inc"
 };
 #endif
@@ -1809,9 +1809,9 @@ cKF_Joint_R_c cKF_je_r_tol_balloon5_tbl[] = { { NULL, 1, cKF_JOINT_FLAG_DISP_OPA
 cKF_Skeleton_R_c cKF_bs_r_tol_balloon5 = { ARRAY_COUNT(cKF_je_r_tol_balloon5_tbl), 4, cKF_je_r_tol_balloon5_tbl };
 
 #ifdef TARGET_PC
-u8 tol_balloonF_wire_tex_txt[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 tol_balloonF_wire_tex_txt[0x80];
 #else
-u8 tol_balloonF_wire_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 tol_balloonF_wire_tex_txt[] = {
 #include "assets/tol_balloonF_wire_tex_txt.inc"
 };
 #endif
@@ -1950,9 +1950,9 @@ cKF_Joint_R_c cKF_je_r_tol_balloon6_tbl[] = { { NULL, 1, cKF_JOINT_FLAG_DISP_OPA
 cKF_Skeleton_R_c cKF_bs_r_tol_balloon6 = { ARRAY_COUNT(cKF_je_r_tol_balloon6_tbl), 4, cKF_je_r_tol_balloon6_tbl };
 
 #ifdef TARGET_PC
-u8 tol_balloonG_wire_tex_txt[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 tol_balloonG_wire_tex_txt[0x80];
 #else
-u8 tol_balloonG_wire_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 tol_balloonG_wire_tex_txt[] = {
 #include "assets/tol_balloonG_wire_tex_txt.inc"
 };
 #endif
@@ -2091,9 +2091,9 @@ cKF_Joint_R_c cKF_je_r_tol_balloon7_tbl[] = { { NULL, 1, cKF_JOINT_FLAG_DISP_OPA
 cKF_Skeleton_R_c cKF_bs_r_tol_balloon7 = { ARRAY_COUNT(cKF_je_r_tol_balloon7_tbl), 4, cKF_je_r_tol_balloon7_tbl };
 
 #ifdef TARGET_PC
-u8 tol_balloonH_wire_tex_txt[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 tol_balloonH_wire_tex_txt[0x80];
 #else
-u8 tol_balloonH_wire_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 tol_balloonH_wire_tex_txt[] = {
 #include "assets/tol_balloonH_wire_tex_txt.inc"
 };
 #endif
@@ -2308,9 +2308,9 @@ cKF_Animation_R_c cKF_ba_r_tol_balloon1_gyaza1 = { cKF_ckcb_r_tol_balloon1_gyaza
                                                    27 };
 
 #ifdef TARGET_PC
-static u16 tol_kaza_1_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_kaza_1_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_kaza_1_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_kaza_1_pal[] = {
 #include "assets/player_tool/tol_kaza_1_pal.inc"
 };
 #endif
@@ -2394,9 +2394,9 @@ cKF_Joint_R_c cKF_je_r_tol_kaza1_tbl[] = { { NULL, 1, cKF_JOINT_FLAG_DISP_OPA, {
 cKF_Skeleton_R_c cKF_bs_r_tol_kaza1 = { ARRAY_COUNT(cKF_je_r_tol_kaza1_tbl), 2, cKF_je_r_tol_kaza1_tbl };
 
 #ifdef TARGET_PC
-static u16 tol_kaza_2_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_kaza_2_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_kaza_2_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_kaza_2_pal[] = {
 #include "assets/player_tool/tol_kaza_2_pal.inc"
 };
 #endif
@@ -2480,9 +2480,9 @@ cKF_Joint_R_c cKF_je_r_tol_kaza2_tbl[] = { { NULL, 1, cKF_JOINT_FLAG_DISP_OPA, {
 cKF_Skeleton_R_c cKF_bs_r_tol_kaza2 = { ARRAY_COUNT(cKF_je_r_tol_kaza2_tbl), 2, cKF_je_r_tol_kaza2_tbl };
 
 #ifdef TARGET_PC
-static u16 tol_kaza_3_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_kaza_3_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_kaza_3_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_kaza_3_pal[] = {
 #include "assets/player_tool/tol_kaza_3_pal.inc"
 };
 #endif
@@ -2566,9 +2566,9 @@ cKF_Joint_R_c cKF_je_r_tol_kaza3_tbl[] = { { NULL, 1, cKF_JOINT_FLAG_DISP_OPA, {
 cKF_Skeleton_R_c cKF_bs_r_tol_kaza3 = { ARRAY_COUNT(cKF_je_r_tol_kaza3_tbl), 2, cKF_je_r_tol_kaza3_tbl };
 
 #ifdef TARGET_PC
-static u16 tol_kaza_4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_kaza_4_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_kaza_4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_kaza_4_pal[] = {
 #include "assets/player_tool/tol_kaza_4_pal.inc"
 };
 #endif
@@ -2652,9 +2652,9 @@ cKF_Joint_R_c cKF_je_r_tol_kaza4_tbl[] = { { NULL, 1, cKF_JOINT_FLAG_DISP_OPA, {
 cKF_Skeleton_R_c cKF_bs_r_tol_kaza4 = { ARRAY_COUNT(cKF_je_r_tol_kaza4_tbl), 2, cKF_je_r_tol_kaza4_tbl };
 
 #ifdef TARGET_PC
-static u16 tol_kaza_5_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_kaza_5_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_kaza_5_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_kaza_5_pal[] = {
 #include "assets/player_tool/tol_kaza_5_pal.inc"
 };
 #endif
@@ -2738,9 +2738,9 @@ cKF_Joint_R_c cKF_je_r_tol_kaza5_tbl[] = { { NULL, 1, cKF_JOINT_FLAG_DISP_OPA, {
 cKF_Skeleton_R_c cKF_bs_r_tol_kaza5 = { ARRAY_COUNT(cKF_je_r_tol_kaza5_tbl), 2, cKF_je_r_tol_kaza5_tbl };
 
 #ifdef TARGET_PC
-static u16 tol_kaza_6_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_kaza_6_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_kaza_6_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_kaza_6_pal[] = {
 #include "assets/player_tool/tol_kaza_6_pal.inc"
 };
 #endif
@@ -2824,9 +2824,9 @@ cKF_Joint_R_c cKF_je_r_tol_kaza6_tbl[] = { { NULL, 1, cKF_JOINT_FLAG_DISP_OPA, {
 cKF_Skeleton_R_c cKF_bs_r_tol_kaza6 = { ARRAY_COUNT(cKF_je_r_tol_kaza6_tbl), 2, cKF_je_r_tol_kaza6_tbl };
 
 #ifdef TARGET_PC
-static u16 tol_kaza_7_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_kaza_7_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_kaza_7_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_kaza_7_pal[] = {
 #include "assets/player_tool/tol_kaza_7_pal.inc"
 };
 #endif
@@ -2958,9 +2958,9 @@ cKF_Joint_R_c cKF_je_r_tol_kaza7_tbl[] = { { NULL, 1, cKF_JOINT_FLAG_DISP_OPA, {
 cKF_Skeleton_R_c cKF_bs_r_tol_kaza7 = { ARRAY_COUNT(cKF_je_r_tol_kaza7_tbl), 2, cKF_je_r_tol_kaza7_tbl };
 
 #ifdef TARGET_PC
-static u16 tol_kaza_8_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_kaza_8_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_kaza_8_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_kaza_8_pal[] = {
 #include "assets/player_tool/tol_kaza_8_pal.inc"
 };
 #endif
@@ -3114,9 +3114,9 @@ cKF_Animation_R_c cKF_ba_r_tol_kaza1_wait = { cKF_ckcb_r_tol_kaza1_wait_tbl,
                                               361 };
 
 #ifdef TARGET_PC
-static u16 tol_fan1_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_fan1_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_fan1_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_fan1_pal[] = {
 #include "assets/player_tool/tol_fan1_pal.inc"
 };
 #endif
@@ -3153,9 +3153,9 @@ Gfx tol_fan1_model[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_fan2_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_fan2_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_fan2_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_fan2_pal[] = {
 #include "assets/player_tool/tol_fan2_pal.inc"
 };
 #endif
@@ -3192,9 +3192,9 @@ Gfx tol_fan2_model[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_fan3_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_fan3_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_fan3_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_fan3_pal[] = {
 #include "assets/player_tool/tol_fan3_pal.inc"
 };
 #endif
@@ -3231,9 +3231,9 @@ Gfx tol_fan3_model[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_fan4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_fan4_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_fan4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_fan4_pal[] = {
 #include "assets/player_tool/tol_fan4_pal.inc"
 };
 #endif
@@ -3270,9 +3270,9 @@ Gfx tol_fan4_model[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_fan5_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_fan5_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_fan5_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_fan5_pal[] = {
 #include "assets/player_tool/tol_fan5_pal.inc"
 };
 #endif
@@ -3309,9 +3309,9 @@ Gfx tol_fan5_model[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_fan6_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_fan6_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_fan6_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_fan6_pal[] = {
 #include "assets/player_tool/tol_fan6_pal.inc"
 };
 #endif
@@ -3353,9 +3353,9 @@ Gfx tol_fan6_model[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_fan7_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_fan7_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_fan7_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_fan7_pal[] = {
 #include "assets/player_tool/tol_fan7_pal.inc"
 };
 #endif
@@ -3392,9 +3392,9 @@ Gfx tol_fan7_model[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_fan8_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_fan8_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_fan8_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_fan8_pal[] = {
 #include "assets/player_tool/tol_fan8_pal.inc"
 };
 #endif

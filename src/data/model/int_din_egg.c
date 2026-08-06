@@ -7,9 +7,9 @@
 
 extern Vtx int_din_egg_v[];
 #ifdef TARGET_PC
-u16 int_din_egg_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 int_din_egg_pal[0x20 / sizeof(u16)];
 #else
-u16 int_din_egg_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 int_din_egg_pal[] = {
 #include "assets/int_din_egg_pal.inc"
 };
 #endif

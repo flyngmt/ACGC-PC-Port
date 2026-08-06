@@ -4,49 +4,49 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-u16 rom_myhome_ug_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 rom_myhome_ug_pal[0x20 / sizeof(u16)];
 #else
-u16 rom_myhome_ug_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 rom_myhome_ug_pal[] = {
 #include "assets/rom_myhome_ug_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_myhome_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_myhome_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_myhome_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_myhome_pal[] = {
 #include "assets/rom_myhome_ug/rom_myhome_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 rom_myhome_ugf1_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 rom_myhome_ugf1_tex[0x800];
 #else
-u8 rom_myhome_ugf1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 rom_myhome_ugf1_tex[] = {
 #include "assets/rom_myhome_ugf1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_myhome_enter2_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_myhome_enter2_tex[0x800];
 #else
-static u8 rom_myhome_enter2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_myhome_enter2_tex[] = {
 #include "assets/rom_myhome_ug/rom_myhome_enter2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 rom_myhome_ugw1_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 rom_myhome_ugw1_tex[0x800];
 #else
-u8 rom_myhome_ugw1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 rom_myhome_ugw1_tex[] = {
 #include "assets/rom_myhome_ugw1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 rom_myhome_ugw2_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 rom_myhome_ugw2_tex[0x800];
 #else
-u8 rom_myhome_ugw2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 rom_myhome_ugw2_tex[] = {
 #include "assets/rom_myhome_ugw2_tex.inc"
 };
 #endif

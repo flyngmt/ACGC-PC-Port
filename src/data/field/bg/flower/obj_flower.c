@@ -3,9 +3,9 @@
 // clang-format off
 
 #ifdef TARGET_PC
-static u8 obj_flower_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 obj_flower_tex[0x800];
 #else
-static u8 obj_flower_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 obj_flower_tex[] = {
 #include "assets/flower/obj_flower_tex.inc"
 };
 #endif

@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 ef_bodyprint01_0[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_bodyprint01_0[0x100];
 #else
-u8 ef_bodyprint01_0[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_bodyprint01_0[] = {
 #include "assets/ef_bodyprint01_0.inc"
 };
 #endif
@@ -34,9 +34,9 @@ Gfx ef_bodyprint01_00_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_footprint01_0[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_footprint01_0[0x80];
 #else
-u8 ef_footprint01_0[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_footprint01_0[] = {
 #include "assets/ef_footprint01_0.inc"
 };
 #endif
@@ -62,9 +62,9 @@ Gfx ef_footprint01_00_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_footprint01_1[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_footprint01_1[0x100];
 #else
-u8 ef_footprint01_1[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_footprint01_1[] = {
 #include "assets/ef_footprint01_1.inc"
 };
 #endif
@@ -90,9 +90,9 @@ Gfx ef_turn_footprint_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_footprint01_2[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_footprint01_2[0x200];
 #else
-u8 ef_footprint01_2[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_footprint01_2[] = {
 #include "assets/ef_footprint01_2.inc"
 };
 #endif

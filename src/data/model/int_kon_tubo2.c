@@ -7,9 +7,9 @@
 
 extern Vtx int_kon_tubo2_v[];
 #ifdef TARGET_PC
-u16 int_kon_tubo2_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 int_kon_tubo2_pal[0x20 / sizeof(u16)];
 #else
-u16 int_kon_tubo2_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 int_kon_tubo2_pal[] = {
 #include "assets/int_kon_tubo2_pal.inc"
 };
 #endif

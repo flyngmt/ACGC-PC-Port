@@ -7,9 +7,9 @@
 
 extern Vtx int_iku_slip_v[];
 #ifdef TARGET_PC
-u16 int_iku_slip_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 int_iku_slip_pal[0x20 / sizeof(u16)];
 #else
-u16 int_iku_slip_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 int_iku_slip_pal[] = {
 #include "assets/int_iku_slip_pal.inc"
 };
 #endif

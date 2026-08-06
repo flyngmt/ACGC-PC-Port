@@ -6,41 +6,41 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 cal_win_pick_tex[0x500] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 cal_win_pick_tex[0x500];
 #else
-u8 cal_win_pick_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 cal_win_pick_tex[]= {
 #include "assets/cal_win_pick_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 cal_win_view_tex[0x500] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 cal_win_view_tex[0x500];
 #else
-u8 cal_win_view_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 cal_win_view_tex[]= {
 #include "assets/cal_win_view_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 lat_sousa_2b1_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 lat_sousa_2b1_tex[0x200];
 #else
-static u8 lat_sousa_2b1_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) static u8 lat_sousa_2b1_tex[]= {
 #include "assets/cal_hyouji2/lat_sousa_2b1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 lat_sousa_b1_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 lat_sousa_b1_tex[0x800];
 #else
-u8 lat_sousa_b1_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 lat_sousa_b1_tex[]= {
 #include "assets/lat_sousa_b1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 lat_tegami_b3_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 lat_tegami_b3_tex[0x800];
 #else
-static u8 lat_tegami_b3_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) static u8 lat_tegami_b3_tex[]= {
 #include "assets/cal_hyouji2/lat_tegami_b3_tex.inc"
 };
 #endif

@@ -1,41 +1,41 @@
 #include "libforest/gbi_extensions.h"
 
 #ifdef TARGET_PC
-static u16 rom_open_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_open_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_open_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_open_pal[] = {
 #include "assets/field/bg/rom_open_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_open_floor_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_open_floor_tex[0x800];
 #else
-static u8 rom_open_floor_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_open_floor_tex[] = {
 #include "assets/field/bg/rom_open_floor_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_open_shade_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_open_shade_tex[0x400];
 #else
-static u8 rom_open_shade_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_open_shade_tex[] = {
 #include "assets/field/bg/rom_open_shade_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_open_spot2_tex_rgb_i4[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_open_spot2_tex_rgb_i4[0x200];
 #else
-static u8 rom_open_spot2_tex_rgb_i4[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_open_spot2_tex_rgb_i4[] = {
 #include "assets/field/bg/rom_open_spot2_tex_rgb_i4.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_open_spot_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_open_spot_tex[0x800];
 #else
-static u8 rom_open_spot_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_open_spot_tex[] = {
 #include "assets/field/bg/rom_open_spot_tex.inc"
 };
 #endif

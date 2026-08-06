@@ -6,17 +6,17 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-static u16 obj_shop_akican_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 obj_shop_akican_pal[0x20 / sizeof(u16)];
 #else
-static u16 obj_shop_akican_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) static u16 obj_shop_akican_pal[]= {
 #include "assets/obj_shop_nagagutu/obj_shop_akican_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 obj_shop_nagagutu_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_shop_nagagutu_tex[0x200];
 #else
-u8 obj_shop_nagagutu_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 obj_shop_nagagutu_tex[]= {
 #include "assets/obj_shop_nagagutu_tex.inc"
 };
 #endif

@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 kan_win_fune_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kan_win_fune_tex[0x100];
 #else
-u8 kan_win_fune_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kan_win_fune_tex[] = {
 #include "assets/kan_win_fune_tex.inc"
 };
 #endif

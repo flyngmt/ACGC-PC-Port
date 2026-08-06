@@ -4,17 +4,17 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-static u16 int_nog_isidai_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 int_nog_isidai_pal[0x20 / sizeof(u16)];
 #else
-static u16 int_nog_isidai_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 int_nog_isidai_pal[] = {
 #include "assets/act_f40_isidai/int_nog_isidai_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 act_f40_isidai_tex[0x300] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 act_f40_isidai_tex[0x300];
 #else
-u8 act_f40_isidai_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 act_f40_isidai_tex[] = {
 #include "assets/act_f40_isidai_tex.inc"
 };
 #endif

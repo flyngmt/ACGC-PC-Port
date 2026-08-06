@@ -4,17 +4,17 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-static u8 obj_s_palm_leaf_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 obj_s_palm_leaf_tex[0x800];
 #else
-static u8 obj_s_palm_leaf_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 obj_s_palm_leaf_tex[] = {
 #include "assets/obj_s_palm5/obj_s_palm_leaf_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 obj_s_palm_trunk_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 obj_s_palm_trunk_tex[0x800];
 #else
-static u8 obj_s_palm_trunk_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 obj_s_palm_trunk_tex[] = {
 #include "assets/obj_s_palm5/obj_s_palm_trunk_tex.inc"
 };
 #endif

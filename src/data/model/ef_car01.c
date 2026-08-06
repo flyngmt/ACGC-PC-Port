@@ -7,9 +7,9 @@
 
 extern Vtx ef_car01_v[];
 #ifdef TARGET_PC
-u8 ef_car01_1_int_i4[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_car01_1_int_i4[0x80];
 #else
-u8 ef_car01_1_int_i4[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_car01_1_int_i4[] = {
 #include "assets/ef_car01_1_int_i4.inc"
 };
 #endif

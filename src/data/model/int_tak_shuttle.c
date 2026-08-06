@@ -7,9 +7,9 @@
 
 extern Vtx int_tak_shuttle_v[];
 #ifdef TARGET_PC
-u16 int_tak_shuttle_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 int_tak_shuttle_pal[0x20 / sizeof(u16)];
 #else
-u16 int_tak_shuttle_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 int_tak_shuttle_pal[] = {
 #include "assets/int_tak_shuttle_pal.inc"
 };
 #endif

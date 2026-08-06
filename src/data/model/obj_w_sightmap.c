@@ -4,17 +4,17 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-static u16 obj_sightmap_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 obj_sightmap_pal[0x20 / sizeof(u16)];
 #else
-static u16 obj_sightmap_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 obj_sightmap_pal[] = {
 #include "assets/obj_w_sightmap/obj_sightmap_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 obj_w_sightmap_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_w_sightmap_tex[0x800];
 #else
-u8 obj_w_sightmap_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_w_sightmap_tex[] = {
 #include "assets/obj_w_sightmap_tex.inc"
 };
 #endif

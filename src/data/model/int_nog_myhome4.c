@@ -7,9 +7,9 @@
 
 extern Vtx int_nog_myhome4_v[];
 #ifdef TARGET_PC
-u8 int_nog_myhome4_body_tex[0x600] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 int_nog_myhome4_body_tex[0x600];
 #else
-u8 int_nog_myhome4_body_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 int_nog_myhome4_body_tex[] = {
 #include "assets/int_nog_myhome4_body_tex.inc"
 };
 #endif

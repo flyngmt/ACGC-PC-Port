@@ -7,9 +7,9 @@
 
 extern Vtx act_mus_angel_a1_v[];
 #ifdef TARGET_PC
-u8 act_mus_angel_body_txt[0xC00] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 act_mus_angel_body_txt[0xC00];
 #else
-u8 act_mus_angel_body_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 act_mus_angel_body_txt[] = {
 #include "assets/act_mus_angel_body_txt.inc"
 };
 #endif

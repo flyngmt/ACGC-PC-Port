@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_s_house1_t1_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_house1_t1_tex_txt[0x800];
 #else
-u8 obj_s_house1_t1_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_s_house1_t1_tex_txt[] = {
 #include "assets/obj_s_house1_t1_tex_txt.inc"
 };
 #endif
@@ -218,9 +218,9 @@ cKF_Animation_R_c cKF_ba_r_obj_s_house1_out = { cKF_ckcb_r_obj_s_house1_out_tbl,
                                                 51 };
 
 #ifdef TARGET_PC
-u8 obj_s_house2_t3_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_house2_t3_tex_txt[0x800];
 #else
-u8 obj_s_house2_t3_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_s_house2_t3_tex_txt[] = {
 #include "assets/obj_s_house2_t3_tex_txt.inc"
 };
 #endif
@@ -421,9 +421,9 @@ cKF_Animation_R_c cKF_ba_r_obj_s_house2_out = { cKF_ckcb_r_obj_s_house2_out_tbl,
                                                 51 };
 
 #ifdef TARGET_PC
-u8 obj_s_house3_t3_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_house3_t3_tex_txt[0x800];
 #else
-u8 obj_s_house3_t3_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_s_house3_t3_tex_txt[] = {
 #include "assets/obj_s_house3_t3_tex_txt.inc"
 };
 #endif
@@ -634,9 +634,9 @@ cKF_Animation_R_c cKF_ba_r_obj_s_house3_out = { cKF_ckcb_r_obj_s_house3_out_tbl,
                                                 51 };
 
 #ifdef TARGET_PC
-u8 obj_s_house4_t3_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_house4_t3_tex_txt[0x800];
 #else
-u8 obj_s_house4_t3_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_s_house4_t3_tex_txt[] = {
 #include "assets/obj_s_house4_t3_tex_txt.inc"
 };
 #endif
@@ -848,9 +848,9 @@ cKF_Animation_R_c cKF_ba_r_obj_s_house4_out = { cKF_ckcb_r_obj_s_house4_out_tbl,
                                                 51 };
 
 #ifdef TARGET_PC
-u8 obj_s_house5_t3_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_house5_t3_tex_txt[0x800];
 #else
-u8 obj_s_house5_t3_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_s_house5_t3_tex_txt[] = {
 #include "assets/obj_s_house5_t3_tex_txt.inc"
 };
 #endif
@@ -1065,9 +1065,9 @@ cKF_Animation_R_c cKF_ba_r_obj_s_house5_out = { cKF_ckcb_r_obj_s_house5_out_tbl,
                                                 51 };
 
 #ifdef TARGET_PC
-u8 obj_w_house1_t1_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_w_house1_t1_tex_txt[0x800];
 #else
-u8 obj_w_house1_t1_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_w_house1_t1_tex_txt[] = {
 #include "assets/obj_w_house1_t1_tex_txt.inc"
 };
 #endif
@@ -1277,9 +1277,9 @@ cKF_Animation_R_c cKF_ba_r_obj_w_house1_out = { cKF_ckcb_r_obj_w_house1_out_tbl,
                                                 51 };
 
 #ifdef TARGET_PC
-u8 obj_w_house2_t3_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_w_house2_t3_tex_txt[0x800];
 #else
-u8 obj_w_house2_t3_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_w_house2_t3_tex_txt[] = {
 #include "assets/obj_w_house2_t3_tex_txt.inc"
 };
 #endif
@@ -1481,9 +1481,9 @@ cKF_Animation_R_c cKF_ba_r_obj_w_house2_out = { cKF_ckcb_r_obj_w_house2_out_tbl,
                                                 51 };
 
 #ifdef TARGET_PC
-static u16 obj_w_house3_a_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 obj_w_house3_a_pal[0x20 / sizeof(u16)];
 #else
-static u16 obj_w_house3_a_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 obj_w_house3_a_pal[] = {
 #include "assets/obj_s_house1/obj_w_house3_a_pal.inc"
 };
 #endif
@@ -1702,9 +1702,9 @@ cKF_Animation_R_c cKF_ba_r_obj_w_house3_out = { cKF_ckcb_r_obj_w_house3_out_tbl,
                                                 51 };
 
 #ifdef TARGET_PC
-u8 obj_w_house4_t3_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_w_house4_t3_tex_txt[0x800];
 #else
-u8 obj_w_house4_t3_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_w_house4_t3_tex_txt[] = {
 #include "assets/obj_w_house4_t3_tex_txt.inc"
 };
 #endif
@@ -1913,9 +1913,9 @@ cKF_Animation_R_c cKF_ba_r_obj_w_house4_out = { cKF_ckcb_r_obj_w_house4_out_tbl,
                                                 51 };
 
 #ifdef TARGET_PC
-u8 obj_w_house5_t3_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_w_house5_t3_tex_txt[0x800];
 #else
-u8 obj_w_house5_t3_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_w_house5_t3_tex_txt[] = {
 #include "assets/obj_w_house5_t3_tex_txt.inc"
 };
 #endif

@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u16 obj_summer_museum_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_summer_museum_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_summer_museum_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_summer_museum_pal[] = {
 #include "assets/obj_summer_museum_pal.inc"
 };
 #endif
@@ -141,9 +141,9 @@ Gfx obj_s_museum_windowT_model[] = {
 };
 
 #ifdef TARGET_PC
-u16 obj_winter_museum_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_winter_museum_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_winter_museum_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_winter_museum_pal[] = {
 #include "assets/obj_winter_museum_pal.inc"
 };
 #endif

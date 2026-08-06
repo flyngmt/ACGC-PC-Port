@@ -50,8 +50,8 @@
 static fbdemo_c fbdemo;
 static f32 S_back_title_timer = 0.0f;
 static f32 S_se_endcheck_timeout = 0.0f;
-static u8 gxbuf[0x140] ATTRIBUTE_ALIGN(32);
-static u8 prbuf[(2*SCREEN_WIDTH) * (2*SCREEN_HEIGHT) * sizeof(u32)] ATTRIBUTE_ALIGN(32); // 0x12C000
+ATTRIBUTE_ALIGN(32) static u8 gxbuf[0x140];
+ATTRIBUTE_ALIGN(32) static u8 prbuf[(2*SCREEN_WIDTH) * (2*SCREEN_HEIGHT) * sizeof(u32)]; // 0x12C000
 
 static void Game_play_fbdemo_wipe_init(GAME_PLAY* play);
 static void Gameplay_Scene_Read(GAME_PLAY* play, s16 scene_no);

@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u16 obj_s_frag_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_s_frag_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_s_frag_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_s_frag_pal[] = {
 #include "assets/obj_s_frag_pal.inc"
 };
 #endif
@@ -190,9 +190,9 @@ cKF_Animation_R_c cKF_ba_r_obj_s_frag = {
 };
 
 #ifdef TARGET_PC
-u16 obj_w_frag_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_w_frag_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_w_frag_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_w_frag_pal[] = {
 #include "assets/obj_w_frag_pal.inc"
 };
 #endif

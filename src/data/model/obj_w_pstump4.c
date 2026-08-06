@@ -4,9 +4,9 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-static u8 obj_w_palm_stump_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 obj_w_palm_stump_tex[0x400];
 #else
-static u8 obj_w_palm_stump_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 obj_w_palm_stump_tex[] = {
 #include "assets/obj_w_pstump4/obj_w_palm_stump_tex.inc"
 };
 #endif

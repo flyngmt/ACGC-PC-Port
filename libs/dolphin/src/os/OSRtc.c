@@ -4,7 +4,7 @@
 #include "dolphin/os.h"
 #include "types.h"
 
-static SramControlBlock Scb ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static SramControlBlock Scb;
 
 static inline BOOL ReadSram(void* buffer) {
   u32 cmd;

@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-static u16 tol_fan2_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_fan2_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_fan2_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) static u16 tol_fan2_pal[]= {
 #include "assets/obj_shop_utiwa2/tol_fan2_pal.inc"
 };
 #endif

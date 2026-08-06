@@ -7,9 +7,9 @@
 
 extern Vtx clk_win_v[];
 #ifdef TARGET_PC
-u8 maru[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 maru[0x100];
 #else
-u8 maru[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 maru[] = {
 #include "assets/maru.inc"
 };
 #endif

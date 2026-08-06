@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_myhome1_shadowE[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_myhome1_shadowE[0x200];
 #else
-u8 obj_myhome1_shadowE[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_myhome1_shadowE[] = {
 #include "assets/obj_myhome1_shadowE.inc"
 };
 #endif
@@ -39,9 +39,9 @@ Gfx obj_myhome1_shadowET_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 obj_myhome1_shadowW[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_myhome1_shadowW[0x200];
 #else
-u8 obj_myhome1_shadowW[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_myhome1_shadowW[] = {
 #include "assets/obj_myhome1_shadowW.inc"
 };
 #endif
@@ -72,9 +72,9 @@ Gfx obj_myhome1_shadowWT_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 obj_myhome2_shadowE[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_myhome2_shadowE[0x200];
 #else
-u8 obj_myhome2_shadowE[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_myhome2_shadowE[] = {
 #include "assets/obj_myhome2_shadowE.inc"
 };
 #endif
@@ -105,9 +105,9 @@ Gfx obj_myhome2_shadowET_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 obj_myhome2_shadowW[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_myhome2_shadowW[0x200];
 #else
-u8 obj_myhome2_shadowW[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_myhome2_shadowW[] = {
 #include "assets/obj_myhome2_shadowW.inc"
 };
 #endif
@@ -138,9 +138,9 @@ Gfx obj_myhome2_shadowWT_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 obj_myhome3_shadowE[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_myhome3_shadowE[0x200];
 #else
-u8 obj_myhome3_shadowE[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_myhome3_shadowE[] = {
 #include "assets/obj_myhome3_shadowE.inc"
 };
 #endif
@@ -171,9 +171,9 @@ Gfx obj_myhome3_shadowET_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 obj_myhome3_shadowW[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_myhome3_shadowW[0x200];
 #else
-u8 obj_myhome3_shadowW[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_myhome3_shadowW[] = {
 #include "assets/obj_myhome3_shadowW.inc"
 };
 #endif
@@ -204,9 +204,9 @@ Gfx obj_myhome3_shadowWT_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 obj_myhome4_shadowE[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_myhome4_shadowE[0x200];
 #else
-u8 obj_myhome4_shadowE[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_myhome4_shadowE[] = {
 #include "assets/obj_myhome4_shadowE.inc"
 };
 #endif
@@ -237,9 +237,9 @@ Gfx obj_myhome4_shadowET_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 obj_myhome4_shadowW[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_myhome4_shadowW[0x200];
 #else
-u8 obj_myhome4_shadowW[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_myhome4_shadowW[] = {
 #include "assets/obj_myhome4_shadowW.inc"
 };
 #endif

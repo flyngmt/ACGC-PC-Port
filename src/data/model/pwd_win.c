@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u16 pwd_win_kagi2_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 pwd_win_kagi2_pal[0x20 / sizeof(u16)];
 #else
-u16 pwd_win_kagi2_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 pwd_win_kagi2_pal[] = {
 #include "assets/pwd_win_kagi2_pal.inc"
 };
 #endif

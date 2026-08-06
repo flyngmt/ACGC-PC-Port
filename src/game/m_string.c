@@ -6,7 +6,7 @@
 #include "m_font.h"
 #include "m_mail.h"
 
-static u8 buff[MAIL_BODY_LEN - 1] ATTRIBUTE_ALIGN(32); // TODO: proper bss ordering
+ATTRIBUTE_ALIGN(32) static u8 buff[MAIL_BODY_LEN - 1]; // TODO: proper bss ordering
 static u32 String_rom_start;
 static u32 String_table_rom_start;
 

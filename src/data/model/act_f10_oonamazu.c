@@ -4,17 +4,17 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-u16 act_f10_oonamazu_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 act_f10_oonamazu_pal[0x20 / sizeof(u16)];
 #else
-u16 act_f10_oonamazu_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 act_f10_oonamazu_pal[] = {
 #include "assets/act_f10_oonamazu_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 act_f10_oonamazu_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 act_f10_oonamazu_tex[0x400];
 #else
-u8 act_f10_oonamazu_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 act_f10_oonamazu_tex[] = {
 #include "assets/act_f10_oonamazu_tex.inc"
 };
 #endif

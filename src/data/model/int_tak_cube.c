@@ -7,9 +7,9 @@
 
 extern Vtx int_tak_cube_v[];
 #ifdef TARGET_PC
-u8 int_tak_cube_body_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 int_tak_cube_body_tex[0x80];
 #else
-u8 int_tak_cube_body_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 int_tak_cube_body_tex[] = {
 #include "assets/int_tak_cube_body_tex.inc"
 };
 #endif

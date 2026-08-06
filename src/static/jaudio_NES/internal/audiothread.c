@@ -126,9 +126,9 @@ OSThread jac_audioThread;
 OSThread jac_neosThread;
 OSThread jac_dvdThread;
 
-static u8 audioStack[AUDIO_STACK_SIZE] ATTRIBUTE_ALIGN(32);
-static u8 neosStack[AUDIO_STACK_SIZE] ATTRIBUTE_ALIGN(32);
-static u8 dvdStack[AUDIO_STACK_SIZE] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 audioStack[AUDIO_STACK_SIZE];
+ATTRIBUTE_ALIGN(32) static u8 neosStack[AUDIO_STACK_SIZE];
+ATTRIBUTE_ALIGN(32) static u8 dvdStack[AUDIO_STACK_SIZE];
 static OSMessageQueue audioproc_mq;
 static OSMessage msgbuf[AUDIOPROC_MQ_BUF_COUNT];
 static u32 audioproc_mq_init = FALSE;

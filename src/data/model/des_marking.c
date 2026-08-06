@@ -6,17 +6,17 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 des_win_marking3_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 des_win_marking3_tex[0x100];
 #else
-u8 des_win_marking3_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 des_win_marking3_tex[]= {
 #include "assets/des_win_marking3_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 des_win_marking_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 des_win_marking_tex[0x80];
 #else
-u8 des_win_marking_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 des_win_marking_tex[]= {
 #include "assets/des_win_marking_tex.inc"
 };
 #endif

@@ -5,9 +5,9 @@
 
 
 #ifdef TARGET_PC
-u8 obj_crack_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_crack_tex[0x200];
 #else
-u8 obj_crack_tex[] ATTRIBUTE_ALIGN(32)= { 
+ATTRIBUTE_ALIGN(32) u8 obj_crack_tex[]= {
 #include "assets/obj_crack_tex.inc"
 };
 #endif

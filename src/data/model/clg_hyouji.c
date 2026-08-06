@@ -6,25 +6,25 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 clg_win_top_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clg_win_top_tex[0x200];
 #else
-u8 clg_win_top_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 clg_win_top_tex[] = {
 #include "assets/clg_win_top_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 clg_win_bottom_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clg_win_bottom_tex[0x400];
 #else
-u8 clg_win_bottom_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 clg_win_bottom_tex[] = {
 #include "assets/clg_win_bottom_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 cat_c_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 cat_c_tex[0x400];
 #else
-u8 cat_c_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 cat_c_tex[] = {
 #include "assets/cat_c_tex.inc"
 };
 #endif

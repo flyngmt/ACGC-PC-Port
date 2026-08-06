@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u16 obj_e_hfes01_t1_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_e_hfes01_t1_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_e_hfes01_t1_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_e_hfes01_t1_pal[] = {
 #include "assets/obj_e_hfes01_t1_pal.inc"
 };
 #endif
@@ -251,9 +251,9 @@ Gfx obj_e_hfes_b_model[] = {
 };
 
 #ifdef TARGET_PC
-u16 obj_e_hfes01_t5_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_e_hfes01_t5_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_e_hfes01_t5_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_e_hfes01_t5_pal[] = {
 #include "assets/obj_e_hfes01_t5_pal.inc"
 };
 #endif

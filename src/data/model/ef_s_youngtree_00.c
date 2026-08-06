@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 ef_s_yungtree_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_s_yungtree_tex[0x200];
 #else
-u8 ef_s_yungtree_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_s_yungtree_tex[] = {
 #include "assets/ef_s_yungtree_tex.inc"
 };
 #endif
@@ -36,9 +36,9 @@ Gfx ef_s_youngtree_00_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_w_youngtree_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_w_youngtree_tex[0x200];
 #else
-u8 ef_w_youngtree_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_w_youngtree_tex[] = {
 #include "assets/ef_w_youngtree_tex.inc"
 };
 #endif
@@ -66,9 +66,9 @@ Gfx ef_w_youngtree_00_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_f_youngtree_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_f_youngtree_tex[0x200];
 #else
-u8 ef_f_youngtree_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_f_youngtree_tex[] = {
 #include "assets/ef_f_youngtree_tex.inc"
 };
 #endif
@@ -96,9 +96,9 @@ Gfx ef_f_youngtree_00_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_s_young_palm_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_s_young_palm_tex[0x200];
 #else
-u8 ef_s_young_palm_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_s_young_palm_tex[] = {
 #include "assets/ef_s_young_palm_tex.inc"
 };
 #endif
@@ -126,9 +126,9 @@ Gfx ef_s_young_palm_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_w_young_palm_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_w_young_palm_tex[0x200];
 #else
-u8 ef_w_young_palm_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_w_young_palm_tex[] = {
 #include "assets/ef_w_young_palm_tex.inc"
 };
 #endif
@@ -156,9 +156,9 @@ Gfx ef_w_young_palm_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_s_young_cedar_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_s_young_cedar_tex[0x200];
 #else
-u8 ef_s_young_cedar_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_s_young_cedar_tex[] = {
 #include "assets/ef_s_young_cedar_tex.inc"
 };
 #endif
@@ -186,9 +186,9 @@ Gfx ef_s_young_cedar_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_w_young_cedar_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_w_young_cedar_tex[0x200];
 #else
-u8 ef_w_young_cedar_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_w_young_cedar_tex[] = {
 #include "assets/ef_w_young_cedar_tex.inc"
 };
 #endif

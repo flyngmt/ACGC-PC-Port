@@ -7,9 +7,9 @@
 
 extern Vtx tol_umb_w_v[];
 #ifdef TARGET_PC
-static u16 tol_umb_w_tuka_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_umb_w_tuka_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_umb_w_tuka_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_umb_w_tuka_pal[] = {
 #include "assets/tol_umb_w/tol_umb_w_tuka_pal.inc"
 };
 #endif

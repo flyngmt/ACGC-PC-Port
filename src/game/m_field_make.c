@@ -74,7 +74,7 @@ static mFM_police_pos_c l_mfm_police_pos = { 0, 0, 0, 0 };
 
 int l_bg_disp_num = 0;
 int l_bg_disp_size = 0;
-static u16 mFM_pal_area[11][16] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 mFM_pal_area[11][16];
 mFM_fdinfo_c* g_fdinfo;
 static u8 l_block_type[BLOCK_TOTAL_NUM];
 static int l_block_kind[BLOCK_TOTAL_NUM];

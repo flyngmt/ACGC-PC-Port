@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_s_shop1_front_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_shop1_front_txt[0x800];
 #else
-u8 obj_s_shop1_front_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_s_shop1_front_txt[] = {
 #include "assets/obj_s_shop1_front_txt.inc"
 };
 #endif
@@ -142,9 +142,9 @@ cKF_Animation_R_c cKF_ba_r_obj_s_shop1 = {
 };
 
 #ifdef TARGET_PC
-u8 obj_w_shop1_front_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_w_shop1_front_txt[0x800];
 #else
-u8 obj_w_shop1_front_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_w_shop1_front_txt[] = {
 #include "assets/obj_w_shop1_front_txt.inc"
 };
 #endif
@@ -278,9 +278,9 @@ cKF_Animation_R_c cKF_ba_r_obj_w_shop1 = {
 };
 
 #ifdef TARGET_PC
-u8 obj_s_shop2_t3_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_shop2_t3_tex_txt[0x800];
 #else
-u8 obj_s_shop2_t3_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_s_shop2_t3_tex_txt[] = {
 #include "assets/obj_s_shop2_t3_tex_txt.inc"
 };
 #endif
@@ -740,9 +740,9 @@ cKF_Animation_R_c cKF_ba_r_obj_s_shop3 = {
 };
 
 #ifdef TARGET_PC
-u8 obj_w_shop3_t1_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_w_shop3_t1_tex_txt[0x800];
 #else
-u8 obj_w_shop3_t1_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_w_shop3_t1_tex_txt[] = {
 #include "assets/obj_w_shop3_t1_tex_txt.inc"
 };
 #endif
@@ -888,9 +888,9 @@ cKF_Animation_R_c cKF_ba_r_obj_w_shop3 = {
 };
 
 #ifdef TARGET_PC
-u16 obj_s_shop4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_s_shop4_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_s_shop4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_s_shop4_pal[] = {
 #include "assets/obj_s_shop4_pal.inc"
 };
 #endif
@@ -1083,9 +1083,9 @@ cKF_Animation_R_c cKF_ba_r_obj_s_shop4 = {
 };
 
 #ifdef TARGET_PC
-u16 obj_w_shop4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_w_shop4_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_w_shop4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_w_shop4_pal[] = {
 #include "assets/obj_w_shop4_pal.inc"
 };
 #endif

@@ -7,9 +7,9 @@
 
 extern Vtx int_nog_ka_v[];
 #ifdef TARGET_PC
-u16 int_nog_ka_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 int_nog_ka_pal[0x20 / sizeof(u16)];
 #else
-u16 int_nog_ka_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 int_nog_ka_pal[] = {
 #include "assets/int_nog_ka_pal.inc"
 };
 #endif

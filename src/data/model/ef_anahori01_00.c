@@ -8,9 +8,9 @@
 extern u8 earth_pal_dummy[];
 extern u8 beach_pal_dummy2[];
 #ifdef TARGET_PC
-u8 ef_anahori01_00_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_anahori01_00_tex[0x80];
 #else
-u8 ef_anahori01_00_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_anahori01_00_tex[] = {
 #include "assets/ef_anahori01_00_tex.inc"
 };
 #endif
@@ -41,9 +41,9 @@ Gfx ef_anahori01_00_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_anahori01_01_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_anahori01_01_tex[0x80];
 #else
-u8 ef_anahori01_01_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_anahori01_01_tex[] = {
 #include "assets/ef_anahori01_01_tex.inc"
 };
 #endif
@@ -161,9 +161,9 @@ Gfx ef_anahori02_00_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u16 ef_anahori03_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 ef_anahori03_pal[0x20 / sizeof(u16)];
 #else
-u16 ef_anahori03_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 ef_anahori03_pal[] = {
 #include "assets/ef_anahori03_pal.inc"
 };
 #endif
@@ -223,9 +223,9 @@ Gfx ef_anahori03_00_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u16 ef_mogura01_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 ef_mogura01_pal[0x20 / sizeof(u16)];
 #else
-u16 ef_mogura01_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 ef_mogura01_pal[] = {
 #include "assets/ef_mogura01_pal.inc"
 };
 #endif

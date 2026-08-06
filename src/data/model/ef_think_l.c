@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 ef_think_l[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_think_l[0x400];
 #else
-u8 ef_think_l[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_think_l[] = {
 #include "assets/ef_think_l.inc"
 };
 #endif

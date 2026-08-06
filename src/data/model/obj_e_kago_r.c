@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_e_kago_r_t1_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_e_kago_r_t1_tex[0x800];
 #else
-u8 obj_e_kago_r_t1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_e_kago_r_t1_tex[] = {
 #include "assets/obj_e_kago_r_t1_tex.inc"
 };
 #endif
@@ -71,9 +71,9 @@ Gfx kago_r_DL_model[] = {
 };
 
 #ifdef TARGET_PC
-u16 zobj_e_kago_r_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 zobj_e_kago_r_pal[0x20 / sizeof(u16)];
 #else
-u16 zobj_e_kago_r_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 zobj_e_kago_r_pal[] = {
 #include "assets/zobj_e_kago_r_pal.inc"
 };
 #endif
@@ -113,9 +113,9 @@ Gfx kago_r_ball_DL_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 obj_e_kago_w_t1_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_e_kago_w_t1_tex[0x800];
 #else
-u8 obj_e_kago_w_t1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_e_kago_w_t1_tex[] = {
 #include "assets/obj_e_kago_w_t1_tex.inc"
 };
 #endif
@@ -178,9 +178,9 @@ Gfx kago_w_DL_model[] = {
 };
 
 #ifdef TARGET_PC
-u16 zobj_e_kago_w_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 zobj_e_kago_w_pal[0x20 / sizeof(u16)];
 #else
-u16 zobj_e_kago_w_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 zobj_e_kago_w_pal[] = {
 #include "assets/zobj_e_kago_w_pal.inc"
 };
 #endif

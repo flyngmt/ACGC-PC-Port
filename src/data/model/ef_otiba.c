@@ -5,17 +5,17 @@
 #include "ac_npc.h"
 
 #ifdef TARGET_PC
-u16 obj_otiba01_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_otiba01_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_otiba01_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_otiba01_pal[] = {
 #include "assets/obj_otiba01_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 ef_otiba_0_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_otiba_0_tex[0x80];
 #else
-u8 ef_otiba_0_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_otiba_0_tex[] = {
 #include "assets/ef_otiba_0_tex.inc"
 };
 #endif

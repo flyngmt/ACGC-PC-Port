@@ -1,137 +1,137 @@
 #include "libforest/gbi_extensions.h"
 
 #ifdef TARGET_PC
-static u16 rom_tent_box_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_tent_box_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_tent_box_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_tent_box_pal[] = {
 #include "assets/field/bg/rom_tent_box_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_tent_can_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_tent_can_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_tent_can_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_tent_can_pal[] = {
 #include "assets/field/bg/rom_tent_can_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_tent_mono1_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_tent_mono1_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_tent_mono1_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_tent_mono1_pal[] = {
 #include "assets/field/bg/rom_tent_mono1_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_tent_gas_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_tent_gas_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_tent_gas_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_tent_gas_pal[] = {
 #include "assets/field/bg/rom_tent_gas_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tent_enter[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_enter[0x400];
 #else
-static u8 rom_tent_enter[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_enter[] = {
 #include "assets/field/bg/rom_tent_enter.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tent_floor[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_floor[0x800];
 #else
-static u8 rom_tent_floor[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_floor[] = {
 #include "assets/field/bg/rom_tent_floor.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tent_wall1[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_wall1[0x800];
 #else
-static u8 rom_tent_wall1[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_wall1[] = {
 #include "assets/field/bg/rom_tent_wall1.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tent_wall2[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_wall2[0x800];
 #else
-static u8 rom_tent_wall2[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_wall2[] = {
 #include "assets/field/bg/rom_tent_wall2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tent_bou[0x20] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_bou[0x20];
 #else
-static u8 rom_tent_bou[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_bou[] = {
 #include "assets/field/bg/rom_tent_bou.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tent_mono1[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_mono1[0x800];
 #else
-static u8 rom_tent_mono1[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_mono1[] = {
 #include "assets/field/bg/rom_tent_mono1.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tent_can[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_can[0x100];
 #else
-static u8 rom_tent_can[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_can[] = {
 #include "assets/field/bg/rom_tent_can.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tent_conpas[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_conpas[0x80];
 #else
-static u8 rom_tent_conpas[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_conpas[] = {
 #include "assets/field/bg/rom_tent_conpas.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tent_box[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_box[0x400];
 #else
-static u8 rom_tent_box[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_box[] = {
 #include "assets/field/bg/rom_tent_box.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tent_kage_m[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_kage_m[0x80];
 #else
-static u8 rom_tent_kage_m[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_kage_m[] = {
 #include "assets/field/bg/rom_tent_kage_m.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tent_gas[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_gas[0x200];
 #else
-static u8 rom_tent_gas[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_gas[] = {
 #include "assets/field/bg/rom_tent_gas.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tent_kage_s[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_kage_s[0x80];
 #else
-static u8 rom_tent_kage_s[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_kage_s[] = {
 #include "assets/field/bg/rom_tent_kage_s.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tent_kage_b[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_kage_b[0x100];
 #else
-static u8 rom_tent_kage_b[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tent_kage_b[] = {
 #include "assets/field/bg/rom_tent_kage_b.inc"
 };
 #endif

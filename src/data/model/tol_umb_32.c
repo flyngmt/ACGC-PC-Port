@@ -7,9 +7,9 @@
 
 extern Vtx tol_umb_32_v[];
 #ifdef TARGET_PC
-static u16 obj_shop_umb_32_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 obj_shop_umb_32_pal[0x20 / sizeof(u16)];
 #else
-static u16 obj_shop_umb_32_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 obj_shop_umb_32_pal[] = {
 #include "assets/tol_umb_32/obj_shop_umb_32_pal.inc"
 };
 #endif

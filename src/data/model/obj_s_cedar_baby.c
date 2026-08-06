@@ -5,9 +5,9 @@
 
 
 #ifdef TARGET_PC
-u8 obj_s_cedar_baby_tex[0x180] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_cedar_baby_tex[0x180];
 #else
-u8 obj_s_cedar_baby_tex[] ATTRIBUTE_ALIGN(32)= { 
+ATTRIBUTE_ALIGN(32) u8 obj_s_cedar_baby_tex[]= {
 #include "assets/obj_s_cedar_baby_tex.inc"
 };
 #endif

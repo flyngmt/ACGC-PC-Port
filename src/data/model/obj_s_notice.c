@@ -4,17 +4,17 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-static u16 obj_notice_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 obj_notice_pal[0x20 / sizeof(u16)];
 #else
-static u16 obj_notice_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 obj_notice_pal[] = {
 #include "assets/obj_s_notice/obj_notice_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 obj_s_notice_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_notice_tex[0x800];
 #else
-u8 obj_s_notice_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_s_notice_tex[] = {
 #include "assets/obj_s_notice_tex.inc"
 };
 #endif

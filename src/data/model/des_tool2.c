@@ -6,41 +6,41 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 des_tool_kao1_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 des_tool_kao1_tex[0x400];
 #else
-u8 des_tool_kao1_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 des_tool_kao1_tex[]= {
 #include "assets/des_tool_kao1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 des_tool_kao2_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 des_tool_kao2_tex[0x400];
 #else
-u8 des_tool_kao2_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 des_tool_kao2_tex[]= {
 #include "assets/des_tool_kao2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 des_tool_kao3_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 des_tool_kao3_tex[0x400];
 #else
-u8 des_tool_kao3_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 des_tool_kao3_tex[]= {
 #include "assets/des_tool_kao3_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 des_tool_kao4_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 des_tool_kao4_tex[0x400];
 #else
-u8 des_tool_kao4_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 des_tool_kao4_tex[]= {
 #include "assets/des_tool_kao4_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 des_tool_kao5_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 des_tool_kao5_tex[0x400];
 #else
-u8 des_tool_kao5_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 des_tool_kao5_tex[]= {
 #include "assets/des_tool_kao5_tex.inc"
 };
 #endif

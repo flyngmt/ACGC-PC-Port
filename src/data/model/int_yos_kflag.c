@@ -7,9 +7,9 @@
 
 extern Vtx int_yos_kflag_v[];
 #ifdef TARGET_PC
-u8 int_yos_kflag_pat[0x20] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 int_yos_kflag_pat[0x20];
 #else
-u8 int_yos_kflag_pat[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 int_yos_kflag_pat[] = {
 #include "assets/int_yos_kflag_pat.inc"
 };
 #endif

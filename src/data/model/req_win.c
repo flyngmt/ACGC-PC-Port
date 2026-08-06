@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u16 req_win_kao_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 req_win_kao_pal[0x20 / sizeof(u16)];
 #else
-u16 req_win_kao_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 req_win_kao_pal[] = {
 #include "assets/req_win_kao_pal.inc"
 };
 #endif

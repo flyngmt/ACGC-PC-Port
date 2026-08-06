@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 san_itemw_waku_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 san_itemw_waku_tex[0x800];
 #else
-u8 san_itemw_waku_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 san_itemw_waku_tex[] = {
 #include "assets/san_itemw_waku_tex.inc"
 };
 #endif

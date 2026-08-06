@@ -1,7 +1,7 @@
 #ifdef TARGET_PC
-u16 int_yaz_fish_trophy_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 int_yaz_fish_trophy_pal[0x20 / sizeof(u16)];
 #else
-extern u16 int_yaz_fish_trophy_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) extern u16 int_yaz_fish_trophy_pal[] = {
     #include "assets/int_yaz_fish_trophy_pal.inc"
 };
 #endif

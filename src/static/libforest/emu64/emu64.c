@@ -39,8 +39,8 @@ void guMtxXFM1F_dol6w1(MtxPtr mtx, GXProjectionType type, float x, float y, floa
 
 static aflags_c aflags;
 u8 emu64::nChans = 0;
-static u8 texture_buffer_data[TEX_BUFFER_DATA_SIZE] ATTRIBUTE_ALIGN(32);
-static u8 texture_buffer_bss[TEX_BUFFER_BSS_SIZE] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 texture_buffer_data[TEX_BUFFER_DATA_SIZE];
+ATTRIBUTE_ALIGN(32) static u8 texture_buffer_bss[TEX_BUFFER_BSS_SIZE];
 
 #ifdef TARGET_PC
 /* GX consumes TLUT entries in GameCube byte order.  Runtime assets and
@@ -50,7 +50,7 @@ static u8 texture_buffer_bss[TEX_BUFFER_BSS_SIZE] ATTRIBUTE_ALIGN(32);
  * drains the frame's deferred GX commands. */
 #define PC_EMU64_MAX_TLUT_ENTRIES 1024
 #define PC_EMU64_TLUT_FRAME_BUFFER_SIZE (2 * 1024 * 1024)
-static u8 s_pc_tlut_be[PC_EMU64_TLUT_FRAME_BUFFER_SIZE] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 s_pc_tlut_be[PC_EMU64_TLUT_FRAME_BUFFER_SIZE];
 static u32 s_pc_tlut_be_used;
 
 extern "C" void pc_emu64_tlut_frame_drained() {
@@ -718,7 +718,7 @@ void emu64::emu64_init() {
 
     GXSetLineWidth(line_width - 1, tex_offsets);
 
-    static u8 black_texture[] ATTRIBUTE_ALIGN(32) = { 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88,
+    ATTRIBUTE_ALIGN(32) static u8 black_texture[] = { 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88,
                                   0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88,
                                   0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88 };
 

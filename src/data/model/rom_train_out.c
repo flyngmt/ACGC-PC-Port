@@ -7,9 +7,9 @@
 
 extern Vtx rom_train_out_v[];
 #ifdef TARGET_PC
-u16 rom_train_4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 rom_train_4_pal[0x20 / sizeof(u16)];
 #else
-u16 rom_train_4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 rom_train_4_pal[] = {
 #include "assets/rom_train_4_pal.inc"
 };
 #endif

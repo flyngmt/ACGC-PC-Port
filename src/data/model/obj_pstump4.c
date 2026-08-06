@@ -4,9 +4,9 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-static u8 obj_pstump_shadow_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 obj_pstump_shadow_tex[0x200];
 #else
-static u8 obj_pstump_shadow_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 obj_pstump_shadow_tex[] = {
 #include "assets/obj_pstump4/obj_pstump_shadow_tex.inc"
 };
 #endif

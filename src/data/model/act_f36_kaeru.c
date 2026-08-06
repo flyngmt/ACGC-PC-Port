@@ -4,17 +4,17 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-static u16 int_nog_kaeru_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 int_nog_kaeru_pal[0x20 / sizeof(u16)];
 #else
-static u16 int_nog_kaeru_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 int_nog_kaeru_pal[] = {
 #include "assets/act_f36_kaeru/int_nog_kaeru_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 act_f36_kaeru_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 act_f36_kaeru_tex[0x400];
 #else
-u8 act_f36_kaeru_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 act_f36_kaeru_tex[] = {
 #include "assets/act_f36_kaeru_tex.inc"
 };
 #endif

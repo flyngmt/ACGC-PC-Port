@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-static u16 ef_tamaire01_r_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 ef_tamaire01_r_pal[0x20 / sizeof(u16)];
 #else
-static u16 ef_tamaire01_r_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 ef_tamaire01_r_pal[] = {
 #include "assets/ef_tamaire01_r/ef_tamaire01_r_pal.inc"
 };
 #endif
@@ -39,9 +39,9 @@ Gfx tama01_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 tama01_w_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 tama01_w_tex[0x200];
 #else
-u8 tama01_w_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 tama01_w_tex[] = {
 #include "assets/tama01_w_tex.inc"
 };
 #endif

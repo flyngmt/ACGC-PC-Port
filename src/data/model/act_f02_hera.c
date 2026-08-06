@@ -5,17 +5,17 @@
 
 
 #ifdef TARGET_PC
-u16 act_f02_hera_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 act_f02_hera_pal[0x20 / sizeof(u16)];
 #else
-u16 act_f02_hera_pal[] ATTRIBUTE_ALIGN(32)= { 
+ATTRIBUTE_ALIGN(32) u16 act_f02_hera_pal[]= {
 #include "assets/act_f02_hera_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 act_f02_hera_tex[0x300] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 act_f02_hera_tex[0x300];
 #else
-u8 act_f02_hera_tex[] ATTRIBUTE_ALIGN(32)= { 
+ATTRIBUTE_ALIGN(32) u8 act_f02_hera_tex[]= {
 #include "assets/act_f02_hera_tex.inc"
 };
 #endif

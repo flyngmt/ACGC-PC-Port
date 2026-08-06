@@ -7,9 +7,9 @@
 
 extern Vtx int_ike_jny_tower01_v[];
 #ifdef TARGET_PC
-u8 int_ike_jny_tower01[0x20] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 int_ike_jny_tower01[0x20];
 #else
-u8 int_ike_jny_tower01[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 int_ike_jny_tower01[] = {
 #include "assets/int_ike_jny_tower01.inc"
 };
 #endif

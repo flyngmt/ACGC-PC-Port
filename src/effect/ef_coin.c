@@ -139,17 +139,17 @@ static void eCoin_mv(eEC_Effect_c* effect, GAME* game) {
 }
 
 #ifdef TARGET_PC
-static u16 ef_coin_gold_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 ef_coin_gold_pal[0x20 / sizeof(u16)];
 #else
-static u16 ef_coin_gold_pal[16] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 ef_coin_gold_pal[16] = {
 #include "assets/ef_coin_gold_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 ef_coin_silver_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 ef_coin_silver_pal[0x20 / sizeof(u16)];
 #else
-static u16 ef_coin_silver_pal[16] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 ef_coin_silver_pal[16] = {
 #include "assets/ef_coin_silver_pal.inc"
 };
 #endif

@@ -29,7 +29,7 @@ extern Gfx radio_DL_model[];
 
 static void fRT_dw(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data) {
     #ifdef TARGET_PC
-    static u16 radio_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+    ATTRIBUTE_ALIGN(32) static u16 radio_pal[0x20 / sizeof(u16)];
     static int radio_pal_loaded = 0;
     if (!radio_pal_loaded) {
         extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
@@ -37,7 +37,7 @@ static void fRT_dw(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* d
         radio_pal_loaded = 1;
     }
     #else
-        static u16 radio_pal[] ATTRIBUTE_ALIGN(32) = { 
+        ATTRIBUTE_ALIGN(32) static u16 radio_pal[] = {
         #include "assets/radio_pal.inc"
      };
     #endif

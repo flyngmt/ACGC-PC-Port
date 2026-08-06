@@ -7,9 +7,9 @@
 
 extern Vtx obj_museum5_kusa1_v[];
 #ifdef TARGET_PC
-static u8 obj_museum5_kusa1_tex_txt[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 obj_museum5_kusa1_tex_txt[0x400];
 #else
-static u8 obj_museum5_kusa1_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 obj_museum5_kusa1_tex_txt[] = {
 #include "assets/obj_museum5_kusa1/obj_museum5_kusa1_tex_txt.inc"
 };
 #endif

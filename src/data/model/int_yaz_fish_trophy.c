@@ -7,9 +7,9 @@
 
 extern Vtx int_yaz_fish_trophy_v[];
 #ifdef TARGET_PC
-u8 int_yaz_fish_trophy_fish_txt[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 int_yaz_fish_trophy_fish_txt[0x100];
 #else
-u8 int_yaz_fish_trophy_fish_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 int_yaz_fish_trophy_fish_txt[] = {
 #include "assets/int_yaz_fish_trophy_fish_txt.inc"
 };
 #endif

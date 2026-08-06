@@ -6,105 +6,105 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u16 obj_shop_paint_a_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_a_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_paint_a_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_a_pal[]= {
 #include "assets/obj_shop_paint_a_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 obj_shop_paint_b_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_b_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_paint_b_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_b_pal[]= {
 #include "assets/obj_shop_paint_b_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 obj_shop_paint_c_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_c_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_paint_c_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_c_pal[]= {
 #include "assets/obj_shop_paint_c_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 obj_shop_paint_d_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_d_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_paint_d_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_d_pal[]= {
 #include "assets/obj_shop_paint_d_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 obj_shop_paint_e_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_e_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_paint_e_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_e_pal[]= {
 #include "assets/obj_shop_paint_e_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 obj_shop_paint_f_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_f_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_paint_f_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_f_pal[]= {
 #include "assets/obj_shop_paint_f_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 obj_shop_paint_g_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_g_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_paint_g_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_g_pal[]= {
 #include "assets/obj_shop_paint_g_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 obj_shop_paint_h_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_h_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_paint_h_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_h_pal[]= {
 #include "assets/obj_shop_paint_h_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 obj_shop_paint_i_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_i_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_paint_i_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_i_pal[]= {
 #include "assets/obj_shop_paint_i_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 obj_shop_paint_j_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_j_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_paint_j_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_j_pal[]= {
 #include "assets/obj_shop_paint_j_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 obj_shop_paint_k_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_k_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_paint_k_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_k_pal[]= {
 #include "assets/obj_shop_paint_k_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 obj_shop_paint_l_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_l_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_paint_l_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_paint_l_pal[]= {
 #include "assets/obj_shop_paint_l_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 obj_shop_paint_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_shop_paint_tex[0x400];
 #else
-u8 obj_shop_paint_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 obj_shop_paint_tex[]= {
 #include "assets/obj_shop_paint_tex.inc"
 };
 #endif

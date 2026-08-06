@@ -6,25 +6,25 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-static u16 lat_letter01_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 lat_letter01_pal[0x20 / sizeof(u16)];
 #else
-static u16 lat_letter01_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) static u16 lat_letter01_pal[]= {
 #include "assets/dia_win3/lat_letter01_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 lat_letter01_04_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 lat_letter01_04_tex[0x80];
 #else
-static u8 lat_letter01_04_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) static u8 lat_letter01_04_tex[]= {
 #include "assets/dia_win3/lat_letter01_04_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 lat_tegami_fusen_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 lat_tegami_fusen_tex[0x80];
 #else
-static u8 lat_tegami_fusen_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) static u8 lat_tegami_fusen_tex[]= {
 #include "assets/dia_win3/lat_tegami_fusen_tex.inc"
 };
 #endif

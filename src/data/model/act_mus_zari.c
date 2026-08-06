@@ -7,9 +7,9 @@
 
 extern Vtx act_mus_zari_v[];
 #ifdef TARGET_PC
-u16 act_mus_zari_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 act_mus_zari_pal[0x20 / sizeof(u16)];
 #else
-u16 act_mus_zari_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 act_mus_zari_pal[] = {
 #include "assets/act_mus_zari_pal.inc"
 };
 #endif

@@ -7,9 +7,9 @@
 
 extern Vtx int_sum_bla_chest03_v[];
 #ifdef TARGET_PC
-u16 int_sum_bla_chest03_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 int_sum_bla_chest03_pal[0x20 / sizeof(u16)];
 #else
-u16 int_sum_bla_chest03_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 int_sum_bla_chest03_pal[] = {
 #include "assets/int_sum_bla_chest03_pal.inc"
 };
 #endif

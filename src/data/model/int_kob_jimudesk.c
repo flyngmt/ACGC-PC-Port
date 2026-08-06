@@ -7,9 +7,9 @@
 
 extern Vtx int_kob_jimudesk_v[];
 #ifdef TARGET_PC
-u16 int_kob_jimudesk_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 int_kob_jimudesk_pal[0x20 / sizeof(u16)];
 #else
-u16 int_kob_jimudesk_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 int_kob_jimudesk_pal[] = {
 #include "assets/int_kob_jimudesk_pal.inc"
 };
 #endif

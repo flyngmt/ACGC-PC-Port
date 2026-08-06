@@ -7,9 +7,9 @@
 
 extern Vtx int_sum_taru01_v[];
 #ifdef TARGET_PC
-u16 it_sum_taru01_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 it_sum_taru01_pal[0x20 / sizeof(u16)];
 #else
-u16 it_sum_taru01_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 it_sum_taru01_pal[] = {
 #include "assets/it_sum_taru01_pal.inc"
 };
 #endif

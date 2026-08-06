@@ -6,81 +6,81 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-static u8 ctl_win_tagu2_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 ctl_win_tagu2_tex[0x200];
 #else
-static u8 ctl_win_tagu2_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) static u8 ctl_win_tagu2_tex[]= {
 #include "assets/clg_tagu/ctl_win_tagu2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 clg_win_ha2_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clg_win_ha2_tex[0x80];
 #else
-u8 clg_win_ha2_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 clg_win_ha2_tex[]= {
 #include "assets/clg_win_ha2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 clg_win_jyuutan2_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clg_win_jyuutan2_tex[0x80];
 #else
-u8 clg_win_jyuutan2_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 clg_win_jyuutan2_tex[]= {
 #include "assets/clg_win_jyuutan2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 clg_win_kabe2_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clg_win_kabe2_tex[0x80];
 #else
-u8 clg_win_kabe2_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 clg_win_kabe2_tex[]= {
 #include "assets/clg_win_kabe2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 clg_win_fuku2_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clg_win_fuku2_tex[0x80];
 #else
-u8 clg_win_fuku2_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 clg_win_fuku2_tex[]= {
 #include "assets/clg_win_fuku2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 clg_win_hone2_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clg_win_hone2_tex[0x80];
 #else
-u8 clg_win_hone2_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 clg_win_hone2_tex[]= {
 #include "assets/clg_win_hone2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 clg_win_tegami2_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clg_win_tegami2_tex[0x80];
 #else
-u8 clg_win_tegami2_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 clg_win_tegami2_tex[]= {
 #include "assets/clg_win_tegami2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 clg_win_onpu2_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clg_win_onpu2_tex[0x80];
 #else
-u8 clg_win_onpu2_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 clg_win_onpu2_tex[]= {
 #include "assets/clg_win_onpu2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 clg_win_hani2_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clg_win_hani2_tex[0x80];
 #else
-u8 clg_win_hani2_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 clg_win_hani2_tex[]= {
 #include "assets/clg_win_hani2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 clg_win_kasa2_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clg_win_kasa2_tex[0x80];
 #else
-u8 clg_win_kasa2_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 clg_win_kasa2_tex[]= {
 #include "assets/clg_win_kasa2_tex.inc"
 };
 #endif

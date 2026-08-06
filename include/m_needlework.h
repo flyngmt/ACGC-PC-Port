@@ -50,15 +50,9 @@ enum {
   mNW_TYPE_NUM
 };
 
-#ifdef _MSC_VER
-typedef __declspec(align(32)) struct original_texture_s {
-  u8 data[mNW_DESIGN_TEX_SIZE];
-} mNW_original_tex_c;
-#else
 typedef struct original_texture_s {
-  u8 data[mNW_DESIGN_TEX_SIZE];
-} ATTRIBUTE_ALIGN(32) mNW_original_tex_c;
-#endif
+  ATTRIBUTE_ALIGN(32) u8 data[mNW_DESIGN_TEX_SIZE];
+} mNW_original_tex_c;
 
 /* sizeof(mNW_original_design_c) == 0x220 */
 typedef struct original_data_s {

@@ -316,8 +316,8 @@ extern cKF_Animation_R_c cKF_ba_r_ply_1_wait1;
 #define NPC_COUNT 382  /* must match npc_draw_data_tbl[] array size */
 
 /* Dummy cloth texture (32x32 CI4 = 512 bytes) and white palette for segment 0x0A */
-static u8 s_dummy_cloth_tex[512] ATTRIBUTE_ALIGN(32);
-static u16 s_dummy_cloth_pal[16] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 s_dummy_cloth_tex[512];
+ATTRIBUTE_ALIGN(32) static u16 s_dummy_cloth_pal[16];
 static int s_dummy_cloth_init = 0;
 
 static void mv_init_dummy_cloth(void) {
@@ -675,7 +675,7 @@ static void mv_draw_structures(GAME_MODEL_VIEWER* mv) {
             pal = entry->is_winter ? structure_pal_adrs_winter[entry->pal_idx]
                                    : structure_pal_adrs_nowinter[entry->pal_idx];
         } else {
-            static u16 dummy_palette[16] ATTRIBUTE_ALIGN(32);
+            ATTRIBUTE_ALIGN(32) static u16 dummy_palette[16];
             static int pal_init = 0;
             if (!pal_init) {
                 int i;

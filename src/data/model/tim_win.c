@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 tim_win_newtokei_tex[0x20] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 tim_win_newtokei_tex[0x20];
 #else
-u8 tim_win_newtokei_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 tim_win_newtokei_tex[] = {
 #include "assets/tim_win_newtokei_tex.inc"
 };
 #endif

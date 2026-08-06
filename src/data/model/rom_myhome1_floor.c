@@ -5,9 +5,9 @@
 #include "ac_npc.h"
 
 #ifdef TARGET_PC
-Vtx rom_myhome1_floor_v[0x560 / sizeof(Vtx)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) Vtx rom_myhome1_floor_v[0x560 / sizeof(Vtx)];
 #else
-Vtx rom_myhome1_floor_v[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) Vtx rom_myhome1_floor_v[] = {
 #include "assets/rom_myhome1_floor_v.inc"
 };
 #endif

@@ -7,9 +7,9 @@
 
 extern Vtx int_hos_flip_v[];
 #ifdef TARGET_PC
-u16 int_hos_flip_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 int_hos_flip_pal[0x20 / sizeof(u16)];
 #else
-u16 int_hos_flip_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 int_hos_flip_pal[] = {
 #include "assets/int_hos_flip_pal.inc"
 };
 #endif

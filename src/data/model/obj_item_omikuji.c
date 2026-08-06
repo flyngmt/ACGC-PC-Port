@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_item_omikuji[0x20] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_item_omikuji[0x20];
 #else
-u8 obj_item_omikuji[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_item_omikuji[] = {
 #include "assets/obj_item_omikuji.inc"
 };
 #endif

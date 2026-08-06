@@ -2,14 +2,14 @@
 #include "libforest/gbi_extensions.h"
 
 #ifdef TARGET_PC
-static u8 gam_win_moji3_tex[0x500] ATTRIBUTE_ALIGN(32);
-u8 gam_win_moji4_tex[0x500] ATTRIBUTE_ALIGN(32);
-static u8 att_win_waku1_tex[0x400] ATTRIBUTE_ALIGN(32);
-static u8 att_win_waku2_tex[0x400] ATTRIBUTE_ALIGN(32);
-static u8 att_win_waku3_tex[0x400] ATTRIBUTE_ALIGN(32);
-static u8 att_win_waku4_tex[0x400] ATTRIBUTE_ALIGN(32);
-static u8 att_win_waku5_tex[0x400] ATTRIBUTE_ALIGN(32);
-static u8 att_win_waku6_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 gam_win_moji3_tex[0x500];
+ATTRIBUTE_ALIGN(32) u8 gam_win_moji4_tex[0x500];
+ATTRIBUTE_ALIGN(32) static u8 att_win_waku1_tex[0x400];
+ATTRIBUTE_ALIGN(32) static u8 att_win_waku2_tex[0x400];
+ATTRIBUTE_ALIGN(32) static u8 att_win_waku3_tex[0x400];
+ATTRIBUTE_ALIGN(32) static u8 att_win_waku4_tex[0x400];
+ATTRIBUTE_ALIGN(32) static u8 att_win_waku5_tex[0x400];
+ATTRIBUTE_ALIGN(32) static u8 att_win_waku6_tex[0x80];
 #else
 #include "assets/bootdata/win2/gam_win_moji3_tex.inc"
 #include "assets/bootdata/win2/gam_win_moji4_tex.inc"

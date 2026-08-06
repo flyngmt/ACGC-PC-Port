@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 mFM_grd_s_bushA_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 mFM_grd_s_bushA_tex[0x800];
 #else
-u8 mFM_grd_s_bushA_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 mFM_grd_s_bushA_tex[] = {
 #include "assets/mFM_grd_s_bushA_tex.inc"
 };
 #endif

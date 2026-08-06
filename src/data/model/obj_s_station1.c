@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_s_station1_t3_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_station1_t3_tex_txt[0x800];
 #else
-u8 obj_s_station1_t3_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_s_station1_t3_tex_txt[] = {
 #include "assets/obj_s_station1_t3_tex_txt.inc"
 };
 #endif
@@ -126,9 +126,9 @@ cKF_Animation_R_c cKF_ba_r_obj_s_station1 = {
 };
 
 #ifdef TARGET_PC
-u8 obj_w_station1_t3_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_w_station1_t3_tex_txt[0x800];
 #else
-u8 obj_w_station1_t3_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_w_station1_t3_tex_txt[] = {
 #include "assets/obj_w_station1_t3_tex_txt.inc"
 };
 #endif
@@ -249,9 +249,9 @@ cKF_Animation_R_c cKF_ba_r_obj_w_station1 = {
 };
 
 #ifdef TARGET_PC
-u8 obj_s_station2_t1_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_station2_t1_tex_txt[0x800];
 #else
-u8 obj_s_station2_t1_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_s_station2_t1_tex_txt[] = {
 #include "assets/obj_s_station2_t1_tex_txt.inc"
 };
 #endif
@@ -368,9 +368,9 @@ cKF_Animation_R_c cKF_ba_r_obj_s_station2 = { cKF_ckcb_r_obj_s_station2_tbl, NUL
                                               cKF_c_obj_s_station2_tbl,      -1,   25 };
 
 #ifdef TARGET_PC
-u8 obj_w_station2_t1_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_w_station2_t1_tex_txt[0x800];
 #else
-u8 obj_w_station2_t1_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_w_station2_t1_tex_txt[] = {
 #include "assets/obj_w_station2_t1_tex_txt.inc"
 };
 #endif
@@ -487,9 +487,9 @@ cKF_Animation_R_c cKF_ba_r_obj_w_station2 = { cKF_ckcb_r_obj_w_station2_tbl, NUL
                                               cKF_c_obj_w_station2_tbl,      -1,   25 };
 
 #ifdef TARGET_PC
-u8 obj_s_station3_t3_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_station3_t3_tex_txt[0x800];
 #else
-u8 obj_s_station3_t3_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_s_station3_t3_tex_txt[] = {
 #include "assets/obj_s_station3_t3_tex_txt.inc"
 };
 #endif
@@ -606,9 +606,9 @@ cKF_Animation_R_c cKF_ba_r_obj_s_station3 = { cKF_ckcb_r_obj_s_station3_tbl, NUL
                                               cKF_c_obj_s_station3_tbl,      -1,   25 };
 
 #ifdef TARGET_PC
-u8 obj_w_station3_t3_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_w_station3_t3_tex_txt[0x800];
 #else
-u8 obj_w_station3_t3_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_w_station3_t3_tex_txt[] = {
 #include "assets/obj_w_station3_t3_tex_txt.inc"
 };
 #endif

@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 kan_win_gomi_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kan_win_gomi_tex[0x80];
 #else
-u8 kan_win_gomi_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kan_win_gomi_tex[] = {
 #include "assets/kan_win_gomi_tex.inc"
 };
 #endif

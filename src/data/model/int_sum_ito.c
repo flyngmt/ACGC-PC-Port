@@ -7,9 +7,9 @@
 
 extern Vtx int_sum_ito_v[];
 #ifdef TARGET_PC
-static u16 int_sum_ito_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 int_sum_ito_pal[0x20 / sizeof(u16)];
 #else
-static u16 int_sum_ito_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 int_sum_ito_pal[] = {
 #include "assets/int_sum_ito/int_sum_ito_pal.inc"
 };
 #endif

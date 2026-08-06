@@ -6,113 +6,113 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 des_win_sen_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 des_win_sen_tex[0x80];
 #else
-u8 des_win_sen_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 des_win_sen_tex[]= {
 #include "assets/des_win_sen_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 des_win_kirikae_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 des_win_kirikae_tex[0x400];
 #else
-u8 des_win_kirikae_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 des_win_kirikae_tex[]= {
 #include "assets/des_win_kirikae_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 des_win_cwaku_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 des_win_cwaku_tex[0x80];
 #else
-u8 des_win_cwaku_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 des_win_cwaku_tex[]= {
 #include "assets/des_win_cwaku_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 des_win_aw1_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 des_win_aw1_tex[0x800];
 #else
-u8 des_win_aw1_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 des_win_aw1_tex[]= {
 #include "assets/des_win_aw1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 des_win_aw2_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 des_win_aw2_tex[0x800];
 #else
-u8 des_win_aw2_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 des_win_aw2_tex[]= {
 #include "assets/des_win_aw2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 des_win_aw3_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 des_win_aw3_tex[0x200];
 #else
-u8 des_win_aw3_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 des_win_aw3_tex[]= {
 #include "assets/des_win_aw3_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 des_win_aw4_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 des_win_aw4_tex[0x800];
 #else
-u8 des_win_aw4_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 des_win_aw4_tex[]= {
 #include "assets/des_win_aw4_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 des_win_aw5_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 des_win_aw5_tex[0x200];
 #else
-u8 des_win_aw5_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 des_win_aw5_tex[]= {
 #include "assets/des_win_aw5_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 des_win_aw6_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 des_win_aw6_tex[0x200];
 #else
-u8 des_win_aw6_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 des_win_aw6_tex[]= {
 #include "assets/des_win_aw6_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 des_win_aw7_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 des_win_aw7_tex[0x200];
 #else
-u8 des_win_aw7_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 des_win_aw7_tex[]= {
 #include "assets/des_win_aw7_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 des_win_aw8_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 des_win_aw8_tex[0x100];
 #else
-u8 des_win_aw8_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 des_win_aw8_tex[]= {
 #include "assets/des_win_aw8_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 des_win_color_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 des_win_color_tex[0x80];
 #else
-u8 des_win_color_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 des_win_color_tex[]= {
 #include "assets/des_win_color_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 des_win_start_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 des_win_start_tex[0x100];
 #else
-u8 des_win_start_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 des_win_start_tex[]= {
 #include "assets/des_win_start_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 kei_win_quit_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 kei_win_quit_tex[0x200];
 #else
-static u8 kei_win_quit_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) static u8 kei_win_quit_tex[]= {
 #include "assets/des_win/kei_win_quit_tex.inc"
 };
 #endif

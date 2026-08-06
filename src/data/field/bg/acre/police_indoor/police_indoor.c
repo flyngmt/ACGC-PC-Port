@@ -1,233 +1,233 @@
 #include "libforest/gbi_extensions.h"
 
 #ifdef TARGET_PC
-static u16 rom_koban_tel_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_koban_tel_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_koban_tel_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_koban_tel_pal[] = {
 #include "assets/field/bg/rom_koban_tel_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_koban_win_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_koban_win_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_koban_win_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_koban_win_pal[] = {
 #include "assets/field/bg/rom_koban_win_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_koban_us_pos_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_koban_us_pos_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_koban_us_pos_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_koban_us_pos_pal[] = {
 #include "assets/field/bg/rom_koban_us_pos_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_koban_jim_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_koban_jim_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_koban_jim_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_koban_jim_pal[] = {
 #include "assets/field/bg/rom_koban_jim_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_koban_kabe_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_koban_kabe_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_koban_kabe_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_koban_kabe_pal[] = {
 #include "assets/field/bg/rom_koban_kabe_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_koban_roc_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_koban_roc_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_koban_roc_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_koban_roc_pal[] = {
 #include "assets/field/bg/rom_koban_roc_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_tel[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_tel[0x200];
 #else
-static u8 rom_koban_tel[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_tel[] = {
 #include "assets/field/bg/rom_koban_tel.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_win[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_win[0x200];
 #else
-static u8 rom_koban_win[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_win[] = {
 #include "assets/field/bg/rom_koban_win.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_desk_front[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_desk_front[0x100];
 #else
-static u8 rom_koban_desk_front[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_desk_front[] = {
 #include "assets/field/bg/rom_koban_desk_front.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_desk_side[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_desk_side[0x80];
 #else
-static u8 rom_koban_desk_side[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_desk_side[] = {
 #include "assets/field/bg/rom_koban_desk_side.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_desk_top[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_desk_top[0x100];
 #else
-static u8 rom_koban_desk_top[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_desk_top[] = {
 #include "assets/field/bg/rom_koban_desk_top.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_yuka[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_yuka[0x800];
 #else
-static u8 rom_koban_yuka[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_yuka[] = {
 #include "assets/field/bg/rom_koban_yuka.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_us_pos1[0x300] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_us_pos1[0x300];
 #else
-static u8 rom_koban_us_pos1[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_us_pos1[] = {
 #include "assets/field/bg/rom_koban_us_pos1.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_us_pos2[0x300] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_us_pos2[0x300];
 #else
-static u8 rom_koban_us_pos2[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_us_pos2[] = {
 #include "assets/field/bg/rom_koban_us_pos2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_kage1[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_kage1[0x100];
 #else
-static u8 rom_koban_kage1[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_kage1[] = {
 #include "assets/field/bg/rom_koban_kage1.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_kage2[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_kage2[0x80];
 #else
-static u8 rom_koban_kage2[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_kage2[] = {
 #include "assets/field/bg/rom_koban_kage2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_ent[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_ent[0x400];
 #else
-static u8 rom_koban_ent[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_ent[] = {
 #include "assets/field/bg/rom_koban_ent.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_jim_front[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_jim_front[0x200];
 #else
-static u8 rom_koban_jim_front[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_jim_front[] = {
 #include "assets/field/bg/rom_koban_jim_front.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_jim_side[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_jim_side[0x100];
 #else
-static u8 rom_koban_jim_side[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_jim_side[] = {
 #include "assets/field/bg/rom_koban_jim_side.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_jim_top[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_jim_top[0x100];
 #else
-static u8 rom_koban_jim_top[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_jim_top[] = {
 #include "assets/field/bg/rom_koban_jim_top.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_kabe1[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_kabe1[0x800];
 #else
-static u8 rom_koban_kabe1[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_kabe1[] = {
 #include "assets/field/bg/rom_koban_kabe1.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_telcode[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_telcode[0x80];
 #else
-static u8 rom_koban_telcode[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_telcode[] = {
 #include "assets/field/bg/rom_koban_telcode.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_book[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_book[0x80];
 #else
-static u8 rom_koban_book[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_book[] = {
 #include "assets/field/bg/rom_koban_book.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_roc_s[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_roc_s[0x100];
 #else
-static u8 rom_koban_roc_s[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_roc_s[] = {
 #include "assets/field/bg/rom_koban_roc_s.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_roc_t[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_roc_t[0x80];
 #else
-static u8 rom_koban_roc_t[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_roc_t[] = {
 #include "assets/field/bg/rom_koban_roc_t.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_kabe3[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_kabe3[0x400];
 #else
-static u8 rom_koban_kabe3[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_kabe3[] = {
 #include "assets/field/bg/rom_koban_kabe3.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_isu[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_isu[0x80];
 #else
-static u8 rom_koban_isu[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_isu[] = {
 #include "assets/field/bg/rom_koban_isu.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_roc_i[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_roc_i[0x100];
 #else
-static u8 rom_koban_roc_i[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_roc_i[] = {
 #include "assets/field/bg/rom_koban_roc_i.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_koban_roc_f3[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_roc_f3[0x400];
 #else
-static u8 rom_koban_roc_f3[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_koban_roc_f3[] = {
 #include "assets/field/bg/rom_koban_roc_f3.inc"
 };
 #endif

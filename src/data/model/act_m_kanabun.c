@@ -5,9 +5,9 @@
 #include "ac_npc.h"
 
 #ifdef TARGET_PC
-static u16 act_m_kanabun_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 act_m_kanabun_pal[0x20 / sizeof(u16)];
 #else
-static u16 act_m_kanabun_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 act_m_kanabun_pal[] = {
 #include "assets/act_m_kanabun/act_m_kanabun_pal.inc"
 };
 #endif

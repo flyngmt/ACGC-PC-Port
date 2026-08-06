@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 ef_sleep_z[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_sleep_z[0x400];
 #else
-u8 ef_sleep_z[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_sleep_z[] = {
 #include "assets/ef_sleep_z.inc"
 };
 #endif

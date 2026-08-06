@@ -5,7 +5,7 @@
 #include "ac_npc.h"
 #include "ef_effect_control.h"
 
-u8 cKF_ckcb_r_act_mus_angel_a1_tbl[] ATTRIBUTE_ALIGN(32) = { 56, 7, 2 };
+ATTRIBUTE_ALIGN(32) u8 cKF_ckcb_r_act_mus_angel_a1_tbl[] = { 56, 7, 2 };
 
 s16 cKF_kn_act_mus_angel_a1_tbl[] = { 5, 4, 6, 2, 4, 2, 3 };
 

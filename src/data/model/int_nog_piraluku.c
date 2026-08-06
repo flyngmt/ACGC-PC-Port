@@ -7,9 +7,9 @@
 
 extern Vtx int_nog_piraluku_v[];
 #ifdef TARGET_PC
-static u16 int_nog_piraluku_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 int_nog_piraluku_pal[0x20 / sizeof(u16)];
 #else
-static u16 int_nog_piraluku_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 int_nog_piraluku_pal[] = {
 #include "assets/int_nog_piraluku/int_nog_piraluku_pal.inc"
 };
 #endif

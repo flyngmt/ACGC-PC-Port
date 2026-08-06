@@ -8,7 +8,7 @@
 #include "sys_matrix.h"
 
 // clang-format off
-static u16 aTrainWindow_tree_pal_table[15][16] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 aTrainWindow_tree_pal_table[15][16] = {
     {
         0x0724,0xA443,
         0xBCA4,0xDD25,

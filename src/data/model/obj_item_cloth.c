@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u16 obj_item_cloth_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_item_cloth_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_item_cloth_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_item_cloth_pal[] = {
 #include "assets/obj_item_cloth_pal.inc"
 };
 #endif

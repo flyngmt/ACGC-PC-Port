@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_s_tent_shadow[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_tent_shadow[0x80];
 #else
-u8 obj_s_tent_shadow[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_s_tent_shadow[] = {
 #include "assets/obj_s_tent_shadow.inc"
 };
 #endif

@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u16 obj_s_yamishop_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_s_yamishop_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_s_yamishop_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_s_yamishop_pal[] = {
 #include "assets/obj_s_yamishop_pal.inc"
 };
 #endif
@@ -156,9 +156,9 @@ cKF_Animation_R_c cKF_ba_r_obj_s_yamishop = { cKF_ckcb_r_obj_s_yamishop_tbl,
                                               17 };
 
 #ifdef TARGET_PC
-u8 obj_w_yamishop_t2_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_w_yamishop_t2_tex_txt[0x800];
 #else
-u8 obj_w_yamishop_t2_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_w_yamishop_t2_tex_txt[] = {
 #include "assets/obj_w_yamishop_t2_tex_txt.inc"
 };
 #endif

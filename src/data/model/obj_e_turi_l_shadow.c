@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_e_turi_l_shadow_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_e_turi_l_shadow_tex[0x200];
 #else
-u8 obj_e_turi_l_shadow_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_e_turi_l_shadow_tex[] = {
 #include "assets/obj_e_turi_l_shadow_tex.inc"
 };
 #endif
@@ -35,9 +35,9 @@ Gfx obj_e_turi_l_shadow_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 obj_e_turi_r_shadow_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_e_turi_r_shadow_tex[0x200];
 #else
-u8 obj_e_turi_r_shadow_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_e_turi_r_shadow_tex[] = {
 #include "assets/obj_e_turi_r_shadow_tex.inc"
 };
 #endif

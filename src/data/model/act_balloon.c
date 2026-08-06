@@ -4,17 +4,17 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-u8 act_balloon_wire_tex_txt[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 act_balloon_wire_tex_txt[0x80];
 #else
-u8 act_balloon_wire_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 act_balloon_wire_tex_txt[] = {
 #include "assets/act_balloon_wire_tex_txt.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 act_balloon_head_tex_rgb_ia8[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 act_balloon_head_tex_rgb_ia8[0x400];
 #else
-u8 act_balloon_head_tex_rgb_ia8[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 act_balloon_head_tex_rgb_ia8[] = {
 #include "assets/act_balloon_head_tex_rgb_ia8.inc"
 };
 #endif

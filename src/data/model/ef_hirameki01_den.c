@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 ef_hirameki01_0[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_hirameki01_0[0x200];
 #else
-u8 ef_hirameki01_0[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_hirameki01_0[] = {
 #include "assets/ef_hirameki01_0.inc"
 };
 #endif
@@ -35,9 +35,9 @@ Gfx ef_hirameki01_den_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_hirameki01_1[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_hirameki01_1[0x80];
 #else
-u8 ef_hirameki01_1[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_hirameki01_1[] = {
 #include "assets/ef_hirameki01_1.inc"
 };
 #endif

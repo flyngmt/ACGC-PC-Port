@@ -7,9 +7,9 @@
 
 extern Vtx int_sum_niji_v[];
 #ifdef TARGET_PC
-static u16 int_sum_niji_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 int_sum_niji_pal[0x20 / sizeof(u16)];
 #else
-static u16 int_sum_niji_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 int_sum_niji_pal[] = {
 #include "assets/int_sum_niji/int_sum_niji_pal.inc"
 };
 #endif

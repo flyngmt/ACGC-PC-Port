@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u16 mus_win_nuno_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 mus_win_nuno_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 mus_win_nuno_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 mus_win_nuno_tex_rgb_ci4_pal[] = {
 #include "assets/mus_win_nuno_tex_rgb_ci4_pal.inc"
 };
 #endif

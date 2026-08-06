@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 ef_sibuki01_1_int_i4[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_sibuki01_1_int_i4[0x80];
 #else
-u8 ef_sibuki01_1_int_i4[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_sibuki01_1_int_i4[] = {
 #include "assets/ef_sibuki01_1_int_i4.inc"
 };
 #endif
@@ -58,9 +58,9 @@ Gfx ef_sibuki01_00_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_sunahane01_0_inta_ia8[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_sunahane01_0_inta_ia8[0x100];
 #else
-u8 ef_sunahane01_0_inta_ia8[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_sunahane01_0_inta_ia8[] = {
 #include "assets/ef_sunahane01_0_inta_ia8.inc"
 };
 #endif

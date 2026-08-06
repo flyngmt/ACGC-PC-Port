@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-Vtx clg_floor2_v[0x240 / sizeof(Vtx)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) Vtx clg_floor2_v[0x240 / sizeof(Vtx)];
 #else
-Vtx clg_floor2_v[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) Vtx clg_floor2_v[] = {
 #include "assets/clg_floor2_v.inc"
 };
 #endif

@@ -7,7 +7,7 @@
 #include "dolphin/os/OSCache.h"
 
 #define DMABUFFER_SIZE (0x10000)
-static u8 dmabuffer[DMABUFFER_SIZE] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 dmabuffer[DMABUFFER_SIZE];
 
 static u32 global_id = 0;
 

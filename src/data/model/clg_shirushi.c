@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 dlt_win_yajirushi_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 dlt_win_yajirushi_tex[0x80];
 #else
-u8 dlt_win_yajirushi_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 dlt_win_yajirushi_tex[]= {
 #include "assets/dlt_win_yajirushi_tex.inc"
 };
 #endif

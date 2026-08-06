@@ -7,9 +7,9 @@
 
 extern Vtx obj_art01_v[];
 #ifdef TARGET_PC
-u16 obj_art01_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_art01_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_art01_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_art01_pal[] = {
 #include "assets/obj_art01_pal.inc"
 };
 #endif

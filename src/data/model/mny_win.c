@@ -7,9 +7,9 @@
 
 extern Vtx mny_win_v[];
 #ifdef TARGET_PC
-u8 mny_win_money_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 mny_win_money_tex[0x200];
 #else
-u8 mny_win_money_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 mny_win_money_tex[] = {
 #include "assets/mny_win_money_tex.inc"
 };
 #endif

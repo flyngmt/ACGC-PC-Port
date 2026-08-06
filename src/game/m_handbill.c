@@ -513,7 +513,7 @@ static void mHandbill_CheckSuperStringBorderAndCopy(u8* dst, int dst_size, int* 
 }
 
 static void mHandbill_Load_SuperStringFromRom(u8* buf, int buf_size, int* header_back_start, int super_no) {
-    static u8 buff[90] ATTRIBUTE_ALIGN(32);
+    ATTRIBUTE_ALIGN(32) static u8 buff[90];
     u8 super_buf[43];
 
     u32 super_address;
@@ -557,7 +557,7 @@ static void mHandbill_Load_SuperStringFromRom(u8* buf, int buf_size, int* header
 }
 
 static void mHandbill_Load_PsStringFromRom(u8* buf, int buf_size, int ps_no) {
-    static u8 buff[120] ATTRIBUTE_ALIGN(32);
+    ATTRIBUTE_ALIGN(32) static u8 buff[120];
 
     if (ps_no >= 0 && ps_no < mHandbill_MAIL_NUM) {
         u32 ps_address;
@@ -599,9 +599,9 @@ static void mHandbill_Load_PsStringFromRom(u8* buf, int buf_size, int ps_no) {
     }
 }
 
-static u8 mHandbill_mail_buff[263] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 mHandbill_mail_buff[263];
 
-static u8 mHandbill_mail_buff[263] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 mHandbill_mail_buff[263];
 
 static void mHandbill_Load_MailFromRom(u8* buf, int mail_no) {
     if (mail_no >= 0 && mail_no < mHandbill_MAIL_NUM) {
@@ -747,7 +747,7 @@ static int mHandbillzDMA_body_load(mHandbillzDMA_c* dma_info) {
 }
 
 static int mHandbillz_super_load(mHandbillz_Info_c* info) {
-    static u8 ram[90] ATTRIBUTE_ALIGN(32);
+    ATTRIBUTE_ALIGN(32) static u8 ram[90];
     mHandbillzDMA_c dma_info;
 
     bzero(ram, 90);
@@ -821,7 +821,7 @@ static int mHandbillz_mail_load(mHandbillz_Info_c* info) {
 }
 
 static int mHandbillz_ps_load(mHandbillz_Info_c* info) {
-    static u8 ram[97] ATTRIBUTE_ALIGN(32);
+    ATTRIBUTE_ALIGN(32) static u8 ram[97];
     mHandbillzDMA_c dma_info;
 
     bzero(ram, 97);

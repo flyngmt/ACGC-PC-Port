@@ -4,17 +4,17 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-u16 act_f14_oikawa_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 act_f14_oikawa_pal[0x20 / sizeof(u16)];
 #else
-u16 act_f14_oikawa_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 act_f14_oikawa_pal[] = {
 #include "assets/act_f14_oikawa_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 act_f14_oikawa_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 act_f14_oikawa_tex[0x200];
 #else
-u8 act_f14_oikawa_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 act_f14_oikawa_tex[] = {
 #include "assets/act_f14_oikawa_tex.inc"
 };
 #endif

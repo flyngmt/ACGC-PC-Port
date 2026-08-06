@@ -4,17 +4,17 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-u16 act_f26_aroana_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 act_f26_aroana_pal[0x20 / sizeof(u16)];
 #else
-u16 act_f26_aroana_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 act_f26_aroana_pal[] = {
 #include "assets/act_f26_aroana_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 act_f26_aroana_tex[0x300] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 act_f26_aroana_tex[0x300];
 #else
-u8 act_f26_aroana_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 act_f26_aroana_tex[] = {
 #include "assets/act_f26_aroana_tex.inc"
 };
 #endif

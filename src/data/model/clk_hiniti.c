@@ -7,9 +7,9 @@
 
 extern Vtx clk_hiniti_v[];
 #ifdef TARGET_PC
-u8 clk_win_suuji1_TA_tex_txt[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clk_win_suuji1_TA_tex_txt[0x400];
 #else
-u8 clk_win_suuji1_TA_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 clk_win_suuji1_TA_tex_txt[] = {
 #include "assets/clk_win_suuji1_TA_tex_txt.inc"
 };
 #endif

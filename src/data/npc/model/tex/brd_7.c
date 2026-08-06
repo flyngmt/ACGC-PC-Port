@@ -1,81 +1,81 @@
 #include <dolphin/types.h>
 
 #ifdef TARGET_PC
-unsigned short brd_7_pal[0x20 / sizeof(unsigned short)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) unsigned short brd_7_pal[0x20 / sizeof(unsigned short)];
 #else
-extern unsigned short brd_7_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) extern unsigned short brd_7_pal[] = {
 #include "assets/npc/tex/brd_7_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-unsigned char brd_7_eye1_TA_tex_txt[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) unsigned char brd_7_eye1_TA_tex_txt[0x100];
 #else
-extern unsigned char brd_7_eye1_TA_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) extern unsigned char brd_7_eye1_TA_tex_txt[] = {
 #include "assets/npc/tex/brd_7_eye1_TA_tex_txt.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-unsigned char brd_7_eye2_TA_tex_txt[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) unsigned char brd_7_eye2_TA_tex_txt[0x100];
 #else
-extern unsigned char brd_7_eye2_TA_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) extern unsigned char brd_7_eye2_TA_tex_txt[] = {
 #include "assets/npc/tex/brd_7_eye2_TA_tex_txt.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-unsigned char brd_7_eye3_TA_tex_txt[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) unsigned char brd_7_eye3_TA_tex_txt[0x100];
 #else
-extern unsigned char brd_7_eye3_TA_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) extern unsigned char brd_7_eye3_TA_tex_txt[] = {
 #include "assets/npc/tex/brd_7_eye3_TA_tex_txt.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-unsigned char brd_7_eye4_TA_tex_txt[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) unsigned char brd_7_eye4_TA_tex_txt[0x100];
 #else
-extern unsigned char brd_7_eye4_TA_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) extern unsigned char brd_7_eye4_TA_tex_txt[] = {
 #include "assets/npc/tex/brd_7_eye4_TA_tex_txt.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-unsigned char brd_7_eye5_TA_tex_txt[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) unsigned char brd_7_eye5_TA_tex_txt[0x100];
 #else
-extern unsigned char brd_7_eye5_TA_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) extern unsigned char brd_7_eye5_TA_tex_txt[] = {
 #include "assets/npc/tex/brd_7_eye5_TA_tex_txt.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-unsigned char brd_7_eye6_TA_tex_txt[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) unsigned char brd_7_eye6_TA_tex_txt[0x100];
 #else
-extern unsigned char brd_7_eye6_TA_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) extern unsigned char brd_7_eye6_TA_tex_txt[] = {
 #include "assets/npc/tex/brd_7_eye6_TA_tex_txt.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-unsigned char brd_7_eye7_TA_tex_txt[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) unsigned char brd_7_eye7_TA_tex_txt[0x100];
 #else
-extern unsigned char brd_7_eye7_TA_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) extern unsigned char brd_7_eye7_TA_tex_txt[] = {
 #include "assets/npc/tex/brd_7_eye7_TA_tex_txt.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-unsigned char brd_7_eye8_TA_tex_txt[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) unsigned char brd_7_eye8_TA_tex_txt[0x100];
 #else
-extern unsigned char brd_7_eye8_TA_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) extern unsigned char brd_7_eye8_TA_tex_txt[] = {
 #include "assets/npc/tex/brd_7_eye8_TA_tex_txt.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-unsigned char brd_7_tmem_txt[0x500] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) unsigned char brd_7_tmem_txt[0x500];
 #else
-extern unsigned char brd_7_tmem_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) extern unsigned char brd_7_tmem_txt[] = {
 #include "assets/npc/tex/brd_7_tmem_txt.inc"
 };
 #endif

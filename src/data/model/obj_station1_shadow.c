@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_station1_shadow_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_station1_shadow_tex[0x200];
 #else
-u8 obj_station1_shadow_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_station1_shadow_tex[] = {
 #include "assets/obj_station1_shadow_tex.inc"
 };
 #endif
@@ -98,9 +98,9 @@ Gfx obj_station2_shadow_hi_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 obj_station3_shadow_tex_txt[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_station3_shadow_tex_txt[0x200];
 #else
-u8 obj_station3_shadow_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_station3_shadow_tex_txt[] = {
 #include "assets/obj_station3_shadow_tex_txt.inc"
 };
 #endif

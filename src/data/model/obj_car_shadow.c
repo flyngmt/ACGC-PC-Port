@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_car_shadow[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_car_shadow[0x200];
 #else
-u8 obj_car_shadow[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_car_shadow[] = {
 #include "assets/obj_car_shadow.inc"
 };
 #endif

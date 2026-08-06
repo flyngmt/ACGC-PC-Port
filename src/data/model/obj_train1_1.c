@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_train1_t3_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_train1_t3_tex_txt[0x800];
 #else
-u8 obj_train1_t3_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_train1_t3_tex_txt[] = {
 #include "assets/obj_train1_t3_tex_txt.inc"
 };
 #endif
@@ -124,9 +124,9 @@ Gfx obj_train1_1_wheel1_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 obj_train1_t3_tex_txt_tansui[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_train1_t3_tex_txt_tansui[0x800];
 #else
-u8 obj_train1_t3_tex_txt_tansui[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_train1_t3_tex_txt_tansui[] = {
 #include "assets/obj_train1_t3_tex_txt_tansui.inc"
 };
 #endif

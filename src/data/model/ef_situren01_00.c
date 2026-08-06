@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 ef_situren01_0[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_situren01_0[0x400];
 #else
-u8 ef_situren01_0[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_situren01_0[] = {
 #include "assets/ef_situren01_0.inc"
 };
 #endif
@@ -36,9 +36,9 @@ Gfx ef_situren01_00_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_situren01_1[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_situren01_1[0x200];
 #else
-u8 ef_situren01_1[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_situren01_1[] = {
 #include "assets/ef_situren01_1.inc"
 };
 #endif

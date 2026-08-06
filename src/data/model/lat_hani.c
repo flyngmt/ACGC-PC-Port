@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-static u8 lat_fusen_TXT[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 lat_fusen_TXT[0x80];
 #else
-static u8 lat_fusen_TXT[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 lat_fusen_TXT[] = {
 #include "assets/lat_hani/lat_fusen_TXT.inc"
 };
 #endif

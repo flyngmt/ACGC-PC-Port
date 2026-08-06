@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 lat_mes_win_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 lat_mes_win_tex[0x400];
 #else
-u8 lat_mes_win_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 lat_mes_win_tex[] = {
 #include "assets/lat_mes_win_tex.inc"
 };
 #endif

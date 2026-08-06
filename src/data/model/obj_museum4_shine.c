@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_museum4_shine_1[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_museum4_shine_1[0x80];
 #else
-u8 obj_museum4_shine_1[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_museum4_shine_1[] = {
 #include "assets/obj_museum4_shine_1.inc"
 };
 #endif

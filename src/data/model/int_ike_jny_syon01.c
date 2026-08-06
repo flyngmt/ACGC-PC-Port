@@ -7,9 +7,9 @@
 
 extern Vtx int_ike_jny_syon01_v[];
 #ifdef TARGET_PC
-u8 int_ike_jny_syon01_tex[0x20] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 int_ike_jny_syon01_tex[0x20];
 #else
-u8 int_ike_jny_syon01_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 int_ike_jny_syon01_tex[] = {
 #include "assets/int_ike_jny_syon01_tex.inc"
 };
 #endif

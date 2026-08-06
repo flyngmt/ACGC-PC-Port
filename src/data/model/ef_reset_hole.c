@@ -7,9 +7,9 @@
 
 extern Vtx ef_reset_hole_v[];
 #ifdef TARGET_PC
-u16 ef_reset_hole_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 ef_reset_hole_pal[0x20 / sizeof(u16)];
 #else
-u16 ef_reset_hole_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 ef_reset_hole_pal[] = {
 #include "assets/ef_reset_hole_pal.inc"
 };
 #endif

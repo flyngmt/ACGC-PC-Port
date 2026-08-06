@@ -7,9 +7,9 @@
 
 extern Vtx int_iid_diary_v[];
 #ifdef TARGET_PC
-static u8 int_iid_diary[0x20] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 int_iid_diary[0x20];
 #else
-static u8 int_iid_diary[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 int_iid_diary[] = {
 #include "assets/int_iid_diary/int_iid_diary.inc"
 };
 #endif

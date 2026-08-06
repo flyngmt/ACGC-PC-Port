@@ -5,9 +5,9 @@
 
 
 #ifdef TARGET_PC
-u8 obj_w_palm_dead_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_w_palm_dead_tex[0x100];
 #else
-u8 obj_w_palm_dead_tex[] ATTRIBUTE_ALIGN(32)= { 
+ATTRIBUTE_ALIGN(32) u8 obj_w_palm_dead_tex[]= {
 #include "assets/obj_w_palm_dead_tex.inc"
 };
 #endif

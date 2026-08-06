@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_house1_shadow[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_house1_shadow[0x200];
 #else
-u8 obj_house1_shadow[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_house1_shadow[] = {
 #include "assets/obj_house1_shadow.inc"
 };
 #endif
@@ -38,9 +38,9 @@ Gfx obj_house1_shadow_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 obj_s_house2_shadow_tex_txt[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_house2_shadow_tex_txt[0x200];
 #else
-u8 obj_s_house2_shadow_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_s_house2_shadow_tex_txt[] = {
 #include "assets/obj_s_house2_shadow_tex_txt.inc"
 };
 #endif
@@ -72,9 +72,9 @@ Gfx obj_s_house2_shadow_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 obj_s_house3_shadow_tex_txt[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_house3_shadow_tex_txt[0x200];
 #else
-u8 obj_s_house3_shadow_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_s_house3_shadow_tex_txt[] = {
 #include "assets/obj_s_house3_shadow_tex_txt.inc"
 };
 #endif
@@ -105,9 +105,9 @@ Gfx obj_s_house3_shadow_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 obj_s_house4_shadow_tex_txt[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_house4_shadow_tex_txt[0x200];
 #else
-u8 obj_s_house4_shadow_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_s_house4_shadow_tex_txt[] = {
 #include "assets/obj_s_house4_shadow_tex_txt.inc"
 };
 #endif
@@ -139,9 +139,9 @@ Gfx obj_s_house4_shadow_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 obj_s_house5_shadow_tex_txt[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_house5_shadow_tex_txt[0x200];
 #else
-u8 obj_s_house5_shadow_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_s_house5_shadow_tex_txt[] = {
 #include "assets/obj_s_house5_shadow_tex_txt.inc"
 };
 #endif

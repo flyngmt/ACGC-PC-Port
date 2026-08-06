@@ -6,89 +6,89 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u16 gba_win_nuno_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 gba_win_nuno_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 gba_win_nuno_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u16 gba_win_nuno_tex_rgb_ci4_pal[]= {
 #include "assets/gba_win_nuno_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 gba_win_w4_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 gba_win_w4_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 gba_win_w4_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u16 gba_win_w4_tex_rgb_ci4_pal[]= {
 #include "assets/gba_win_w4_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 gba_win_w1_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 gba_win_w1_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 gba_win_w1_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u16 gba_win_w1_tex_rgb_ci4_pal[]= {
 #include "assets/gba_win_w1_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 gba_win_w2_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 gba_win_w2_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 gba_win_w2_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u16 gba_win_w2_tex_rgb_ci4_pal[]= {
 #include "assets/gba_win_w2_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 gba_win_w3_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 gba_win_w3_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 gba_win_w3_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u16 gba_win_w3_tex_rgb_ci4_pal[]= {
 #include "assets/gba_win_w3_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 sav_win_waku_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 sav_win_waku_tex[0x200];
 #else
-static u8 sav_win_waku_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) static u8 sav_win_waku_tex[]= {
 #include "assets/gba_win/sav_win_waku_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 gba_win_aw1_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 gba_win_aw1_tex[0x800];
 #else
-u8 gba_win_aw1_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 gba_win_aw1_tex[]= {
 #include "assets/gba_win_aw1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 gba_win_aw2_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 gba_win_aw2_tex[0x800];
 #else
-u8 gba_win_aw2_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 gba_win_aw2_tex[]= {
 #include "assets/gba_win_aw2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 gba_win_aw3_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 gba_win_aw3_tex[0x200];
 #else
-u8 gba_win_aw3_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 gba_win_aw3_tex[]= {
 #include "assets/gba_win_aw3_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 gba_win_aw4_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 gba_win_aw4_tex[0x100];
 #else
-u8 gba_win_aw4_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 gba_win_aw4_tex[]= {
 #include "assets/gba_win_aw4_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 inv_original_futa2_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 inv_original_futa2_tex[0x200];
 #else
-static u8 inv_original_futa2_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) static u8 inv_original_futa2_tex[]= {
 #include "assets/gba_win/inv_original_futa2_tex.inc"
 };
 #endif

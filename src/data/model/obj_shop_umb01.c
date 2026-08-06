@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u16 obj_shop_umb_01_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_01_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_umb_01_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_01_pal[] = {
 #include "assets/obj_shop_umb_01_pal.inc"
 };
 #endif
@@ -67,9 +67,9 @@ Gfx obj_shop_umb01_modelT[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_umb02_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_umb02_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_umb02_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_umb02_pal[] = {
 #include "assets/obj_shop_umb01/tol_umb02_pal.inc"
 };
 #endif
@@ -141,9 +141,9 @@ Gfx obj_shop_umb02_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u16 obj_shop_umb_03_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_03_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_umb_03_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_03_pal[] = {
 #include "assets/obj_shop_umb_03_pal.inc"
 };
 #endif
@@ -203,9 +203,9 @@ Gfx obj_shop_umb03_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u16 obj_shop_umb_04_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_04_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_umb_04_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_04_pal[] = {
 #include "assets/obj_shop_umb_04_pal.inc"
 };
 #endif
@@ -275,9 +275,9 @@ Gfx obj_shop_umb04_modelT[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_umb_05_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_umb_05_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_umb_05_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_umb_05_pal[] = {
 #include "assets/obj_shop_umb01/tol_umb_05_pal.inc"
 };
 #endif
@@ -336,9 +336,9 @@ Gfx obj_shop_umb05_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u16 obj_shop_umb_06_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_06_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_umb_06_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_06_pal[] = {
 #include "assets/obj_shop_umb_06_pal.inc"
 };
 #endif
@@ -402,9 +402,9 @@ Gfx obj_shop_umb06_modelT[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_umb07_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_umb07_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_umb07_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_umb07_pal[] = {
 #include "assets/obj_shop_umb01/tol_umb07_pal.inc"
 };
 #endif
@@ -477,9 +477,9 @@ Gfx obj_shop_umb07_model[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_umb08_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_umb08_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_umb08_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_umb08_pal[] = {
 #include "assets/obj_shop_umb01/tol_umb08_pal.inc"
 };
 #endif
@@ -550,9 +550,9 @@ Gfx obj_shop_umb08_modelT[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_umb09_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_umb09_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_umb09_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_umb09_pal[] = {
 #include "assets/obj_shop_umb01/tol_umb09_pal.inc"
 };
 #endif
@@ -623,9 +623,9 @@ Gfx obj_shop_umb09_modelT[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_umb10_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_umb10_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_umb10_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_umb10_pal[] = {
 #include "assets/obj_shop_umb01/tol_umb10_pal.inc"
 };
 #endif
@@ -696,9 +696,9 @@ Gfx obj_shop_umb10_modelT[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_umb11_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_umb11_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_umb11_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_umb11_pal[] = {
 #include "assets/obj_shop_umb01/tol_umb11_pal.inc"
 };
 #endif
@@ -769,9 +769,9 @@ Gfx obj_shop_umb11_modelT[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_umb12_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_umb12_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_umb12_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_umb12_pal[] = {
 #include "assets/obj_shop_umb01/tol_umb12_pal.inc"
 };
 #endif
@@ -842,9 +842,9 @@ Gfx obj_shop_umb12_modelT[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_umb13_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_umb13_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_umb13_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_umb13_pal[] = {
 #include "assets/obj_shop_umb01/tol_umb13_pal.inc"
 };
 #endif
@@ -915,9 +915,9 @@ Gfx obj_shop_umb13_modelT[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_umb_14_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_umb_14_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_umb_14_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_umb_14_pal[] = {
 #include "assets/obj_shop_umb01/tol_umb_14_pal.inc"
 };
 #endif
@@ -976,9 +976,9 @@ Gfx obj_shop_umb14_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u16 obj_shop_umb_15_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_15_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_umb_15_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_15_pal[] = {
 #include "assets/obj_shop_umb_15_pal.inc"
 };
 #endif
@@ -1047,9 +1047,9 @@ Gfx obj_shop_umb15_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u16 obj_shop_umb_16_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_16_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_umb_16_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_16_pal[] = {
 #include "assets/obj_shop_umb_16_pal.inc"
 };
 #endif
@@ -1108,9 +1108,9 @@ Gfx obj_shop_umb16_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u16 obj_shop_umb_17_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_17_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_umb_17_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_17_pal[] = {
 #include "assets/obj_shop_umb_17_pal.inc"
 };
 #endif
@@ -1174,9 +1174,9 @@ Gfx obj_shop_umb17_modelT[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_umb18_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_umb18_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_umb18_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_umb18_pal[] = {
 #include "assets/obj_shop_umb01/tol_umb18_pal.inc"
 };
 #endif
@@ -1247,9 +1247,9 @@ Gfx obj_shop_umb18_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u16 obj_shop_umb_19_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_19_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_umb_19_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_19_pal[] = {
 #include "assets/obj_shop_umb_19_pal.inc"
 };
 #endif
@@ -1322,9 +1322,9 @@ Gfx obj_shop_umb19_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u16 obj_shop_umb_20_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_20_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_umb_20_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_20_pal[] = {
 #include "assets/obj_shop_umb_20_pal.inc"
 };
 #endif
@@ -1384,9 +1384,9 @@ Gfx obj_shop_umb20_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u16 obj_shop_umb_21_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_21_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_umb_21_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_21_pal[] = {
 #include "assets/obj_shop_umb_21_pal.inc"
 };
 #endif
@@ -1448,17 +1448,17 @@ Gfx obj_shop_umb21_modelT[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_umb_22_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_umb_22_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_umb_22_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_umb_22_pal[] = {
 #include "assets/obj_shop_umb01/tol_umb_22_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 obj_shop_umb_22_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_22_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_umb_22_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_22_pal[] = {
 #include "assets/obj_shop_umb_22_pal.inc"
 };
 #endif
@@ -1522,9 +1522,9 @@ Gfx obj_shop_umb22_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u16 obj_shop_umb_23_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_23_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_umb_23_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_23_pal[] = {
 #include "assets/obj_shop_umb_23_pal.inc"
 };
 #endif
@@ -1594,9 +1594,9 @@ Gfx obj_shop_umb23_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u16 obj_shop_umb_24_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_24_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_umb_24_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_24_pal[] = {
 #include "assets/obj_shop_umb_24_pal.inc"
 };
 #endif
@@ -1665,9 +1665,9 @@ Gfx obj_shop_umb24_modelT[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_umb_25_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_umb_25_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_umb_25_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_umb_25_pal[] = {
 #include "assets/obj_shop_umb01/tol_umb_25_pal.inc"
 };
 #endif
@@ -1726,9 +1726,9 @@ Gfx obj_shop_umb25_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u16 obj_shop_umb_26_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_26_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_umb_26_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_26_pal[] = {
 #include "assets/obj_shop_umb_26_pal.inc"
 };
 #endif
@@ -1799,9 +1799,9 @@ Gfx obj_shop_umb26_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u16 obj_shop_umb_27_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_27_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_umb_27_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_27_pal[] = {
 #include "assets/obj_shop_umb_27_pal.inc"
 };
 #endif
@@ -1877,9 +1877,9 @@ Gfx obj_shop_umb27_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u16 obj_shop_umb_28_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_28_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_umb_28_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_28_pal[] = {
 #include "assets/obj_shop_umb_28_pal.inc"
 };
 #endif
@@ -1938,9 +1938,9 @@ Gfx obj_shop_umb28_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u16 obj_shop_umb_29_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_29_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_umb_29_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_29_pal[] = {
 #include "assets/obj_shop_umb_29_pal.inc"
 };
 #endif
@@ -1999,9 +1999,9 @@ Gfx obj_shop_umb29_modelT[] = {
 };
 
 #ifdef TARGET_PC
-static u16 obj_shop_umb_30_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 obj_shop_umb_30_pal[0x20 / sizeof(u16)];
 #else
-static u16 obj_shop_umb_30_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 obj_shop_umb_30_pal[] = {
 #include "assets/obj_shop_umb01/obj_shop_umb_30_pal.inc"
 };
 #endif
@@ -2061,9 +2061,9 @@ Gfx obj_shop_umb30_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u16 obj_shop_umb_31_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_31_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_umb_31_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_umb_31_pal[] = {
 #include "assets/obj_shop_umb_31_pal.inc"
 };
 #endif
@@ -2134,9 +2134,9 @@ Gfx obj_shop_umb31_modelT[] = {
 };
 
 #ifdef TARGET_PC
-static u16 obj_shop_umb_32_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 obj_shop_umb_32_pal[0x20 / sizeof(u16)];
 #else
-static u16 obj_shop_umb_32_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 obj_shop_umb_32_pal[] = {
 #include "assets/obj_shop_umb01/obj_shop_umb_32_pal.inc"
 };
 #endif
@@ -2195,9 +2195,9 @@ Gfx obj_shop_umb32_modelT[] = {
 };
 
 #ifdef TARGET_PC
-static u16 tol_umb_w_tuka_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_umb_w_tuka_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_umb_w_tuka_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_umb_w_tuka_pal[] = {
 #include "assets/obj_shop_umb01/tol_umb_w_tuka_pal.inc"
 };
 #endif

@@ -111,16 +111,6 @@ typedef u32 unknown;
 #define FLAG_ON(V, F) (((V) & (F)) == 0)
 #define FLAG_OFF(V, F) (((V) & (F)) != 0)
 
-#ifndef ATTRIBUTE_ALIGN
-#if defined(__MWERKS__) || defined(__GNUC__)
-#define ATTRIBUTE_ALIGN(num) __attribute__((aligned(num)))
-#elif defined(_MSC_VER)
-#define ATTRIBUTE_ALIGN(num)
-#else
-#error unknown compiler
-#endif
-#endif
-
 #define BUTTON_NONE 0x0000
 #define BUTTON_CRIGHT 0x0001
 #define BUTTON_CLEFT 0x0002

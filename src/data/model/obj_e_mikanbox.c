@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_e_mikanbox_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_e_mikanbox_tex[0x400];
 #else
-u8 obj_e_mikanbox_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_e_mikanbox_tex[] = {
 #include "assets/obj_e_mikanbox_tex.inc"
 };
 #endif
@@ -35,9 +35,9 @@ Gfx obj_e_mikanbox_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 copyright_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 copyright_tex[0x800];
 #else
-u8 copyright_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 copyright_tex[] = {
 #include "assets/copyright_tex.inc"
 };
 #endif

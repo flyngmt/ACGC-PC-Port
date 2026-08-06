@@ -5,17 +5,17 @@
 #include "ac_npc.h"
 
 #ifdef TARGET_PC
-static u16 act_m_ka_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 act_m_ka_pal[0x20 / sizeof(u16)];
 #else
-static u16 act_m_ka_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 act_m_ka_pal[] = {
 #include "assets/act_m_ka/act_m_ka_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 act_m_ka_tex[0x180] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 act_m_ka_tex[0x180];
 #else
-static u8 act_m_ka_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 act_m_ka_tex[] = {
 #include "assets/act_m_ka/act_m_ka_tex.inc"
 };
 #endif

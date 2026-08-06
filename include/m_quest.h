@@ -55,7 +55,7 @@ typedef struct quest_base_s {
     /* 0x01 */ u32 give_reward : 1;        /* player cannot take the item, and will skip quest completion checks */
     /* 0x01 */ u32 unused : 2;
 
-    /* 0x04 */ lbRTC_time_c time_limit;
+    /* 0x04 */ ATTRIBUTE_ALIGN(4) lbRTC_time_c time_limit;
 } mQst_base_c;
 
 /* Contest Quest */

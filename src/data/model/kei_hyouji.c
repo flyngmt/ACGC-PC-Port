@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 kei_win_latest_tex[0x500] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kei_win_latest_tex[0x500];
 #else
-u8 kei_win_latest_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kei_win_latest_tex[] = {
 #include "assets/kei_win_latest_tex.inc"
 };
 #endif

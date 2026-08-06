@@ -5,9 +5,9 @@
 
 
 #ifdef TARGET_PC
-u8 obj_stone_shadow_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_stone_shadow_tex[0x80];
 #else
-u8 obj_stone_shadow_tex[] ATTRIBUTE_ALIGN(32)= { 
+ATTRIBUTE_ALIGN(32) u8 obj_stone_shadow_tex[]= {
 #include "assets/obj_stone_shadow_tex.inc"
 };
 #endif

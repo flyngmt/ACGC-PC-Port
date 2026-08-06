@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-static u16 ef_tamaire01_r_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 ef_tamaire01_r_pal[0x20 / sizeof(u16)];
 #else
-static u16 ef_tamaire01_r_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 ef_tamaire01_r_pal[] = {
 #include "assets/ef_tamaire01_r2/ef_tamaire01_r_pal.inc"
 };
 #endif
@@ -43,9 +43,9 @@ Gfx ef_tamaire01_r_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u16 ef_tamaire01_w_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 ef_tamaire01_w_pal[0x20 / sizeof(u16)];
 #else
-u16 ef_tamaire01_w_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 ef_tamaire01_w_pal[] = {
 #include "assets/ef_tamaire01_w_pal.inc"
 };
 #endif
@@ -88,9 +88,9 @@ Vtx ef_tama_shadow_in_v[] = {
 #endif
 
 #ifdef TARGET_PC
-u8 ef_tama_shadow_in_0[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_tama_shadow_in_0[0x100];
 #else
-u8 ef_tama_shadow_in_0[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_tama_shadow_in_0[] = {
 #include "assets/ef_tama_shadow_in_0.inc"
 };
 #endif

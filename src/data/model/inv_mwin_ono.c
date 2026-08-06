@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 inv_mwin_ono2_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 inv_mwin_ono2_tex[0x200];
 #else
-u8 inv_mwin_ono2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 inv_mwin_ono2_tex[] = {
 #include "assets/inv_mwin_ono2_tex.inc"
 };
 #endif

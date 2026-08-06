@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_shop1_shadow[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_shop1_shadow[0x200];
 #else
-u8 obj_shop1_shadow[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_shop1_shadow[] = {
 #include "assets/obj_shop1_shadow.inc"
 };
 #endif
@@ -36,9 +36,9 @@ Gfx obj_shop1_shadowT_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 obj_shop2_shadow[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_shop2_shadow[0x200];
 #else
-u8 obj_shop2_shadow[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_shop2_shadow[] = {
 #include "assets/obj_shop2_shadow.inc"
 };
 #endif
@@ -66,9 +66,9 @@ Gfx obj_shop2_shadowT_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 obj_shop3_shadow[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_shop3_shadow[0x200];
 #else
-u8 obj_shop3_shadow[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_shop3_shadow[] = {
 #include "assets/obj_shop3_shadow.inc"
 };
 #endif
@@ -96,9 +96,9 @@ Gfx obj_shop3_shadowT_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 obj_shop4_shadow_txt[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_shop4_shadow_txt[0x200];
 #else
-u8 obj_shop4_shadow_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_shop4_shadow_txt[] = {
 #include "assets/obj_shop4_shadow_txt.inc"
 };
 #endif

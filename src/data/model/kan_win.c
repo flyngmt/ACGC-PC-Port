@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 kan_win_map_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kan_win_map_tex[0x200];
 #else
-u8 kan_win_map_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kan_win_map_tex[] = {
 #include "assets/kan_win_map_tex.inc"
 };
 #endif

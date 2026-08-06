@@ -7,9 +7,9 @@
 
 extern Vtx logo_us_animal_v[];
 #ifdef TARGET_PC
-static u16 logo_us_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 logo_us_pal[0x20 / sizeof(u16)];
 #else
-static u16 logo_us_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 logo_us_pal[] = {
 #include "assets/logo_us_animal/logo_us_pal.inc"
 };
 #endif

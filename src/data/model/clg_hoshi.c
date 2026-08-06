@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 clg_win_star_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clg_win_star_tex[0x80];
 #else
-u8 clg_win_star_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 clg_win_star_tex[]= {
 #include "assets/clg_win_star_tex.inc"
 };
 #endif

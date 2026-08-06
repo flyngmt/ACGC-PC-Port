@@ -7,9 +7,9 @@
 
 extern Vtx cam_win_v[];
 #ifdef TARGET_PC
-static u8 ct_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 ct_tex[0x400];
 #else
-static u8 ct_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 ct_tex[] = {
 #include "assets/cam_win/ct_tex.inc"
 };
 #endif

@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u16 int_nog_earth_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 int_nog_earth_pal[0x20 / sizeof(u16)];
 #else
-u16 int_nog_earth_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 int_nog_earth_pal[] = {
 #include "assets/int_nog_earth_pal.inc"
 };
 #endif

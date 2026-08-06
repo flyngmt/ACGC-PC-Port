@@ -6,17 +6,17 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 kai_sousa_ink_tex[0x1000] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_ink_tex[0x1000];
 #else
-u8 kai_sousa_ink_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_ink_tex[]= {
 #include "assets/kai_sousa_ink_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 kai_sousa_inkmoji_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_inkmoji_tex[0x200];
 #else
-u8 kai_sousa_inkmoji_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_inkmoji_tex[]= {
 #include "assets/kai_sousa_inkmoji_tex.inc"
 };
 #endif

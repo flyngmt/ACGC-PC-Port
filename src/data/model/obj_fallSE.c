@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-static u8 obj_fall_rainbow_1_tex_rgb_rgba16[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 obj_fall_rainbow_1_tex_rgb_rgba16[0x100];
 #else
-static u8 obj_fall_rainbow_1_tex_rgb_rgba16[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 obj_fall_rainbow_1_tex_rgb_rgba16[] = {
 #include "assets/obj_fallSE/obj_fall_rainbow_1_tex_rgb_rgba16.inc"
 };
 #endif

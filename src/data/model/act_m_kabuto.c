@@ -5,9 +5,9 @@
 #include "ac_npc.h"
 
 #ifdef TARGET_PC
-static u16 act_m_kabuto_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 act_m_kabuto_pal[0x20 / sizeof(u16)];
 #else
-static u16 act_m_kabuto_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 act_m_kabuto_pal[] = {
 #include "assets/act_m_kabuto/act_m_kabuto_pal.inc"
 };
 #endif

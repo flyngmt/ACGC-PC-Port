@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u16 ef_axe_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 ef_axe_pal[0x20 / sizeof(u16)];
 #else
-u16 ef_axe_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 ef_axe_pal[] = {
 #include "assets/ef_axe_pal.inc"
 };
 #endif
@@ -60,9 +60,9 @@ Gfx ef_axe1_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_axe_tuka2_tex_txt[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_axe_tuka2_tex_txt[0x200];
 #else
-u8 ef_axe_tuka2_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_axe_tuka2_tex_txt[] = {
 #include "assets/ef_axe_tuka2_tex_txt.inc"
 };
 #endif
@@ -106,9 +106,9 @@ Gfx ef_axe2_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_axe_edge3_tex_txt[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_axe_edge3_tex_txt[0x80];
 #else
-u8 ef_axe_edge3_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_axe_edge3_tex_txt[] = {
 #include "assets/ef_axe_edge3_tex_txt.inc"
 };
 #endif

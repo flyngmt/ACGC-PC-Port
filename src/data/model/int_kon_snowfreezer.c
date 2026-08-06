@@ -7,9 +7,9 @@
 
 extern Vtx int_kon_snowfreezer_v[];
 #ifdef TARGET_PC
-static u16 int_kon_snowtansu_tex_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 int_kon_snowtansu_tex_pal[0x20 / sizeof(u16)];
 #else
-static u16 int_kon_snowtansu_tex_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 int_kon_snowtansu_tex_pal[] = {
 #include "assets/int_kon_snowfreezer/int_kon_snowtansu_tex_pal.inc"
 };
 #endif

@@ -6,7 +6,7 @@
 #include "ef_effect_control.h"
 
 extern Vtx int_hnw007_v[];
-u8 cKF_ckcb_r_int_hnw007_tbl[] ATTRIBUTE_ALIGN(32) = { 56, 7, 7, 0, 7, 0, 7 };
+ATTRIBUTE_ALIGN(32) u8 cKF_ckcb_r_int_hnw007_tbl[] = { 56, 7, 7, 0, 7, 0, 7 };
 
 s16 cKF_kn_int_hnw007_tbl[] = { 2, 2, 2, 2, 2, 2, 2, 7, 7, 5, 7, 6, 7, 7, 8 };
 
@@ -29,9 +29,9 @@ cKF_Animation_R_c cKF_ba_r_int_hnw007 = {
 };
 
 #ifdef TARGET_PC
-u16 int_hnw007_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 int_hnw007_pal[0x20 / sizeof(u16)];
 #else
-u16 int_hnw007_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 int_hnw007_pal[] = {
 #include "assets/int_hnw007_pal.inc"
 };
 #endif

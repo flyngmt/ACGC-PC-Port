@@ -2,7 +2,7 @@
 #include "libforest/gbi_extensions.h"
 
 #ifdef TARGET_PC
-u8 nintendo_376x104[0x4C60] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 nintendo_376x104[0x4C60];
 #else
 #include "assets/bootdata/nintendo_376x104.inc"
 #endif

@@ -44,7 +44,7 @@ typedef enum {
 #define GRAPH_MSG_BUF_COUNT 8
 
 typedef struct graph_s {
-    /* 0x0000 */ Gfx* Gfx_list00; /* polygon opaque */
+    /* 0x0000 */ ATTRIBUTE_ALIGN(8) Gfx* Gfx_list00; /* polygon opaque */
     /* 0x0004 */ Gfx* Gfx_list01; /* polygon translucent */
     /* 0x0008 */ void* DepthBuffer;
     /* 0x000C */ Gfx* Gfx_list03; /* unused */
@@ -93,7 +93,7 @@ typedef struct graph_s {
     /* 0x0368 */ double dt; // number of seconds that have passed since the last execution frame
     /* 0x0370 */ double dt_num_60fps_frames; // the number of 60FPS frames that have passed since the last execution frame
     /* 0x0378 */ double dt_total_60fps_frames;
-} GRAPH ATTRIBUTE_ALIGN(8);       // one of the missing structs is likely aligned to 8 bytes.
+} GRAPH;       // one of the missing structs is likely aligned to 8 bytes.
 
 extern void graph_proc(void* arg);
 extern void graph_ct(GRAPH* graph);

@@ -1,113 +1,113 @@
 #include "libforest/gbi_extensions.h"
 
 #ifdef TARGET_PC
-static u16 rom_toudai_yuka_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_toudai_yuka_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_toudai_yuka_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_toudai_yuka_pal[] = {
 #include "assets/field/bg/rom_toudai_yuka_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_toudai_kabe_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_toudai_kabe_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_toudai_kabe_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_toudai_kabe_pal[] = {
 #include "assets/field/bg/rom_toudai_kabe_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_toudai_step_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_toudai_step_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_toudai_step_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_toudai_step_pal[] = {
 #include "assets/field/bg/rom_toudai_step_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_toudai_meka_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_toudai_meka_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_toudai_meka_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_toudai_meka_pal[] = {
 #include "assets/field/bg/rom_toudai_meka_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_toudai_ukiwa_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_toudai_ukiwa_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_toudai_ukiwa_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_toudai_ukiwa_pal[] = {
 #include "assets/field/bg/rom_toudai_ukiwa_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_toudai_yuka_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_toudai_yuka_tex[0x800];
 #else
-static u8 rom_toudai_yuka_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_toudai_yuka_tex[] = {
 #include "assets/field/bg/rom_toudai_yuka_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_toudai_kabeA_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_toudai_kabeA_tex[0x800];
 #else
-static u8 rom_toudai_kabeA_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_toudai_kabeA_tex[] = {
 #include "assets/field/bg/rom_toudai_kabeA_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_toudai_kabeB_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_toudai_kabeB_tex[0x800];
 #else
-static u8 rom_toudai_kabeB_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_toudai_kabeB_tex[] = {
 #include "assets/field/bg/rom_toudai_kabeB_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_toudai_step_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_toudai_step_tex[0x400];
 #else
-static u8 rom_toudai_step_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_toudai_step_tex[] = {
 #include "assets/field/bg/rom_toudai_step_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_toudai_mekaA_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_toudai_mekaA_tex[0x100];
 #else
-static u8 rom_toudai_mekaA_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_toudai_mekaA_tex[] = {
 #include "assets/field/bg/rom_toudai_mekaA_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_toudai_ukiwa_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_toudai_ukiwa_tex[0x200];
 #else
-static u8 rom_toudai_ukiwa_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_toudai_ukiwa_tex[] = {
 #include "assets/field/bg/rom_toudai_ukiwa_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_toudai_kage1_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_toudai_kage1_tex[0x80];
 #else
-static u8 rom_toudai_kage1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_toudai_kage1_tex[] = {
 #include "assets/field/bg/rom_toudai_kage1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_toudai_mekaC_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_toudai_mekaC_tex[0x200];
 #else
-static u8 rom_toudai_mekaC_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_toudai_mekaC_tex[] = {
 #include "assets/field/bg/rom_toudai_mekaC_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_toudai_kage2_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_toudai_kage2_tex[0x80];
 #else
-static u8 rom_toudai_kage2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_toudai_kage2_tex[] = {
 #include "assets/field/bg/rom_toudai_kage2_tex.inc"
 };
 #endif

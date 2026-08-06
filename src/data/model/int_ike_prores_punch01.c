@@ -7,9 +7,9 @@
 
 extern Vtx int_ike_prores_punch01_v[];
 #ifdef TARGET_PC
-u16 int_ike_prores_punch01_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 int_ike_prores_punch01_pal[0x20 / sizeof(u16)];
 #else
-u16 int_ike_prores_punch01_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 int_ike_prores_punch01_pal[] = {
 #include "assets/int_ike_prores_punch01_pal.inc"
 };
 #endif

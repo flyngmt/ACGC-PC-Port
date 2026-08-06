@@ -7,9 +7,9 @@
 
 extern Vtx rom_shop3_fuku_v[];
 #ifdef TARGET_PC
-static u16 rom_shop3_ent_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_shop3_ent_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_shop3_ent_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_shop3_ent_pal[] = {
 #include "assets/rom_shop3_fuku/rom_shop3_ent_pal.inc"
 };
 #endif

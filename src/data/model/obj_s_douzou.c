@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_s_douzou_dai_tex_txt[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_douzou_dai_tex_txt[0x100];
 #else
-u8 obj_s_douzou_dai_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_s_douzou_dai_tex_txt[] = {
 #include "assets/obj_s_douzou_dai_tex_txt.inc"
 };
 #endif
@@ -382,9 +382,9 @@ cKF_Joint_R_c cKF_je_r_obj_s_douzou_tbl[] = {
 cKF_Skeleton_R_c cKF_bs_r_obj_s_douzou = { ARRAY_COUNT(cKF_je_r_obj_s_douzou_tbl), 8, cKF_je_r_obj_s_douzou_tbl };
 
 #ifdef TARGET_PC
-u8 obj_w_douzou_dai_tex_txt[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_w_douzou_dai_tex_txt[0x100];
 #else
-u8 obj_w_douzou_dai_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_w_douzou_dai_tex_txt[] = {
 #include "assets/obj_w_douzou_dai_tex_txt.inc"
 };
 #endif

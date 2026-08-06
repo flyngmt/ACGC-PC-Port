@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-static u16 inv_mushi_w5_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 inv_mushi_w5_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-static u16 inv_mushi_w5_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 inv_mushi_w5_tex_rgb_ci4_pal[] = {
 #include "assets/inv_sakana/inv_mushi_w5_tex_rgb_ci4_pal.inc"
 };
 #endif

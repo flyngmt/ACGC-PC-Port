@@ -6,153 +6,153 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 kai_sousa_icons_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_icons_tex[0x200];
 #else
-u8 kai_sousa_icons_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_icons_tex[] = {
 #include "assets/kai_sousa_icons_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 kai_sousa_lwaku_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_lwaku_tex[0x200];
 #else
-u8 kai_sousa_lwaku_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_lwaku_tex[] = {
 #include "assets/kai_sousa_lwaku_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 kai_sousa_letters_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_letters_tex[0x200];
 #else
-u8 kai_sousa_letters_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_letters_tex[] = {
 #include "assets/kai_sousa_letters_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 kai_sousa_rcontroller_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_rcontroller_tex[0x400];
 #else
-u8 kai_sousa_rcontroller_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_rcontroller_tex[] = {
 #include "assets/kai_sousa_rcontroller_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 kai_sousa_lcontroller_a_tex[0x1000] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_lcontroller_a_tex[0x1000];
 #else
-u8 kai_sousa_lcontroller_a_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_lcontroller_a_tex[] = {
 #include "assets/kai_sousa_lcontroller_a_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 kai_sousa_punct_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_punct_tex[0x200];
 #else
-u8 kai_sousa_punct_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_punct_tex[] = {
 #include "assets/kai_sousa_punct_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 kai_sousa_lcontroller_b_tex[0x1000] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_lcontroller_b_tex[0x1000];
 #else
-u8 kai_sousa_lcontroller_b_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_lcontroller_b_tex[] = {
 #include "assets/kai_sousa_lcontroller_b_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 kai_sousa_lcontroller_c_tex[0x1000] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_lcontroller_c_tex[0x1000];
 #else
-u8 kai_sousa_lcontroller_c_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_lcontroller_c_tex[] = {
 #include "assets/kai_sousa_lcontroller_c_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 kai_sousa_lcontroller_d_tex[0x1000] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_lcontroller_d_tex[0x1000];
 #else
-u8 kai_sousa_lcontroller_d_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_lcontroller_d_tex[] = {
 #include "assets/kai_sousa_lcontroller_d_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 kai_sousa_mojiban_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_mojiban_tex[0x400];
 #else
-u8 kai_sousa_mojiban_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_mojiban_tex[] = {
 #include "assets/kai_sousa_mojiban_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 kai_sousa_mojiban2_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_mojiban2_tex[0x400];
 #else
-u8 kai_sousa_mojiban2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_mojiban2_tex[] = {
 #include "assets/kai_sousa_mojiban2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 kai_sousa_kirikae_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_kirikae_tex[0x200];
 #else
-u8 kai_sousa_kirikae_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_kirikae_tex[] = {
 #include "assets/kai_sousa_kirikae_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 kai_sousa_3D_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_3D_tex[0x400];
 #else
-u8 kai_sousa_3D_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_3D_tex[] = {
 #include "assets/kai_sousa_3D_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 kai_sousa_ok_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_ok_tex[0x200];
 #else
-u8 kai_sousa_ok_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_ok_tex[] = {
 #include "assets/kai_sousa_ok_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 kai_sousa_backspace_tex[0x500] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_backspace_tex[0x500];
 #else
-u8 kai_sousa_backspace_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_backspace_tex[] = {
 #include "assets/kai_sousa_backspace_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 kai_sousa_cursor_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_cursor_tex[0x400];
 #else
-u8 kai_sousa_cursor_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_cursor_tex[] = {
 #include "assets/kai_sousa_cursor_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 kai_sousa_button3_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 kai_sousa_button3_tex[0x100];
 #else
-static u8 kai_sousa_button3_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 kai_sousa_button3_tex[] = {
 #include "assets/kai_sousa/kai_sousa_button3_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 kai_sousa_shita_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_shita_tex[0x400];
 #else
-u8 kai_sousa_shita_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_shita_tex[] = {
 #include "assets/kai_sousa_shita_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 kai_sousa_space_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_space_tex[0x400];
 #else
-u8 kai_sousa_space_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 kai_sousa_space_tex[] = {
 #include "assets/kai_sousa_space_tex.inc"
 };
 #endif

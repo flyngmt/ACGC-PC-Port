@@ -6,17 +6,17 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u16 obj_shop_wall_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_shop_wall_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_shop_wall_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u16 obj_shop_wall_pal[]= {
 #include "assets/obj_shop_wall_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 obj_shop_wall_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_shop_wall_tex[0x200];
 #else
-u8 obj_shop_wall_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 obj_shop_wall_tex[]= {
 #include "assets/obj_shop_wall_tex.inc"
 };
 #endif

@@ -90,7 +90,7 @@ static int fixnes_initialized = 0;
 #define FIXNES_SOURCE_TOP 8
 #define FIXNES_GX_TEXTURE_SIZE (FIXNES_PRESENT_WIDTH * FIXNES_PRESENT_HEIGHT * 4)
 
-static uint8_t fixnes_gx_texture[FIXNES_GX_TEXTURE_SIZE] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static uint8_t fixnes_gx_texture[FIXNES_GX_TEXTURE_SIZE];
 static GXTexObj fixnes_tex_obj;
 static int fixnes_tex_obj_initialized = 0;
 

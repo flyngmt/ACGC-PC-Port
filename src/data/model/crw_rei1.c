@@ -7,9 +7,9 @@
 
 extern Vtx crw_rei1_v[];
 #ifdef TARGET_PC
-u16 crw_rei1_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 crw_rei1_pal[0x20 / sizeof(u16)];
 #else
-u16 crw_rei1_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 crw_rei1_pal[] = {
 #include "assets/crw_rei1_pal.inc"
 };
 #endif

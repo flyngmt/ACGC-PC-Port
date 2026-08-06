@@ -24,8 +24,8 @@ ACTOR_PROFILE Mural_Profile = {
     NULL,
 };
 
-static u8 tex[aML_MURAL_NUM][(32 * 32) / 2] ATTRIBUTE_ALIGN(32);
-static u16 pal[aML_MURAL_NUM][16] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 tex[aML_MURAL_NUM][(32 * 32) / 2];
+ATTRIBUTE_ALIGN(32) static u16 pal[aML_MURAL_NUM][16];
 
 static void Mural_Actor_ct(ACTOR* actorx, GAME* game) {
     MURAL_ACTOR* mural = (MURAL_ACTOR*)actorx;

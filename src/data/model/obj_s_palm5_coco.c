@@ -4,9 +4,9 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-Vtx obj_s_palm5_coco_v[0x80 / sizeof(Vtx)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) Vtx obj_s_palm5_coco_v[0x80 / sizeof(Vtx)];
 #else
-Vtx obj_s_palm5_coco_v[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) Vtx obj_s_palm5_coco_v[] = {
 #include "assets/obj_s_palm5_coco_v.inc"
 };
 #endif

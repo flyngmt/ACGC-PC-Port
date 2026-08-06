@@ -2,8 +2,8 @@
 #include "libforest/gbi_extensions.h"
 
 #ifdef TARGET_PC
-static u8 gam_win_moji3_tex[0x500] ATTRIBUTE_ALIGN(32);
-u8 gam_win_moji5_tex[0x380] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 gam_win_moji3_tex[0x500];
+ATTRIBUTE_ALIGN(32) u8 gam_win_moji5_tex[0x380];
 #else
 #include "assets/bootdata/win3/gam_win_moji3_tex.inc"
 #include "assets/bootdata/win3/gam_win_moji5_tex.inc"

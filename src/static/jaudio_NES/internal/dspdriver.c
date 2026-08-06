@@ -8,7 +8,7 @@
 #include <dolphin/base/PPCArch.h>
 
 #define DSPCH_LENGTH (64)
-static dspch_ DSPCH[DSPCH_LENGTH] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static dspch_ DSPCH[DSPCH_LENGTH];
 
 static int old_time;
 static u32 history[10] = { 0xF4240 };

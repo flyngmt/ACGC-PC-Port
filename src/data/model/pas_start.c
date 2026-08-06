@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-static u8 kai_sousa_button3_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 kai_sousa_button3_tex[0x100];
 #else
-static u8 kai_sousa_button3_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 kai_sousa_button3_tex[] = {
 #include "assets/pas_start/kai_sousa_button3_tex.inc"
 };
 #endif

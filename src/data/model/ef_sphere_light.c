@@ -7,9 +7,9 @@
 
 extern Vtx ef_sphere_light_v[];
 #ifdef TARGET_PC
-u8 ef_sphere_light_tex_4i4_rgb_i4[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_sphere_light_tex_4i4_rgb_i4[0x200];
 #else
-u8 ef_sphere_light_tex_4i4_rgb_i4[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_sphere_light_tex_4i4_rgb_i4[] = {
 #include "assets/ef_sphere_light_tex_4i4_rgb_i4.inc"
 };
 #endif

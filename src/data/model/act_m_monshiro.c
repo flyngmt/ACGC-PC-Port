@@ -5,9 +5,9 @@
 #include "ac_npc.h"
 
 #ifdef TARGET_PC
-static u16 act_m_monshiro_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 act_m_monshiro_pal[0x20 / sizeof(u16)];
 #else
-static u16 act_m_monshiro_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 act_m_monshiro_pal[] = {
 #include "assets/act_m_monshiro/act_m_monshiro_pal.inc"
 };
 #endif

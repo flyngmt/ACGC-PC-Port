@@ -1,97 +1,97 @@
 #include "libforest/gbi_extensions.h"
 
 #ifdef TARGET_PC
-static u16 rom_train_1_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_train_1_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_train_1_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_train_1_pal[] = {
 #include "assets/field/bg/rom_train_1_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_train_2_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_train_2_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_train_2_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_train_2_pal[] = {
 #include "assets/field/bg/rom_train_2_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_train_3_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_train_3_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_train_3_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_train_3_pal[] = {
 #include "assets/field/bg/rom_train_3_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_train_seat1_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_train_seat1_tex[0x800];
 #else
-static u8 rom_train_seat1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_train_seat1_tex[] = {
 #include "assets/field/bg/rom_train_seat1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_train_seat2_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_train_seat2_tex[0x800];
 #else
-static u8 rom_train_seat2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_train_seat2_tex[] = {
 #include "assets/field/bg/rom_train_seat2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_train_floor_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_train_floor_tex[0x800];
 #else
-static u8 rom_train_floor_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_train_floor_tex[] = {
 #include "assets/field/bg/rom_train_floor_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_train_wall1_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_train_wall1_tex[0x800];
 #else
-static u8 rom_train_wall1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_train_wall1_tex[] = {
 #include "assets/field/bg/rom_train_wall1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_train_roof_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_train_roof_tex[0x800];
 #else
-static u8 rom_train_roof_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_train_roof_tex[] = {
 #include "assets/field/bg/rom_train_roof_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_train_wall2_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_train_wall2_tex[0x800];
 #else
-static u8 rom_train_wall2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_train_wall2_tex[] = {
 #include "assets/field/bg/rom_train_wall2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_train_net_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_train_net_tex[0x800];
 #else
-static u8 rom_train_net_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_train_net_tex[] = {
 #include "assets/field/bg/rom_train_net_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_train_glass_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_train_glass_tex[0x80];
 #else
-static u8 rom_train_glass_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_train_glass_tex[] = {
 #include "assets/field/bg/rom_train_glass_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_train_light_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_train_light_tex[0x200];
 #else
-static u8 rom_train_light_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_train_light_tex[] = {
 #include "assets/field/bg/rom_train_light_tex.inc"
 };
 #endif

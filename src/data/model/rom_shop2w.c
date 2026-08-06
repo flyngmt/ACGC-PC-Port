@@ -7,9 +7,9 @@
 
 extern Vtx rom_shop2w_v[];
 #ifdef TARGET_PC
-static u16 rom_conveni_ent_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_conveni_ent_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_conveni_ent_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_conveni_ent_pal[] = {
 #include "assets/rom_shop2w/rom_conveni_ent_pal.inc"
 };
 #endif

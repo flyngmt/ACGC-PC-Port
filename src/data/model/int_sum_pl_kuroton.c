@@ -7,9 +7,9 @@
 
 extern Vtx int_sum_pl_kuroton_v[];
 #ifdef TARGET_PC
-static u16 int_sum_pl_kuroton_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 int_sum_pl_kuroton_pal[0x20 / sizeof(u16)];
 #else
-static u16 int_sum_pl_kuroton_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 int_sum_pl_kuroton_pal[] = {
 #include "assets/int_sum_pl_kuroton/int_sum_pl_kuroton_pal.inc"
 };
 #endif

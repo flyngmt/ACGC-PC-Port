@@ -5,14 +5,14 @@
 #include "ac_npc.h"
 #include "ef_effect_control.h"
 
-EVW_ANIME_SCROLL ef_moon01_01_evw_anime_2[] ATTRIBUTE_ALIGN(32) = { { 0, 0, 64, 64 }, { 1, -1, 32, 32 } };
+ATTRIBUTE_ALIGN(32) EVW_ANIME_SCROLL ef_moon01_01_evw_anime_2[] = { { 0, 0, 64, 64 }, { 1, -1, 32, 32 } };
 
 EVW_ANIME_DATA ef_moon01_01_evw_anime[] = { { -1, EVW_ANIME_TYPE_SCROLL2, ef_moon01_01_evw_anime_2 } };
 
 #ifdef TARGET_PC
-static u8 ef_moon01_1_int_i4[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 ef_moon01_1_int_i4[0x200];
 #else
-static u8 ef_moon01_1_int_i4[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 ef_moon01_1_int_i4[] = {
 #include "assets/ef_moon01_01/ef_moon01_1_int_i4.inc"
 };
 #endif

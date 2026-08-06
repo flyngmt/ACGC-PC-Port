@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 cal_win_choose_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 cal_win_choose_tex[0x400];
 #else
-u8 cal_win_choose_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 cal_win_choose_tex[] = {
 #include "assets/cal_win_choose_tex.inc"
 };
 #endif

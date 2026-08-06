@@ -4,9 +4,9 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-u8 obj_w_fence_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_w_fence_tex[0x400];
 #else
-u8 obj_w_fence_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_w_fence_tex[] = {
 #include "assets/obj_w_fence_tex.inc"
 };
 #endif

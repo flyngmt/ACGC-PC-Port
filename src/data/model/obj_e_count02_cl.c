@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_e_count02_0_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_e_count02_0_tex[0x200];
 #else
-u8 obj_e_count02_0_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_e_count02_0_tex[] = {
 #include "assets/obj_e_count02_0_tex.inc"
 };
 #endif

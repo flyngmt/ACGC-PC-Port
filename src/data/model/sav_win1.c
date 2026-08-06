@@ -6,153 +6,153 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u16 sav_win_w6_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 sav_win_w6_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 sav_win_w6_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 sav_win_w6_tex_rgb_ci4_pal[] = {
 #include "assets/sav_win_w6_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 sav_win_w1_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 sav_win_w1_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 sav_win_w1_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 sav_win_w1_tex_rgb_ci4_pal[] = {
 #include "assets/sav_win_w1_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 sav_win_w2_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 sav_win_w2_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 sav_win_w2_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 sav_win_w2_tex_rgb_ci4_pal[] = {
 #include "assets/sav_win_w2_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 sav_win_w3_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 sav_win_w3_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 sav_win_w3_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 sav_win_w3_tex_rgb_ci4_pal[] = {
 #include "assets/sav_win_w3_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 sav_win_w4_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 sav_win_w4_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 sav_win_w4_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 sav_win_w4_tex_rgb_ci4_pal[] = {
 #include "assets/sav_win_w4_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 sav_win_w5_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 sav_win_w5_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 sav_win_w5_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 sav_win_w5_tex_rgb_ci4_pal[] = {
 #include "assets/sav_win_w5_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 inv_original_futa2_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 inv_original_futa2_tex[0x200];
 #else
-static u8 inv_original_futa2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 inv_original_futa2_tex[] = {
 #include "assets/sav_win1/inv_original_futa2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 sav_win1_aw1_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 sav_win1_aw1_tex[0x800];
 #else
-u8 sav_win1_aw1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 sav_win1_aw1_tex[] = {
 #include "assets/sav_win1_aw1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 sav_win1_aw6_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 sav_win1_aw6_tex[0x100];
 #else
-u8 sav_win1_aw6_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 sav_win1_aw6_tex[] = {
 #include "assets/sav_win1_aw6_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 sav_win_waku_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 sav_win_waku_tex[0x200];
 #else
-static u8 sav_win_waku_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 sav_win_waku_tex[] = {
 #include "assets/sav_win1/sav_win_waku_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 sav_win1_aw2_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 sav_win1_aw2_tex[0x800];
 #else
-u8 sav_win1_aw2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 sav_win1_aw2_tex[] = {
 #include "assets/sav_win1_aw2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 sav_win1_aw3_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 sav_win1_aw3_tex[0x800];
 #else
-u8 sav_win1_aw3_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 sav_win1_aw3_tex[] = {
 #include "assets/sav_win1_aw3_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 sav_win1_aw4_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 sav_win1_aw4_tex[0x800];
 #else
-u8 sav_win1_aw4_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 sav_win1_aw4_tex[] = {
 #include "assets/sav_win1_aw4_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 sav_win1_aw5_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 sav_win1_aw5_tex[0x800];
 #else
-u8 sav_win1_aw5_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 sav_win1_aw5_tex[] = {
 #include "assets/sav_win1_aw5_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 ctl_win_tagu2_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 ctl_win_tagu2_tex[0x200];
 #else
-static u8 ctl_win_tagu2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 ctl_win_tagu2_tex[] = {
 #include "assets/sav_win1/ctl_win_tagu2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 ctl_win_waku1_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 ctl_win_waku1_tex[0x800];
 #else
-static u8 ctl_win_waku1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 ctl_win_waku1_tex[] = {
 #include "assets/sav_win1/ctl_win_waku1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 ctl_win_waku2_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 ctl_win_waku2_tex[0x800];
 #else
-static u8 ctl_win_waku2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 ctl_win_waku2_tex[] = {
 #include "assets/sav_win1/ctl_win_waku2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 sav_win_1_kage1_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 sav_win_1_kage1_tex[0x200];
 #else
-u8 sav_win_1_kage1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 sav_win_1_kage1_tex[] = {
 #include "assets/sav_win_1_kage1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 sav_win_1_kage2_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 sav_win_1_kage2_tex[0x400];
 #else
-u8 sav_win_1_kage2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 sav_win_1_kage2_tex[] = {
 #include "assets/sav_win_1_kage2_tex.inc"
 };
 #endif

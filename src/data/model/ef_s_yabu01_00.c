@@ -7,9 +7,9 @@
 
 extern u8 bush_pal_dummy[];
 #ifdef TARGET_PC
-u8 ef_s_yabu01_0[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_s_yabu01_0[0x80];
 #else
-u8 ef_s_yabu01_0[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_s_yabu01_0[] = {
 #include "assets/ef_s_yabu01_0.inc"
 };
 #endif
@@ -37,9 +37,9 @@ Gfx ef_s_yabu01_00_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_s_tree01_0[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_s_tree01_0[0x80];
 #else
-u8 ef_s_tree01_0[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_s_tree01_0[] = {
 #include "assets/ef_s_tree01_0.inc"
 };
 #endif
@@ -67,9 +67,9 @@ Gfx ef_s_tree01_00_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u16 grd_bush_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 grd_bush_pal[0x20 / sizeof(u16)];
 #else
-u16 grd_bush_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 grd_bush_pal[] = {
 #include "assets/grd_bush_pal.inc"
 };
 #endif
@@ -104,9 +104,9 @@ Gfx ef_w_yabu01_00_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_f_tree01_0[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_f_tree01_0[0x80];
 #else
-u8 ef_f_tree01_0[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_f_tree01_0[] = {
 #include "assets/ef_f_tree01_0.inc"
 };
 #endif
@@ -134,9 +134,9 @@ Gfx ef_f_tree01_00_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_s_cedar_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_s_cedar_tex[0x100];
 #else
-u8 ef_s_cedar_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_s_cedar_tex[] = {
 #include "assets/ef_s_cedar_tex.inc"
 };
 #endif
@@ -164,9 +164,9 @@ Gfx ef_s_cedar_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_s_palm_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_s_palm_tex[0x100];
 #else
-u8 ef_s_palm_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_s_palm_tex[] = {
 #include "assets/ef_s_palm_tex.inc"
 };
 #endif

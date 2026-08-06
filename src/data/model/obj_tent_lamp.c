@@ -7,9 +7,9 @@
 
 extern Vtx obj_tent_lamp_v[];
 #ifdef TARGET_PC
-u16 obj_tent_lamp1_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_tent_lamp1_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_tent_lamp1_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_tent_lamp1_rgb_ci4_pal[] = {
 #include "assets/obj_tent_lamp1_rgb_ci4_pal.inc"
 };
 #endif

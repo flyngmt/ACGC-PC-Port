@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 ef_hana01_tu_a_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_hana01_tu_a_tex[0x80];
 #else
-u8 ef_hana01_tu_a_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_hana01_tu_a_tex[] = {
 #include "assets/ef_hana01_tu_a_tex.inc"
 };
 #endif
@@ -36,9 +36,9 @@ Gfx ef_hana01_tu_a_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_hana01_co_a_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_hana01_co_a_tex[0x80];
 #else
-u8 ef_hana01_co_a_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_hana01_co_a_tex[] = {
 #include "assets/ef_hana01_co_a_tex.inc"
 };
 #endif
@@ -66,9 +66,9 @@ Gfx ef_hana01_co_a_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_hana01_pa_a_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_hana01_pa_a_tex[0x80];
 #else
-u8 ef_hana01_pa_a_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_hana01_pa_a_tex[] = {
 #include "assets/ef_hana01_pa_a_tex.inc"
 };
 #endif
@@ -96,9 +96,9 @@ Gfx ef_hana01_pa_a_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_hana01_ha_a_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_hana01_ha_a_tex[0x80];
 #else
-u8 ef_hana01_ha_a_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_hana01_ha_a_tex[] = {
 #include "assets/ef_hana01_ha_a_tex.inc"
 };
 #endif

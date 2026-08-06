@@ -243,10 +243,10 @@ typedef struct insect_ctrl_actor_s {
 
 /* sizeof(aINS_overlay_entry_c) == 0x1C08 */
 typedef struct insect_overlay_s {
-    u8 data[0x1C00];
+    ATTRIBUTE_ALIGN(8) u8 data[0x1C00];
     int _1C00;
     int _1C04;
-} ATTRIBUTE_ALIGN(8) aINS_overlay_entry_c;
+} aINS_overlay_entry_c;
 
 typedef struct {
     aINS_overlay_entry_c entries[3];

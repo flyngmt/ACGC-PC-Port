@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_e_tukimi_t2_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_e_tukimi_t2_tex_txt[0x800];
 #else
-u8 obj_e_tukimi_t2_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_e_tukimi_t2_tex_txt[] = {
 #include "assets/obj_e_tukimi_t2_tex_txt.inc"
 };
 #endif
@@ -204,9 +204,9 @@ cKF_Animation_R_c cKF_ba_r_obj_e_tukimi_r = { cKF_ckcb_r_obj_e_tukimi_r_tbl,
                                               271 };
 
 #ifdef TARGET_PC
-u8 obj_e_tukimi_l_t2_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_e_tukimi_l_t2_tex_txt[0x800];
 #else
-u8 obj_e_tukimi_l_t2_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_e_tukimi_l_t2_tex_txt[] = {
 #include "assets/obj_e_tukimi_l_t2_tex_txt.inc"
 };
 #endif

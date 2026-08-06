@@ -4,25 +4,25 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-static u16 act_f37_kurage_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 act_f37_kurage_pal[0x20 / sizeof(u16)];
 #else
-static u16 act_f37_kurage_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 act_f37_kurage_pal[] = {
 #include "assets/act_f37_kurage/act_f37_kurage_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 act_f37_kurage_head_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 act_f37_kurage_head_tex[0x100];
 #else
-u8 act_f37_kurage_head_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 act_f37_kurage_head_tex[] = {
 #include "assets/act_f37_kurage_head_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 act_f37_kurage_foot_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 act_f37_kurage_foot_tex[0x100];
 #else
-u8 act_f37_kurage_foot_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 act_f37_kurage_foot_tex[] = {
 #include "assets/act_f37_kurage_foot_tex.inc"
 };
 #endif

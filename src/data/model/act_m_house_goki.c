@@ -5,9 +5,9 @@
 #include "ac_npc.h"
 
 #ifdef TARGET_PC
-u16 act_m_house_goki_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 act_m_house_goki_pal[0x20 / sizeof(u16)];
 #else
-u16 act_m_house_goki_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 act_m_house_goki_pal[] = {
 #include "assets/act_m_house_goki_pal.inc"
 };
 #endif

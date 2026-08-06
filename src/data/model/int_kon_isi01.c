@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-static u16 int_kon_isi01_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 int_kon_isi01_pal[0x20 / sizeof(u16)];
 #else
-static u16 int_kon_isi01_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 int_kon_isi01_pal[] = {
 #include "assets/int_kon_isi01/int_kon_isi01_pal.inc"
 };
 #endif

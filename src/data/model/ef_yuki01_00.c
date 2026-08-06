@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 ef_yuki01_1[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_yuki01_1[0x80];
 #else
-u8 ef_yuki01_1[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_yuki01_1[] = {
 #include "assets/ef_yuki01_1.inc"
 };
 #endif

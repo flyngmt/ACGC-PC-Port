@@ -4,17 +4,17 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-static u16 obj_cedar_light_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 obj_cedar_light_pal[0x20 / sizeof(u16)];
 #else
-static u16 obj_cedar_light_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 obj_cedar_light_pal[] = {
 #include "assets/obj_x_cedar5/obj_cedar_light_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 obj_x_cedar_light_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_x_cedar_light_tex[0x200];
 #else
-u8 obj_x_cedar_light_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_x_cedar_light_tex[] = {
 #include "assets/obj_x_cedar_light_tex.inc"
 };
 #endif

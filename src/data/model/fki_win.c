@@ -7,9 +7,9 @@
 
 extern Vtx fki_win_v[];
 #ifdef TARGET_PC
-u8 fki_win_w2_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 fki_win_w2_tex[0x400];
 #else
-u8 fki_win_w2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 fki_win_w2_tex[] = {
 #include "assets/fki_win_w2_tex.inc"
 };
 #endif

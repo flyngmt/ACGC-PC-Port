@@ -5,17 +5,17 @@
 #include "ac_npc.h"
 
 #ifdef TARGET_PC
-u16 obj_toudai_pole_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_toudai_pole_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_toudai_pole_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_toudai_pole_pal[] = {
 #include "assets/obj_toudai_pole_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 obj_toudai_poleA_tex_pic_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 obj_toudai_poleA_tex_pic_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 obj_toudai_poleA_tex_pic_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 obj_toudai_poleA_tex_pic_ci4_pal[] = {
 #include "assets/obj_toudai_poleA_tex_pic_ci4_pal.inc"
 };
 #endif

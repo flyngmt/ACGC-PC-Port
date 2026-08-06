@@ -1,65 +1,65 @@
 #include "libforest/gbi_extensions.h"
 
 #ifdef TARGET_PC
-static u16 rom_museum2_wall_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_museum2_wall_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_museum2_wall_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_museum2_wall_pal[] = {
 #include "assets/field/bg/rom_museum2_wall_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_museum2_floor_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_museum2_floor_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_museum2_floor_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_museum2_floor_pal[] = {
 #include "assets/field/bg/rom_museum2_floor_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_museum2_step1_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_museum2_step1_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_museum2_step1_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_museum2_step1_pal[] = {
 #include "assets/field/bg/rom_museum2_step1_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_museum2_wallA_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_museum2_wallA_tex[0x800];
 #else
-static u8 rom_museum2_wallA_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_museum2_wallA_tex[] = {
 #include "assets/field/bg/rom_museum2_wallA_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_museum2_wallB_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_museum2_wallB_tex[0x800];
 #else
-static u8 rom_museum2_wallB_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_museum2_wallB_tex[] = {
 #include "assets/field/bg/rom_museum2_wallB_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_museum2_floorA_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_museum2_floorA_tex[0x800];
 #else
-static u8 rom_museum2_floorA_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_museum2_floorA_tex[] = {
 #include "assets/field/bg/rom_museum2_floorA_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_museum2_step1_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_museum2_step1_tex[0x800];
 #else
-static u8 rom_museum2_step1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_museum2_step1_tex[] = {
 #include "assets/field/bg/rom_museum2_step1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_museum2_plate_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_museum2_plate_tex[0x100];
 #else
-static u8 rom_museum2_plate_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_museum2_plate_tex[] = {
 #include "assets/field/bg/rom_museum2_plate_tex.inc"
 };
 #endif

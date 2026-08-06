@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-static u16 int_din_stego_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 int_din_stego_pal[0x20 / sizeof(u16)];
 #else
-static u16 int_din_stego_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 int_din_stego_pal[] = {
 #include "assets/int_din_stego_dummyA/int_din_stego_pal.inc"
 };
 #endif

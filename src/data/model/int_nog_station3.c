@@ -7,9 +7,9 @@
 
 extern Vtx int_nog_station3_v[];
 #ifdef TARGET_PC
-u8 int_nog_station3_bese_tex_txt[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 int_nog_station3_bese_tex_txt[0x200];
 #else
-u8 int_nog_station3_bese_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 int_nog_station3_bese_tex_txt[] = {
 #include "assets/int_nog_station3_bese_tex_txt.inc"
 };
 #endif

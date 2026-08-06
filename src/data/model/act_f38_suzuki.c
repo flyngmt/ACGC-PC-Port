@@ -4,17 +4,17 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-static u16 int_nog_suzuki_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 int_nog_suzuki_pal[0x20 / sizeof(u16)];
 #else
-static u16 int_nog_suzuki_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 int_nog_suzuki_pal[] = {
 #include "assets/act_f38_suzuki/int_nog_suzuki_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 act_f38_suzuki_tex[0x300] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 act_f38_suzuki_tex[0x300];
 #else
-u8 act_f38_suzuki_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 act_f38_suzuki_tex[] = {
 #include "assets/act_f38_suzuki_tex.inc"
 };
 #endif

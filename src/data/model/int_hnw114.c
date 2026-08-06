@@ -7,9 +7,9 @@
 
 extern Vtx int_hnw114_v[];
 #ifdef TARGET_PC
-u16 int_hnw114_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 int_hnw114_pal[0x20 / sizeof(u16)];
 #else
-u16 int_hnw114_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 int_hnw114_pal[] = {
 #include "assets/int_hnw114_pal.inc"
 };
 #endif

@@ -7,9 +7,9 @@
 
 extern Vtx ef_wipe1_v[];
 #ifdef TARGET_PC
-u8 ef_wape_tex[0x40] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_wape_tex[0x40];
 #else
-u8 ef_wape_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_wape_tex[] = {
 #include "assets/ef_wape_tex.inc"
 };
 #endif

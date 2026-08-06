@@ -1,297 +1,297 @@
 #include "libforest/gbi_extensions.h"
 
 #ifdef TARGET_PC
-static u16 yubin_k_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 yubin_k_pal[0x20 / sizeof(u16)];
 #else
-static u16 yubin_k_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 yubin_k_pal[] = {
 #include "assets/field/bg/yubin_k_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 yubin_k2_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 yubin_k2_pal[0x20 / sizeof(u16)];
 #else
-static u16 yubin_k2_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 yubin_k2_pal[] = {
 #include "assets/field/bg/yubin_k2_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 yubin_floor_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 yubin_floor_pal[0x20 / sizeof(u16)];
 #else
-static u16 yubin_floor_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 yubin_floor_pal[] = {
 #include "assets/field/bg/yubin_floor_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 yubin_hakari_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 yubin_hakari_pal[0x20 / sizeof(u16)];
 #else
-static u16 yubin_hakari_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 yubin_hakari_pal[] = {
 #include "assets/field/bg/yubin_hakari_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 yubin_wall_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 yubin_wall_pal[0x20 / sizeof(u16)];
 #else
-static u16 yubin_wall_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 yubin_wall_pal[] = {
 #include "assets/field/bg/yubin_wall_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 yubin_letter_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 yubin_letter_pal[0x20 / sizeof(u16)];
 #else
-static u16 yubin_letter_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 yubin_letter_pal[] = {
 #include "assets/field/bg/yubin_letter_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 yubin_us_bag_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 yubin_us_bag_pal[0x20 / sizeof(u16)];
 #else
-static u16 yubin_us_bag_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 yubin_us_bag_pal[] = {
 #include "assets/field/bg/yubin_us_bag_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 zzzyubin_tree_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 zzzyubin_tree_pal[0x20 / sizeof(u16)];
 #else
-static u16 zzzyubin_tree_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 zzzyubin_tree_pal[] = {
 #include "assets/field/bg/zzzyubin_tree_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 yubin_t_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 yubin_t_pal[0x20 / sizeof(u16)];
 #else
-static u16 yubin_t_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 yubin_t_pal[] = {
 #include "assets/field/bg/yubin_t_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 yubin_us_card_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 yubin_us_card_pal[0x20 / sizeof(u16)];
 #else
-static u16 yubin_us_card_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 yubin_us_card_pal[] = {
 #include "assets/field/bg/yubin_us_card_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yuibn_kaunta01_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yuibn_kaunta01_tex[0x200];
 #else
-static u8 yuibn_kaunta01_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yuibn_kaunta01_tex[] = {
 #include "assets/field/bg/yuibn_kaunta01_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yuibn_kaunta02_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yuibn_kaunta02_tex[0x200];
 #else
-static u8 yuibn_kaunta02_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yuibn_kaunta02_tex[] = {
 #include "assets/field/bg/yuibn_kaunta02_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yuibn_desk01_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yuibn_desk01_tex[0x200];
 #else
-static u8 yuibn_desk01_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yuibn_desk01_tex[] = {
 #include "assets/field/bg/yuibn_desk01_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yubin_ark01_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yubin_ark01_tex[0x400];
 #else
-static u8 yubin_ark01_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yubin_ark01_tex[] = {
 #include "assets/field/bg/yubin_ark01_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yuibn_kaunta03_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yuibn_kaunta03_tex[0x100];
 #else
-static u8 yuibn_kaunta03_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yuibn_kaunta03_tex[] = {
 #include "assets/field/bg/yuibn_kaunta03_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yuibn_kaunta04_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yuibn_kaunta04_tex[0x200];
 #else
-static u8 yuibn_kaunta04_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yuibn_kaunta04_tex[] = {
 #include "assets/field/bg/yuibn_kaunta04_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yubin_floor01_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yubin_floor01_tex[0x800];
 #else
-static u8 yubin_floor01_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yubin_floor01_tex[] = {
 #include "assets/field/bg/yubin_floor01_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yubin_floor02_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yubin_floor02_tex[0x800];
 #else
-static u8 yubin_floor02_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yubin_floor02_tex[] = {
 #include "assets/field/bg/yubin_floor02_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yubin_floor03_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yubin_floor03_tex[0x100];
 #else
-static u8 yubin_floor03_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yubin_floor03_tex[] = {
 #include "assets/field/bg/yubin_floor03_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yubin_hakari01_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yubin_hakari01_tex[0x100];
 #else
-static u8 yubin_hakari01_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yubin_hakari01_tex[] = {
 #include "assets/field/bg/yubin_hakari01_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yubin_hakari02_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yubin_hakari02_tex[0x80];
 #else
-static u8 yubin_hakari02_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yubin_hakari02_tex[] = {
 #include "assets/field/bg/yubin_hakari02_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yubin_hakari03_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yubin_hakari03_tex[0x100];
 #else
-static u8 yubin_hakari03_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yubin_hakari03_tex[] = {
 #include "assets/field/bg/yubin_hakari03_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yubin_wall04_tex[0x300] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yubin_wall04_tex[0x300];
 #else
-static u8 yubin_wall04_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yubin_wall04_tex[] = {
 #include "assets/field/bg/yubin_wall04_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yubin_letter01_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yubin_letter01_tex[0x100];
 #else
-static u8 yubin_letter01_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yubin_letter01_tex[] = {
 #include "assets/field/bg/yubin_letter01_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yubin_window_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yubin_window_tex[0x80];
 #else
-static u8 yubin_window_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yubin_window_tex[] = {
 #include "assets/field/bg/yubin_window_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yubin_us_bag_tex[0x480] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yubin_us_bag_tex[0x480];
 #else
-static u8 yubin_us_bag_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yubin_us_bag_tex[] = {
 #include "assets/field/bg/yubin_us_bag_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yubin_tree2_tex[0x300] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yubin_tree2_tex[0x300];
 #else
-static u8 yubin_tree2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yubin_tree2_tex[] = {
 #include "assets/field/bg/yubin_tree2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yubin_tree_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yubin_tree_tex[0x100];
 #else
-static u8 yubin_tree_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yubin_tree_tex[] = {
 #include "assets/field/bg/yubin_tree_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yubin_tree3_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yubin_tree3_tex[0x80];
 #else
-static u8 yubin_tree3_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yubin_tree3_tex[] = {
 #include "assets/field/bg/yubin_tree3_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yubin_tree4_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yubin_tree4_tex[0x80];
 #else
-static u8 yubin_tree4_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yubin_tree4_tex[] = {
 #include "assets/field/bg/yubin_tree4_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yubin_step_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yubin_step_tex[0x100];
 #else
-static u8 yubin_step_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yubin_step_tex[] = {
 #include "assets/field/bg/yubin_step_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_yubinkyoku_akril_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_yubinkyoku_akril_tex[0x80];
 #else
-static u8 rom_yubinkyoku_akril_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_yubinkyoku_akril_tex[] = {
 #include "assets/field/bg/rom_yubinkyoku_akril_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_yubinkyoku_shede_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_yubinkyoku_shede_tex[0x100];
 #else
-static u8 rom_yubinkyoku_shede_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_yubinkyoku_shede_tex[] = {
 #include "assets/field/bg/rom_yubinkyoku_shede_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yubin_us_card_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yubin_us_card_tex[0x400];
 #else
-static u8 yubin_us_card_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yubin_us_card_tex[] = {
 #include "assets/field/bg/yubin_us_card_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yubin_us_mat_tex[0x300] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yubin_us_mat_tex[0x300];
 #else
-static u8 yubin_us_mat_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yubin_us_mat_tex[] = {
 #include "assets/field/bg/yubin_us_mat_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_yubinkyoku_shadow_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_yubinkyoku_shadow_tex[0x100];
 #else
-static u8 rom_yubinkyoku_shadow_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_yubinkyoku_shadow_tex[] = {
 #include "assets/field/bg/rom_yubinkyoku_shadow_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 yubin_us_card2_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 yubin_us_card2_tex[0x100];
 #else
-static u8 yubin_us_card2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 yubin_us_card2_tex[] = {
 #include "assets/field/bg/yubin_us_card2_tex.inc"
 };
 #endif

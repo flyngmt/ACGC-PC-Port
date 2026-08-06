@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 mus_win_tagu_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 mus_win_tagu_tex[0x400];
 #else
-u8 mus_win_tagu_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 mus_win_tagu_tex[] = {
 #include "assets/mus_win_tagu_tex.inc"
 };
 #endif

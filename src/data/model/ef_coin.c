@@ -7,9 +7,9 @@
 
 extern Vtx ef_coin_v[];
 #ifdef TARGET_PC
-u8 ef_coin_tex_txt[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_coin_tex_txt[0x80];
 #else
-u8 ef_coin_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_coin_tex_txt[] = {
 #include "assets/ef_coin_tex_txt.inc"
 };
 #endif

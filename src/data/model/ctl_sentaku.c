@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-static u8 ctl_win_tagu3_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 ctl_win_tagu3_tex[0x200];
 #else
-static u8 ctl_win_tagu3_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) static u8 ctl_win_tagu3_tex[]= {
 #include "assets/ctl_sentaku/ctl_win_tagu3_tex.inc"
 };
 #endif

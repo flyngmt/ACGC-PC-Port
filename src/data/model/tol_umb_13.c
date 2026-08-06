@@ -7,9 +7,9 @@
 
 extern Vtx tol_umb_13_v[];
 #ifdef TARGET_PC
-static u16 tol_umb13_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 tol_umb13_pal[0x20 / sizeof(u16)];
 #else
-static u16 tol_umb13_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 tol_umb13_pal[] = {
 #include "assets/tol_umb_13/tol_umb13_pal.inc"
 };
 #endif

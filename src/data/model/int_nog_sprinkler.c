@@ -7,9 +7,9 @@
 
 extern Vtx int_nog_sprinkler_v[];
 #ifdef TARGET_PC
-u8 int_noga_sprinkler[0x20] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 int_noga_sprinkler[0x20];
 #else
-u8 int_noga_sprinkler[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 int_noga_sprinkler[] = {
 #include "assets/int_noga_sprinkler.inc"
 };
 #endif

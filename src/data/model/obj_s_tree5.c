@@ -4,9 +4,9 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-Vtx obj_s_tree5_v[0x160 / sizeof(Vtx)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) Vtx obj_s_tree5_v[0x160 / sizeof(Vtx)];
 #else
-Vtx obj_s_tree5_v[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) Vtx obj_s_tree5_v[] = {
 #include "assets/obj_s_tree5_v.inc"
 };
 #endif

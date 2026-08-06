@@ -1,281 +1,281 @@
 #include "libforest/gbi_extensions.h"
 
 #ifdef TARGET_PC
-static u16 rom_shop4_1_floor_tex_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_floor_tex_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_shop4_1_floor_tex_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_floor_tex_pal[] = {
 #include "assets/field/bg/rom_shop4_1_floor_tex_pal2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_shop4_1_base_tex_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_base_tex_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_shop4_1_base_tex_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_base_tex_pal[] = {
 #include "assets/field/bg/rom_shop4_1_base_tex_pal2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_shop4_1_stair_tex_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_stair_tex_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_shop4_1_stair_tex_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_stair_tex_pal[] = {
 #include "assets/field/bg/rom_shop4_1_stair_tex_pal2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_shop4_1_table_tex_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_table_tex_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_shop4_1_table_tex_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_table_tex_pal[] = {
 #include "assets/field/bg/rom_shop4_1_table_tex_pal2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_shop4_1_wall_tex_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_wall_tex_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_shop4_1_wall_tex_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_wall_tex_pal[] = {
 #include "assets/field/bg/rom_shop4_1_wall_tex_pal2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_shop4_1_sign01_tex_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_sign01_tex_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_shop4_1_sign01_tex_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_sign01_tex_pal[] = {
 #include "assets/field/bg/rom_shop4_1_sign01_tex_pal2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_shop4_1_kaunta_tex_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_kaunta_tex_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_shop4_1_kaunta_tex_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_kaunta_tex_pal[] = {
 #include "assets/field/bg/rom_shop4_1_kaunta_tex_pal2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_shop4_2_sign01_us_tex_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_2_sign01_us_tex_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_shop4_2_sign01_us_tex_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_2_sign01_us_tex_pal[] = {
 #include "assets/field/bg/rom_shop4_2_sign01_us_tex_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_shop4_1_us_sign02_tex_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_us_sign02_tex_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_shop4_1_us_sign02_tex_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_us_sign02_tex_pal[] = {
 #include "assets/field/bg/rom_shop4_1_us_sign02_tex_pal2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_shop4_1_us_sign0_tex_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_us_sign0_tex_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_shop4_1_us_sign0_tex_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_us_sign0_tex_pal[] = {
 #include "assets/field/bg/rom_shop4_1_us_sign0_tex_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_shop4_1_sign03_tex_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_sign03_tex_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_shop4_1_sign03_tex_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_sign03_tex_pal[] = {
 #include "assets/field/bg/rom_shop4_1_sign03_tex_pal2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_shop4_1_reji_tex_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_reji_tex_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_shop4_1_reji_tex_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_shop4_1_reji_tex_pal[] = {
 #include "assets/field/bg/rom_shop4_1_reji_tex_pal2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_shop_kouhaku_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_shop_kouhaku_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_shop_kouhaku_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_shop_kouhaku_pal[] = {
 #include "assets/field/bg/rom_shop_kouhaku_pal2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_1_floor01_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_floor01_tex[0x800];
 #else
-static u8 rom_shop4_1_floor01_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_floor01_tex[] = {
 #include "assets/field/bg/rom_shop4_1_floor01_tex2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_1_base_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_base_tex[0x200];
 #else
-static u8 rom_shop4_1_base_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_base_tex[] = {
 #include "assets/field/bg/rom_shop4_1_base_tex2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_1_stair01_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_stair01_tex[0x100];
 #else
-static u8 rom_shop4_1_stair01_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_stair01_tex[] = {
 #include "assets/field/bg/rom_shop4_1_stair01_tex2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_1_table01_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_table01_tex[0x100];
 #else
-static u8 rom_shop4_1_table01_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_table01_tex[] = {
 #include "assets/field/bg/rom_shop4_1_table01_tex2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_1_table02_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_table02_tex[0x100];
 #else
-static u8 rom_shop4_1_table02_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_table02_tex[] = {
 #include "assets/field/bg/rom_shop4_1_table02_tex2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_1_wall01_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_wall01_tex[0x800];
 #else
-static u8 rom_shop4_1_wall01_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_wall01_tex[] = {
 #include "assets/field/bg/rom_shop4_1_wall01_tex2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_1_wall02_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_wall02_tex[0x200];
 #else
-static u8 rom_shop4_1_wall02_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_wall02_tex[] = {
 #include "assets/field/bg/rom_shop4_1_wall02_tex2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_1_sign05_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_sign05_tex[0x80];
 #else
-static u8 rom_shop4_1_sign05_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_sign05_tex[] = {
 #include "assets/field/bg/rom_shop4_1_sign05_tex2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_1_kaunta01_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_kaunta01_tex[0x200];
 #else
-static u8 rom_shop4_1_kaunta01_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_kaunta01_tex[] = {
 #include "assets/field/bg/rom_shop4_1_kaunta01_tex2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_1_kaunta02_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_kaunta02_tex[0x80];
 #else
-static u8 rom_shop4_1_kaunta02_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_kaunta02_tex[] = {
 #include "assets/field/bg/rom_shop4_1_kaunta02_tex2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_2_us_sign01_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_2_us_sign01_tex[0x400];
 #else
-static u8 rom_shop4_2_us_sign01_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_2_us_sign01_tex[] = {
 #include "assets/field/bg/rom_shop4_2_us_sign01_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_1_us_sign02_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_us_sign02_tex[0x100];
 #else
-static u8 rom_shop4_1_us_sign02_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_us_sign02_tex[] = {
 #include "assets/field/bg/rom_shop4_1_us_sign02_tex2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_1_us_sign0_tex[0x600] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_us_sign0_tex[0x600];
 #else
-static u8 rom_shop4_1_us_sign0_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_us_sign0_tex[] = {
 #include "assets/field/bg/rom_shop4_1_us_sign0_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_1_sign04_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_sign04_tex[0x100];
 #else
-static u8 rom_shop4_1_sign04_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_sign04_tex[] = {
 #include "assets/field/bg/rom_shop4_1_sign04_tex2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_1_reji01_tex[0x300] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_reji01_tex[0x300];
 #else
-static u8 rom_shop4_1_reji01_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_reji01_tex[] = {
 #include "assets/field/bg/rom_shop4_1_reji01_tex2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_1_reji02_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_reji02_tex[0x100];
 #else
-static u8 rom_shop4_1_reji02_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_reji02_tex[] = {
 #include "assets/field/bg/rom_shop4_1_reji02_tex2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_1_reji03_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_reji03_tex[0x100];
 #else
-static u8 rom_shop4_1_reji03_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_reji03_tex[] = {
 #include "assets/field/bg/rom_shop4_1_reji03_tex2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_1_floor02_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_floor02_tex[0x800];
 #else
-static u8 rom_shop4_1_floor02_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_floor02_tex[] = {
 #include "assets/field/bg/rom_shop4_1_floor02_tex2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_1_floor03_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_floor03_tex[0x800];
 #else
-static u8 rom_shop4_1_floor03_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_floor03_tex[] = {
 #include "assets/field/bg/rom_shop4_1_floor03_tex2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_1_floor04_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_floor04_tex[0x800];
 #else
-static u8 rom_shop4_1_floor04_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_floor04_tex[] = {
 #include "assets/field/bg/rom_shop4_1_floor04_tex2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop4_1_shadow02_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_shadow02_tex[0x100];
 #else
-static u8 rom_shop4_1_shadow02_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop4_1_shadow02_tex[] = {
 #include "assets/field/bg/rom_shop4_1_shadow02_tex2.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_shop_kouhaku_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_shop_kouhaku_tex[0x800];
 #else
-static u8 rom_shop_kouhaku_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_shop_kouhaku_tex[] = {
 #include "assets/field/bg/rom_shop_kouhaku_tex2.inc"
 };
 #endif

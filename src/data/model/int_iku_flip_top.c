@@ -7,9 +7,9 @@
 
 extern Vtx int_iku_flip_top_v[];
 #ifdef TARGET_PC
-u16 int_iku_flip_top_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 int_iku_flip_top_pal[0x20 / sizeof(u16)];
 #else
-u16 int_iku_flip_top_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 int_iku_flip_top_pal[] = {
 #include "assets/int_iku_flip_top_pal.inc"
 };
 #endif

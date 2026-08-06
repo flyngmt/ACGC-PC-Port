@@ -1,6 +1,6 @@
 #include "jaudio_NES/audioheaders.h"
 
-ArcHeader AudioseqHeaderStart ATTRIBUTE_ALIGN(1) = {
+ATTRIBUTE_ALIGN(1) ArcHeader AudioseqHeaderStart = {
     249,                     /* entries */
     0,                       /* unk param */
     nullptr,                 /* data start pointer */
@@ -4102,7 +4102,7 @@ ArcHeader AudiobankHeaderStart = {
     },
 };
 
-ArcHeader AudiowaveHeaderStart ATTRIBUTE_ALIGN(1) = {
+ATTRIBUTE_ALIGN(1) ArcHeader AudiowaveHeaderStart = {
     6,                       /* entries */
     0,                       /* unk param */
     nullptr,                 /* data start pointer */
@@ -4173,7 +4173,7 @@ ArcHeader AudiowaveHeaderStart ATTRIBUTE_ALIGN(1) = {
     },
 };
 
-ArcHeader AudiodataHeaderStart ATTRIBUTE_ALIGN(1) = {
+ATTRIBUTE_ALIGN(1) ArcHeader AudiodataHeaderStart = {
     3,                       /* entries */
     0,                       /* unk param */
     nullptr,                 /* data start pointer */
@@ -4215,7 +4215,7 @@ ArcHeader AudiodataHeaderStart ATTRIBUTE_ALIGN(1) = {
 };
 
 // clang-format off
-u16 AudiomapHeaderStart[] ATTRIBUTE_ALIGN(1) = {
+ATTRIBUTE_ALIGN(1) u16 AudiomapHeaderStart[] = {
     0x01F2,
     0x01F4,
     0x01F6,

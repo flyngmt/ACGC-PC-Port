@@ -7,9 +7,9 @@
 
 extern Vtx dia_hyouji_v[];
 #ifdef TARGET_PC
-u8 dir_win_diary_tex[0x500] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 dir_win_diary_tex[0x500];
 #else
-u8 dir_win_diary_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 dir_win_diary_tex[] = {
 #include "assets/dir_win_diary_tex.inc"
 };
 #endif

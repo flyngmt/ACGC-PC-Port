@@ -7,9 +7,9 @@
 
 extern Vtx int_din_hutaba_neck_v[];
 #ifdef TARGET_PC
-static u16 int_din_hutaba_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 int_din_hutaba_pal[0x20 / sizeof(u16)];
 #else
-static u16 int_din_hutaba_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 int_din_hutaba_pal[] = {
 #include "assets/int_din_hutaba_neck/int_din_hutaba_pal.inc"
 };
 #endif

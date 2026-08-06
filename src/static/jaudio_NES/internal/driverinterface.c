@@ -10,7 +10,7 @@
 #define CHANNEL_SIZE (0x100)
 
 static jcs_ GLOBAL_CHANNEL;
-static jc_ CHANNEL[CHANNEL_SIZE] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static jc_ CHANNEL[CHANNEL_SIZE];
 
 static u16 MAX_MIXERLEVEL  = 12000;
 u32 JAC_SYSTEM_OUTPUT_MODE = 1;
@@ -18,7 +18,7 @@ u32 JAC_SYSTEM_OUTPUT_MODE = 1;
 static u32 cur_waits;
 static u32 cur_top;
 static u32 cur_tail;
-static jc_* waitp[0x20] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static jc_* waitp[0x20];
 static int waittime[0x20];
 
 static u8 calc_sw_table[]

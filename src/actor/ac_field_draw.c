@@ -307,7 +307,7 @@ static void Bg_Draw_Actor_move(ACTOR* actorx, GAME* game) {
 
 /* Culling box which is aproximately 128:25 (5.12:1) on the xz plane */
 /* NOTE: these vertices are only included because they are not used in any art asset */
-static Vtx aFD_culling_vtx[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static Vtx aFD_culling_vtx[] = {
     // clang-format off
     {     0,    0,     0,  0,  0, 0,  0, 0, 0, 0 },
     {     0,    0, 10240,  0,  0, 0,  0, 0, 0, 0 },
@@ -320,7 +320,7 @@ static Vtx aFD_culling_vtx[] ATTRIBUTE_ALIGN(32) = {
     // clang-format on
 };
 
-static Gfx aFD_cull_set_gfx[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static Gfx aFD_cull_set_gfx[] = {
     gsSPClearGeometryMode(G_FOG | G_LIGHTING),
     gsSPVertex(&aFD_culling_vtx[0], 8, 0),
     gsSPCullDisplayList(0, 7),
@@ -328,7 +328,7 @@ static Gfx aFD_cull_set_gfx[] ATTRIBUTE_ALIGN(32) = {
     gsSPEndDisplayList(),
 };
 
-static Gfx aFD_cull_set_model[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static Gfx aFD_cull_set_model[] = {
     gsSPDisplayList(aFD_cull_set_gfx),
     gsSPDisplayList(SEGMENT_ADDR(G_MWO_SEGMENT_A, 0)), /* Dynamic segment 0x0A */
     gsSPEndDisplayList(),

@@ -8,9 +8,9 @@
 extern u8 obj_w_shrine_bubble_tex_pic_i4[];
 
 #ifdef TARGET_PC
-static u16 obj_s_shrine_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 obj_s_shrine_pal[0x20 / sizeof(u16)];
 #else
-static u16 obj_s_shrine_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 obj_s_shrine_pal[] = {
 #include "assets/obj_s_shrine/obj_s_shrine_pal.inc"
 };
 #endif
@@ -315,9 +315,9 @@ Gfx obj_s_shrine_base_model[] = {
 };
 
 #ifdef TARGET_PC
-static u16 obj_w_shrine_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 obj_w_shrine_pal[0x20 / sizeof(u16)];
 #else
-static u16 obj_w_shrine_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 obj_w_shrine_pal[] = {
 #include "assets/obj_s_shrine/obj_w_shrine_pal.inc"
 };
 #endif

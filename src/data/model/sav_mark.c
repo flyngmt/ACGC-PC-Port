@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 inv_original_mark_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 inv_original_mark_tex[0x100];
 #else
-u8 inv_original_mark_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 inv_original_mark_tex[] = {
 #include "assets/inv_original_mark_tex.inc"
 };
 #endif

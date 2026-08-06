@@ -7,9 +7,9 @@
 
 extern Vtx act_mus_kaeru_a1_v[];
 #ifdef TARGET_PC
-static u8 act_mus_kaeru_a1_body_tex_txt[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 act_mus_kaeru_a1_body_tex_txt[0x800];
 #else
-static u8 act_mus_kaeru_a1_body_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 act_mus_kaeru_a1_body_tex_txt[] = {
 #include "assets/act_mus_kaeru_a1/act_mus_kaeru_a1_body_tex_txt.inc"
 };
 #endif

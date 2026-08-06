@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 onp_win_play_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 onp_win_play_tex[0x400];
 #else
-u8 onp_win_play_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 onp_win_play_tex[] = {
 #include "assets/onp_win_play_tex.inc"
 };
 #endif

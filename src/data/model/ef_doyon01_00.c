@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 ef_doyon01_00[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_doyon01_00[0x400];
 #else
-u8 ef_doyon01_00[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_doyon01_00[] = {
 #include "assets/ef_doyon01_00.inc"
 };
 #endif

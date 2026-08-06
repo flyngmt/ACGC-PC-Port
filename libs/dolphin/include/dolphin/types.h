@@ -38,15 +38,13 @@ typedef int BOOL;
 #error unknown compiler
 #endif
 
-#ifndef TARGET_PC
-#define ATTRIBUTE_ALIGN(num) __attribute__((aligned(num)))
-#else
-#ifdef __GNUC__
+#ifndef ATTRIBUTE_ALIGN
+#if defined(__MWERKS__) || defined(__GNUC__)
 #define ATTRIBUTE_ALIGN(num) __attribute__((aligned(num)))
 #elif defined(_MSC_VER)
 #define ATTRIBUTE_ALIGN(num) __declspec(align(num))
 #else
-#define ATTRIBUTE_ALIGN(num)
+#error unknown compiler
 #endif
 #endif
 

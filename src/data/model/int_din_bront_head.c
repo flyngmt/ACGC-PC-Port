@@ -7,9 +7,9 @@
 
 extern Vtx int_din_bront_head_v[];
 #ifdef TARGET_PC
-static u16 int_din_bront_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 int_din_bront_pal[0x20 / sizeof(u16)];
 #else
-static u16 int_din_bront_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 int_din_bront_pal[] = {
 #include "assets/int_din_bront_head/int_din_bront_pal.inc"
 };
 #endif

@@ -7,9 +7,9 @@
 
 extern Vtx int_ike_art_fel_v[];
 #ifdef TARGET_PC
-u16 int_ike_art_fel_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 int_ike_art_fel_pal[0x20 / sizeof(u16)];
 #else
-u16 int_ike_art_fel_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 int_ike_art_fel_pal[] = {
 #include "assets/int_ike_art_fel_pal.inc"
 };
 #endif

@@ -1494,7 +1494,7 @@ static int mCD_rename_file_fg(const char* new_filename, const char* filename, s3
 static u16 l_mcd_copy_protect = 0xFFFF;
 
 // clang-format off
-static u8 l_mcd_font_1[256] ATTRIBUTE_ALIGN(4) = {
+ATTRIBUTE_ALIGN(4) static u8 l_mcd_font_1[256] = {
     0xa1, 0xbf, 0xc4, 0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc7, 0xc8, 0xc9, 0xca, 0xcb, 0xcc, 0xcd, 0xce,
     0xcf, 0xd0, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd8, 0xd9, 0xda, 0xdb, 0xdc, 0xdf, 0xde, 0xe0,
     0xa0, 0x21, 0x94, 0xe1, 0xe2, 0x25, 0x26, 0xb4, 0x28, 0x29, 0x7e, 0x97, 0x82, 0x2d, 0x2e, 0x97,
@@ -1514,19 +1514,19 @@ static u8 l_mcd_font_1[256] ATTRIBUTE_ALIGN(4) = {
 };
 // clang-format on
 
-static char l_comment_0_str[32] ATTRIBUTE_ALIGN(4) = "Animal Crossing";
-static char l_comment_1_str[32] ATTRIBUTE_ALIGN(4) = " Town Data";
-static char l_comment_erase_land[32] ATTRIBUTE_ALIGN(4) = "Letters and Designs Data";
-static char l_comment_player_0_str[32] ATTRIBUTE_ALIGN(4) = "Animal Crossing";
-static char l_comment_player_1_str[32] ATTRIBUTE_ALIGN(4) = " is traveling";
-static char l_comment_present_0_str[32] ATTRIBUTE_ALIGN(4) = "Animal Crossing";
-static char l_comment_present_1_str[32] ATTRIBUTE_ALIGN(4) = "Bonus Letters:";
-static char l_comment_gift_1_str[32] ATTRIBUTE_ALIGN(4) = "Gift Letters:";
+ATTRIBUTE_ALIGN(4) static char l_comment_0_str[32] = "Animal Crossing";
+ATTRIBUTE_ALIGN(4) static char l_comment_1_str[32] = " Town Data";
+ATTRIBUTE_ALIGN(4) static char l_comment_erase_land[32] = "Letters and Designs Data";
+ATTRIBUTE_ALIGN(4) static char l_comment_player_0_str[32] = "Animal Crossing";
+ATTRIBUTE_ALIGN(4) static char l_comment_player_1_str[32] = " is traveling";
+ATTRIBUTE_ALIGN(4) static char l_comment_present_0_str[32] = "Animal Crossing";
+ATTRIBUTE_ALIGN(4) static char l_comment_present_1_str[32] = "Bonus Letters:";
+ATTRIBUTE_ALIGN(4) static char l_comment_gift_1_str[32] = "Gift Letters:";
 
-static char l_mCD_land_file_name[32] ATTRIBUTE_ALIGN(4) = "DobutsunomoriP_MURA";
-static char l_mCD_land_file_name_dummy[32] ATTRIBUTE_ALIGN(4) = "DobutsunomoriP_MURA_d";
-static char l_mCD_player_file_name[32] ATTRIBUTE_ALIGN(4) = "DobutsunomoriP_PL_";
-static char l_mCD_present_file_name[32] ATTRIBUTE_ALIGN(4) = "DobutsunomoriP_Omake_";
+ATTRIBUTE_ALIGN(4) static char l_mCD_land_file_name[32] = "DobutsunomoriP_MURA";
+ATTRIBUTE_ALIGN(4) static char l_mCD_land_file_name_dummy[32] = "DobutsunomoriP_MURA_d";
+ATTRIBUTE_ALIGN(4) static char l_mCD_player_file_name[32] = "DobutsunomoriP_PL_";
+ATTRIBUTE_ALIGN(4) static char l_mCD_present_file_name[32] = "DobutsunomoriP_Omake_";
 
 #define l_mCD_land_file_name_len (sizeof("DobutsunomoriP_PL_")-1)
 
@@ -6046,19 +6046,19 @@ static int mCD_SaveStation_NextLand_get_next_land_data(mCD_memMgr_c* mgr, mCD_me
 }
 
 static union {
-    mCD_keep_mail_c mail ATTRIBUTE_ALIGN(32);
+    ATTRIBUTE_ALIGN(32) mCD_keep_mail_c mail;
     u8 buf[mCD_ALIGN_SECTORSIZE(sizeof(mCD_keep_mail_c))];
-} l_keepMail ATTRIBUTE_ALIGN(32);
+} l_keepMail;
 
 static union {
-    mCD_keep_original_c l_keepOriginal ATTRIBUTE_ALIGN(32);
+    ATTRIBUTE_ALIGN(32) mCD_keep_original_c l_keepOriginal;
     u8 buf[mCD_ALIGN_SECTORSIZE(sizeof(mCD_keep_original_c))];
-} l_keepOriginal ATTRIBUTE_ALIGN(32);
+} l_keepOriginal;
 
 static union {
-    mCD_keep_diary_c l_keepDiary ATTRIBUTE_ALIGN(32);
+    ATTRIBUTE_ALIGN(32) mCD_keep_diary_c l_keepDiary;
     u8 buf[mCD_ALIGN_SECTORSIZE(sizeof(mCD_keep_diary_c))];
-} l_keepDiary ATTRIBUTE_ALIGN(32);
+} l_keepDiary;
 
 static int mCD_SaveStation_NextLand_load_others(mCD_memMgr_c* mgr, mCD_memMgr_fileInfo_c* fileInfo) {
     u8* buf = (u8*)mgr->workArea;

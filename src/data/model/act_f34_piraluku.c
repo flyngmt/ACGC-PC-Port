@@ -4,17 +4,17 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-static u16 int_nog_piraluku_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 int_nog_piraluku_pal[0x20 / sizeof(u16)];
 #else
-static u16 int_nog_piraluku_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 int_nog_piraluku_pal[] = {
 #include "assets/act_f34_piraluku/int_nog_piraluku_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 act_f34_piraluku_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 act_f34_piraluku_tex[0x400];
 #else
-u8 act_f34_piraluku_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 act_f34_piraluku_tex[] = {
 #include "assets/act_f34_piraluku_tex.inc"
 };
 #endif

@@ -1,7 +1,7 @@
 #include "nintendo_hi_0.h" // IWYU pragma: keep
 
 #ifdef TARGET_PC
-u8 nintendo_hi_0[NINTENDO_HI_0_SIZE] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 nintendo_hi_0[NINTENDO_HI_0_SIZE];
 #else
 #include "assets/nintendo_hi_0.inc"
 #endif

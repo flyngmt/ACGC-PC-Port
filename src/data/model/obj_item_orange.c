@@ -6,17 +6,17 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-static u16 obj_item_peach_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 obj_item_peach_pal[0x20 / sizeof(u16)];
 #else
-static u16 obj_item_peach_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) static u16 obj_item_peach_pal[]= {
 #include "assets/obj_item_orange/obj_item_peach_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 obj_item_orange_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 obj_item_orange_tex[0x200];
 #else
-static u8 obj_item_orange_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) static u8 obj_item_orange_tex[]= {
 #include "assets/obj_item_orange/obj_item_orange_tex.inc"
 };
 #endif

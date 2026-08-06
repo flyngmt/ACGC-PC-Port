@@ -7,9 +7,9 @@
 
 extern u8 ef_takurami01_1[];
 #ifdef TARGET_PC
-u8 ef_takurami01_0us[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_takurami01_0us[0x200];
 #else
-u8 ef_takurami01_0us[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_takurami01_0us[] = {
 #include "assets/ef_takurami01_0us.inc"
 };
 #endif

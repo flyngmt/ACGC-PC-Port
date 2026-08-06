@@ -1,449 +1,449 @@
 #include "libforest/gbi_extensions.h"
 
 #ifdef TARGET_PC
-static u16 rom_tailor_wall_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_tailor_wall_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_tailor_wall_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_tailor_wall_pal[] = {
 #include "assets/field/bg/rom_tailor_wall_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_tailor_floor_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_tailor_floor_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_tailor_floor_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_tailor_floor_pal[] = {
 #include "assets/field/bg/rom_tailor_floor_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_tailor_mado_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_tailor_mado_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_tailor_mado_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_tailor_mado_pal[] = {
 #include "assets/field/bg/rom_tailor_mado_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_tailor_reji_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_tailor_reji_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_tailor_reji_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_tailor_reji_pal[] = {
 #include "assets/field/bg/rom_tailor_reji_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_tailor_dogu_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_tailor_dogu_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_tailor_dogu_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_tailor_dogu_pal[] = {
 #include "assets/field/bg/rom_tailor_dogu_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_tailor_misin_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_tailor_misin_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_tailor_misin_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_tailor_misin_pal[] = {
 #include "assets/field/bg/rom_tailor_misin_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_tailor_table_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_tailor_table_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_tailor_table_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_tailor_table_pal[] = {
 #include "assets/field/bg/rom_tailor_table_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_tailor_box_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_tailor_box_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_tailor_box_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_tailor_box_pal[] = {
 #include "assets/field/bg/rom_tailor_box_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_tailor_quilt_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_tailor_quilt_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_tailor_quilt_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_tailor_quilt_pal[] = {
 #include "assets/field/bg/rom_tailor_quilt_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_tailor_ent_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_tailor_ent_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_tailor_ent_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_tailor_ent_pal[] = {
 #include "assets/field/bg/rom_tailor_ent_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_wallA_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_wallA_tex[0x800];
 #else
-static u8 rom_tailor_wallA_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_wallA_tex[] = {
 #include "assets/field/bg/rom_tailor_wallA_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_wallB_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_wallB_tex[0x800];
 #else
-static u8 rom_tailor_wallB_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_wallB_tex[] = {
 #include "assets/field/bg/rom_tailor_wallB_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_floorA_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_floorA_tex[0x800];
 #else
-static u8 rom_tailor_floorA_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_floorA_tex[] = {
 #include "assets/field/bg/rom_tailor_floorA_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_floorB_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_floorB_tex[0x800];
 #else
-static u8 rom_tailor_floorB_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_floorB_tex[] = {
 #include "assets/field/bg/rom_tailor_floorB_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_floorC_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_floorC_tex[0x800];
 #else
-static u8 rom_tailor_floorC_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_floorC_tex[] = {
 #include "assets/field/bg/rom_tailor_floorC_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_floorD_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_floorD_tex[0x800];
 #else
-static u8 rom_tailor_floorD_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_floorD_tex[] = {
 #include "assets/field/bg/rom_tailor_floorD_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_kage1_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_kage1_tex[0x100];
 #else
-static u8 rom_tailor_kage1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_kage1_tex[] = {
 #include "assets/field/bg/rom_tailor_kage1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_mado_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_mado_tex[0x200];
 #else
-static u8 rom_tailor_mado_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_mado_tex[] = {
 #include "assets/field/bg/rom_tailor_mado_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_pic1_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_pic1_tex[0x200];
 #else
-static u8 rom_tailor_pic1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_pic1_tex[] = {
 #include "assets/field/bg/rom_tailor_pic1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_pic2_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_pic2_tex[0x200];
 #else
-static u8 rom_tailor_pic2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_pic2_tex[] = {
 #include "assets/field/bg/rom_tailor_pic2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_pic3_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_pic3_tex[0x200];
 #else
-static u8 rom_tailor_pic3_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_pic3_tex[] = {
 #include "assets/field/bg/rom_tailor_pic3_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_pic4_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_pic4_tex[0x200];
 #else
-static u8 rom_tailor_pic4_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_pic4_tex[] = {
 #include "assets/field/bg/rom_tailor_pic4_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_pic5_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_pic5_tex[0x200];
 #else
-static u8 rom_tailor_pic5_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_pic5_tex[] = {
 #include "assets/field/bg/rom_tailor_pic5_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_pic6_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_pic6_tex[0x200];
 #else
-static u8 rom_tailor_pic6_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_pic6_tex[] = {
 #include "assets/field/bg/rom_tailor_pic6_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_pic7_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_pic7_tex[0x200];
 #else
-static u8 rom_tailor_pic7_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_pic7_tex[] = {
 #include "assets/field/bg/rom_tailor_pic7_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_pic8_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_pic8_tex[0x200];
 #else
-static u8 rom_tailor_pic8_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_pic8_tex[] = {
 #include "assets/field/bg/rom_tailor_pic8_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_tyoki_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_tyoki_tex[0x100];
 #else
-static u8 rom_tailor_tyoki_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_tyoki_tex[] = {
 #include "assets/field/bg/rom_tailor_tyoki_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_cloth1_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_cloth1_tex[0x80];
 #else
-static u8 rom_tailor_cloth1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_cloth1_tex[] = {
 #include "assets/field/bg/rom_tailor_cloth1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_misin2_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_misin2_tex[0x200];
 #else
-static u8 rom_tailor_misin2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_misin2_tex[] = {
 #include "assets/field/bg/rom_tailor_misin2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_table_mae_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_table_mae_tex[0x100];
 #else
-static u8 rom_tailor_table_mae_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_table_mae_tex[] = {
 #include "assets/field/bg/rom_tailor_table_mae_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_table_yoko_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_table_yoko_tex[0x80];
 #else
-static u8 rom_tailor_table_yoko_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_table_yoko_tex[] = {
 #include "assets/field/bg/rom_tailor_table_yoko_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_table_ue_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_table_ue_tex[0x100];
 #else
-static u8 rom_tailor_table_ue_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_table_ue_tex[] = {
 #include "assets/field/bg/rom_tailor_table_ue_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_ito_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_ito_tex[0x200];
 #else
-static u8 rom_tailor_ito_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_ito_tex[] = {
 #include "assets/field/bg/rom_tailor_ito_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_table_reji_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_table_reji_tex[0x80];
 #else
-static u8 rom_tailor_table_reji_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_table_reji_tex[] = {
 #include "assets/field/bg/rom_tailor_table_reji_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_misin1_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_misin1_tex[0x200];
 #else
-static u8 rom_tailor_misin1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_misin1_tex[] = {
 #include "assets/field/bg/rom_tailor_misin1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_misindai_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_misindai_tex[0x200];
 #else
-static u8 rom_tailor_misindai_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_misindai_tex[] = {
 #include "assets/field/bg/rom_tailor_misindai_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_table_misin1_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_table_misin1_tex[0x100];
 #else
-static u8 rom_tailor_table_misin1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_table_misin1_tex[] = {
 #include "assets/field/bg/rom_tailor_table_misin1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_reji_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_reji_tex[0x200];
 #else
-static u8 rom_tailor_reji_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_reji_tex[] = {
 #include "assets/field/bg/rom_tailor_reji_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_table_misin2_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_table_misin2_tex[0x80];
 #else
-static u8 rom_tailor_table_misin2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_table_misin2_tex[] = {
 #include "assets/field/bg/rom_tailor_table_misin2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_box_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_box_tex[0x100];
 #else
-static u8 rom_tailor_box_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_box_tex[] = {
 #include "assets/field/bg/rom_tailor_box_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_box1_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_box1_tex[0x80];
 #else
-static u8 rom_tailor_box1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_box1_tex[] = {
 #include "assets/field/bg/rom_tailor_box1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_box2_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_box2_tex[0x80];
 #else
-static u8 rom_tailor_box2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_box2_tex[] = {
 #include "assets/field/bg/rom_tailor_box2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_box3_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_box3_tex[0x80];
 #else
-static u8 rom_tailor_box3_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_box3_tex[] = {
 #include "assets/field/bg/rom_tailor_box3_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_box4_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_box4_tex[0x80];
 #else
-static u8 rom_tailor_box4_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_box4_tex[] = {
 #include "assets/field/bg/rom_tailor_box4_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_box5_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_box5_tex[0x80];
 #else
-static u8 rom_tailor_box5_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_box5_tex[] = {
 #include "assets/field/bg/rom_tailor_box5_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_box6_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_box6_tex[0x80];
 #else
-static u8 rom_tailor_box6_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_box6_tex[] = {
 #include "assets/field/bg/rom_tailor_box6_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_box7_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_box7_tex[0x80];
 #else
-static u8 rom_tailor_box7_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_box7_tex[] = {
 #include "assets/field/bg/rom_tailor_box7_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_box8_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_box8_tex[0x80];
 #else
-static u8 rom_tailor_box8_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_box8_tex[] = {
 #include "assets/field/bg/rom_tailor_box8_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_kage2_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_kage2_tex[0x80];
 #else
-static u8 rom_tailor_kage2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_kage2_tex[] = {
 #include "assets/field/bg/rom_tailor_kage2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_quilt_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_quilt_tex[0x800];
 #else
-static u8 rom_tailor_quilt_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_quilt_tex[] = {
 #include "assets/field/bg/rom_tailor_quilt_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_ent_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_ent_tex[0x100];
 #else
-static u8 rom_tailor_ent_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_ent_tex[] = {
 #include "assets/field/bg/rom_tailor_ent_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_misinbari1_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_misinbari1_tex[0x80];
 #else
-static u8 rom_tailor_misinbari1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_misinbari1_tex[] = {
 #include "assets/field/bg/rom_tailor_misinbari1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_misinbari2_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_misinbari2_tex[0x80];
 #else
-static u8 rom_tailor_misinbari2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_misinbari2_tex[] = {
 #include "assets/field/bg/rom_tailor_misinbari2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_tape_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_tape_tex[0x200];
 #else
-static u8 rom_tailor_tape_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_tape_tex[] = {
 #include "assets/field/bg/rom_tailor_tape_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_dogu1_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_dogu1_tex[0x80];
 #else
-static u8 rom_tailor_dogu1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_dogu1_tex[] = {
 #include "assets/field/bg/rom_tailor_dogu1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_tailor_dogu2_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_dogu2_tex[0x80];
 #else
-static u8 rom_tailor_dogu2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_tailor_dogu2_tex[] = {
 #include "assets/field/bg/rom_tailor_dogu2_tex.inc"
 };
 #endif

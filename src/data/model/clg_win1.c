@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u16 clg_win_kabe_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 clg_win_kabe_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 clg_win_kabe_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 clg_win_kabe_tex_rgb_ci4_pal[] = {
 #include "assets/clg_win_kabe_tex_rgb_ci4_pal.inc"
 };
 #endif
@@ -22,9 +22,9 @@ u8 clg_win_kabe_tex_rgb_ci4[] = {
 #endif
 
 #ifdef TARGET_PC
-u16 clg_win_jyuutan_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 clg_win_jyuutan_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 clg_win_jyuutan_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 clg_win_jyuutan_tex_rgb_ci4_pal[] = {
 #include "assets/clg_win_jyuutan_tex_rgb_ci4_pal.inc"
 };
 #endif
@@ -38,9 +38,9 @@ u8 clg_win_jyuutan_tex_rgb_ci4[] = {
 #endif
 
 #ifdef TARGET_PC
-u16 clg_win_fuku_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 clg_win_fuku_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 clg_win_fuku_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 clg_win_fuku_tex_rgb_ci4_pal[] = {
 #include "assets/clg_win_fuku_tex_rgb_ci4_pal.inc"
 };
 #endif
@@ -54,9 +54,9 @@ u8 clg_win_fuku_tex_rgb_ci4[] = {
 #endif
 
 #ifdef TARGET_PC
-u16 clg_win_kasa_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 clg_win_kasa_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 clg_win_kasa_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 clg_win_kasa_tex_rgb_ci4_pal[] = {
 #include "assets/clg_win_kasa_tex_rgb_ci4_pal.inc"
 };
 #endif
@@ -70,9 +70,9 @@ u8 clg_win_kasa_tex_rgb_ci4[] = {
 #endif
 
 #ifdef TARGET_PC
-u16 clg_win_tegami_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 clg_win_tegami_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 clg_win_tegami_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 clg_win_tegami_tex_rgb_ci4_pal[] = {
 #include "assets/clg_win_tegami_tex_rgb_ci4_pal.inc"
 };
 #endif
@@ -86,9 +86,9 @@ u8 clg_win_tegami_tex_rgb_ci4[] = {
 #endif
 
 #ifdef TARGET_PC
-u16 clg_win_hani_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 clg_win_hani_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 clg_win_hani_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 clg_win_hani_tex_rgb_ci4_pal[] = {
 #include "assets/clg_win_hani_tex_rgb_ci4_pal.inc"
 };
 #endif
@@ -102,9 +102,9 @@ u8 clg_win_hani_tex_rgb_ci4[] = {
 #endif
 
 #ifdef TARGET_PC
-u16 clg_win_hone_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 clg_win_hone_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 clg_win_hone_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 clg_win_hone_tex_rgb_ci4_pal[] = {
 #include "assets/clg_win_hone_tex_rgb_ci4_pal.inc"
 };
 #endif
@@ -118,9 +118,9 @@ u8 clg_win_hone_tex_rgb_ci4[] = {
 #endif
 
 #ifdef TARGET_PC
-u16 clg_win_onpu_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 clg_win_onpu_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 clg_win_onpu_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 clg_win_onpu_tex_rgb_ci4_pal[] = {
 #include "assets/clg_win_onpu_tex_rgb_ci4_pal.inc"
 };
 #endif
@@ -134,169 +134,169 @@ u8 clg_win_onpu_tex_rgb_ci4[] = {
 #endif
 
 #ifdef TARGET_PC
-u16 clg_win_waku8_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 clg_win_waku8_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 clg_win_waku8_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 clg_win_waku8_tex_rgb_ci4_pal[] = {
 #include "assets/clg_win_waku8_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 clg_win_waku1_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 clg_win_waku1_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 clg_win_waku1_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 clg_win_waku1_tex_rgb_ci4_pal[] = {
 #include "assets/clg_win_waku1_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 clg_win_waku2_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 clg_win_waku2_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 clg_win_waku2_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 clg_win_waku2_tex_rgb_ci4_pal[] = {
 #include "assets/clg_win_waku2_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 clg_win_waku3_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 clg_win_waku3_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 clg_win_waku3_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 clg_win_waku3_tex_rgb_ci4_pal[] = {
 #include "assets/clg_win_waku3_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 clg_win_waku4_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 clg_win_waku4_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 clg_win_waku4_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 clg_win_waku4_tex_rgb_ci4_pal[] = {
 #include "assets/clg_win_waku4_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 clg_win_waku5_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 clg_win_waku5_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 clg_win_waku5_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 clg_win_waku5_tex_rgb_ci4_pal[] = {
 #include "assets/clg_win_waku5_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 clg_win_waku6_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 clg_win_waku6_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 clg_win_waku6_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 clg_win_waku6_tex_rgb_ci4_pal[] = {
 #include "assets/clg_win_waku6_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 clg_win_waku7_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 clg_win_waku7_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 clg_win_waku7_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 clg_win_waku7_tex_rgb_ci4_pal[] = {
 #include "assets/clg_win_waku7_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u16 clg_win_ha_tex_rgb_ci4_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 clg_win_ha_tex_rgb_ci4_pal[0x20 / sizeof(u16)];
 #else
-u16 clg_win_ha_tex_rgb_ci4_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 clg_win_ha_tex_rgb_ci4_pal[] = {
 #include "assets/clg_win_ha_tex_rgb_ci4_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 inv_mwin_3Dma_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 inv_mwin_3Dma_tex[0x800];
 #else
-static u8 inv_mwin_3Dma_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 inv_mwin_3Dma_tex[] = {
 #include "assets/clg_win1/inv_mwin_3Dma_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 fri_win_bell_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 fri_win_bell_tex[0x100];
 #else
-static u8 fri_win_bell_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 fri_win_bell_tex[] = {
 #include "assets/clg_win1/fri_win_bell_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 clg_win_ran_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clg_win_ran_tex[0x400];
 #else
-u8 clg_win_ran_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 clg_win_ran_tex[] = {
 #include "assets/clg_win_ran_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 clg_win_w1_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clg_win_w1_tex[0x800];
 #else
-u8 clg_win_w1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 clg_win_w1_tex[] = {
 #include "assets/clg_win_w1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 clg_win_w2_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clg_win_w2_tex[0x800];
 #else
-u8 clg_win_w2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 clg_win_w2_tex[] = {
 #include "assets/clg_win_w2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 clg_win_w3_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clg_win_w3_tex[0x800];
 #else
-u8 clg_win_w3_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 clg_win_w3_tex[] = {
 #include "assets/clg_win_w3_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 clg_win_w4_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clg_win_w4_tex[0x800];
 #else
-u8 clg_win_w4_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 clg_win_w4_tex[] = {
 #include "assets/clg_win_w4_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 dlt_win_aw5_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 dlt_win_aw5_tex[0x100];
 #else
-u8 dlt_win_aw5_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 dlt_win_aw5_tex[] = {
 #include "assets/dlt_win_aw5_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 clk_win_sen_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clk_win_sen_tex[0x80];
 #else
-u8 clk_win_sen_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 clk_win_sen_tex[] = {
 #include "assets/clk_win_sen_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 clg_win_w5_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clg_win_w5_tex[0x800];
 #else
-u8 clg_win_w5_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 clg_win_w5_tex[] = {
 #include "assets/clg_win_w5_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 clg_win_w6_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clg_win_w6_tex[0x800];
 #else
-u8 clg_win_w6_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 clg_win_w6_tex[] = {
 #include "assets/clg_win_w6_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 clg_win_w7_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 clg_win_w7_tex[0x800];
 #else
-u8 clg_win_w7_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 clg_win_w7_tex[] = {
 #include "assets/clg_win_w7_tex.inc"
 };
 #endif

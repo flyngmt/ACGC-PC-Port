@@ -4,17 +4,17 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-u16 act_f22_ito_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 act_f22_ito_pal[0x20 / sizeof(u16)];
 #else
-u16 act_f22_ito_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 act_f22_ito_pal[] = {
 #include "assets/act_f22_ito_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 act_f22_ito_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 act_f22_ito_tex[0x400];
 #else
-u8 act_f22_ito_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 act_f22_ito_tex[] = {
 #include "assets/act_f22_ito_tex.inc"
 };
 #endif

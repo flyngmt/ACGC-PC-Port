@@ -4,17 +4,17 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-u8 obj_w_cedar_leaf_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_w_cedar_leaf_tex[0x800];
 #else
-u8 obj_w_cedar_leaf_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_w_cedar_leaf_tex[] = {
 #include "assets/obj_w_cedar_leaf_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 obj_w_cedar_young_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_w_cedar_young_tex[0x800];
 #else
-u8 obj_w_cedar_young_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_w_cedar_young_tex[] = {
 #include "assets/obj_w_cedar_young_tex.inc"
 };
 #endif

@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 logo_us_tm_tex_4i4_txt[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 logo_us_tm_tex_4i4_txt[0x200];
 #else
-u8 logo_us_tm_tex_4i4_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 logo_us_tm_tex_4i4_txt[] = {
 #include "assets/logo_us_tm_tex_4i4_txt.inc"
 };
 #endif

@@ -7,9 +7,9 @@
 
 extern Vtx logo_us_back_v[];
 #ifdef TARGET_PC
-u8 logo_us_back_4_tex_4i4_txt[0x1000] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 logo_us_back_4_tex_4i4_txt[0x1000];
 #else
-u8 logo_us_back_4_tex_4i4_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 logo_us_back_4_tex_4i4_txt[] = {
 #include "assets/logo_us_back_4_tex_4i4_txt.inc"
 };
 #endif

@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u16 kti_win_hate_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 kti_win_hate_pal[0x20 / sizeof(u16)];
 #else
-u16 kti_win_hate_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 kti_win_hate_pal[] = {
 #include "assets/kti_win_hate_pal.inc"
 };
 #endif

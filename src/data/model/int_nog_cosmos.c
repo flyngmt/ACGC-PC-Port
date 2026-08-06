@@ -7,9 +7,9 @@
 
 extern Vtx int_nog_cosmos_v[];
 #ifdef TARGET_PC
-u8 int_nog_cosmos_grass_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 int_nog_cosmos_grass_tex[0x80];
 #else
-u8 int_nog_cosmos_grass_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 int_nog_cosmos_grass_tex[] = {
 #include "assets/int_nog_cosmos_grass_tex.inc"
 };
 #endif

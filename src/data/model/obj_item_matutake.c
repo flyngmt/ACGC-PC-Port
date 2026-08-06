@@ -6,17 +6,17 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-static u16 obj_item_matutake_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 obj_item_matutake_pal[0x20 / sizeof(u16)];
 #else
-static u16 obj_item_matutake_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) static u16 obj_item_matutake_pal[]= {
 #include "assets/obj_item_matutake/obj_item_matutake_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 obj_item_matutake_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 obj_item_matutake_tex[0x200];
 #else
-static u8 obj_item_matutake_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) static u8 obj_item_matutake_tex[]= {
 #include "assets/obj_item_matutake/obj_item_matutake_tex.inc"
 };
 #endif

@@ -4,17 +4,17 @@
 #include "c_keyframe.h"
 
 #ifdef TARGET_PC
-u16 act_f17_wakasagi_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 act_f17_wakasagi_pal[0x20 / sizeof(u16)];
 #else
-u16 act_f17_wakasagi_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 act_f17_wakasagi_pal[] = {
 #include "assets/act_f17_wakasagi_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 act_f17_wakasagi_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 act_f17_wakasagi_tex[0x100];
 #else
-u8 act_f17_wakasagi_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 act_f17_wakasagi_tex[] = {
 #include "assets/act_f17_wakasagi_tex.inc"
 };
 #endif

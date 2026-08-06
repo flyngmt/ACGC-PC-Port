@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_s_douzou_kage_txt[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_douzou_kage_txt[0x100];
 #else
-u8 obj_s_douzou_kage_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_s_douzou_kage_txt[] = {
 #include "assets/obj_s_douzou_kage_txt.inc"
 };
 #endif

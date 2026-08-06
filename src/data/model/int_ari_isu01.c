@@ -7,9 +7,9 @@
 
 extern Vtx int_ari_isu01_v[];
 #ifdef TARGET_PC
-static u16 int_ari_nagaisu1_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 int_ari_nagaisu1_pal[0x20 / sizeof(u16)];
 #else
-static u16 int_ari_nagaisu1_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 int_ari_nagaisu1_pal[] = {
 #include "assets/int_ari_isu01/int_ari_nagaisu1_pal.inc"
 };
 #endif

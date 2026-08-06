@@ -1,209 +1,209 @@
 #include "libforest/gbi_extensions.h"
 
 #ifdef TARGET_PC
-static u16 rom_yami_wall_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_wall_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_yami_wall_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_wall_pal[] = {
 #include "assets/field/bg/rom_yami_wall_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_yami_floor_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_floor_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_yami_floor_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_floor_pal[] = {
 #include "assets/field/bg/rom_yami_floor_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_yami_box_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_box_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_yami_box_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_box_pal[] = {
 #include "assets/field/bg/rom_yami_box_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_yami_mono01_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_mono01_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_yami_mono01_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_mono01_pal[] = {
 #include "assets/field/bg/rom_yami_mono01_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_yami_mono02_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_mono02_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_yami_mono02_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_mono02_pal[] = {
 #include "assets/field/bg/rom_yami_mono02_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_yami_mono03_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_mono03_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_yami_mono03_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_mono03_pal[] = {
 #include "assets/field/bg/rom_yami_mono03_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_yami_qup_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_qup_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_yami_qup_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_qup_pal[] = {
 #include "assets/field/bg/rom_yami_qup_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_yami_hyou_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_hyou_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_yami_hyou_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_hyou_pal[] = {
 #include "assets/field/bg/rom_yami_hyou_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_yami_step_tex_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_step_tex_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_yami_step_tex_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_step_tex_pal[] = {
 #include "assets/field/bg/rom_yami_step_tex_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_yami_hugu_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_hugu_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_yami_hugu_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_hugu_pal[] = {
 #include "assets/field/bg/rom_yami_hugu_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u16 rom_yami_tama_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_tama_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_yami_tama_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_yami_tama_pal[] = {
 #include "assets/field/bg/rom_yami_tama_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_yami_wall_tex[0x300] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_wall_tex[0x300];
 #else
-static u8 rom_yami_wall_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_wall_tex[] = {
 #include "assets/field/bg/rom_yami_wall_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_yami_floor_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_floor_tex[0x800];
 #else
-static u8 rom_yami_floor_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_floor_tex[] = {
 #include "assets/field/bg/rom_yami_floor_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_yami_poll_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_poll_tex[0x80];
 #else
-static u8 rom_yami_poll_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_poll_tex[] = {
 #include "assets/field/bg/rom_yami_poll_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_yami_box01_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_box01_tex[0x100];
 #else
-static u8 rom_yami_box01_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_box01_tex[] = {
 #include "assets/field/bg/rom_yami_box01_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_yami_box02_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_box02_tex[0x80];
 #else
-static u8 rom_yami_box02_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_box02_tex[] = {
 #include "assets/field/bg/rom_yami_box02_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_yami_mono01_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_mono01_tex[0x200];
 #else
-static u8 rom_yami_mono01_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_mono01_tex[] = {
 #include "assets/field/bg/rom_yami_mono01_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_yami_mono02_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_mono02_tex[0x200];
 #else
-static u8 rom_yami_mono02_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_mono02_tex[] = {
 #include "assets/field/bg/rom_yami_mono02_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_yami_mono03_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_mono03_tex[0x200];
 #else
-static u8 rom_yami_mono03_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_mono03_tex[] = {
 #include "assets/field/bg/rom_yami_mono03_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_yami_qup_tex[0x300] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_qup_tex[0x300];
 #else
-static u8 rom_yami_qup_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_qup_tex[] = {
 #include "assets/field/bg/rom_yami_qup_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_yami_hyou_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_hyou_tex[0x100];
 #else
-static u8 rom_yami_hyou_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_hyou_tex[] = {
 #include "assets/field/bg/rom_yami_hyou_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_yami_hyou02_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_hyou02_tex[0x100];
 #else
-static u8 rom_yami_hyou02_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_hyou02_tex[] = {
 #include "assets/field/bg/rom_yami_hyou02_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_yami_step_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_step_tex[0x400];
 #else
-static u8 rom_yami_step_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_step_tex[] = {
 #include "assets/field/bg/rom_yami_step_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_yami_hugu_tex[0x300] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_hugu_tex[0x300];
 #else
-static u8 rom_yami_hugu_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_hugu_tex[] = {
 #include "assets/field/bg/rom_yami_hugu_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_yami_tama_tex[0x300] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_tama_tex[0x300];
 #else
-static u8 rom_yami_tama_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_tama_tex[] = {
 #include "assets/field/bg/rom_yami_tama_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_yami_shadow01_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_shadow01_tex[0x100];
 #else
-static u8 rom_yami_shadow01_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_yami_shadow01_tex[] = {
 #include "assets/field/bg/rom_yami_shadow01_tex.inc"
 };
 #endif

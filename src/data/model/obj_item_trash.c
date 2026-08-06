@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-static u16 obj_item_trash_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 obj_item_trash_pal[0x20 / sizeof(u16)];
 #else
-static u16 obj_item_trash_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 obj_item_trash_pal[] = {
 #include "assets/obj_item_trash/obj_item_trash_pal.inc"
 };
 #endif

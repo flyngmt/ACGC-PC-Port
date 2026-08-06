@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_s_yubinkyoku_shadow_tex_txt[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_yubinkyoku_shadow_tex_txt[0x200];
 #else
-u8 obj_s_yubinkyoku_shadow_tex_txt[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_s_yubinkyoku_shadow_tex_txt[] = {
 #include "assets/obj_s_yubinkyoku_shadow_tex_txt.inc"
 };
 #endif

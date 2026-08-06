@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u16 inv_mwin_08oonamazu_pal[0x40 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 inv_mwin_08oonamazu_pal[0x40 / sizeof(u16)];
 #else
-u16 inv_mwin_08oonamazu_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 inv_mwin_08oonamazu_pal[] = {
 #include "assets/inv_mwin_08oonamazu_pal.inc"
 };
 #endif

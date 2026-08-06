@@ -5,9 +5,9 @@
 
 
 #ifdef TARGET_PC
-u8 obj_s_tree_stump_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_tree_stump_tex[0x400];
 #else
-u8 obj_s_tree_stump_tex[] ATTRIBUTE_ALIGN(32)= { 
+ATTRIBUTE_ALIGN(32) u8 obj_s_tree_stump_tex[]= {
 #include "assets/obj_s_tree_stump_tex.inc"
 };
 #endif

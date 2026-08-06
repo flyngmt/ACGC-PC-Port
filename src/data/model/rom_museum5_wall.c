@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-static u16 rom_museum5_wall_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_museum5_wall_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_museum5_wall_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_museum5_wall_pal[] = {
 #include "assets/rom_museum5_wall/rom_museum5_wall_pal.inc"
 };
 #endif

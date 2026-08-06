@@ -5,14 +5,14 @@
 #include "ac_npc.h"
 #include "ef_effect_control.h"
 
-EVW_ANIME_SCROLL ef_siawase01_00_evw_anime_2[] ATTRIBUTE_ALIGN(32) = { { 1, -4, 16, 16 }, { 0, 0, 16, 16 } };
+ATTRIBUTE_ALIGN(32) EVW_ANIME_SCROLL ef_siawase01_00_evw_anime_2[] = { { 1, -4, 16, 16 }, { 0, 0, 16, 16 } };
 
 EVW_ANIME_DATA ef_siawase01_00_evw_anime[] = { { -1, EVW_ANIME_TYPE_SCROLL2, ef_siawase01_00_evw_anime_2 } };
 
 #ifdef TARGET_PC
-u8 ef_siawase01_1[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_siawase01_1[0x80];
 #else
-u8 ef_siawase01_1[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_siawase01_1[] = {
 #include "assets/ef_siawase01_1.inc"
 };
 #endif
@@ -53,9 +53,9 @@ Gfx ef_siawase01_00_modelT[] = {
 };
 
 #ifdef TARGET_PC
-u8 ef_siawase01_0[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_siawase01_0[0x100];
 #else
-u8 ef_siawase01_0[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_siawase01_0[] = {
 #include "assets/ef_siawase01_0.inc"
 };
 #endif

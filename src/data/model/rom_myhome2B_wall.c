@@ -5,25 +5,25 @@
 #include "ac_npc.h"
 
 #ifdef TARGET_PC
-static u16 rom_myhome_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u16 rom_myhome_pal[0x20 / sizeof(u16)];
 #else
-static u16 rom_myhome_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u16 rom_myhome_pal[] = {
 #include "assets/rom_myhome2B_wall/rom_myhome_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_myhome_window_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_myhome_window_tex[0x200];
 #else
-static u8 rom_myhome_window_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_myhome_window_tex[] = {
 #include "assets/rom_myhome2B_wall/rom_myhome_window_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 rom_myhome_enter2_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 rom_myhome_enter2_tex[0x800];
 #else
-static u8 rom_myhome_enter2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 rom_myhome_enter2_tex[] = {
 #include "assets/rom_myhome2B_wall/rom_myhome_enter2_tex.inc"
 };
 #endif

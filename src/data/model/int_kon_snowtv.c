@@ -7,9 +7,9 @@
 
 extern Vtx int_kon_snowtv_v[];
 #ifdef TARGET_PC
-u16 int_kon_snowtv_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 int_kon_snowtv_pal[0x20 / sizeof(u16)];
 #else
-u16 int_kon_snowtv_pal[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u16 int_kon_snowtv_pal[] = {
 #include "assets/int_kon_snowtv_pal.inc"
 };
 #endif

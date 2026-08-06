@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_s_house_i_shadow_tex[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_s_house_i_shadow_tex[0x80];
 #else
-u8 obj_s_house_i_shadow_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_s_house_i_shadow_tex[] = {
 #include "assets/obj_s_house_i_shadow_tex.inc"
 };
 #endif

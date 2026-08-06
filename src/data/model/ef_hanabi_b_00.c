@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 ef_hanabi_b_0_inta_ia8[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_hanabi_b_0_inta_ia8[0x400];
 #else
-u8 ef_hanabi_b_0_inta_ia8[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_hanabi_b_0_inta_ia8[] = {
 #include "assets/ef_hanabi_b_0_inta_ia8.inc"
 };
 #endif

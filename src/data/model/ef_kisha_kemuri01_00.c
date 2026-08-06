@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 ef_kisha_kemuri01_0[0x80] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 ef_kisha_kemuri01_0[0x80];
 #else
-u8 ef_kisha_kemuri01_0[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 ef_kisha_kemuri01_0[] = {
 #include "assets/ef_kisha_kemuri01_0.inc"
 };
 #endif

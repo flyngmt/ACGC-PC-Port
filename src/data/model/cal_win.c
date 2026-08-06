@@ -6,97 +6,97 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u16 cal_win_tuki1_pal[0x20 / sizeof(u16)] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u16 cal_win_tuki1_pal[0x20 / sizeof(u16)];
 #else
-u16 cal_win_tuki1_pal[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u16 cal_win_tuki1_pal[]= {
 #include "assets/cal_win_tuki1_pal.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 cal_win_f1_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 cal_win_f1_tex[0x400];
 #else
-u8 cal_win_f1_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 cal_win_f1_tex[]= {
 #include "assets/cal_win_f1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 cal_win_f2_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 cal_win_f2_tex[0x400];
 #else
-u8 cal_win_f2_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 cal_win_f2_tex[]= {
 #include "assets/cal_win_f2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 cal_win_f3_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 cal_win_f3_tex[0x100];
 #else
-u8 cal_win_f3_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 cal_win_f3_tex[]= {
 #include "assets/cal_win_f3_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 cal_win_f4_tex[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 cal_win_f4_tex[0x400];
 #else
-u8 cal_win_f4_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 cal_win_f4_tex[]= {
 #include "assets/cal_win_f4_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 cal_win_event_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 cal_win_event_tex[0x800];
 #else
-u8 cal_win_event_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 cal_win_event_tex[]= {
 #include "assets/cal_win_event_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 cal_win_m_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 cal_win_m_tex[0x100];
 #else
-u8 cal_win_m_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 cal_win_m_tex[]= {
 #include "assets/cal_win_m_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 cal_win_f_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 cal_win_f_tex[0x100];
 #else
-u8 cal_win_f_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 cal_win_f_tex[]= {
 #include "assets/cal_win_f_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 cal_win_s_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 cal_win_s_tex[0x100];
 #else
-u8 cal_win_s_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 cal_win_s_tex[]= {
 #include "assets/cal_win_s_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 cal_win_t_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 cal_win_t_tex[0x100];
 #else
-u8 cal_win_t_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 cal_win_t_tex[]= {
 #include "assets/cal_win_t_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 cal_win_w_tex[0x100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 cal_win_w_tex[0x100];
 #else
-u8 cal_win_w_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 cal_win_w_tex[]= {
 #include "assets/cal_win_w_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-u8 cal_win_tuki1_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 cal_win_tuki1_tex[0x200];
 #else
-u8 cal_win_tuki1_tex[] ATTRIBUTE_ALIGN(32)= {
+ATTRIBUTE_ALIGN(32) u8 cal_win_tuki1_tex[]= {
 #include "assets/cal_win_tuki1_tex.inc"
 };
 #endif

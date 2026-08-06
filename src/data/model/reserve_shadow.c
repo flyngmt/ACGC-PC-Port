@@ -6,9 +6,9 @@
 #include "ef_effect_control.h"
 
 #ifdef TARGET_PC
-u8 obj_buildsite_shadow_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_buildsite_shadow_tex[0x200];
 #else
-u8 obj_buildsite_shadow_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_buildsite_shadow_tex[] = {
 #include "assets/obj_buildsite_shadow_tex.inc"
 };
 #endif
@@ -34,9 +34,9 @@ Gfx reserve_shadow_model[] = {
 };
 
 #ifdef TARGET_PC
-u8 obj_attention_shadow_tex[0x200] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 obj_attention_shadow_tex[0x200];
 #else
-u8 obj_attention_shadow_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) u8 obj_attention_shadow_tex[] = {
 #include "assets/obj_attention_shadow_tex.inc"
 };
 #endif
