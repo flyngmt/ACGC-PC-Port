@@ -51,15 +51,11 @@ ATTRIBUTE_ALIGN(32) static u8 texture_buffer_bss[TEX_BUFFER_BSS_SIZE];
  * drains the frame's deferred GX commands. */
 #define PC_EMU64_MAX_TLUT_ENTRIES 1024
 #define PC_EMU64_TLUT_FRAME_BUFFER_SIZE (2 * 1024 * 1024)
-#define PC_EMU64_INDEXED_VERTEX_FRAME_BUFFER_SIZE (4 * 1024 * 1024)
 ATTRIBUTE_ALIGN(32) static u8 s_pc_tlut_be[PC_EMU64_TLUT_FRAME_BUFFER_SIZE];
-ATTRIBUTE_ALIGN(32) static u8 s_pc_indexed_vertex_frame_buffer[PC_EMU64_INDEXED_VERTEX_FRAME_BUFFER_SIZE];
 static u32 s_pc_tlut_be_used;
-static u32 s_pc_indexed_vertex_frame_buffer_used;
 
 extern "C" void pc_emu64_tlut_frame_drained() {
     s_pc_tlut_be_used = 0;
-    s_pc_indexed_vertex_frame_buffer_used = 0;
 }
 
 static void* pc_emu64_tlut_native_to_be(const u16* src, u32 count) {
@@ -80,17 +76,6 @@ static void* pc_emu64_tlut_native_to_be(const u16* src, u32 count) {
         dst[i * sizeof(u16) + 1] = (u8)value;
     }
     return dst;
-}
-
-static void* pc_emu64_indexed_vertex_alloc(u32 size) {
-    const u32 allocation_size = ALIGN_NEXT(size, 32);
-    if (allocation_size > PC_EMU64_INDEXED_VERTEX_FRAME_BUFFER_SIZE - s_pc_indexed_vertex_frame_buffer_used) {
-        return nullptr;
-    }
-
-    void* result = &s_pc_indexed_vertex_frame_buffer[s_pc_indexed_vertex_frame_buffer_used];
-    s_pc_indexed_vertex_frame_buffer_used += allocation_size;
-    return result;
 }
 #endif
 
@@ -2970,11 +2955,6 @@ void emu64::setup_1tri_2tri_1quad(unsigned int vtx_idx) {
 }
 
 #ifdef TARGET_PC
-struct PcIndexedTexCoord {
-    s16 s;
-    s16 t;
-};
-
 bool emu64::pc_draw_preprocessed_geometry(const Gfx* source, u32 command_count,
                                           u32 vertex_count) {
     if (source == nullptr || command_count == 0 || vertex_count == 0 ||
@@ -2993,12 +2973,9 @@ bool emu64::pc_draw_preprocessed_geometry(const Gfx* source, u32 command_count,
         return false;
     }
 
-    const u32 layout =
-        (lighting ? acgc::emu64_geometry_cache::Lighting : 0) |
-        (textured ? acgc::emu64_geometry_cache::Textured : 0);
     const acgc::emu64_geometry_cache::Entry* entry =
         acgc::emu64_geometry_cache::find_or_compile(source, command_count,
-                                                    vertex_count, layout);
+                                                    vertex_count);
     if (entry == nullptr) {
         return false;
     }
@@ -3006,6 +2983,16 @@ bool emu64::pc_draw_preprocessed_geometry(const Gfx* source, u32 command_count,
     const u8* source_vertices = entry->sourceVertices.data();
     const u32 unique_vertex_count =
         static_cast<u32>(entry->sourceVertices.size());
+    const u32 vertex_stride = sizeof(Vec) + sizeof(GXColor) +
+        (lighting ? sizeof(Vec) : 0) +
+        (textured ? sizeof(s16) * 2 : 0);
+    const size_t direct_size = 3 + static_cast<size_t>(vertex_count) * vertex_stride;
+    const size_t indexed_size = 10 + entry->indices.size() * sizeof(u16) +
+        static_cast<size_t>(unique_vertex_count) * vertex_stride;
+    if (indexed_size >= direct_size) {
+        return false;
+    }
+
     const bool expected_nonshared =
         (this->vertices[source_vertices[0]].flag & MTX_NONSHARED) != MTX_SHARED;
     for (u32 i = 0; i < unique_vertex_count; i++) {
@@ -3017,68 +3004,13 @@ bool emu64::pc_draw_preprocessed_geometry(const Gfx* source, u32 command_count,
         }
     }
 
-    this->using_nonshared_mtx = expected_nonshared;
-    GXSetCurrentMtx(expected_nonshared ? NONSHARED_MTX : SHARED_MTX);
-
-    const u32 arena_start = s_pc_indexed_vertex_frame_buffer_used;
-    Vec* positions = static_cast<Vec*>(
-        pc_emu64_indexed_vertex_alloc(unique_vertex_count * sizeof(Vec)));
-    Vec* normals = lighting ? static_cast<Vec*>(
-        pc_emu64_indexed_vertex_alloc(unique_vertex_count * sizeof(Vec))) : nullptr;
-    GXColor* colors = static_cast<GXColor*>(
-        pc_emu64_indexed_vertex_alloc(unique_vertex_count * sizeof(GXColor)));
-    PcIndexedTexCoord* texcoords = textured ? static_cast<PcIndexedTexCoord*>(
-        pc_emu64_indexed_vertex_alloc(
-            unique_vertex_count * sizeof(PcIndexedTexCoord))) : nullptr;
-    if (positions == nullptr || colors == nullptr || (lighting && normals == nullptr) ||
-        (textured && texcoords == nullptr)) {
-        s_pc_indexed_vertex_frame_buffer_used = arena_start;
-        return false;
+    this->setup_1tri_2tri_1quad(source_vertices[0]);
+    GXBeginIndexed(GX_VTXFMT0, static_cast<u16>(unique_vertex_count),
+                   entry->indices.data(), static_cast<u32>(entry->indices.size()));
+    for (u8 source_vertex : entry->sourceVertices) {
+        this->set_position(source_vertex);
     }
-
-    for (u32 i = 0; i < unique_vertex_count; i++) {
-        const Vertex& source_vertex = this->vertices[source_vertices[i]];
-        positions[i] = source_vertex.position;
-        if (lighting) {
-            normals[i] = source_vertex.normal;
-        }
-        colors[i].r = source_vertex.color.rgba.r;
-        colors[i].g = source_vertex.color.rgba.g;
-        colors[i].b = source_vertex.color.rgba.b;
-        colors[i].a = source_vertex.color.rgba.a;
-        if (textured) {
-            texcoords[i].s = source_vertex.tex_coords.s;
-            texcoords[i].t = source_vertex.tex_coords.t;
-        }
-    }
-
-    GXClearVtxDesc();
-    GXSetVtxDesc(GX_VA_POS, GX_INDEX8);
-    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_CLR_RGBA, GX_F32, 0);
-    if (lighting) {
-        GXSetVtxDesc(GX_VA_NRM, GX_INDEX8);
-        GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_NRM, GX_CLR_RGB, GX_F32, 0);
-    }
-    GXSetVtxDesc(GX_VA_CLR0, GX_INDEX8);
-    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
-    if (textured) {
-        GXSetVtxDesc(GX_VA_TEX0, GX_INDEX8);
-        GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_CLR_RGBA, GX_RGBA4, 0);
-    }
-
-    GXSETARRAY(GX_VA_POS, positions, unique_vertex_count * sizeof(Vec), sizeof(Vec), true);
-    if (lighting) {
-        GXSETARRAY(GX_VA_NRM, normals, unique_vertex_count * sizeof(Vec), sizeof(Vec), true);
-    }
-    GXSETARRAY(GX_VA_CLR0, colors, unique_vertex_count * sizeof(GXColor), sizeof(GXColor), true);
-    if (textured) {
-        GXSETARRAY(GX_VA_TEX0, texcoords,
-                   unique_vertex_count * sizeof(PcIndexedTexCoord),
-                   sizeof(PcIndexedTexCoord), true);
-    }
-
-    const auto& display_list = entry->displayLists[layout];
-    GXCallDisplayList(display_list.data(), static_cast<u32>(display_list.size()));
+    GXEnd();
 
     return true;
 }
@@ -5009,7 +4941,8 @@ void emu64::dl_G_TRI1() {
     if (this->disable_polygons == false && EMU64_CAN_DRAW_POLYGON()) {
         this->dirty_check(this->texture_gfx.tile, this->texture_gfx.level, TRUE);
 #ifdef TARGET_PC
-        if ((aflags[AFLAGS_DECAL_OFFSET_MODE] & 1) == 0 &&
+        const bool reuses_vertex = v0 == v1 || v0 == v2 || v1 == v2;
+        if (reuses_vertex && (aflags[AFLAGS_DECAL_OFFSET_MODE] & 1) == 0 &&
             this->pc_draw_preprocessed_geometry(this->gfx_p, 1, 3)) {
             this->rdp_pipe_sync_needed = TRUE;
         } else
