@@ -22,9 +22,13 @@ extern "C" {
 
 typedef u64 Z_OSTime;
 
+#if defined(TARGET_PC) && !defined(_WIN32)
+/* bcmp/bcopy/bzero conflict with glibc on Linux. MinGW needs them. */
+#else
 int bcmp(void* v1, void* v2, u32 size);
 void bcopy(void* src, void* dst, size_t n);
 void bzero(void* ptr, size_t size);
+#endif
 void osSyncPrintf(const char* fmt, ...);
 void osWritebackDCache(void* vaddr, u32 nbytes);
 u32 osGetCount(void);

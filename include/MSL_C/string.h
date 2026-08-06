@@ -3,6 +3,12 @@
 
 #include "stddef.h"
 
+#if defined(TARGET_PC) && !defined(_WIN32)
+#ifdef __cplusplus
+#include <cstring>
+#endif
+#include <string.h>
+#else
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,6 +38,8 @@ namespace std {
 using ::strlen;
 using ::strrchr;
 }; // namespace std
+#endif
+
 #endif
 
 #endif /* _MSL_COMMON_STRING_H */

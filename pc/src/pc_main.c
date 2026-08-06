@@ -12,6 +12,10 @@
 #include "pc_profiler.h"
 #include "m_kankyo.h"
 
+#ifdef PC_LLM_DIALOGUE
+#include "llm/llm_api.h"
+#endif
+
 /* prefer discrete GPU on laptops */
 #ifdef _WIN32
 __declspec(dllexport) unsigned long NvOptimusEnablement = 1;
@@ -396,8 +400,16 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+#ifdef PC_LLM_DIALOGUE
+    llm_init();
+#endif
+
     ac_entry();                         /* sets HotStartEntry = &entry */
     boot_main(argc, (const char**)argv); /* full init → HotStartEntry → game loop */
+
+#ifdef PC_LLM_DIALOGUE
+    llm_shutdown();
+#endif
 
     pc_disc_shutdown();
     pc_platform_shutdown();

@@ -13,6 +13,10 @@
 #include "pc_bswap.h"
 #endif
 
+#ifdef PC_LLM_DIALOGUE
+#include "llm/llm_api.h"
+#endif
+
 static u32 Msg_table_rom_start = 0;
 static u32 Msg_rom_start = 0;
 

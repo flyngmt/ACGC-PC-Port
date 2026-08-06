@@ -296,6 +296,334 @@ Wildcard palette support: `tex1_WxH_DATAHASH_$_FMT.dds` matches any palette vari
 
 Anti-aliasing via multisampled framebuffer. Configurable in `settings.ini` (0/2/4/8 samples).
 
+## LLM Dialogue System (`#ifdef PC_LLM_DIALOGUE`)
+
+Replaces villager greeting text with LLM-generated responses in real time. The system hooks into the game's message window at page-load time, submits an async request, and applies the response when ready.
+
+### Message System Architecture
+
+The message window (`mMsg_Window_c`) is a singleton with 8 state machine states:
+
+```
+HIDE → APPEAR (18-frame zoom-in) → CURSOL (text crawl) → NORMAL (wait for A) → DISAPPEAR → HIDE
+```
+
+Messages are loaded from ROM by `msg_no` (0x0000–0x3F91). Each page ends with a control code:
+
+| Code | Meaning |
+|------|---------|
+| `0x7F 0x00` | `LAST` — dialogue ends on A press |
+| `0x7F 0x01` | `CONTINUE` — advances to `continue_msg_no` on A press |
+| `0x7F 0x5B XX` | `MSG_TIME_END` — timed auto-advance |
+
+Key structs:
+
+| Field | Purpose |
+|-------|---------|
+| `mMsg_Window_c.continue_msg_no` | Next msg_no to load when page advances. Set by `SET_NEXT_MESSAGE_*` control codes during CURSOL. Defaults to -1. |
+| `mMsg_Window_c.continue_cancel_flag` | If TRUE, `CONTINUE` behaves like `LAST` (disappears). |
+| `mMsg_Window_c.lock_continue` | Blocks A button advancement in NORMAL state. |
+| `mMsg_Window_c.client_actor_p` | The NPC speaking. |
+| `mMsg_Window_c.choice_window` | Embedded `mChoice_c` — choice UI with up to 6 option strings. |
+| `mMsg_Data_c.msg_no` | Current message index. |
+| `mMsg_Data_c.msg_len` | Byte count of the active message page. |
+| `mMsg_Data_c.text_buf` | 1600-byte buffer holding raw game-font-encoded message + control codes. |
+
+### Dialogue Sequence Types
+
+**Type 1: Simple greeting (LAST)**
+```
+Page 1: "Hey Pluto! Nice weather." [0x7F 0x00 LAST]
+A press → DISAPPEAR → HIDE. NPC exits talk state.
+```
+
+**Type 2: Greeting with embedded choices (CONTINUE)**
+```
+Page 1: "What do you need?" [0x7F 0x18 ...choice IDs... 0x7F 0x0D SET_SELECT_WINDOW] [0x7F 0x01]
+  Control codes in the text buffer:
+    SET_SELECT_STRING_2/3/4 → loads 2–4 choice strings by ROM string ID
+    SET_NEXT_MESSAGE_0..3   → wires each choice index to a response msg_no
+    SET_SELECT_WINDOW        → activates choice UI overlay
+A press → choice window opens → player picks → ChangeMsgData(chosen msg_no) → Page 2
+Page 2: Response to chosen option [0x7F 0x00 LAST]
+```
+
+**Type 3: Multi-page CONTINUE chain**
+```
+Page 1 → [0x7F 0x01] → Page 2 → [0x7F 0x01] → Page 3 → [0x7F 0x00 LAST]
+```
+Scripted talks (save-load greeting, cutscenes, NPC intros). Filtered out by hook — only player-initiated conversations reach the LLM.
+
+**Type 4: Quest offer dialogue**
+```
+Page 1: Greeting with quest context [0x7F 0x01]
+Page 2: Functional prompt "Will you help?" [len < 80] → skipped by gate
+Page 3: Quest details [len varies, may or may not be replaced]
+```
+
+**Type 5: Functional messages (skipped)**
+```
+Pages with len < 80: "What do you need?", "Yes"/"No" prompts, quest dialog,
+post-greeting choice text, determination strings.
+```
+Always skipped by the `FUNCTIONAL_MSG_MAX` gate.
+
+### Where the LLM Hook Fires (Two Hook Points)
+
+Both fire *before* CURSOL processes any control codes:
+
+| Hook point | Location | When |
+|------------|----------|------|
+| `mMsg_MainSetup_Appear` (line 42) | `m_msg_appear.c_inc` | First page of every dialogue |
+| `mMsg_ChangeMsgData` (line 386) | `m_msg_main.c_inc` | Every subsequent page advance |
+
+Both guarded by `#ifdef PC_LLM_DIALOGUE`.
+
+### Hook Guard Conditions
+
+In order, each message page is tested:
+
+1. `!llm_is_enabled()` — master toggle
+2. Player not in `mPlayer_INDEX_TALK` — filters scripted talks (cutscenes, save-load greetings). Scripted talks use different player indexes.
+3. No actor / non-villager NPC (`NAME_TYPE_NPC`) — filters special NPCs (shopkeepers, train station, museum).
+4. `!msg_is_conversational_start()` — **principled classification** (see below). Replaces the old heuristic `stock_len < 80`. Uses `continue_msg_no == 0xFFFF` as the signal for a fresh conversation start — no `SET_NEXT_MESSAGE_*` code has ever fired.
+5. Previous LLM job still in flight — prevents queue pile-up.
+
+### Message Classification: Greeting vs. Functional
+
+The old `stock_len < 80` gate caught functional messages by accident (they happen to be short). The principled approach uses the message window's `continue_msg_no` field, which encodes whether this page was reached via a choice/scripted transition.
+
+#### Classification Signals Available at Hook Time
+
+| Signal | Location | At greeting start | At functional/choice follow-up |
+|--------|----------|-------------------|-------------------------------|
+| `continue_msg_no` | `msg_p->continue_msg_no` | `0xFFFF` (initial, never set) | valid msg_no (set by previous page's SET_NEXT_MESSAGE) |
+| `determination_len` | `msg_p->choice_window.data.determination_len` | 0 | > 0 (player just picked a choice) |
+| `choice_window.main_index` | `msg_p->choice_window.main_index` | `HIDE` (0) | may be `NORMAL` if choice window still visible |
+| `SET_SELECT_WINDOW` in stock text | Scan `0x7F 0x0D` in `msg_data->text_buf.data` | Present if greeting has choices | Usually absent (choices consumed) |
+| `SET_NEXT_MESSAGE_F/0-5` in stock text | Scan `0x7F 0x0E-0x14` | Present if greeting branches by choice | Usually absent |
+| `SET_FORCE_NEXT` in stock text | Scan `0x7F 0x1C` | Absent | May be present (auto-advance) |
+| `lock_continue` | `msg_p->lock_continue` | FALSE | TRUE if game is blocking input |
+| `force_next` | `msg_p->force_next` | FALSE | TRUE if SET_FORCE_NEXT just fired |
+
+#### Why `continue_msg_no == 0xFFFF` Works
+
+`continue_msg_no` starts at `0xFFFF` (`m_msg_main.c_inc:458`). The only way it changes is when a `SET_NEXT_MESSAGE_*` control code (0x7F 0x0E-0x14) fires during CURSOL text processing, setting it to a real `msg_no`. This means:
+
+- **`0xFFFF`**: No scripted transition has occurred. The player just pressed A near an NPC. This is a conversational greeting page.
+- **Valid msg_no (≥0, <MSG_MAX)**: A previous page's CURSOL processed `SET_NEXT_MESSAGE_*` and the player pressed A on CONTINUE. This page was reached via a choice or scripted transition — it's a functional follow-up.
+- **`-1`**: A `SET_NEXT_MESSAGE` was consumed (`m_msg_normal.c_inc:64` resets after `ChangeMsgData` returns — after our hook fires).
+
+The hook fires inside `mMsg_ChangeMsgData` (second hook point), **before** the `-1` reset. So `continue_msg_no` still holds the value that triggered this page load. At the first hook point (`mMsg_MainSetup_Appear`), no CURSOL has run yet, so it's still `0xFFFF`.
+
+#### Classification Logic
+
+```c
+static int msg_is_conversational_start(mMsg_Window_c *msg_p) {
+    /* 0xFFFF: fresh conversation, no SET_NEXT_MESSAGE fired yet */
+    if (msg_p->continue_msg_no != 0xFFFF) return 0;
+    /* Determination set: player just picked a choice */
+    if (msg_p->choice_window.data.determination_len > 0) return 0;
+    return 1;
+}
+```
+
+A greeting with embedded choices (Type 2) still passes this check — `continue_msg_no` is `0xFFFF` because no CURSOL has run yet to set it, and `determination_len` is 0 because no choice has been selected yet. The choice strings are still extracted via `msg_extract_choices()`.
+
+### Stuck-Dialogue Bug (Fixed)
+
+**Root cause**: The LLM replacement text ("...") contains zero control codes. When the stock message had `CONTINUE` (0x7F 0x01) as its end code, the old code preserved it. But `continue_msg_no` was never set by any `SET_NEXT_MESSAGE_*` code (our "..." has none), so it stays -1.
+
+In `m_msg_normal.c_inc:53-65`, when the player presses A:
+```c
+if (CONTINUE && !cancel_flag) {
+    if (continue_msg_no is valid) → load next page
+    // else: no fall-through. Nothing happens. Stuck.
+}
+```
+
+**Fix**: Always write `mFont_CONT_CODE_LAST` (0x7F 0x00) for LLM-replaced text. The `mPlayer_INDEX_TALK` guard already filters scripted multi-page talks; for player-initiated conversations, `LAST` is always safe. The NPC's `talk_end_check_proc()` sees the window disappear and exits cleanly.
+
+### Choice Detection
+
+`msg_extract_choices()` in `pc/src/llm/llm_hook.c` scans the stock text buffer for:
+
+| Control code | Opcode | Purpose |
+|-------------|--------|---------|
+| `0x7F 0x0D` | `SET_SELECT_WINDOW` | Marks message as having player choices |
+| `0x7F 0x18` | `SET_SELECT_STRING_2` | 2 choice strings, 4 bytes of 16-bit ROM IDs |
+| `0x7F 0x19` | `SET_SELECT_STRING_3` | 3 choice strings, 6 bytes of IDs |
+| `0x7F 0x1A` | `SET_SELECT_STRING_4` | 4 choice strings, 8 bytes of IDs |
+
+String IDs are resolved to game-font text via `mChoice_Load_ChoseStringFromRom()`, decoded to ASCII with `decode_game_str()`, and appended to the prompt as `[Player response options: option1, option2, ...]`. This gives the LLM context about what the player will choose from.
+
+### Game Font Encoding
+
+Bytes `0x20–0x7E` are ASCII 1:1 (established in `pc/src/pc_typing.c:40-51`). Kana (`0x80–0xCC`) and control codes (`0x7F` prefix, `0x00–0x7E` operands) are not ASCII-mappable. The `decode_game_str()` helper maps everything outside `0x20–0x7E` to space and trims trailing spaces.
+
+### Prompt Builder
+
+`llm_build_prompt()` in `pc/src/llm/llm_prompt.c` assembles the full LLM context from:
+
+```
+System prompt: "You are {name}, a {persona_desc[looks]} villager in Animal Crossing.
+Your catchphrase is "{catchphrase}". You live in {town}.
+It is {season}. The weather is {weather}. It is {time_of_day}.
+Speak as this character. Reply in 1-3 short sentences.
+Never break character. Use your catchphrase occasionally."
+
+Conversation history: (per-NPC ring buffer, last N exchanges)
+Gossip: (rumors from other villagers)
+Player input: "{player_name} says: {stock_text}\n\nResponse:"
+```
+
+Personality descriptions map `mNpc_LOOKS_*` indices:
+| Index | Type | Description |
+|-------|------|-------------|
+| 0 | Normal (female) | cheerful and kind, loves flowers and baking |
+| 1 | Peppy (female) | bubbly and energetic, uses exclamation marks |
+| 2 | Lazy (male) | loves food, naps, and talking about bugs |
+| 3 | Jock (male) | athletic and competitive, references exercise |
+| 4 | Cranky (male) | grumpy but secretly caring, complains fondly |
+| 5 | Snooty (female) | cares about fashion and status, gossips but means well |
+
+History and gossip are wired in the builder signature but not yet plumbed from the hook (passed as NULL/0).
+
+### Async Job Flow
+
+```
+llm_hook_on_msg_change()
+  → Decode game strings, build prompt via llm_build_prompt()
+  → Save stock text to g_stock_text, g_stock_len
+  → Write "..." + LAST into text_buf.data
+  → llm_submit_job() → background thread → HTTP request
+
+llm_hook_tick() (every frame)
+  → llm_tick_jobs() → checks if response arrived
+
+llm_hook_apply_response()
+  → Stale guard: msg_no must still match
+  → Word-wrap LLM text to 4 lines, 176 units wide
+  → Write into text_buf.data + LAST end code
+
+llm_hook_on_job_failed()
+  → Restore original g_stock_text (game-encoded, exact length)
+```
+
+### File Reference
+
+| File | Purpose |
+|------|---------|
+| `pc/src/llm/llm_hook.c` | Dialogue interception: hook points, text encode/decode, choice extraction, async job submission |
+| `pc/src/llm/llm_prompt.c` | Prompt builder: system prompt, persona table, history, gossip, player input |
+| `pc/src/llm/llm_core.c` | LLM backend: provider init, HTTP/TLS, job queue, ollama/openai/gemini/deepseek |
+| `pc/src/llm/llm_gossip.c` | Background gossip generation between NPCs |
+| `pc/src/llm/llm_config.c` | llm.ini config parser |
+| `pc/include/llm/llm_api.h` | Public API declarations |
+| `pc/include/llm/llm_types.h` | LlmJob, LlmHistory, LlmConfig, LlmProvider structs |
+
+Key game files:
+
+| File | Role |
+|------|------|
+| `src/game/m_msg_main.c_inc` | Message loading, `ChangeMsgData`, control code detection |
+| `src/game/m_msg_cursol.c_inc` | Text crawl, all ~110 control code handlers, choice wiring |
+| `src/game/m_msg_normal.c_inc` | Page advancement logic, CONTINUE/LAST handling |
+| `src/game/m_msg_appear.c_inc` | Initial message load, first LLM hook point |
+| `src/actor/npc/ac_npc_act_talk.c_inc` | NPC talk action state machine |
+| `src/actor/npc/ac_npc_talk.c_inc` | NPC talk trigger, setup/end |
+| `src/game/m_player_main_talk.c_inc` | Player talk state (`mPlayer_INDEX_TALK`) |
+
+### Implementation Roadmap
+
+Ordered by dependency — each phase builds on the previous.
+
+#### Phase 1: Principled Message Classification (next)
+
+Replace the heuristic `stock_len < 80` gate with `msg_is_conversational_start()` using `continue_msg_no == 0xFFFF`. This correctly identifies greeting pages vs. choice/scripted follow-ups by checking whether `SET_NEXT_MESSAGE_*` codes have ever fired.
+
+**Files changed**: `pc/src/llm/llm_hook.c`
+- Add `msg_is_conversational_start()` — checks `msg_p->continue_msg_no` and `msg_p->choice_window.data.determination_len`
+- Remove `FUNCTIONAL_MSG_MAX` gate, call `msg_is_conversational_start()` instead
+- `msg_p` is already the second parameter to our hook — no signature changes needed
+
+**Dialogue type impact**:
+| Type | Old gate | New gate | Result |
+|------|---------|---------|--------|
+| 1. Simple greeting | `len ≥ 80` passes | `continue_msg_no == 0xFFFF` passes | Same — LLM'd |
+| 2. Greeting + choices | `len ≥ 80` passes | `continue_msg_no == 0xFFFF` passes | Same — LLM'd with choice context |
+| 3. Choice prompt page | `len < 80` skips | `continue_msg_no` is valid msg_no (was set by greeting's SET_NEXT_MESSAGE) → skips | Same — skipped, now principled |
+| 4. Response-to-choice page | sometimes passes (len ≥ 80) | `continue_msg_no` is valid msg_no → skips | **Fixed** — no more LLM on choice responses |
+| 5. Quest offer follow-up | `len < 80` skips | `continue_msg_no` is valid → skips | Same — skipped, now principled |
+| 6. Mid-conversation greeting from a different NPC | N/A | Each NPC's conversation window is independent; first page still has `0xFFFF` | Works correctly |
+
+#### Phase 2: Post-Choice Response Context
+
+When a greeting has choices and the player picks one, the response page currently passes as a greeting (since `continue_msg_no` was set). Phase 1 correctly skips it, but we lose the opportunity to LLM the response. Phase 2 adds: capture which choice was selected, pass it as context to the NEXT hook call.
+
+**Files changed**: `pc/src/llm/llm_hook.c`, possibly `pc/include/llm/llm_types.h`
+- Add `g_last_chosen_text[64]` — stores the decoded text of the selected choice
+- In `llm_hook_on_msg_change`: if `determination_len > 0`, decode the determination string
+- Pass as `stock_text` append: `[Player chose: "{g_last_chosen_text}"]`
+- Clear after one use
+
+**Hook point**: Same — `llm_hook_on_msg_change` fires on the response page (which reaches `mMsg_ChangeMsgData` via `SET_NEXT_MESSAGE`). We know the player's choice because `determination_len > 0` and the determination string is in the choice window.
+
+#### Phase 3: Conversation History
+
+Plumb the `LlmHistory` ring buffer through the hook. Track per-NPC conversation exchanges across talk sessions.
+
+**Files changed**: `pc/src/llm/llm_hook.c`, `pc/src/llm/llm_prompt.c`
+- On conversation end (`llm_hook_on_conversation_end`): append the exchange to `g_llm_history[npc_idx]`
+- On conversation start: pass `&g_llm_history[npc_idx]` instead of NULL to `llm_build_prompt`
+- `llm_build_prompt` already walks the ring buffer and formats recent exchanges
+- Clear history when the NPC moves out (handled by existing `llm_history_clear`)
+
+**Dialogue type impact**:
+| Type | Without history | With history |
+|------|----------------|--------------|
+| Repeat greeting | Generates generic hello | References previous conversation: "You're back! Still looking for butterflies?" |
+| Post-choice | Empty context | References what was just said |
+| Multi-NPC | Isolated per NPC | Each NPC has independent memory |
+
+#### Phase 4: Gossip Integration
+
+Wire the gossip system into the prompt. Background `llm_gossip_tick()` generates rumors between NPCs. Pass them to `llm_build_prompt`.
+
+**Files changed**: `pc/src/llm/llm_hook.c`, `pc/src/llm/llm_gossip.c`
+- In `llm_hook_on_msg_change`: pass `g_llm_history` array + gossip pointers instead of NULL
+- Gossip system already populates per-NPC `LlmHistory` entries with `gossip_seed` and `gossip_id`
+- Prompt builder already renders gossip as "Rumors you've heard in town: ..."
+
+#### Phase 5: Multi-Turn Conversations
+
+Instead of ending the conversation after one LLM response (LAST), keep it going for 2-3 exchanges. The LLM response page triggers another page automatically.
+
+**Files changed**: `pc/src/llm/llm_hook.c`, `pc/src/llm/llm_prompt.c`
+- Detect when the LLM response naturally prompts a reply question
+- Use `SET_NEXT_MESSAGE_F` with a dummy msg_no to trigger a second hook → second LLM call
+- Or: pre-generate 2-3 pages of text, write them as sequential pages via CONTINUE
+
+**Complexity**: High. Requires managing `continue_msg_no` explicitly and handling the script chain.
+
+#### Phase 6: Mood & Emotion System
+
+Use the `mood` field (currently captured but `(void)` in the builder) to influence LLM tone and NPC animation.
+
+**Files changed**: `pc/src/llm/llm_prompt.c`, `pc/src/llm/llm_hook.c`
+- Add mood to system prompt: "You are feeling {happy/sad/angry/neutral} today."
+- Parse LLM response for emotion tags, trigger appropriate NPC demo orders
+
+#### Phase 7: Quest-Aware Dialogue
+
+Detect quest offer dialogues and include quest details in prompt context.
+
+**Files changed**: `pc/src/llm/llm_hook.c`
+- Check `QUEST_MANAGER_ACTOR.talk_type` for `aQMgr_TALK_KIND_QUEST`
+- If quest mode: extract quest text, item names, pass to prompt
+- The quest manager's `msg_start[]` array has message IDs for quest states
+
+
 ## Input
 
 Keyboard mapping:

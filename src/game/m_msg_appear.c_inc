@@ -36,6 +36,11 @@ static void mMsg_MainSetup_Appear(mMsg_Window_c* msg_p, GAME* game) {
         int show_name = appear_data->name_shown_flag;
 
         mMsg_Set_client_actor_p(msg_p, actor, show_name);
+#ifdef PC_LLM_DIALOGUE
+        /* First page of a dialogue loads here (not via mMsg_ChangeMsgData),
+         * so the LLM hook must fire explicitly — with the actor now set. */
+        llm_hook_on_msg_change(msg_no, msg_p, msg_p->msg_data);
+#endif
         msg_p->window_background_color = appear_data->window_color;
         mMsg_sound_spec_change_voice(msg_p);
         mMsg_sound_voice_mode(msg_p);

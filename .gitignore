@@ -18,11 +18,22 @@ orig/*/*
 *.map
 *.MAP
 
+# Game ROM (copyrighted, never commit)
+rom/
+
 # Build files
 build/
 build32/
 .ninja_*
 build.ninja
+
+# PC port build directories
+pc/build32-*/
+
+# Runtime-generated config files (contain secrets / user settings, never commit)
+pc/build32-*/bin/llm.ini
+pc/build32-*/bin/settings.ini
+pc/build32-*/bin/keybindings.ini
 
 # decompctx output
 ctx.*

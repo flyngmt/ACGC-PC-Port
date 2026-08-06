@@ -3,6 +3,14 @@
 
 #include "stddef.h"
 
+#if defined(TARGET_PC) && !defined(_WIN32)
+/* memcpy/memset/memcmp conflict with glibc's noexcept on Linux */
+#ifdef __cplusplus
+#include <cstring>
+#endif
+#include <string.h>
+#else
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -19,4 +27,6 @@ void __fill_mem(void * dst, int val, unsigned long n);
 #ifdef __cplusplus
 };
 #endif
+
+#endif /* !TARGET_PC */
 #endif

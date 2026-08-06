@@ -58,6 +58,10 @@ pacman -S mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-SDL2 mingw-w64-
    pc/build32/bin/AnimalCrossing.exe
    ```
 
+### Linux
+
+See the dedicated [Linux Build Guide](BUILD_LINUX.md) for native Linux compilation.
+
 ## Controls
 
 Keyboard bindings are customizable via `keybindings.ini` (next to the executable). Mouse buttons (Mouse1/Mouse2/Mouse3) can also be assigned.
@@ -111,6 +115,40 @@ I highly recommend the following texture pack from the talented artists of Anima
 ## Save Data
 
 Save files are stored in `save/` using the standard GCI format, compatible with Dolphin emulator saves. Place a Dolphin GCI export in the save directory to import an existing save.
+
+## LLM Dialogue Engine
+
+Villagers can deliver AI-generated dialogue instead of stock text, with persistent memories, per-NPC sentiments, and configurable personality-driven topic selection.
+
+### How It Works
+
+- **Fresh conversations** have a configurable chance (`chat_chance` in `llm.ini`) of being replaced by LLM-generated text
+- **Personality-aware**: each villager type (cheerful, peppy, lazy, jock, cranky, snooty) gets a custom persona in the prompt
+- **Topic distribution**: configurable split between hobbies, relationships with other villagers, and small talk
+- **Persistent memory**: all LLM responses are saved to `memory/<NPC>.txt` and occasionally injected back into prompts for continuity
+- **Sentiment tracking**: villagers develop persistent likes/dislikes toward other residents, stored in `memory/<NPC>_sent.txt`
+- **Real town residents**: the system gathers actual villagers and special NPCs (Tom Nook, Mayor) from your save data for authentic relationship seeding
+
+### Configuration
+
+On first run, `llm.ini` is auto-generated next to the binary with all defaults. Supported providers: `ollama` (local), `gemini`, `openai` (OpenCode Zen compatible), `deepseek`.
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `provider` | `ollama` | LLM backend |
+| `enabled` | `1` | Master toggle |
+| `chat_chance` | `20` | % chance LLM replaces a greeting |
+| `topic_hobbies_pct` | `50` | % chance of hobby/interest topics |
+| `topic_relations_pct` | `20` | % chance of talking about other villagers |
+| `topic_smalltalk_pct` | `30` | % chance of casual small talk |
+| `memory_influence_pct` | `25` | % chance past memories are injected |
+| `prompt_extra` | *(empty)* | Extra text appended to every LLM prompt |
+
+The LLM falls back gracefully to stock dialogue on failure — the game never breaks.
+
+### Full Reference
+
+See `pc/DOCUMENTATION.md` for the complete dialogue system architecture, message state machine, control code reference, and implementation roadmap.
 
 ## Credits
 

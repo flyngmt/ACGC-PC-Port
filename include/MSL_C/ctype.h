@@ -2,7 +2,9 @@
 #define _CTYPE_H
 
 #ifdef TARGET_PC
-#include <ctype.h> // Conflicts can happen otherwise in certain compiler versions
+#undef _CTYPE_H
+#include <ctype.h>
+#define _CTYPE_H
 #else
 
 #include "MSL_C/locale.h"

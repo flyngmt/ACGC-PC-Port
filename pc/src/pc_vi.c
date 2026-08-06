@@ -1,6 +1,9 @@
 /* pc_vi.c - video interface → SDL window swap + frame pacing */
 #include "pc_platform.h"
 #include "pc_profiler.h"
+#ifdef PC_LLM_DIALOGUE
+#include "llm/llm_api.h"
+#endif
 
 #define VI_TVMODE_NTSC_INT    0
 #define VI_TVMODE_NTSC_DS     1
@@ -63,6 +66,10 @@ void VIWaitForRetrace(void) {
     Uint64 t_before_swap_prof = pc_profiler_begin_timer();
     pc_platform_swap_buffers();
     pc_profiler_add_time(PC_PROF_TIMER_SWAP, t_before_swap_prof);
+
+#ifdef PC_LLM_DIALOGUE
+    llm_hook_tick();
+#endif
     Uint64 t_after_swap = SDL_GetPerformanceCounter();
 
     Uint64 t_before_pace = SDL_GetPerformanceCounter();

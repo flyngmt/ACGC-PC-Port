@@ -2,6 +2,10 @@
 #ifndef PC_PLATFORM_H
 #define PC_PLATFORM_H
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 /* 32-bit required: decomp code (JSystem, emu64) casts pointers to u32 */
 #include <stdint.h>
 #if UINTPTR_MAX != 0xFFFFFFFFu

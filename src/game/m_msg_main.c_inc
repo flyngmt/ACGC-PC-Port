@@ -382,6 +382,9 @@ extern int mMsg_ChangeMsgData(mMsg_Window_c* msg_p, int index) {
         msg_p->end_text_cursor_idx = 0;
         mMsg_Clear_CursolIndex(msg_p);
         mMsg_SetTimer(msg_p, 20.0f);
+#ifdef PC_LLM_DIALOGUE
+        llm_hook_on_msg_change(index, msg_p, msg_p->msg_data);
+#endif
         return TRUE;
     }
 

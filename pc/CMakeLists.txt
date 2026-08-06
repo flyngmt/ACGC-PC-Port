@@ -42,6 +42,8 @@ add_compile_definitions(
     KEYBOARD_TYPING   # Physical keyboard typing in text editor. Remove for platforms without keyboards.
 )
 
+option(PC_LLM_DIALOGUE "Enable LLM-generated NPC dialogue (requires libssl/libcrypto)" OFF)
+
 # Common compiler flags (applied to all sources). GCC is required:
 # the decomp depends on -fno-strict-aliasing/-fwrapv semantics and the
 # PC layer uses GCC builtins.
@@ -50,6 +52,25 @@ add_compile_options(
     -fno-strict-aliasing
     -fwrapv
 )
+
+if(WIN32)
+    # MinGW 32-bit x87 codegen at -O2 produces wrong float math in the
+    # decomp rendering (matches the -O1 fix in feature branch).
+    add_compile_options(-O1)
+endif()
+
+if(PC_LLM_DIALOGUE)
+    add_compile_definitions(PC_LLM_DIALOGUE)
+endif()
+
+# GCC 16's 32-bit x87 codegen produces wrong/NaN float results in the decomp's
+# keyframe/camera/matrix math (title screen survives -O1, but the 3D world's
+# perspective/camera math renders black). Force SSE float math — exact 32-bit,
+# no x87 extended precision — plus -ffloat-store for good measure.
+# MinGW's x87 codegen is unaffected, so Linux-only.
+if(NOT WIN32)
+    add_compile_options(-mfpmath=sse -msse2 -ffloat-store -malign-double)
+endif()
 
 # =============================================================================
 # Include paths
@@ -301,6 +322,39 @@ set(PC_SOURCES
 )
 
 # =============================================================================
+# LLM Dialogue Engine (optional, PC_LLM_DIALOGUE)
+# =============================================================================
+if(PC_LLM_DIALOGUE)
+    list(APPEND PC_SOURCES
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_core.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_history.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_prompt.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_gossip.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_hook.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_provider_ollama.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_provider_openai.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_provider_gemini.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_provider_deepseek.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_util.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_tls.c
+    )
+    set(PC_LLM_WARN_FLAGS "-Wall;-Wextra;-Wno-unused-parameter;-Wno-sign-compare")
+    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_core.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_history.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_prompt.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_gossip.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_hook.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_provider_ollama.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_provider_openai.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_provider_gemini.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_provider_deepseek.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_util.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/llm/llm_tls.c
+        PROPERTIES COMPILE_OPTIONS "${PC_LLM_WARN_FLAGS}"
+    )
+endif()
+
+# =============================================================================
 # fixNES — vendored NES emulator (MIT License, by FIX94)
 # =============================================================================
 set(FIXNES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/fixnes)
@@ -426,9 +480,31 @@ endif()
 
 if(WIN32)
     target_link_libraries(ac_pc opengl32 winmm imm32 version setupapi)
+    if(PC_LLM_DIALOGUE)
+        target_link_libraries(ac_pc ws2_32)
+    endif()
 else()
     find_package(OpenGL REQUIRED)
     target_link_libraries(ac_pc OpenGL::GL dl pthread m)
+endif()
+
+if(PC_LLM_DIALOGUE)
+    find_package(OpenSSL QUIET)
+    if(NOT OPENSSL_FOUND)
+        find_package(PkgConfig QUIET)
+        if(PKG_CONFIG_FOUND)
+            pkg_check_modules(OPENSSL QUIET openssl)
+        endif()
+    endif()
+    if(OPENSSL_FOUND)
+        target_link_libraries(ac_pc ${OPENSSL_LIBRARIES})
+    else()
+        message(FATAL_ERROR
+            "PC_LLM_DIALOGUE=ON requires OpenSSL (libssl/libcrypto).\n"
+            "  Arch:      sudo pacman -S lib32-openssl\n"
+            "  Debian:    sudo apt install libssl-dev:i386\n"
+            "  Or disable with -DPC_LLM_DIALOGUE=OFF")
+    endif()
 endif()
 
 set_target_properties(ac_pc PROPERTIES
@@ -459,6 +535,24 @@ if(WIN32)
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "${SDL2_DLL_PATH}" "${CMAKE_BINARY_DIR}/bin/"
             COMMENT "Copying SDL2.dll to bin/"
+        )
+    endif()
+endif()
+
+# Copy OpenSSL DLLs next to executable (needed for HTTPS LLM providers)
+if(WIN32 AND PC_LLM_DIALOGUE)
+    find_file(OPENSSL_DLL_CRYPTO libcrypto-3.dll PATHS "${SDL2_MSYS2_DIR}/bin" "$ENV{MINGW_PREFIX}/bin" "/usr/i686-w64-mingw32/bin")
+    find_file(OPENSSL_DLL_SSL libssl-3.dll PATHS "${SDL2_MSYS2_DIR}/bin" "$ENV{MINGW_PREFIX}/bin" "/usr/i686-w64-mingw32/bin")
+    find_file(OPENSSL_DLL_SSP libssp-0.dll PATHS "${SDL2_MSYS2_DIR}/bin" "$ENV{MINGW_PREFIX}/bin" "/usr/i686-w64-mingw32/bin")
+    if(OPENSSL_DLL_CRYPTO AND OPENSSL_DLL_SSL AND OPENSSL_DLL_SSP)
+        add_custom_command(TARGET ac_pc POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${OPENSSL_DLL_CRYPTO}" "${CMAKE_BINARY_DIR}/bin/"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${OPENSSL_DLL_SSL}" "${CMAKE_BINARY_DIR}/bin/"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${OPENSSL_DLL_SSP}" "${CMAKE_BINARY_DIR}/bin/"
+            COMMENT "Copying OpenSSL DLLs to bin/"
         )
     endif()
 endif()
