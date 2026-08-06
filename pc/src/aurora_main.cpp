@@ -93,7 +93,7 @@ bool ac_aurora_begin_frame() {
         if (event->type == AURORA_EXIT) {
             g_pc_running = 0;
         } else if (event->type == AURORA_SDL_EVENT) {
-            if (event->sdl.type == SDL_EVENT_KEY_DOWN && !event->sdl.key.repeat && event->sdl.key.key == SDLK_F3) {
+            if (event->sdl.type == SDL_EVENT_KEY_DOWN && !event->sdl.key.repeat && event->sdl.key.key == SDLK_F2) {
                 pc_speedhack_toggle();
             }
             acgc::ui::handle_event(event->sdl);
