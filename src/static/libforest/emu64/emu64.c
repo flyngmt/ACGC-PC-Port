@@ -1071,13 +1071,12 @@ u16* emu64::tlutconv_new(u16* tlut, unsigned int tlut_fmt, unsigned int count) {
 
     texture_cache = texture_cache_select(tlut);
     converted_tlut = (u16*)(*texture_cache->funcs->search)(tlut);
+    EMU64_TIMED_SEGMENT_END(texture_cache_select_time);
 
     /* Check if we already converted this texture */
     if (converted_tlut != nullptr) {
         return converted_tlut;
     }
-
-    EMU64_TIMED_SEGMENT_END(texture_cache_select_time);
 
     len = get_dol_tlut_siz(count);
     converted_tlut = (u16*)(*texture_cache->funcs->alloc)(texture_cache, len);
@@ -2101,11 +2100,11 @@ void emu64::setup_texture_tile(int tile) {
     unsigned int h;
     GXTexFmts dol_fmt;
     
-    EMU64_TIMED_SEGMENT_BEGIN();
     settile = &this->settile_cmds[tile];
     if (settile->line == 0) {
         return;
     }
+    EMU64_TIMED_SEGMENT_BEGIN();
     
     u32 tmem = settile->tmem;
     EMU64_ASSERTLINE(tmem / 4 < number(tmem_map), 2756);
@@ -5343,9 +5342,7 @@ void emu64::dl_G_TRI2() {
 
         this->double_triangles++;
         this->polygons++;
-#ifdef EMU64_DEBUG
-        this->polygons_time += (osGetCount() - start);
-#endif
+        EMU64_TIMED_SEGMENT_END(polygons_time);
     } else {
         /* Count up all the vertices */
         commands = 0;
@@ -5366,9 +5363,7 @@ void emu64::dl_G_TRI2() {
         }
 
         this->dirty_check(this->texture_gfx.tile, this->texture_gfx.level, TRUE);
-#ifdef EMU64_DEBUG
-        u32 start = osGetCount();
-#endif
+        EMU64_TIMED_SEGMENT_BEGIN();
 #ifdef TARGET_PC
         if (this->pc_draw_preprocessed_geometry(first_cmd, commands, n_verts)) {
             this->gfx_p += commands - 1;
@@ -6244,17 +6239,23 @@ void emu64::emu64_set_verbose(int verbose) {
 /* C wrapper methods */
 
 extern void emu64_init(void) {
+    TracyCZone(init_zone, 1);
     emu64_class.emu64_init();
+    TracyCZoneEnd(init_zone);
 }
 
 extern void emu64_cleanup(void) {
+    TracyCZone(cleanup_zone, 1);
     emu64_class.emu64_cleanup();
+    TracyCZoneEnd(cleanup_zone);
 }
 
 // hack - inlines in emu64_taskstart C wrapper otherwise
 #pragma dont_inline on
 extern void emu64_taskstart(Gfx* gfx) {
+    TracyCZone(task_zone, 1);
     emu64_class.emu64_taskstart(gfx);
+    TracyCZoneEnd(task_zone);
 }
 #pragma dont_inline reset
 

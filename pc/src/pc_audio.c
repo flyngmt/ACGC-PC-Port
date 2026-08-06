@@ -3,6 +3,7 @@
 
 #include "dolphin/ai.h"
 #include "jaudio_NES/audiothread.h"
+#include "pc_tracy.h"
 
 #include <stdio.h>
 
@@ -22,6 +23,9 @@ static int master_volume = 100;
 static void SDLCALL pc_audio_callback(void* userdata, SDL_AudioStream* stream,
                                       int additional_amount, int total_amount)
 {
+    TracyCZoneN(audio_callback_zone, "Audio callback", 1);
+    TracyCFrameMarkStart("Audio callback");
+
     (void)userdata;
     (void)stream;
     (void)total_amount;
@@ -35,6 +39,9 @@ static void SDLCALL pc_audio_callback(void* userdata, SDL_AudioStream* stream,
         }
         additional_amount -= (int)produced;
     }
+
+    TracyCFrameMarkEnd("Audio callback");
+    TracyCZoneEnd(audio_callback_zone);
 }
 
 void AIInit(u8* stack)

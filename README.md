@@ -27,6 +27,17 @@ Use the `relwithdebinfo` preset in both CMake commands for an optimized build
 with debug information. The game reads its assets directly from the disc image;
 no extraction step is required.
 
+For a Tracy-enabled profiling build, enable the profiler when configuring the
+optimized preset:
+
+```sh
+cmake --preset relwithdebinfo -DTRACY_ENABLE=ON
+cmake --build --preset relwithdebinfo
+```
+
+Tracy uses on-demand capture by default. The `--profile` command-line option is
+separate and opens the in-game performance diagnostics.
+
 ### Android
 
 The Android port uses Borealis' SDL activity and Android integration. With the

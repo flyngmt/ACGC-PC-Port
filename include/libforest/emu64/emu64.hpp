@@ -16,6 +16,7 @@
 #endif
 #include "dolphin/gx.h"
 #include "dolphin/mtx.h"
+#include "pc_tracy.h"
 #include "sys_ucode.h"
 #include "libforest/emu64/emu64_wrapper.h"
 #include "sys_ucode.h"
@@ -583,20 +584,19 @@ class emu64_print {
     } while (0)
 
 #ifdef EMU64_DEBUG
-#define EMU64_TIMED_SEGMENT_BEGIN()       \
-    {                                     \
-        u32 __timer_start = osGetCount(); \
-        do {                              \
-        } while (0)
-#define EMU64_TIMED_SEGMENT_END(stat)              \
-    this->#stat += (osGetCount() - __timer_start); \
-    (void)__timer_start;                           \
-    }                                              \
-    do {                                           \
+#define EMU64_TIMED_SEGMENT_BEGIN() u32 __timer_start = osGetCount()
+#define EMU64_TIMED_SEGMENT_END(stat)                 \
+    do {                                              \
+        this->stat += (osGetCount() - __timer_start); \
+        (void)__timer_start;                          \
     } while (0)
 #else
-#define EMU64_TIMED_SEGMENT_BEGIN()
-#define EMU64_TIMED_SEGMENT_END(stat)
+#define EMU64_TIMED_SEGMENT_BEGIN() TracyCZone(__emu64_timed_segment, 1)
+#define EMU64_TIMED_SEGMENT_END(stat)                                  \
+    do {                                                               \
+        TracyCZoneName(__emu64_timed_segment, #stat, sizeof(#stat) - 1); \
+        TracyCZoneEnd(__emu64_timed_segment);                           \
+    } while (0)
 #endif
 
 #define EMU64_CAN_DRAW_POLYGON()         \

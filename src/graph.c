@@ -19,6 +19,7 @@
 #include "m_select.h"
 #include "m_trademark.h"
 #include "m_vibctl.h"
+#include "pc_tracy.h"
 #include "player_select.h"
 #include "save_menu.h"
 #include "second_game.h"
@@ -165,6 +166,7 @@ int graph_dt_frame_phase(GAME* game, int period_frames) {
 }
 
 static void graph_task_set00(GRAPH* this) {
+    TracyCZone(graph_task_zone, 1);
     ucode_info ucode[2];
 
     GRAPH_SET_DOING_POINT(this, WAIT_TASK);
@@ -191,9 +193,11 @@ static void graph_task_set00(GRAPH* this) {
             frame++;
         }
     }
+    TracyCZoneEnd(graph_task_zone);
 }
 
 static int graph_draw_finish(GRAPH* this) {
+    TracyCZone(graph_draw_finish_zone, 1);
     int err;
     OPEN_DISP(this);
 
@@ -263,6 +267,7 @@ static int graph_draw_finish(GRAPH* this) {
         err = TRUE;
     }
 
+    TracyCZoneEnd(graph_draw_finish_zone);
     return err;
 }
 
@@ -293,16 +298,19 @@ static void graph_audio_gameframe(GRAPH* this, GAME* game) {
         return;
     }
 
+    TracyCZoneN(audio_game_frame_zone, "Audio game frame", 1);
     GRAPH_SET_DOING_POINT(this, AUDIO);
     for (i = 0; i < ticks; i++) {
         graph_audio_frame();
     }
     GRAPH_SET_DOING_POINT(this, AUDIO_FINISHED);
+    TracyCZoneEnd(audio_game_frame_zone);
 }
 
 // Aus version removes debug frame skip logic
 #if VERSION >= VER_GAFU01_00
 static void graph_main(GRAPH* this, GAME* game) {
+    TracyCZone(graph_main_zone, 1);
     game->disable_prenmi = FALSE;
     graph_setup_double_buffer(this);
     game_get_controller(game);
@@ -336,9 +344,11 @@ static void graph_main(GRAPH* this, GAME* game) {
     if (ResetStatus == IRQ_RESET_PRENMI && game->disable_prenmi == FALSE) {
         GAME_GOTO_NEXT(game, prenmi, PRENMI);
     }
+    TracyCZoneEnd(graph_main_zone);
 }
 #else
 static void graph_main(GRAPH* this, GAME* game) {
+    TracyCZone(graph_main_zone, 1);
     game->disable_prenmi = FALSE;
     PC_DIAG(10, "graph_main: enter, frame_counter=%d game=%p exec=%p cleanup=%p doing=%d\n",
             this->frame_counter, (void*)game, (void*)game->exec, (void*)game->cleanup, game->doing);
@@ -383,6 +393,7 @@ static void graph_main(GRAPH* this, GAME* game) {
     if (ResetStatus == IRQ_RESET_PRENMI && game->disable_prenmi == FALSE) {
         GAME_GOTO_NEXT(game, prenmi, PRENMI);
     }
+    TracyCZoneEnd(graph_main_zone);
 }
 #endif
 
@@ -441,6 +452,7 @@ extern void graph_proc(void* arg) {
             if (!dvderr_draw()) {
                 graph_main(__graph, game);
             }
+            TracyCFrameMark;
         }
 
         dlftbl = game_get_next_game_dlftbl(game);

@@ -384,6 +384,7 @@ if (MSVC AND WIN32)
 endif ()
 
 target_link_libraries(acgc PRIVATE
+    TracyClient
     nlohmann_json::nlohmann_json
     borealis::cli
     borealis::crash

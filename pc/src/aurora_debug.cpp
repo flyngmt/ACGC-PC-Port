@@ -3,6 +3,7 @@
 #include <aurora/gfx.h>
 #include <aurora/imgui.h>
 #include <dolphin/pad.h>
+#include <tracy/Tracy.hpp>
 
 #include "jsyswrap.h"
 #include "pc_platform.h"
@@ -138,6 +139,7 @@ void ac_debug_imgui_init(const AuroraWindowSize*)
 
 void ac_debug_imgui_draw(void)
 {
+    ZoneScoped;
     if (ImGui::IsKeyPressed(ImGuiKey_F3, false)) {
         g_pc_debug_ui_visible = !g_pc_debug_ui_visible;
     }
