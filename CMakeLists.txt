@@ -361,13 +361,20 @@ endif()
 # =============================================================================
 # Build executable
 # =============================================================================
-add_executable(acgc
+set(ACGC_APPLICATION_SOURCES
     ${PC_SOURCES}
     ${FIXNES_SOURCES}
     ${GAME_C_SOURCES}
     ${GAME_CXX_SOURCES}
     ${RC_FILE}
 )
+
+if (ANDROID)
+    add_library(acgc SHARED ${ACGC_APPLICATION_SOURCES})
+else ()
+    add_executable(acgc ${ACGC_APPLICATION_SOURCES})
+endif ()
+borealis_configure_android_application(acgc)
 
 if (MSVC AND WIN32)
     # app.rc embeds the UTF-8 code-page manifest. Do not also ask link.exe to
@@ -397,32 +404,41 @@ target_link_libraries(acgc PRIVATE
 )
 
 set_target_properties(acgc PROPERTIES
-    OUTPUT_NAME "AnimalCrossing"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
+if (NOT ANDROID)
+    set_target_properties(acgc PROPERTIES OUTPUT_NAME "AnimalCrossing")
+endif ()
 
 include(extern/aurora/cmake/AuroraCopyRuntimeDLLs.cmake)
 aurora_copy_runtime_dlls(acgc)
 
-file(GLOB_RECURSE ACGC_RESOURCE_FILES CONFIGURE_DEPENDS LIST_DIRECTORIES false
-    "${PC_ROOT}/res/*"
-)
-set(ACGC_RESOURCE_STAMP "${CMAKE_CURRENT_BINARY_DIR}/acgc-resources.stamp")
-add_custom_command(
-    OUTPUT "${ACGC_RESOURCE_STAMP}"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${PC_ROOT}/res"
-        "$<TARGET_FILE_DIR:acgc>/res"
-    COMMAND ${CMAKE_COMMAND} -E touch "${ACGC_RESOURCE_STAMP}"
-    DEPENDS ${ACGC_RESOURCE_FILES}
-    COMMENT "Copying Animal Crossing UI resources"
-    VERBATIM
-)
-add_custom_target(acgc_resources ALL DEPENDS "${ACGC_RESOURCE_STAMP}")
-add_dependencies(acgc acgc_resources)
+if (NOT ANDROID)
+    file(GLOB_RECURSE ACGC_RESOURCE_FILES CONFIGURE_DEPENDS LIST_DIRECTORIES false
+        "${PC_ROOT}/res/*"
+    )
+    set(ACGC_RESOURCE_STAMP "${CMAKE_CURRENT_BINARY_DIR}/acgc-resources.stamp")
+    add_custom_command(
+        OUTPUT "${ACGC_RESOURCE_STAMP}"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${PC_ROOT}/res"
+            "$<TARGET_FILE_DIR:acgc>/res"
+        COMMAND ${CMAKE_COMMAND} -E touch "${ACGC_RESOURCE_STAMP}"
+        DEPENDS ${ACGC_RESOURCE_FILES}
+        COMMENT "Copying Animal Crossing UI resources"
+        VERBATIM
+    )
+    add_custom_target(acgc_resources ALL DEPENDS "${ACGC_RESOURCE_STAMP}")
+    add_dependencies(acgc acgc_resources)
+endif ()
 
 # =============================================================================
 # Install rules (cmake --install . --prefix <dest>)
 # =============================================================================
-install(TARGETS acgc RUNTIME DESTINATION bin)
-install(DIRECTORY "${PC_ROOT}/res/" DESTINATION bin/res)
+install(TARGETS acgc
+    LIBRARY DESTINATION bin
+    RUNTIME DESTINATION bin
+)
+if (NOT ANDROID)
+    install(DIRECTORY "${PC_ROOT}/res/" DESTINATION bin/res)
+endif ()

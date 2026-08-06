@@ -57,6 +57,28 @@
         "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDLL",
         "CMAKE_DISABLE_FIND_PACKAGE_PkgConfig": true
       }
+    },
+    {
+      "name": "android-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "inherits": "relwithdebinfo",
+      "cacheVariables": {
+        "ANDROID_PLATFORM": "android-28",
+        "BUILD_SHARED_LIBS": false,
+        "CMAKE_DISABLE_FIND_PACKAGE_PkgConfig": true,
+        "CMAKE_DISABLE_FIND_PACKAGE_zstd": true,
+        "CMAKE_TOOLCHAIN_FILE": "$env{ANDROID_HOME}/ndk/$env{ANDROID_NDK_VERSION}/build/cmake/android.toolchain.cmake"
+      }
+    },
+    {
+      "name": "android-arm64",
+      "displayName": "Animal Crossing Android (arm64-v8a)",
+      "inherits": "android-base",
+      "cacheVariables": {
+        "ANDROID_ABI": "arm64-v8a"
+      }
     }
   ],
   "buildPresets": [
@@ -75,6 +97,13 @@
     {
       "name": "windows-msvc-relwithdebinfo",
       "configurePreset": "windows-msvc-relwithdebinfo"
+    },
+    {
+      "name": "android-arm64",
+      "configurePreset": "android-arm64",
+      "targets": [
+        "acgc"
+      ]
     }
   ]
 }

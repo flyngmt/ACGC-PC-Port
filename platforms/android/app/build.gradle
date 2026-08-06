@@ -1,0 +1,28 @@
+plugins {
+    id 'com.android.application'
+}
+
+def acpcRepoDir = rootProject.projectDir.parentFile.parentFile
+def borealisDir = new File(acpcRepoDir, 'extern/borealis')
+
+ext.borealisAndroid = [
+    borealisDir: borealisDir,
+    propertiesFile: new File(acpcRepoDir, 'build/android-arm64/borealis-android.properties'),
+    namespace: 'com.flyngmt.acpc',
+    applicationId: 'com.flyngmt.acpc',
+    abis: ['arm64-v8a'],
+    assets: [
+        [
+            from: new File(acpcRepoDir, 'pc/res'),
+            into: 'res',
+            excludes: ['**/.DS_Store', 'app.manifest', 'app.rc', 'icon.ico']
+        ]
+    ],
+    proguardRules: file('proguard-rules.pro')
+]
+
+apply from: new File(borealisDir, 'platforms/android/gradle/borealis-application.gradle')
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}

@@ -27,6 +27,23 @@ Use the `relwithdebinfo` preset in both CMake commands for an optimized build
 with debug information. The game reads its assets directly from the disc image;
 no extraction step is required.
 
+### Android
+
+The Android port uses Borealis' SDL activity and Android integration. With the
+Android SDK and NDK installed, build the arm64 native library and APK with:
+
+```sh
+export ANDROID_HOME="$HOME/Android/Sdk"
+export ANDROID_NDK_VERSION="29.0.14206865"
+cmake --preset android-arm64
+cmake --build --preset android-arm64
+cd platforms/android
+./gradlew :app:assembleDebug
+```
+
+See [platforms/android/README.md](platforms/android/README.md) for prerequisites,
+APK output paths, and launch-intent arguments.
+
 ## Controls
 
 Aurora persists controller and keyboard mappings. When no active keyboard
@@ -96,6 +113,7 @@ and `nes_roms/`. Its default location is:
 | Windows | The executable's folder (matching the pre-Aurora port); falls back to `%APPDATA%\Animal Crossing\` when that folder is not writable |
 | macOS | `~/Library/Application Support/Animal Crossing/` |
 | Linux | `~/.local/share/Animal Crossing/` |
+| Android | The app's internal files directory, exposed through its system documents provider |
 
 Settings > Data can open the folder, move data to a custom folder, or reset it;
 recognized data files migrate to the new location on the next launch. The
