@@ -657,6 +657,9 @@ class emu64 : public emu64_print {
     void setup_texture_tile(int tile);
     void setup_1tri_2tri_1quad(unsigned int vtx_idx);
     void draw_1tri_2tri_1quad(unsigned int n_verts, ...);
+#ifdef TARGET_PC
+    bool pc_draw_preprocessed_geometry(const Gfx* source, u32 command_count, u32 vertex_count);
+#endif
     void fill_rectangle(float x0, float y0, float x1, float y1);
     void draw_rectangle(Gtexrect2* rect);
     void dirty_check(int tile, int n_tiles, int do_texture_matrix);

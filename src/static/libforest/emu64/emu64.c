@@ -14,6 +14,7 @@
 #include <dolphin/base/PPCArch.h>
 
 #ifdef TARGET_PC
+#include "pc_emu64_geometry_cache.hpp"
 #include "pc_platform.h"
 #else
 #define pc_widescreen_set_projection GXSetProjection
@@ -50,11 +51,15 @@ ATTRIBUTE_ALIGN(32) static u8 texture_buffer_bss[TEX_BUFFER_BSS_SIZE];
  * drains the frame's deferred GX commands. */
 #define PC_EMU64_MAX_TLUT_ENTRIES 1024
 #define PC_EMU64_TLUT_FRAME_BUFFER_SIZE (2 * 1024 * 1024)
+#define PC_EMU64_INDEXED_VERTEX_FRAME_BUFFER_SIZE (4 * 1024 * 1024)
 ATTRIBUTE_ALIGN(32) static u8 s_pc_tlut_be[PC_EMU64_TLUT_FRAME_BUFFER_SIZE];
+ATTRIBUTE_ALIGN(32) static u8 s_pc_indexed_vertex_frame_buffer[PC_EMU64_INDEXED_VERTEX_FRAME_BUFFER_SIZE];
 static u32 s_pc_tlut_be_used;
+static u32 s_pc_indexed_vertex_frame_buffer_used;
 
 extern "C" void pc_emu64_tlut_frame_drained() {
     s_pc_tlut_be_used = 0;
+    s_pc_indexed_vertex_frame_buffer_used = 0;
 }
 
 static void* pc_emu64_tlut_native_to_be(const u16* src, u32 count) {
@@ -75,6 +80,17 @@ static void* pc_emu64_tlut_native_to_be(const u16* src, u32 count) {
         dst[i * sizeof(u16) + 1] = (u8)value;
     }
     return dst;
+}
+
+static void* pc_emu64_indexed_vertex_alloc(u32 size) {
+    const u32 allocation_size = ALIGN_NEXT(size, 32);
+    if (allocation_size > PC_EMU64_INDEXED_VERTEX_FRAME_BUFFER_SIZE - s_pc_indexed_vertex_frame_buffer_used) {
+        return nullptr;
+    }
+
+    void* result = &s_pc_indexed_vertex_frame_buffer[s_pc_indexed_vertex_frame_buffer_used];
+    s_pc_indexed_vertex_frame_buffer_used += allocation_size;
+    return result;
 }
 #endif
 
@@ -2954,6 +2970,120 @@ void emu64::setup_1tri_2tri_1quad(unsigned int vtx_idx) {
     EMU64_TIMED_SEGMENT_END(setup_time);
 }
 
+#ifdef TARGET_PC
+struct PcIndexedTexCoord {
+    s16 s;
+    s16 t;
+};
+
+bool emu64::pc_draw_preprocessed_geometry(const Gfx* source, u32 command_count,
+                                          u32 vertex_count) {
+    if (source == nullptr || command_count == 0 || vertex_count == 0 ||
+        aflags[AFLAGS_WIREFRAME] != 0 || aflags[AFLAGS_MAX_POLYGONS] != 0 ||
+        aflags[AFLAGS_MIN_POLYGONS] != 0) {
+        return false;
+    }
+
+    const bool lighting = (this->geometry_mode & G_LIGHTING) != 0;
+    const bool textured = this->texture_gfx.on != G_OFF;
+    const bool decal_projection =
+        (this->othermode_low & ZMODE_DEC) == ZMODE_DEC &&
+        (this->geometry_mode & G_ZBUFFER) != 0 &&
+        (this->geometry_mode & G_DECAL_EQUAL) == 0;
+    if ((this->geometry_mode & G_TEXTURE_GEN) != 0 || decal_projection) {
+        return false;
+    }
+
+    const u32 layout =
+        (lighting ? acgc::emu64_geometry_cache::Lighting : 0) |
+        (textured ? acgc::emu64_geometry_cache::Textured : 0);
+    const acgc::emu64_geometry_cache::Entry* entry =
+        acgc::emu64_geometry_cache::find_or_compile(source, command_count,
+                                                    vertex_count, layout);
+    if (entry == nullptr) {
+        return false;
+    }
+
+    const u8* source_vertices = entry->sourceVertices.data();
+    const u32 unique_vertex_count =
+        static_cast<u32>(entry->sourceVertices.size());
+    const bool expected_nonshared =
+        (this->vertices[source_vertices[0]].flag & MTX_NONSHARED) != MTX_SHARED;
+    for (u32 i = 0; i < unique_vertex_count; i++) {
+        const u32 source_vertex = source_vertices[i];
+        if (source_vertex >= VTX_COUNT ||
+            (((this->vertices[source_vertex].flag & MTX_NONSHARED) != MTX_SHARED) !=
+             expected_nonshared)) {
+            return false;
+        }
+    }
+
+    this->using_nonshared_mtx = expected_nonshared;
+    GXSetCurrentMtx(expected_nonshared ? NONSHARED_MTX : SHARED_MTX);
+
+    const u32 arena_start = s_pc_indexed_vertex_frame_buffer_used;
+    Vec* positions = static_cast<Vec*>(
+        pc_emu64_indexed_vertex_alloc(unique_vertex_count * sizeof(Vec)));
+    Vec* normals = lighting ? static_cast<Vec*>(
+        pc_emu64_indexed_vertex_alloc(unique_vertex_count * sizeof(Vec))) : nullptr;
+    GXColor* colors = static_cast<GXColor*>(
+        pc_emu64_indexed_vertex_alloc(unique_vertex_count * sizeof(GXColor)));
+    PcIndexedTexCoord* texcoords = textured ? static_cast<PcIndexedTexCoord*>(
+        pc_emu64_indexed_vertex_alloc(
+            unique_vertex_count * sizeof(PcIndexedTexCoord))) : nullptr;
+    if (positions == nullptr || colors == nullptr || (lighting && normals == nullptr) ||
+        (textured && texcoords == nullptr)) {
+        s_pc_indexed_vertex_frame_buffer_used = arena_start;
+        return false;
+    }
+
+    for (u32 i = 0; i < unique_vertex_count; i++) {
+        const Vertex& source_vertex = this->vertices[source_vertices[i]];
+        positions[i] = source_vertex.position;
+        if (lighting) {
+            normals[i] = source_vertex.normal;
+        }
+        colors[i].r = source_vertex.color.rgba.r;
+        colors[i].g = source_vertex.color.rgba.g;
+        colors[i].b = source_vertex.color.rgba.b;
+        colors[i].a = source_vertex.color.rgba.a;
+        if (textured) {
+            texcoords[i].s = source_vertex.tex_coords.s;
+            texcoords[i].t = source_vertex.tex_coords.t;
+        }
+    }
+
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_INDEX8);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_CLR_RGBA, GX_F32, 0);
+    if (lighting) {
+        GXSetVtxDesc(GX_VA_NRM, GX_INDEX8);
+        GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_NRM, GX_CLR_RGB, GX_F32, 0);
+    }
+    GXSetVtxDesc(GX_VA_CLR0, GX_INDEX8);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    if (textured) {
+        GXSetVtxDesc(GX_VA_TEX0, GX_INDEX8);
+        GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_CLR_RGBA, GX_RGBA4, 0);
+    }
+
+    GXSETARRAY(GX_VA_POS, positions, unique_vertex_count * sizeof(Vec), sizeof(Vec), true);
+    if (lighting) {
+        GXSETARRAY(GX_VA_NRM, normals, unique_vertex_count * sizeof(Vec), sizeof(Vec), true);
+    }
+    GXSETARRAY(GX_VA_CLR0, colors, unique_vertex_count * sizeof(GXColor), sizeof(GXColor), true);
+    if (textured) {
+        GXSETARRAY(GX_VA_TEX0, texcoords,
+                   unique_vertex_count * sizeof(PcIndexedTexCoord),
+                   sizeof(PcIndexedTexCoord), true);
+    }
+
+    const auto& display_list = entry->displayLists[layout];
+    GXCallDisplayList(display_list.data(), static_cast<u32>(display_list.size()));
+
+    return true;
+}
+#endif
 void emu64::draw_1tri_2tri_1quad(unsigned int n_verts, ...) {
     va_list list;
     unsigned int v0;
@@ -3030,6 +3160,7 @@ void emu64::draw_1tri_2tri_1quad(unsigned int n_verts, ...) {
     }
 
 exit:
+    va_end(list);
     this->rdp_pipe_sync_needed = TRUE;
 }
 
@@ -4878,8 +5009,16 @@ void emu64::dl_G_TRI1() {
 
     if (this->disable_polygons == false && EMU64_CAN_DRAW_POLYGON()) {
         this->dirty_check(this->texture_gfx.tile, this->texture_gfx.level, TRUE);
-        this->setup_1tri_2tri_1quad(v0);
-        this->draw_1tri_2tri_1quad(3, v0, v1, v2);
+#ifdef TARGET_PC
+        if ((aflags[AFLAGS_DECAL_OFFSET_MODE] & 1) == 0 &&
+            this->pc_draw_preprocessed_geometry(this->gfx_p, 1, 3)) {
+            this->rdp_pipe_sync_needed = TRUE;
+        } else
+#endif
+        {
+            this->setup_1tri_2tri_1quad(v0);
+            this->draw_1tri_2tri_1quad(3, v0, v1, v2);
+        }
     }
 
     this->triangles++;
@@ -4903,10 +5042,25 @@ void emu64::dl_G_TRIN() {
     EMU64_TIMED_SEGMENT_BEGIN();
 
     this->dirty_check(this->texture_gfx.tile, this->texture_gfx.level, TRUE);
-    this->setup_1tri_2tri_1quad(first_vtx);
     n_faces = ((first_cmd->words.w0 >> 17) & 0x7F) + 1;
     int n_verts = n_faces * 3;
+#ifdef TARGET_PC
+    const u32 pc_command_count = is_7bit ?
+        1 + (n_faces > 2 ? (n_faces - 2 + 2) / 3 : 0) :
+        1 + (n_faces > 3 ? (n_faces - 3 + 3) / 4 : 0);
+    if (this->pc_draw_preprocessed_geometry(first_cmd, pc_command_count, n_verts)) {
+#ifndef EMU64_FIXES
+        if (!is_7bit)
+#endif
+            this->polygons += n_faces;
+        this->gfx_p += pc_command_count - 1;
+        EMU64_TIMED_SEGMENT_END(polygons_time);
+        this->rdp_pipe_sync_needed = true;
+        return;
+    }
+#endif
 
+    this->setup_1tri_2tri_1quad(first_vtx);
 
     EMU64_LOGF("gsSPNTriangles(%d),\n", n_faces);
     if (aflags[AFLAGS_WIREFRAME] == 0) {
@@ -5196,6 +5350,7 @@ void emu64::dl_G_TRI2() {
         /* Count up all the vertices */
         commands = 0;
         int n_verts = 0;
+        Gfx* first_cmd = this->gfx_p;
 
         int i = 0;
         while (TRUE) {
@@ -5211,14 +5366,21 @@ void emu64::dl_G_TRI2() {
         }
 
         this->dirty_check(this->texture_gfx.tile, this->texture_gfx.level, TRUE);
-        u64 t_g;
-        t_g = *(u64*)&this->gfx_p->words;
-        Gtri2* tri2 = (Gtri2*)&t_g;
-        this->setup_1tri_2tri_1quad(tri2->t0v0 / 2);
-
 #ifdef EMU64_DEBUG
         u32 start = osGetCount();
 #endif
+#ifdef TARGET_PC
+        if (this->pc_draw_preprocessed_geometry(first_cmd, commands, n_verts)) {
+            this->gfx_p += commands - 1;
+            EMU64_TIMED_SEGMENT_END(polygons_time);
+            this->rdp_pipe_sync_needed = true;
+            return;
+        }
+#endif
+
+        u64 t_g = *(u64*)&this->gfx_p->words;
+        Gtri2* tri2 = (Gtri2*)&t_g;
+        this->setup_1tri_2tri_1quad(tri2->t0v0 / 2);
 
         if (aflags[AFLAGS_WIREFRAME] == 0) {
             GXBegin(GX_TRIANGLES, GX_VTXFMT0, n_verts);
@@ -5244,12 +5406,11 @@ void emu64::dl_G_TRI2() {
         }
 
         this->gfx_p += (commands - 1);
+#ifdef TARGET_PC
+        GXEnd();
+#endif
         EMU64_TIMED_SEGMENT_END(polygons_time);
     }
-
-#ifdef TARGET_PC
-    GXEnd();
-#endif
 
     this->rdp_pipe_sync_needed = true;
 }
