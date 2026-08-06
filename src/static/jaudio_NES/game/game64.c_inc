@@ -584,7 +584,7 @@ f32 SOU_ONGEN_AREA1 = 540.f;
 f32 SOU_ONGEN_AREA2 = 533.f;
 f32 sou_md_bgm_boost_pasent = 1.f;
 
-u8 audiomemory[0x90000] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) u8 audiomemory[0x90000];
 s16* SOU_FIR_STATE;
 s16 SOU_FIR_STATE_COPY[12];
 

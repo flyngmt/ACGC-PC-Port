@@ -59,9 +59,9 @@ static void mChoice_UnSetMatrixDisplay(GAME* game, int type) {
 }
 
 #ifdef TARGET_PC
-static u8 con_waku_swaku3_tex[0x1000] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 con_waku_swaku3_tex[0x1000];
 #else
-static u8 con_waku_swaku3_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 con_waku_swaku3_tex[] = {
 #include "assets/con_waku_swaku3_tex.inc"
 };
 #endif

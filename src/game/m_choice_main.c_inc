@@ -528,7 +528,7 @@ extern void mChoice_Load_ChoseStringFromRom(mChoice_c* choice, u8* str, int str_
         if (size == 0) {
             mem_clear(str, mChoice_CHOICE_STRING_LEN, CHAR_SPACE);
         } else if (addr != 0) {
-            static u8 buff[80] ATTRIBUTE_ALIGN(32);
+            ATTRIBUTE_ALIGN(32) static u8 buff[80];
             u32 align_addr = ALIGN_PREV(addr, 32);
             u32 ofs = addr - align_addr;
             u32 align_size = ALIGN_NEXT(ofs + size, 32);

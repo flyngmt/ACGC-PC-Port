@@ -186,10 +186,10 @@ static void pc_nes_rom_copy_title(u8* dst, const char* filename) {
 
 /* For some reason, there are a bunch of unused implicit one-byte 4-byte-aligned bss variables */
 #ifdef MUST_MATCH
-static u8 __unused_implicit[0x40] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 __unused_implicit[0x40];
 #endif
 
-static u8 commentImageBuffer[CARD_COMMENT_SIZE + 0x5800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 commentImageBuffer[CARD_COMMENT_SIZE + 0x5800];
 u8 save_game_image = false;
 FamicomCommon famicomCommon;
 u8 famicomCommonSave[0x1980 + sizeof(FamicomSaveDataHeader)];

@@ -29,7 +29,7 @@ extern u8 aNNW_client_prg[];
 extern u8 aNNW_client_ldr[];
 #endif
 
-static u8 aNNW_trance_data[0x1100] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 aNNW_trance_data[0x1100];
 
 static void aNNW_gba_init(void) {
     mGcgba_Init();

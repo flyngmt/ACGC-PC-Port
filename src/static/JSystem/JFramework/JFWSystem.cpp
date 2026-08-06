@@ -20,7 +20,7 @@
 #include "pc_bswap.h"
 
 /* Font buffer loaded from DOL at runtime (replaces .s file's .incbin) */
-unsigned char JUTResFONT_Ascfont_fix12[0x4160] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) unsigned char JUTResFONT_Ascfont_fix12[0x4160];
 
 /* BFN1 byte-swap: swap multi-byte header/block fields, skip glyph pixel data */
 static void bswap_bfn1(u8* data, u32 total_size) {

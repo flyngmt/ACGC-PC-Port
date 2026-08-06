@@ -1,23 +1,23 @@
 #ifdef TARGET_PC
-static u8 con_kaiwa2_w1_tex[0x800] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 con_kaiwa2_w1_tex[0x800];
 #else
-static u8 con_kaiwa2_w1_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 con_kaiwa2_w1_tex[] = {
   #include "assets/msg/con_kaiwa2_w1_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 con_kaiwa2_w2_tex[0x1000] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 con_kaiwa2_w2_tex[0x1000];
 #else
-static u8 con_kaiwa2_w2_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 con_kaiwa2_w2_tex[] = {
   #include "assets/msg/con_kaiwa2_w2_tex.inc"
 };
 #endif
 
 #ifdef TARGET_PC
-static u8 con_kaiwa2_w3_tex[0x1000] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 con_kaiwa2_w3_tex[0x1000];
 #else
-static u8 con_kaiwa2_w3_tex[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 con_kaiwa2_w3_tex[] = {
   #include "assets/msg/con_kaiwa2_w3_tex.inc"
 };
 #endif
@@ -76,9 +76,9 @@ static Gfx con_kaiwa2_modelT[] = {
 };
 
 #ifdef TARGET_PC
-static u8 con_namefuti_TXT[0x400] ATTRIBUTE_ALIGN(32);
+ATTRIBUTE_ALIGN(32) static u8 con_namefuti_TXT[0x400];
 #else
-static u8 con_namefuti_TXT[] ATTRIBUTE_ALIGN(32) = {
+ATTRIBUTE_ALIGN(32) static u8 con_namefuti_TXT[] = {
   #include "assets/msg/con_namefuti_TXT.inc"
 };
 #endif
