@@ -47,30 +47,19 @@ option(PC_LLM_DIALOGUE "Enable LLM-generated NPC dialogue (requires libssl/libcr
 # Common compiler flags (applied to all sources). GCC is required:
 # the decomp depends on -fno-strict-aliasing/-fwrapv semantics and the
 # PC layer uses GCC builtins.
-add_compile_options(
-    -O2
-    -fno-strict-aliasing
-    -fwrapv
-)
-
-if(WIN32)
-    # MinGW 32-bit x87 codegen at -O2 produces wrong float math in the
-    # decomp rendering (matches the -O1 fix in feature branch).
-    add_compile_options(-O1)
-endif()
-
 if(PC_LLM_DIALOGUE)
     add_compile_definitions(PC_LLM_DIALOGUE)
 endif()
 
-# GCC 16's 32-bit x87 codegen produces wrong/NaN float results in the decomp's
-# keyframe/camera/matrix math (title screen survives -O1, but the 3D world's
-# perspective/camera math renders black). Force SSE float math — exact 32-bit,
-# no x87 extended precision — plus -ffloat-store for good measure.
-# MinGW's x87 codegen is unaffected, so Linux-only.
-if(NOT WIN32)
-    add_compile_options(-mfpmath=sse -msse2 -ffloat-store -malign-double)
-endif()
+add_compile_options(
+    -O1
+    -fno-strict-aliasing
+    -fwrapv
+    -mfpmath=sse
+    -msse2
+    -ffloat-store
+    -malign-double
+)
 
 # =============================================================================
 # Include paths
