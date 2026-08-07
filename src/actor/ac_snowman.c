@@ -768,7 +768,7 @@ static void aSMAN_set_speed_relations_norm(ACTOR* actorx) {
         actorx->position_speed.x += norm.x * vel;
         actorx->position_speed.z += norm.z * vel;
         actorx->world.angle.y = atans_table(actorx->position_speed.z, actorx->position_speed.x);
-        actor->base_speed = fsqrt(SQ(actorx->position_speed.z) + SQ(actorx->position_speed.x));
+        actor->base_speed = decomp_fsqrt(SQ(actorx->position_speed.z) + SQ(actorx->position_speed.x));
         actor->accel = 0.0f;
     } else {
         actor->base_speed = 0.0f;
