@@ -60,7 +60,7 @@ pacman -S mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-SDL2 mingw-w64-
 
 ### Linux
 
-See the dedicated [Linux Build Guide](BUILD_LINUX.md) for native Linux compilation.
+See the dedicated [Building on Linux Guide](BUILDING_ON_LINUX.md) for native Linux compilation.
 
 ## Controls
 
