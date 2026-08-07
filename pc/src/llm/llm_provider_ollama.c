@@ -25,7 +25,6 @@ extern int g_pc_verbose;
 
 static char g_host[128];
 static int  g_port = 11434;
-static char g_request_template[512];
 
 static int ollama_init(const LlmConfig *cfg) {
     const char *ep = cfg->endpoint;
@@ -52,7 +51,22 @@ static int ollama_init(const LlmConfig *cfg) {
     }
     strncpy(g_host, hostpart, sizeof(g_host)-1);
 
-    snprintf(g_request_template, sizeof(g_request_template),
+    printf("[LLM/Ollama] Using %s:%d\n", g_host, g_port);
+    return 0;
+}
+
+static void ollama_query(const char *prompt, LlmCallback cb, void *userdata) {
+    char body[16384];
+    char escaped[8192];
+    llm_json_escape(escaped, sizeof(escaped), prompt);
+
+    snprintf(body, sizeof(body),
+        "{\"model\":\"%s\",\"prompt\":\"%s\",\"stream\":false,"
+        "\"options\":{\"num_predict\":%d,\"temperature\":%.2f}}",
+        g_llm_config.model, escaped, g_llm_config.max_tokens, g_llm_config.temperature);
+
+    char request[20480];
+    snprintf(request, sizeof(request),
         "POST /api/generate HTTP/1.1\r\n"
         "Host: %s:%d\r\n"
         "Content-Type: application/json\r\n"
@@ -60,25 +74,7 @@ static int ollama_init(const LlmConfig *cfg) {
         "Connection: close\r\n"
         "\r\n"
         "%s",
-        g_host, g_port, 0, "%s"); /* %d and %s are placeholders for snprintf later */
-
-    printf("[LLM/Ollama] Using %s:%d\n", g_host, g_port);
-    return 0;
-}
-
-static void ollama_query(const char *prompt, LlmCallback cb, void *userdata) {
-    char body[8192];
-    char escaped[4096];
-    char *esc = llm_json_escape(prompt);
-    snprintf(escaped, sizeof(escaped), "%s", esc);
-
-    snprintf(body, sizeof(body),
-        "{\"model\":\"%s\",\"prompt\":\"%s\",\"stream\":false,"
-        "\"options\":{\"num_predict\":%d,\"temperature\":%.2f}}",
-        g_llm_config.model, escaped, g_llm_config.max_tokens, g_llm_config.temperature);
-
-    char request[16384];
-    snprintf(request, sizeof(request), g_request_template, (int)strlen(body), body);
+        g_host, g_port, (int)strlen(body), body);
 
     /* connect and send */
     struct sockaddr_in addr;
@@ -114,7 +110,7 @@ static void ollama_query(const char *prompt, LlmCallback cb, void *userdata) {
     }
 
     /* read response */
-    char buf[4096] = {0};
+    char buf[8192] = {0};
     int total = 0;
     int n;
     while ((n = (int)recv(sock, buf + total, sizeof(buf) - total - 1, 0)) > 0) {

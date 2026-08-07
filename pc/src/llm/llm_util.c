@@ -4,21 +4,20 @@
 #include <string.h>
 #include <stdio.h>
 
-char *llm_json_escape(const char *src) {
-    static char buf[4096];
+char *llm_json_escape(char *dst, int dstsz, const char *src) {
     int j = 0;
-    for (const char *p = src; *p && j < (int)sizeof(buf) - 2; p++) {
+    for (const char *p = src; *p && j < dstsz - 2; p++) {
         switch (*p) {
-            case '"':  buf[j++] = '\\'; buf[j++] = '"';  break;
-            case '\\': buf[j++] = '\\'; buf[j++] = '\\'; break;
-            case '\n': buf[j++] = '\\'; buf[j++] = 'n';  break;
-            case '\r': buf[j++] = '\\'; buf[j++] = 'r';  break;
-            case '\t': buf[j++] = '\\'; buf[j++] = 't';  break;
-            default:   buf[j++] = *p; break;
+            case '"':  dst[j++] = '\\'; dst[j++] = '"';  break;
+            case '\\': dst[j++] = '\\'; dst[j++] = '\\'; break;
+            case '\n': dst[j++] = '\\'; dst[j++] = 'n';  break;
+            case '\r': dst[j++] = '\\'; dst[j++] = 'r';  break;
+            case '\t': dst[j++] = '\\'; dst[j++] = 't';  break;
+            default:   dst[j++] = *p; break;
         }
     }
-    buf[j] = '\0';
-    return buf;
+    dst[j] = '\0';
+    return dst;
 }
 
 void llm_json_build_kv(char *buf, int bufsz, const char *key, const char *val) {

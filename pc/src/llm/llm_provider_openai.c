@@ -37,7 +37,8 @@ static int openai_init(const LlmConfig *cfg) {
 
 static void openai_query(const char *prompt, LlmCallback cb, void *userdata) {
     char body[16384];
-    char *esc = llm_json_escape(prompt);
+    char escaped[8192];
+    llm_json_escape(escaped, sizeof(escaped), prompt);
 
     snprintf(body, sizeof(body),
         "{"
@@ -46,22 +47,10 @@ static void openai_query(const char *prompt, LlmCallback cb, void *userdata) {
         "\"max_tokens\":%d,"
         "\"temperature\":%.2f"
         "}",
-        g_llm_config.model, esc,
+        g_llm_config.model, escaped,
         g_llm_config.max_tokens, g_llm_config.temperature);
 
-    char request_headers[17408];
     int body_len = (int)strlen(body);
-    snprintf(request_headers, sizeof(request_headers),
-        "POST %s HTTP/1.1\r\n"
-        "Host: %s\r\n"
-        "Content-Type: application/json\r\n"
-        "Authorization: Bearer %s\r\n"
-        "Content-Length: %d\r\n"
-        "Connection: close\r\n"
-        "\r\n"
-        "%s",
-        g_openai_path, g_openai_host, g_llm_config.api_key,
-        body_len, body);
 
     /* llm_tls_post builds its own HTTP, so we need a raw-send version */
     /* ponytail: use llm_tls_raw helper instead */

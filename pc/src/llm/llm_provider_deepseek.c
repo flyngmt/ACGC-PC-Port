@@ -29,7 +29,8 @@ static int deepseek_init(const LlmConfig *cfg) {
 
 static void deepseek_query(const char *prompt, LlmCallback cb, void *userdata) {
     char body[16384];
-    char *esc = llm_json_escape(prompt);
+    char escaped[8192];
+    llm_json_escape(escaped, sizeof(escaped), prompt);
 
     snprintf(body, sizeof(body),
         "{"
@@ -39,7 +40,7 @@ static void deepseek_query(const char *prompt, LlmCallback cb, void *userdata) {
         "\"temperature\":%.2f,"
         "\"stream\":false"
         "}",
-        g_llm_config.model, esc,
+        g_llm_config.model, escaped,
         g_llm_config.max_tokens, g_llm_config.temperature);
 
     int body_len = (int)strlen(body);

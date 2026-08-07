@@ -10,7 +10,8 @@ extern int llm_tls_post(const char *host, int port, const char *path,
 
 static void gemini_query(const char *prompt, LlmCallback cb, void *userdata) {
     char body[16384];
-    char *esc = llm_json_escape(prompt);
+    char escaped[8192];
+    llm_json_escape(escaped, sizeof(escaped), prompt);
 
     /* Gemini generateContent API */
     snprintf(body, sizeof(body),
@@ -21,7 +22,7 @@ static void gemini_query(const char *prompt, LlmCallback cb, void *userdata) {
           "\"temperature\":%.2f"
         "}"
         "}",
-        esc, g_llm_config.max_tokens, g_llm_config.temperature);
+        escaped, g_llm_config.max_tokens, g_llm_config.temperature);
 
     char path[1024];
     snprintf(path, sizeof(path),

@@ -208,10 +208,9 @@ static int memory_inject(const char *npc_name, char *out, int out_sz) {
 
 /* --- resident selection --- */
 
-static const char *pick_random_resident(const char *residents, int count,
-                                         const char *npc_name) {
-    if (!residents || count <= 0) return NULL;
-    static char name_buf[32]; /* ponytail: static so caller can use it */
+static int pick_random_resident(char *dst, int dstsz, const char *residents, int count,
+                                 const char *npc_name) {
+    if (!residents || count <= 0) return 0;
     const char *candidates[64] = {0};
     int n = 0;
     char list[2048];
@@ -224,16 +223,8 @@ static const char *pick_random_resident(const char *residents, int count,
             candidates[n++] = tok;
         tok = strtok(NULL, ",");
     }
-    if (n == 0) return NULL;
-    strncpy(name_buf, candidates[rand() % n], sizeof(name_buf) - 1);
-    name_buf[sizeof(name_buf) - 1] = '\0';
-    return name_buf;
-}
-
-/* Copy a resident name to a caller-provided buffer (avoids dangling pointers) */
-static int copy_resident_name(char *dst, int dstsz, const char *src) {
-    if (!src) return 0;
-    strncpy(dst, src, dstsz - 1);
+    if (n == 0) return 0;
+    strncpy(dst, candidates[rand() % n], dstsz - 1);
     dst[dstsz - 1] = '\0';
     return 1;
 }
@@ -265,16 +256,14 @@ int llm_build_prompt(char *buf, int bufsz,
     } else if (r < hobbies_pct + relations_pct) {
         /* 70% one villager, 30% two villagers */
         int count = (rand() % 10) < 7 ? 1 : 2;
-        const char *a_raw = pick_random_resident(town_residents, resident_count, npc_name);
-        const char *b_raw = (count == 2 && a_raw)
-            ? pick_random_resident(town_residents, resident_count, npc_name) : NULL;
-
-        /* Copy before next pick_random_resident call overwrites static buffer */
         char a_name[32] = "", b_name[32] = "";
-        copy_resident_name(a_name, sizeof(a_name), a_raw);
-        copy_resident_name(b_name, sizeof(b_name), b_raw);
-        const char *a = a_name[0] ? a_name : NULL;
-        const char *b = b_name[0] ? b_name : NULL;
+
+        int a_ok = pick_random_resident(a_name, sizeof(a_name), town_residents, resident_count, npc_name);
+        int b_ok = (count == 2 && a_ok)
+            ? pick_random_resident(b_name, sizeof(b_name), town_residents, resident_count, npc_name) : 0;
+
+        const char *a = a_ok ? a_name : NULL;
+        const char *b = b_ok ? b_name : NULL;
         if (a && b && strcmp(a, b) != 0) {
             char sa[256], sb[256];
             if (!memory_get_sentiment(npc_name, a, sa, sizeof(sa)))

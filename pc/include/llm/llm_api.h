@@ -43,7 +43,7 @@ int  llm_submit_job(LlmJob *job);
 void llm_tick_jobs(void);
 
 /* util */
-char *llm_json_escape(const char *src);
+char *llm_json_escape(char *dst, int dstsz, const char *src);
 void  llm_json_build_kv(char *buf, int bufsz, const char *key, const char *val);
 int   llm_json_parse_str(const char *json, const char *key, char *out, int outsz);
 

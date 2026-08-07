@@ -76,9 +76,9 @@ typedef struct {
     char prompt[4096];
     void *target_msg_data;   /* mMsg_Data_c* to write response into */
     int  msg_no;
-    int  done;               /* 0=pending, 1=done, -1=error */
+    volatile int  done;               /* 0=pending, 1=done, -1=error */
     char response[600];      /* response text */
-    int *done_ref;           /* if set, *done_ref is written with 'done' on completion
+    volatile int *done_ref;           /* if set, *done_ref is written with 'done' on completion
                               * (job is copied in llm_submit_job, so the caller's own
                               * struct would otherwise never see the result) */
 } LlmJob;
