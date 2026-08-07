@@ -135,7 +135,11 @@ On first run, `llm.ini` is auto-generated next to the binary with all defaults. 
 
 | Key | Default | Description |
 |-----|---------|-------------|
-| `provider` | `ollama` | LLM backend |
+| `provider` | `ollama` | LLM backend (`ollama`, `gemini`, `openai`, `deepseek`) |
+| `endpoint` | *(depends)* | API endpoint URL (Optional/ignored for `gemini` integration) |
+| `api_key` | *(empty)* | API authorization key |
+| `model` | *(depends)* | LLM model name |
+| `timeout_ms` | `3000` | Connection timeout in milliseconds (Raise to `10000`+ for slower/free models) |
 | `enabled` | `1` | Master toggle |
 | `chat_chance` | `20` | % chance LLM replaces a greeting |
 | `topic_hobbies_pct` | `50` | % chance of hobby/interest topics |
