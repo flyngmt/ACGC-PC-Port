@@ -16,7 +16,6 @@ private:
 
     Rml::Element* mTypingStatus = nullptr;
     Rml::Element* mTypingState = nullptr;
-    float mAppliedFontSize = -1.0f;
     float mAppliedTop = -1.0f;
     float mAppliedLeft = -1.0f;
     bool mWasEditorActive = false;

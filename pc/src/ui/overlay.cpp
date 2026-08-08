@@ -8,10 +8,7 @@
 namespace acgc::ui {
 namespace {
 
-constexpr float kReferenceWidth = 640.0f;
-constexpr float kReferenceHeight = 480.0f;
-constexpr float kReferenceMargin = 20.0f;
-constexpr float kReferenceFontSize = 16.0f;
+constexpr float kMarginDp = 20.0f;
 
 const Rml::String kDocumentSource = R"RML(
 <rml>
@@ -90,23 +87,17 @@ void Overlay::update_layout()
         return;
     }
 
-    const float logicalWidth = static_cast<float>(dimensions.x) / dpRatio;
-    const float logicalHeight = static_cast<float>(dimensions.y) / dpRatio;
-    const float scale = std::min(logicalWidth / kReferenceWidth, logicalHeight / kReferenceHeight);
-    const float fontSize = kReferenceFontSize * scale;
-
     const Insets safeInsets = safe_area_insets(context);
-    const float margin = kReferenceMargin * dpRatio * scale;
+    const float margin = kMarginDp * dpRatio;
     const float top = std::round(std::max(margin, safeInsets.top));
-    const float left = std::round(std::max(margin, safeInsets.left));
+    const float width = mTypingStatus->GetBox().GetSize(Rml::BoxArea::Border).x;
+    const float safeAreaCenter =
+        (safeInsets.left + static_cast<float>(dimensions.x) - safeInsets.right) * 0.5f;
+    const float left = safeAreaCenter - width * 0.5f;
 
-    if (std::abs(fontSize - mAppliedFontSize) > 0.001f) {
-        mTypingStatus->SetProperty(
-            Rml::PropertyId::FontSize, Rml::Property(fontSize, Rml::Unit::DP));
-        mAppliedFontSize = fontSize;
-    }
     if (top != mAppliedTop) {
-        mTypingStatus->SetProperty(Rml::PropertyId::Top, Rml::Property(top, Rml::Unit::PX));
+        mTypingStatus->SetProperty(
+            Rml::PropertyId::Top, Rml::Property(top, Rml::Unit::PX));
         mAppliedTop = top;
     }
     if (left != mAppliedLeft) {

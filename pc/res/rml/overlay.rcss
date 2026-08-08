@@ -9,51 +9,67 @@ body {
     padding: 0;
     overflow: visible;
     pointer-events: none;
-    font-family: "ACGC UI";
-    font-size: 16dp;
-    color: #ECFDF5;
+    font-family: "ACGC Body";
+    font-weight: normal;
+    font-size: 18dp;
+    color: #655b47;
 }
 
 typing-status {
     position: absolute;
-    display: none;
+    display: flex;
     align-items: center;
     top: 20dp;
-    left: 20dp;
-    padding: 0.5em 0.625em;
+    left: 50%;
+    padding: 0.5em 0.72em;
     gap: 0.5em;
-    border: 0.0625em rgba(255, 255, 255, 24%);
-    border-radius: 0.625em;
-    background-color: rgba(16, 18, 22, 72%);
-    backdrop-filter: blur(0.25em);
+    color: #655b47;
+    background-color: rgba(255, 251, 231, 94%);
+    border: 4dp #f5e7bd;
+    border-radius: 1.5em;
+    box-shadow: 0 0.42em 1.17em 0.08em rgba(54, 45, 29, 34%);
+    filter: opacity(0);
+    transform: translateY(-0.67em);
+    transition: filter transform 0.18s cubic-in-out;
 }
 
 typing-status[open] {
-    display: flex;
+    filter: opacity(1);
+    transform: translateY(0);
 }
 
 typing-status label {
-    color: rgba(236, 253, 245, 82%);
+    font-family: "ACGC Heading";
+    font-weight: bold;
+    color: #655b47;
 }
 
 typing-status key {
-    padding: 0.154em 0.462em;
-    border: 0.077em rgba(255, 255, 255, 30%);
-    border-radius: 0.308em;
-    background-color: rgba(255, 255, 255, 10%);
-    font-size: 0.8125em;
+    padding: 0.17em 0.5em;
+    border-radius: 0.67em;
+    background-color: #ffe27a;
+    font-family: "ACGC Heading";
+    font-weight: bold;
+    font-size: 0.83em;
+    color: #65543c;
 }
 
 typing-status state {
-    min-width: 1.5em;
-    color: #A7B0BC;
+    min-width: 2.6em;
+    padding: 0.17em 0.5em;
+    border-radius: 0.67em;
+    text-align: center;
+    color: #74684f;
+    background-color: #f8edcf;
     font-weight: bold;
+    transition: color background-color 0.14s linear-in-out;
 }
 
 typing-status[active] {
-    border-color: rgba(16, 185, 129, 55%);
+    border-color: #89d2c2;
 }
 
 typing-status[active] state {
-    color: #34D399;
+    color: #fffdf3;
+    background-color: #198d79;
 }
