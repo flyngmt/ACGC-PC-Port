@@ -21,6 +21,7 @@ enum class DocumentScope {
     Window,
     MenuBar,
     Prelaunch,
+    Overlay,
 };
 
 // Animal Crossing does not currently expose host-menu sound hooks, but the

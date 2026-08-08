@@ -37,6 +37,7 @@ public:
 	}
 
 	DocumentScope scope() const { return mScope; }
+	bool passive() const { return mPassive; }
 	bool set_document_styles(const Rml::String& rcss);
 	void restyle(std::span<const Rml::StyleSheetContainer* const> sheets);
 	void listen(Rml::Element* element, Rml::EventId event, ScopedEventListener::Callback callback, bool capture = false);
