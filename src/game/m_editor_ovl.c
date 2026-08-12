@@ -16,6 +16,10 @@
 #include "m_rcp.h"
 #include "m_lib.h"
 
+#ifdef TARGET_PC
+#include "pc_typing.h"
+#endif
+
 static u8 mED_ornament_table[] = {
     // clang-format off
     0x21, 0x3f, 0x03, 0x04, 0x05, 0x06, 0x07, 0x41,
@@ -1761,6 +1765,48 @@ static void mED_move_Move(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 
 typedef void (*mED_EDIT_FUNC)(Submenu*, mSM_MenuInfo_c*);
 
+#ifdef TARGET_PC
+static int mED_apply_pc_typing_command(mED_Ovl_c* editor_ovl) {
+    int typed;
+
+    pc_typing_set_editor_active(TRUE);
+    if (!pc_typing_is_active() || !pc_typing_queue_pop(&typed)) {
+        return FALSE;
+    }
+
+    switch (typed) {
+        case PC_TYPING_CMD_BACKSPACE:
+            editor_ovl->command = mED_COMMAND_BACKSPACE;
+            break;
+        case PC_TYPING_CMD_LEFT:
+            editor_ovl->command = mED_COMMAND_CURSOL_LEFT;
+            break;
+        case PC_TYPING_CMD_RIGHT:
+            editor_ovl->command = mED_COMMAND_CURSOL_RIGHT;
+            break;
+        case PC_TYPING_CMD_UP:
+            editor_ovl->command = mED_COMMAND_CURSOL_UPPER;
+            break;
+        case PC_TYPING_CMD_DOWN:
+            editor_ovl->command = mED_COMMAND_CURSOL_LOWER;
+            break;
+        case PC_TYPING_CMD_ENTER:
+            if (editor_ovl->max_line_no <= 1) {
+                editor_ovl->command = mED_COMMAND_END_EDIT;
+            } else {
+                editor_ovl->now_code = CHAR_NEW_LINE;
+                editor_ovl->command = mED_COMMAND_OUTPUT_CODE;
+            }
+            break;
+        default:
+            editor_ovl->now_code = (u8)typed;
+            editor_ovl->command = mED_COMMAND_OUTPUT_CODE;
+            break;
+    }
+    return TRUE;
+}
+#endif
+
 static void mED_move_Play(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     static mED_EDIT_FUNC mED_edit_func[mED_TYPE_NUM] = { &mED_edit_func_letter,      &mED_edit_func_multi_line,
                                                          &mED_edit_func_multi_line,  &mED_edit_func_single_line,
@@ -1773,6 +1819,9 @@ static void mED_move_Play(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     editor_ovl->command_processed = FALSE;
     if (submenu->overlay->address_ovl != NULL &&
         submenu->overlay->menu_info[mSM_OVL_ADDRESS].next_proc_status == mSM_OVL_PROC_WAIT) {
+#ifdef TARGET_PC
+        pc_typing_set_editor_active(FALSE);
+#endif
         editor_ovl->stick_area = mED_STICK_AREA_CENTER;
         editor_ovl->command = mED_COMMAND_NONE;
         editor_ovl->last_buttons =
@@ -1810,9 +1859,15 @@ static void mED_move_Play(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
         }
 #endif
 
-        mED_set_stick_area(editor_ovl);
-        mED_move_keyboard_cursor(editor_ovl);
-        mED_set_command(editor_ovl);
+#ifdef TARGET_PC
+        if (!mED_apply_pc_typing_command(editor_ovl)) {
+#endif
+            mED_set_stick_area(editor_ovl);
+            mED_move_keyboard_cursor(editor_ovl);
+            mED_set_command(editor_ovl);
+#ifdef TARGET_PC
+        }
+#endif
         (*mED_edit_func[menu_info->data0])(submenu, menu_info);
 
         if (editor_ovl->command_processed) {
@@ -1836,12 +1891,18 @@ static void mED_move_Play(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 }
 
 static void mED_move_Wait(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
+#ifdef TARGET_PC
+    pc_typing_set_editor_active(FALSE);
+#endif
     if (submenu->menu_type != menu_info->next_menu_type) {
         menu_info->proc_status = mSM_OVL_PROC_PLAY;
     }
 }
 
 static void mED_move_End(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
+#ifdef TARGET_PC
+    pc_typing_set_editor_active(FALSE);
+#endif
     submenu->overlay->editor_ovl->_22 = 0;
     (*submenu->overlay->move_End_proc)(submenu, menu_info);
 }
@@ -2573,5 +2634,8 @@ extern void mED_editor_ovl_construct(Submenu* submenu) {
 extern void mED_editor_ovl_destruct(Submenu* submenu) {
     Submenu_Overlay_c* overlay = submenu->overlay;
 
+#ifdef TARGET_PC
+    pc_typing_set_editor_active(FALSE);
+#endif
     overlay->editor_ovl = NULL;
 }

@@ -12,6 +12,7 @@
 
 #include "pc_assets.h"
 #include "pc_platform.h"
+#include "pc_typing.h"
 #include "aurora_debug.h"
 #include "acgc/app_info.hpp"
 #include "acgc/data.hpp"
@@ -96,10 +97,16 @@ bool ac_aurora_begin_frame() {
         if (event->type == AURORA_EXIT) {
             g_pc_running = 0;
         } else if (event->type == AURORA_SDL_EVENT) {
+            if (!acgc::ui::any_document_visible()) {
+                pc_typing_handle_event(&event->sdl);
+            }
             if (event->sdl.type == SDL_EVENT_KEY_DOWN && !event->sdl.key.repeat && event->sdl.key.key == SDLK_F2) {
                 pc_speedhack_toggle();
             }
             acgc::ui::handle_event(event->sdl);
+            if (acgc::ui::any_document_visible()) {
+                pc_typing_cancel();
+            }
         } else if (event->type == AURORA_CONTROLLER_ADDED) {
             acgc::apply_runtime_settings(false);
         }
@@ -589,7 +596,7 @@ int main(int argc, char* argv[]) {
     config.logLevel = borealis::log::to_aurora_level(s_log_level);
     config.imGuiInitCallback = &ac_debug_imgui_init;
 
-    aurora_initialize(argc, argv, &config);
+    const AuroraInfo aurora_info = aurora_initialize(argc, argv, &config);
     /* Match Dusklight's unlocked-aspect path: Aurora owns a framebuffer with
      * the window's aspect, while game-side GX wrappers preserve 4:3 content. */
     AuroraSetViewportPolicy(AURORA_VIEWPORT_STRETCH);
@@ -652,12 +659,14 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    pc_typing_initialize(aurora_info.window);
     acgc::texture_replacements::reload();
     ac_entry();
     const int result = boot_main(argc, const_cast<const char**>(argv));
 
     pc_audio_shutdown();
     pc_audio_mq_shutdown();
+    pc_typing_shutdown();
     aurora_dvd_close();
     acgc::texture_replacements::shutdown();
     acgc::ui::shutdown();

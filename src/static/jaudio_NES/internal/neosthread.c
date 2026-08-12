@@ -53,7 +53,6 @@ extern u32 Neos_Update(s16* dst) {
                 if (v < 0) v = -v;
                 if (v > peak) peak = v;
             }
-            printf("[NEOS_OUT] frame=%u tasks=%u peak=%d\n", neos_diag_ctr, pc_tasks[cur], peak);
         }
     }
 
