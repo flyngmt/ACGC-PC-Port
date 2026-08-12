@@ -14,6 +14,7 @@
 #include <dolphin/base/PPCArch.h>
 
 #ifdef TARGET_PC
+#include "pc_emu64_geometry_cache.hpp"
 #include "pc_platform.h"
 #else
 #define pc_widescreen_set_projection GXSetProjection
@@ -1055,13 +1056,12 @@ u16* emu64::tlutconv_new(u16* tlut, unsigned int tlut_fmt, unsigned int count) {
 
     texture_cache = texture_cache_select(tlut);
     converted_tlut = (u16*)(*texture_cache->funcs->search)(tlut);
+    EMU64_TIMED_SEGMENT_END(texture_cache_select_time);
 
     /* Check if we already converted this texture */
     if (converted_tlut != nullptr) {
         return converted_tlut;
     }
-
-    EMU64_TIMED_SEGMENT_END(texture_cache_select_time);
 
     len = get_dol_tlut_siz(count);
     converted_tlut = (u16*)(*texture_cache->funcs->alloc)(texture_cache, len);
@@ -2085,11 +2085,11 @@ void emu64::setup_texture_tile(int tile) {
     unsigned int h;
     GXTexFmts dol_fmt;
     
-    EMU64_TIMED_SEGMENT_BEGIN();
     settile = &this->settile_cmds[tile];
     if (settile->line == 0) {
         return;
     }
+    EMU64_TIMED_SEGMENT_BEGIN();
     
     u32 tmem = settile->tmem;
     EMU64_ASSERTLINE(tmem / 4 < number(tmem_map), 2756);
@@ -2954,6 +2954,67 @@ void emu64::setup_1tri_2tri_1quad(unsigned int vtx_idx) {
     EMU64_TIMED_SEGMENT_END(setup_time);
 }
 
+#ifdef TARGET_PC
+bool emu64::pc_draw_preprocessed_geometry(const Gfx* source, u32 command_count,
+                                          u32 vertex_count) {
+    if (source == nullptr || command_count == 0 || vertex_count == 0 ||
+        aflags[AFLAGS_WIREFRAME] != 0 || aflags[AFLAGS_MAX_POLYGONS] != 0 ||
+        aflags[AFLAGS_MIN_POLYGONS] != 0) {
+        return false;
+    }
+
+    const bool lighting = (this->geometry_mode & G_LIGHTING) != 0;
+    const bool textured = this->texture_gfx.on != G_OFF;
+    const bool decal_projection =
+        (this->othermode_low & ZMODE_DEC) == ZMODE_DEC &&
+        (this->geometry_mode & G_ZBUFFER) != 0 &&
+        (this->geometry_mode & G_DECAL_EQUAL) == 0;
+    if ((this->geometry_mode & G_TEXTURE_GEN) != 0 || decal_projection) {
+        return false;
+    }
+
+    const acgc::emu64_geometry_cache::Entry* entry =
+        acgc::emu64_geometry_cache::find_or_compile(source, command_count,
+                                                    vertex_count);
+    if (entry == nullptr) {
+        return false;
+    }
+
+    const u8* source_vertices = entry->sourceVertices.data();
+    const u32 unique_vertex_count =
+        static_cast<u32>(entry->sourceVertices.size());
+    const u32 vertex_stride = sizeof(Vec) + sizeof(GXColor) +
+        (lighting ? sizeof(Vec) : 0) +
+        (textured ? sizeof(s16) * 2 : 0);
+    const size_t direct_size = 3 + static_cast<size_t>(vertex_count) * vertex_stride;
+    const size_t indexed_size = 10 + entry->indices.size() * sizeof(u16) +
+        static_cast<size_t>(unique_vertex_count) * vertex_stride;
+    if (indexed_size >= direct_size) {
+        return false;
+    }
+
+    const bool expected_nonshared =
+        (this->vertices[source_vertices[0]].flag & MTX_NONSHARED) != MTX_SHARED;
+    for (u32 i = 0; i < unique_vertex_count; i++) {
+        const u32 source_vertex = source_vertices[i];
+        if (source_vertex >= VTX_COUNT ||
+            (((this->vertices[source_vertex].flag & MTX_NONSHARED) != MTX_SHARED) !=
+             expected_nonshared)) {
+            return false;
+        }
+    }
+
+    this->setup_1tri_2tri_1quad(source_vertices[0]);
+    GXBeginIndexed(GX_VTXFMT0, static_cast<u16>(unique_vertex_count),
+                   entry->indices.data(), static_cast<u32>(entry->indices.size()));
+    for (u8 source_vertex : entry->sourceVertices) {
+        this->set_position(source_vertex);
+    }
+    GXEnd();
+
+    return true;
+}
+#endif
 void emu64::draw_1tri_2tri_1quad(unsigned int n_verts, ...) {
     va_list list;
     unsigned int v0;
@@ -3030,6 +3091,7 @@ void emu64::draw_1tri_2tri_1quad(unsigned int n_verts, ...) {
     }
 
 exit:
+    va_end(list);
     this->rdp_pipe_sync_needed = TRUE;
 }
 
@@ -4878,8 +4940,17 @@ void emu64::dl_G_TRI1() {
 
     if (this->disable_polygons == false && EMU64_CAN_DRAW_POLYGON()) {
         this->dirty_check(this->texture_gfx.tile, this->texture_gfx.level, TRUE);
-        this->setup_1tri_2tri_1quad(v0);
-        this->draw_1tri_2tri_1quad(3, v0, v1, v2);
+#ifdef TARGET_PC
+        const bool reuses_vertex = v0 == v1 || v0 == v2 || v1 == v2;
+        if (reuses_vertex && (aflags[AFLAGS_DECAL_OFFSET_MODE] & 1) == 0 &&
+            this->pc_draw_preprocessed_geometry(this->gfx_p, 1, 3)) {
+            this->rdp_pipe_sync_needed = TRUE;
+        } else
+#endif
+        {
+            this->setup_1tri_2tri_1quad(v0);
+            this->draw_1tri_2tri_1quad(3, v0, v1, v2);
+        }
     }
 
     this->triangles++;
@@ -4903,10 +4974,25 @@ void emu64::dl_G_TRIN() {
     EMU64_TIMED_SEGMENT_BEGIN();
 
     this->dirty_check(this->texture_gfx.tile, this->texture_gfx.level, TRUE);
-    this->setup_1tri_2tri_1quad(first_vtx);
     n_faces = ((first_cmd->words.w0 >> 17) & 0x7F) + 1;
     int n_verts = n_faces * 3;
+#ifdef TARGET_PC
+    const u32 pc_command_count = is_7bit ?
+        1 + (n_faces > 2 ? (n_faces - 2 + 2) / 3 : 0) :
+        1 + (n_faces > 3 ? (n_faces - 3 + 3) / 4 : 0);
+    if (this->pc_draw_preprocessed_geometry(first_cmd, pc_command_count, n_verts)) {
+#ifndef EMU64_FIXES
+        if (!is_7bit)
+#endif
+            this->polygons += n_faces;
+        this->gfx_p += pc_command_count - 1;
+        EMU64_TIMED_SEGMENT_END(polygons_time);
+        this->rdp_pipe_sync_needed = true;
+        return;
+    }
+#endif
 
+    this->setup_1tri_2tri_1quad(first_vtx);
 
     EMU64_LOGF("gsSPNTriangles(%d),\n", n_faces);
     if (aflags[AFLAGS_WIREFRAME] == 0) {
@@ -5189,13 +5275,12 @@ void emu64::dl_G_TRI2() {
 
         this->double_triangles++;
         this->polygons++;
-#ifdef EMU64_DEBUG
-        this->polygons_time += (osGetCount() - start);
-#endif
+        EMU64_TIMED_SEGMENT_END(polygons_time);
     } else {
         /* Count up all the vertices */
         commands = 0;
         int n_verts = 0;
+        Gfx* first_cmd = this->gfx_p;
 
         int i = 0;
         while (TRUE) {
@@ -5211,14 +5296,19 @@ void emu64::dl_G_TRI2() {
         }
 
         this->dirty_check(this->texture_gfx.tile, this->texture_gfx.level, TRUE);
-        u64 t_g;
-        t_g = *(u64*)&this->gfx_p->words;
+        EMU64_TIMED_SEGMENT_BEGIN();
+#ifdef TARGET_PC
+        if (this->pc_draw_preprocessed_geometry(first_cmd, commands, n_verts)) {
+            this->gfx_p += commands - 1;
+            EMU64_TIMED_SEGMENT_END(polygons_time);
+            this->rdp_pipe_sync_needed = true;
+            return;
+        }
+#endif
+
+        u64 t_g = *(u64*)&this->gfx_p->words;
         Gtri2* tri2 = (Gtri2*)&t_g;
         this->setup_1tri_2tri_1quad(tri2->t0v0 / 2);
-
-#ifdef EMU64_DEBUG
-        u32 start = osGetCount();
-#endif
 
         if (aflags[AFLAGS_WIREFRAME] == 0) {
             GXBegin(GX_TRIANGLES, GX_VTXFMT0, n_verts);
@@ -5244,12 +5334,11 @@ void emu64::dl_G_TRI2() {
         }
 
         this->gfx_p += (commands - 1);
+#ifdef TARGET_PC
+        GXEnd();
+#endif
         EMU64_TIMED_SEGMENT_END(polygons_time);
     }
-
-#ifdef TARGET_PC
-    GXEnd();
-#endif
 
     this->rdp_pipe_sync_needed = true;
 }
@@ -6083,17 +6172,23 @@ void emu64::emu64_set_verbose(int verbose) {
 /* C wrapper methods */
 
 extern void emu64_init(void) {
+    TracyCZone(init_zone, 1);
     emu64_class.emu64_init();
+    TracyCZoneEnd(init_zone);
 }
 
 extern void emu64_cleanup(void) {
+    TracyCZone(cleanup_zone, 1);
     emu64_class.emu64_cleanup();
+    TracyCZoneEnd(cleanup_zone);
 }
 
 // hack - inlines in emu64_taskstart C wrapper otherwise
 #pragma dont_inline on
 extern void emu64_taskstart(Gfx* gfx) {
+    TracyCZone(task_zone, 1);
     emu64_class.emu64_taskstart(gfx);
+    TracyCZoneEnd(task_zone);
 }
 #pragma dont_inline reset
 

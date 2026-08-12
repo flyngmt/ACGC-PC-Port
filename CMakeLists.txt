@@ -220,6 +220,7 @@ set(PC_SOURCES
     ${PC_ROOT}/src/pc_save_bswap.c
     ${PC_ROOT}/src/pc_nes_fixnes.c
     ${PC_ROOT}/src/pc_assets.c
+    ${PC_ROOT}/src/pc_emu64_geometry_cache.cpp
     ${PC_ROOT}/src/pc_typing.cpp
 )
 
@@ -386,6 +387,7 @@ if (MSVC AND WIN32)
 endif ()
 
 target_link_libraries(acgc PRIVATE
+    TracyClient
     nlohmann_json::nlohmann_json
     borealis::cli
     borealis::crash

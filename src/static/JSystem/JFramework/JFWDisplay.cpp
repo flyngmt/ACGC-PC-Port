@@ -1,5 +1,6 @@
 #ifdef TARGET_PC
 #include <string.h>
+#include <tracy/Tracy.hpp>
 #else
 #include <libc/string.h>
 #endif
@@ -240,6 +241,7 @@ void JFWDisplay::endGX() {
 }
 
 void JFWDisplay::beginRender() {
+    ZoneScoped;
     JUTProcBar::getManager()->wholeLoopEnd();
     JUTProcBar::getManager()->wholeLoopStart();
     JUTProcBar::getManager()->idleStart();
@@ -282,6 +284,7 @@ void JFWDisplay::beginRender() {
 }
 
 void JFWDisplay::endRender() {
+    ZoneScoped;
     endGX();
 
     switch (JUTXfb::getManager()->getBufferNum()) {
@@ -300,6 +303,7 @@ void JFWDisplay::endRender() {
 }
 
 void JFWDisplay::endFrame() {
+    ZoneScoped;
     JUTProcBar::getManager()->cpuEnd();
     JUTProcBar::getManager()->gpWaitStart();
 

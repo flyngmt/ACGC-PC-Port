@@ -5,13 +5,13 @@
 #include "acgc/ui/menu_bar.hpp"
 #include "acgc/ui/overlay.hpp"
 
-#include <aurora/rmlui.hpp>
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_video.h>
+#include <aurora/rmlui.hpp>
+#include <borealis/io.hpp>
+#include <borealis/log.hpp>
+#include <tracy/Tracy.hpp>
 #include "extern/aurora/lib/window.hpp"
-
-#include "borealis/io.hpp"
-#include "borealis/log.hpp"
 
 #include <algorithm>
 #include <filesystem>
@@ -167,6 +167,7 @@ void update() noexcept
         return;
     }
 
+    ZoneScoped;
     input::update_input();
     const auto updateDocuments = [](auto& documents) {
         const std::size_t count = documents.size();

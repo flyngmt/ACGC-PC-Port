@@ -1,4 +1,5 @@
 #include "game.h"
+#include "pc_tracy.h"
 
 #ifdef TARGET_PC
 #include "pc_platform.h"
@@ -136,6 +137,7 @@ extern void SetGameFrame(int frame) {
 }
 
 extern void game_main(GAME* this) {
+    TracyCZone(game_main_zone, 1);
     GRAPH* graph = this->graph;
 
     if (GETREG(SREG, 30) != game_GameFrame || GETREG(SREG, 29)) {
@@ -145,23 +147,30 @@ extern void game_main(GAME* this) {
     game_draw_first(graph);
     PC_DIAG(5, "game_main: draw_first done, calling mTM_time\n");
     GRAPH_SET_DOING_POINT(graph, GAME_TIME);
+    TracyCZoneN(game_time_zone, "Game time", 1);
     mTM_time();
+    TracyCZoneEnd(game_time_zone);
     GRAPH_SET_DOING_POINT(graph, GAME_TIME_FINISHED);
     PC_DIAG(5, "game_main: mTM_time done, calling exec=%p\n", (void*)this->exec);
     GRAPH_SET_DOING_POINT(graph, GAME_EXEC);
+    TracyCZoneN(game_execute_zone, "Game execute", 1);
     this->exec(this);
+    TracyCZoneEnd(game_execute_zone);
     GRAPH_SET_DOING_POINT(graph, GAME_EXEC_FINISHED);
     GRAPH_SET_DOING_POINT(graph, GAME_BGM);
 #ifdef TARGET_PC
     if (!g_pc_model_viewer) {
 #endif
+        TracyCZoneN(bgm_zone, "BGM update", 1);
         mBGM_main(this);
+        TracyCZoneEnd(bgm_zone);
 #ifdef TARGET_PC
     }
 #endif
     GRAPH_SET_DOING_POINT(graph, GAME_BGM_FINISHED);
     game_move_first(this);
     this->frame_counter++;
+    TracyCZoneEnd(game_main_zone);
 }
 
 static void game_init_hyral(GAME* this, size_t size) {

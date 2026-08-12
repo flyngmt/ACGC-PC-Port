@@ -8,6 +8,7 @@
 #include <dolphin/pad.h>
 #include <dolphin/vi.h>
 #include <SDL3/SDL.h>
+#include <tracy/Tracy.hpp>
 
 #include "pc_assets.h"
 #include "pc_platform.h"
@@ -78,6 +79,8 @@ static void pc_speedhack_toggle() {
 }
 
 bool ac_aurora_begin_frame() {
+    ZoneScoped;
+
     /* Display-list markers may leave this in transition/UI mode. The legacy
      * renderer reset it before every frame, before JSystem submits GX state. */
     g_pc_widescreen_stretch = 0;
@@ -205,6 +208,7 @@ void apply_frame_limit() {
         return;
     }
 
+    ZoneScopedN("Frame limiter");
     const auto interval = std::chrono::nanoseconds(1'000'000'000LL / g_pc_frame_limit_override);
     const auto now = clock::now();
     if (next_frame == clock::time_point{} || now > next_frame + interval * 4) {
