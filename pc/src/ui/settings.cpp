@@ -16,12 +16,16 @@
 
 #include <SDL3/SDL_dialog.h>
 #include <SDL3/SDL_init.h>
+#include <SDL3/SDL_video.h>
 
+#include <algorithm>
 #include <array>
+#include <functional>
 #include <memory>
 #include <string>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 extern "C" int g_pc_frame_limit_override;
 
@@ -67,6 +71,152 @@ Rml::String msaa_label(int samples)
 {
     return samples <= 1 ? "Off" : std::to_string(samples) + "x";
 }
+
+struct ResolutionPreset {
+    int width;
+    int height;
+    bool desktop = false;
+};
+
+constexpr std::array kResolutionPresets = {
+    ResolutionPreset{640, 480},   ResolutionPreset{800, 600},   ResolutionPreset{960, 720},
+    ResolutionPreset{1024, 768}, ResolutionPreset{1152, 864},  ResolutionPreset{1280, 960},
+    ResolutionPreset{1400, 1050}, ResolutionPreset{1600, 1200}, ResolutionPreset{1280, 720},
+    ResolutionPreset{1366, 768}, ResolutionPreset{1600, 900},  ResolutionPreset{1920, 1080},
+    ResolutionPreset{2560, 1440}, ResolutionPreset{3840, 2160},
+};
+
+bool same_resolution(const ResolutionPreset& preset, int width, int height)
+{
+    return preset.width == width && preset.height == height;
+}
+
+std::vector<ResolutionPreset> available_resolution_presets()
+{
+    SDL_DisplayID display = SDL_GetDisplayForWindow(aurora::window::get_sdl_window());
+    if (display == 0) {
+        display = SDL_GetPrimaryDisplay();
+    }
+    const SDL_DisplayMode* mode = SDL_GetDesktopDisplayMode(display);
+
+    /* Presets larger than the desktop would persist an off-screen window. */
+    std::vector<ResolutionPreset> presets;
+    for (const ResolutionPreset& preset : kResolutionPresets) {
+        if (mode == nullptr || (preset.width <= mode->w && preset.height <= mode->h)) {
+            presets.push_back(preset);
+        }
+    }
+    if (mode != nullptr) {
+        const auto match = std::find_if(presets.begin(), presets.end(), [mode](const ResolutionPreset& preset) {
+            return same_resolution(preset, mode->w, mode->h);
+        });
+        if (match != presets.end()) {
+            match->desktop = true;
+        } else {
+            presets.push_back({mode->w, mode->h, true});
+        }
+    }
+
+    std::sort(presets.begin(), presets.end(), [](const ResolutionPreset& lhs, const ResolutionPreset& rhs) {
+        return lhs.width < rhs.width || (lhs.width == rhs.width && lhs.height < rhs.height);
+    });
+    return presets;
+}
+
+Rml::String resolution_label(const ResolutionPreset& preset)
+{
+    Rml::String label = std::to_string(preset.width) + " x " + std::to_string(preset.height);
+    if (preset.desktop) {
+        label += " (Desktop)";
+    }
+    return label;
+}
+
+struct ResolutionEditorState {
+    int width;
+    int height;
+    bool custom;
+};
+
+class ResolutionDropdown final : public Component {
+public:
+    ResolutionDropdown(Rml::Element* parent, std::vector<ResolutionPreset> presets,
+                       std::shared_ptr<ResolutionEditorState> state)
+        : Component(append(parent, "select")), mPresets(std::move(presets)), mState(std::move(state))
+    {
+        mSelect = rmlui_dynamic_cast<Rml::ElementFormControlSelect*>(mRoot);
+        if (mSelect == nullptr) {
+            return;
+        }
+        mRoot->SetClass("dropdown", true);
+
+        int selection = static_cast<int>(mPresets.size());
+        for (int i = 0; i < static_cast<int>(mPresets.size()); ++i) {
+            const ResolutionPreset& preset = mPresets[i];
+            mSelect->Add(escape(resolution_label(preset)), std::to_string(i));
+            if (!mState->custom && same_resolution(preset, mState->width, mState->height)) {
+                selection = i;
+            }
+        }
+        mSelect->Add("Custom", std::to_string(mPresets.size()));
+        mSelect->SetSelection(selection);
+
+        listen(mRoot, Rml::EventId::Change, [this](Rml::Event& event) {
+            if (event.GetTargetElement() != mRoot) {
+                return;
+            }
+            const int selected = mSelect->GetSelection();
+            if (selected >= 0 && selected < static_cast<int>(mPresets.size())) {
+                mState->width = mPresets[selected].width;
+                mState->height = mPresets[selected].height;
+                mState->custom = false;
+            } else if (selected == static_cast<int>(mPresets.size())) {
+                /* Keep width/height so Custom starts from the last selection. */
+                mState->custom = true;
+            }
+        });
+    }
+
+private:
+    std::vector<ResolutionPreset> mPresets;
+    std::shared_ptr<ResolutionEditorState> mState;
+    Rml::ElementFormControlSelect* mSelect = nullptr;
+};
+
+class ConditionalNumberButton final : public NumberButton {
+public:
+    ConditionalNumberButton(Rml::Element* parent, NumberButton::Props props, std::function<bool()> isVisible)
+        : NumberButton(parent, std::move(props)), mIsVisible(std::move(isVisible))
+    {
+        update_visibility();
+    }
+
+    void update() override
+    {
+        update_visibility();
+        NumberButton::update();
+    }
+
+    void commit_pending_edit() { update(); }
+
+private:
+    void update_visibility()
+    {
+        const bool visible = !mIsVisible || mIsVisible();
+        if (visible == mVisible) {
+            return;
+        }
+        mVisible = visible;
+        if (visible) {
+            mRoot->RemoveProperty(Rml::PropertyId::Display);
+        } else {
+            mRoot->SetProperty(Rml::PropertyId::Display, Rml::Style::Display::None);
+        }
+    }
+
+    std::function<bool()> mIsVisible;
+    bool mVisible = true;
+};
 
 #if ACGC_CAN_CHANGE_DATA_FOLDER
 
@@ -195,7 +345,21 @@ SettingsWindow::SettingsWindow()
                  "Check GitHub releases when the prelaunch menu opens. No personal data is collected.");
     });
 
-    add_tab("Video", [this](Rml::Element* content) {
+    /* Created once per window, outside the tab builder, so rebuilding the tab
+     * on activation does not discard staged, un-applied resolution edits. */
+    const auto resolutionPresets = available_resolution_presets();
+    auto& video = settings().video;
+    const bool currentIsPreset = std::any_of(
+        resolutionPresets.begin(), resolutionPresets.end(), [&video](const ResolutionPreset& preset) {
+            return same_resolution(preset, video.windowWidth.value(), video.windowHeight.value());
+        });
+    auto resolutionState = std::make_shared<ResolutionEditorState>(ResolutionEditorState{
+        .width = video.windowWidth.value(),
+        .height = video.windowHeight.value(),
+        .custom = !currentIsPreset,
+    });
+
+    add_tab("Video", [this, resolutionPresets, resolutionState](Rml::Element* content) {
         auto& current = settings();
         auto& left = add_child<Pane>(content, Pane::Type::Controlled);
         auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
@@ -223,42 +387,55 @@ SettingsWindow::SettingsWindow()
         left.register_control(
             left.add_select_button({
                 .key = "Window Size",
-                .getValue = [&current] {
-                    return std::to_string(current.video.windowWidth.value()) + " x " +
-                           std::to_string(current.video.windowHeight.value());
+                .getValue = [&current, resolutionState] {
+                    Rml::String value = std::to_string(resolutionState->width) + " x " +
+                                        std::to_string(resolutionState->height);
+                    if (resolutionState->width != current.video.windowWidth.value() ||
+                        resolutionState->height != current.video.windowHeight.value()) {
+                        value += " (pending)";
+                    }
+                    return value;
                 },
                 .isDisabled = [&current] { return current.video.windowMode.value() != 0; },
                 .isModified = [&current] {
                     return modified(current.video.windowWidth) || modified(current.video.windowHeight);
                 },
             }),
-            right, [&current](Pane& pane) {
-                const auto resize = [&current] {
-                    aurora::window::set_window_size(current.video.windowWidth.value(),
-                                                    current.video.windowHeight.value());
-                    persist();
-                };
-                pane.add_child<NumberButton>(NumberButton::Props{
+            right, [&current, resolutionPresets, resolutionState](Pane& pane) {
+                pane.add_section("Resolution");
+                pane.add_child<ResolutionDropdown>(resolutionPresets, resolutionState);
+                auto& widthField = pane.add_child<ConditionalNumberButton>(NumberButton::Props{
                     .key = "Width",
-                    .getValue = [&current] { return current.video.windowWidth.value(); },
-                    .setValue = [&current, resize](int value) {
-                        current.video.windowWidth.set_value(value);
-                        resize();
+                    .getValue = [resolutionState] { return resolutionState->width; },
+                    .setValue = [resolutionState](int value) { resolutionState->width = value; },
+                    .isDisabled = [resolutionState] { return !resolutionState->custom; },
+                    .isModified = [&current, resolutionState] {
+                        return resolutionState->custom &&
+                               resolutionState->width != current.video.windowWidth.value();
                     },
-                    .isModified = [&current] { return modified(current.video.windowWidth); },
                     .min = 320, .max = 7680, .step = 16, .suffix = " px",
-                });
-                pane.add_child<NumberButton>(NumberButton::Props{
+                }, [resolutionState] { return resolutionState->custom; });
+                auto& heightField = pane.add_child<ConditionalNumberButton>(NumberButton::Props{
                     .key = "Height",
-                    .getValue = [&current] { return current.video.windowHeight.value(); },
-                    .setValue = [&current, resize](int value) {
-                        current.video.windowHeight.set_value(value);
-                        resize();
+                    .getValue = [resolutionState] { return resolutionState->height; },
+                    .setValue = [resolutionState](int value) { resolutionState->height = value; },
+                    .isDisabled = [resolutionState] { return !resolutionState->custom; },
+                    .isModified = [&current, resolutionState] {
+                        return resolutionState->custom &&
+                               resolutionState->height != current.video.windowHeight.value();
                     },
-                    .isModified = [&current] { return modified(current.video.windowHeight); },
                     .min = 240, .max = 4320, .step = 16, .suffix = " px",
-                });
-                pane.add_text("Window dimensions apply immediately while windowed.");
+                }, [resolutionState] { return resolutionState->custom; });
+                pane.add_button("Apply").on_pressed(
+                    [&current, resolutionState, &widthField, &heightField] {
+                        widthField.commit_pending_edit();
+                        heightField.commit_pending_edit();
+                        current.video.windowWidth.set_value(resolutionState->width);
+                        current.video.windowHeight.set_value(resolutionState->height);
+                        aurora::window::set_window_size(resolutionState->width, resolutionState->height);
+                        persist();
+                    });
+                pane.add_text("Choose a preset or Custom, then select Apply.");
             });
 
         left.add_section("Performance");

@@ -205,6 +205,78 @@ button.modal-btn {
     text-align: center;
 }
 
+select.dropdown {
+    display: block;
+    width: 100%;
+    height: 48dp;
+    color: #655b47;
+    background-color: rgba(255, 255, 255, 52%);
+    border-radius: 22dp;
+    cursor: pointer;
+    focus: auto;
+    /* Let Up/Down leave the closed dropdown so keyboard and controller
+       navigation can reach the rest of the pane. */
+    nav-up: auto;
+    nav-down: auto;
+}
+
+select.dropdown selectvalue {
+    width: auto;
+    height: 48dp;
+    margin-right: 48dp;
+    padding: 0 16dp;
+    line-height: 48dp;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 19dp;
+}
+
+select.dropdown selectarrow {
+    width: 48dp;
+    height: 48dp;
+    color: #74684f;
+    font-family: "Material Symbols Rounded";
+    font-size: 24dp;
+    decorator: text("&#xe5cf;" center center);
+}
+
+select.dropdown:hover,
+select.dropdown:focus-visible {
+    background-color: #ffe27a;
+}
+
+select.dropdown:active {
+    background-color: #ffc742;
+}
+
+select.dropdown selectbox {
+    width: 100%;
+    max-height: 360dp;
+    margin-top: 4dp;
+    padding: 6dp;
+    color: #655b47;
+    background-color: #fffbe7;
+    border: 2dp #ead9ad;
+    border-radius: 18dp;
+    box-shadow: 0 8dp 20dp 2dp rgba(54, 45, 29, 32%);
+}
+
+select.dropdown selectbox option {
+    padding: 9dp 12dp;
+    background-color: transparent;
+    border-radius: 12dp;
+}
+
+select.dropdown selectbox option:hover {
+    background-color: #ffe27a;
+}
+
+select.dropdown selectbox option:checked {
+    color: #fffdf3;
+    background-color: #e98424;
+}
+
 select-button {
     display: flex;
     align-items: center;
