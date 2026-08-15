@@ -72,7 +72,7 @@ Rml::String msaa_label(int samples)
     return samples <= 1 ? "Off" : std::to_string(samples) + "x";
 }
 
-constexpr std::array kUiScales = {0, 50, 75, 100, 125, 150, 175, 200};
+constexpr std::array kUiScales = {50, 75, 0, 125, 150, 175, 200};
 
 Rml::String ui_scale_label(int percent)
 {
@@ -453,7 +453,7 @@ SettingsWindow::SettingsWindow()
             }),
             right, [&current](Pane& pane) {
                 pane.add_text("Scale the interface relative to the display's DPI scale. "
-                              "Automatic and 100% match the DPI scale exactly.");
+                              "Automatic matches the DPI scale exactly.");
                 for (const int percent : kUiScales) {
                     pane.add_button(ControlledButton::Props{
                         .text = ui_scale_label(percent),
