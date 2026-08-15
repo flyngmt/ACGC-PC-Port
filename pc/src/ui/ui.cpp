@@ -148,7 +148,7 @@ void handle_event(const SDL_Event& event) noexcept
         return;
     }
 
-    if (event.type == SDL_EVENT_KEY_DOWN && !event.key.repeat && event.key.key == SDLK_F1 &&
+    if (event.type == SDL_EVENT_KEY_DOWN && !event.key.repeat && event.key.key == SDLK_ESCAPE &&
         !any_document_visible() && !sWasPausingGame) {
         if (auto* context = aurora::rmlui::get_context()) {
             context->ProcessKeyDown(kMenuKey, 0);
