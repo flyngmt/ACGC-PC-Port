@@ -8,6 +8,9 @@
 #include "borealis/io.hpp"
 #include "borealis/log.hpp"
 
+#include <aurora/rmlui.hpp>
+#include "extern/aurora/lib/window.hpp"
+
 #include <algorithm>
 #include <charconv>
 #include <fstream>
@@ -118,6 +121,8 @@ void sanitize_settings()
     current.video.windowWidth.set_value(std::clamp(current.video.windowWidth.value(), 320, 16384));
     current.video.windowHeight.set_value(std::clamp(current.video.windowHeight.value(), 240, 16384));
     current.video.windowMode.set_value(std::clamp(current.video.windowMode.value(), 0, 2));
+    const int uiScale = current.video.uiScale.value();
+    current.video.uiScale.set_value(uiScale == 0 ? 0 : std::clamp(uiScale, 50, 200));
     current.video.maxFrameRate.set_value(std::clamp(current.video.maxFrameRate.value(), 0, 1000));
     const int msaa = current.video.msaa.value();
     current.video.msaa.set_value(msaa == 2 || msaa == 4 || msaa == 8 ? msaa : 1);
@@ -141,6 +146,7 @@ UserSettings::Video::Video()
     : windowWidth("video.windowWidth", 1280)
     , windowHeight("video.windowHeight", 960)
     , windowMode("video.windowMode", 0)
+    , uiScale("video.uiScale", 0)
     , vsync("video.vsync", true)
     , maxFrameRate("video.maxFrameRate", 60)
     , msaa("video.msaa", 1)
@@ -183,6 +189,7 @@ void register_settings()
     config::register_var(current.video.windowWidth);
     config::register_var(current.video.windowHeight);
     config::register_var(current.video.windowMode);
+    config::register_var(current.video.uiScale);
     config::register_var(current.video.vsync);
     config::register_var(current.video.maxFrameRate);
     config::register_var(current.video.msaa);
@@ -253,9 +260,21 @@ void apply_settings_bridge(bool refreshGameplay)
     pc_audio_set_master_volume(g_pc_settings.master_volume);
 }
 
+void apply_ui_scale()
+{
+    const int uiScale = settings().video.uiScale.value();
+    float scale = 0.0f;
+    if (uiScale != 0) {
+        const float displayScale = aurora::window::get_window_size().scale;
+        scale = static_cast<float>(uiScale) / 100.0f * (displayScale > 0.0f ? displayScale : 1.0f);
+    }
+    aurora::rmlui::set_ui_scale(scale);
+}
+
 void apply_runtime_settings(bool refreshGameplay)
 {
     apply_settings_bridge(refreshGameplay);
+    apply_ui_scale();
 
     constexpr int kAxisMaximum = 32767;
     for (u32 port = 0; port < PAD_MAX_CONTROLLERS; ++port) {

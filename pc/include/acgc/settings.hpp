@@ -31,6 +31,7 @@ struct UserSettings {
         ConfigVar<int> windowWidth;
         ConfigVar<int> windowHeight;
         ConfigVar<int> windowMode;
+        ConfigVar<int> uiScale;
         ConfigVar<bool> vsync;
         ConfigVar<int> maxFrameRate;
         ConfigVar<int> msaa;
@@ -74,6 +75,7 @@ SettingsLoadResult load_settings(const std::filesystem::path& userDirectory,
                                  const std::vector<std::filesystem::path>& legacyCandidates);
 void apply_settings_bridge(bool refreshGameplay);
 void apply_runtime_settings(bool refreshGameplay);
+void apply_ui_scale();
 bool save_settings();
 void shutdown_settings();
 

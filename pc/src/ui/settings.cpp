@@ -72,6 +72,13 @@ Rml::String msaa_label(int samples)
     return samples <= 1 ? "Off" : std::to_string(samples) + "x";
 }
 
+constexpr std::array kUiScales = {0, 50, 75, 100, 125, 150, 175, 200};
+
+Rml::String ui_scale_label(int percent)
+{
+    return percent == 0 ? "Automatic" : std::to_string(percent) + "%";
+}
+
 struct ResolutionPreset {
     int width;
     int height;
@@ -436,6 +443,28 @@ SettingsWindow::SettingsWindow()
                         persist();
                     });
                 pane.add_text("Choose a preset or Custom, then select Apply.");
+            });
+
+        left.register_control(
+            left.add_select_button({
+                .key = "UI Scale",
+                .getValue = [&current] { return ui_scale_label(current.video.uiScale.value()); },
+                .isModified = [&current] { return modified(current.video.uiScale); },
+            }),
+            right, [&current](Pane& pane) {
+                pane.add_text("Scale the interface relative to the display's DPI scale. "
+                              "Automatic and 100% match the DPI scale exactly.");
+                for (const int percent : kUiScales) {
+                    pane.add_button(ControlledButton::Props{
+                        .text = ui_scale_label(percent),
+                        .isSelected = [&current, percent] {
+                            return current.video.uiScale.value() == percent;
+                        },
+                    }).on_pressed([&current, percent] {
+                        current.video.uiScale.set_value(percent);
+                        persist();
+                    });
+                }
             });
 
         left.add_section("Performance");
