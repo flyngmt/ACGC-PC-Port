@@ -99,6 +99,7 @@ window content pane > * {
 
 window content pane:last-of-type > div {
     line-height: 1.55;
+    word-break: break-word;
 }
 
 .data-folder-current {
@@ -247,6 +248,10 @@ select-button key {
 
 select-button value {
     flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     text-align: right;
     font-size: 19dp;
     color: #74684f;
