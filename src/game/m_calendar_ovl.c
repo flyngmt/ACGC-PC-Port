@@ -13,10 +13,8 @@
 #endif
 
 static f32 mCD_add_calc_dt(f32* value, f32 target, f32 rate, f32 max_step, f32 min_step) {
-    f32 dt = (f32)gamePT->graph->dt_num_60fps_frames;
-    f32 dt_rate = 1.0f - powf(1.0f - rate, dt);
-
-    return add_calc(value, target, dt_rate, max_step * dt, min_step * dt);
+    /* add_calc already converts its easing rate and step limits using the graph dt. */
+    return add_calc(value, target, rate, max_step, min_step);
 }
 
 static u32 mCD_visiter_chk(int player_no, int month, int day) {

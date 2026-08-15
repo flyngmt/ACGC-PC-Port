@@ -546,12 +546,18 @@ static int aMR_DecideKurukuruDirect(MY_ROOM_ACTOR* my_room, s16* state, aMR_cont
         if (aMR_JudgeStickFull(left, game)) {
             *state = aFTR_STATE_WAIT_LROTATE;
             ftr_actor->rotation_delay_timer = 3;
+#ifdef TARGET_PC
+            ftr_actor->rotation_delay_accum = 0.0f;
+#endif
             return TRUE;
         }
 
         if (aMR_JudgeStickFull(right, game)) {
             *state = aFTR_STATE_WAIT_RROTATE;
             ftr_actor->rotation_delay_timer = 3;
+#ifdef TARGET_PC
+            ftr_actor->rotation_delay_accum = 0.0f;
+#endif
             return TRUE;
         }
     }

@@ -295,7 +295,7 @@ static BOOL aNM2_chg_cond_keitai(NPC_MASK_CAT2_ACTOR* actorx, int mode) {
 static void aNM2_make_shasho(NPC_MASK_CAT2_ACTOR* actorx, GAME_PLAY* play) {
     ACTOR* sasho_actor;
     if ((actorx->sasho_actor == NULL) && (actorx->action > aNM2_MOVE_SITDOWN)) {
-        if (actorx->unkRotation <= 0) {
+        if (actorx->conductor_spawn_timer <= 0) {
             if ((NPC_CLIP != NULL) && (NPC_CLIP->setupActor_proc != NULL)) {
                 if ((NPC_CLIP->setupActor_proc(play, SP_NPC_SASHO, -1, -1, actorx->arg, -1, -1, 0, 0) == TRUE) &&
                     (sasho_actor = Actor_info_fgName_search(&play->actor_info, SP_NPC_SASHO, ACTOR_PART_NPC),
@@ -304,11 +304,15 @@ static void aNM2_make_shasho(NPC_MASK_CAT2_ACTOR* actorx, GAME_PLAY* play) {
                     sasho_actor->world.position.y = actorx->npc_class.actor_class.world.position.y;
                     actorx->sasho_actor = sasho_actor;
                     actorx->arg ^= 0x1;
-                    actorx->unkRotation = 0x2a30;
+                    actorx->conductor_spawn_timer = 0x2a30;
                 }
             }
         } else {
-            actorx->unkRotation--;
+#ifdef TARGET_PC
+            actorx->conductor_spawn_timer -= (f32)play->game.graph->dt_num_60fps_frames;
+#else
+            actorx->conductor_spawn_timer--;
+#endif
         }
     }
 }
@@ -392,7 +396,11 @@ static void aNM2_announce_start_wait(ACTOR* actorx, GAME* game) {
     } else if (mask_cat2_actor->wait_timer <= 0.0f) {
         mDemo_Request(mDemo_TYPE_SPEAK, actorx, aNM2_set_talk_info_announce_start_wait);
     } else {
+#ifdef TARGET_PC
+        mask_cat2_actor->wait_timer -= 0.5f * (f32)game->graph->dt_num_60fps_frames;
+#else
         mask_cat2_actor->wait_timer -= 0.5f;
+#endif
     }
 }
 
@@ -471,7 +479,11 @@ static void aNM2_turn_deck(ACTOR* actorx, GAME* game) {
 static void aNM2_keitai_off_start_wait(ACTOR* actorx, GAME* game) {
     NPC_MASK_CAT2_ACTOR* mask_cat2_actor = (NPC_MASK_CAT2_ACTOR*)actorx;
     GAME_PLAY* play = (GAME_PLAY*)game;
+#ifdef TARGET_PC
+    mask_cat2_actor->wait_timer -= 0.5f * (f32)game->graph->dt_num_60fps_frames;
+#else
     mask_cat2_actor->wait_timer -= 0.5f;
+#endif
     if (mask_cat2_actor->wait_timer <= 0.0f) {
         aNM2_setupAction(actorx, game, aNM2_MOVE_KEITAI_OFF_END_WAIT);
     }
@@ -742,7 +754,7 @@ static void aNM2_sitdown_init(NPC_MASK_CAT2_ACTOR* actorx, GAME_PLAY* play) {
     actorx->npc_class.head.angle_x = 0;
     actorx->npc_class.head.angle_add_x = 0;
     mMsg_SET_LOCKCONTINUE();
-    actorx->unkRotation = 0xe10;
+    actorx->conductor_spawn_timer = 0xe10;
 }
 
 static void aNM2_draw_menu_open_wait_init(NPC_MASK_CAT2_ACTOR* actorx, GAME_PLAY* play) {

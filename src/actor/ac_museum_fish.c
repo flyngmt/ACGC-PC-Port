@@ -839,6 +839,11 @@ static void Museum_Fish_RunLogicTick(MUSEUM_FISH_ACTOR* actor, GAME* game) {
 static void Museum_Fish_RunFixedTicks(MUSEUM_FISH_ACTOR* actor, GAME* game, int ticks) {
     double saved_dt;
     int tick;
+#ifdef TARGET_PC
+    GAME_PLAY* play = (GAME_PLAY*)game;
+    u32 saved_game_frame;
+    u32 first_logic_frame;
+#endif
 
     if (ticks <= 0) {
         return;
@@ -847,9 +852,19 @@ static void Museum_Fish_RunFixedTicks(MUSEUM_FISH_ACTOR* actor, GAME* game, int 
     /* Fixed-step museum logic calls dt-aware helpers, so each tick must look like one frame. */
     saved_dt = game->graph->dt_num_60fps_frames;
     game->graph->dt_num_60fps_frames = 1.0f;
+#ifdef TARGET_PC
+    saved_game_frame = play->game_frame;
+    first_logic_frame = (u32)graph_dt_frame_time(game) - (u32)ticks + 1;
+#endif
     for (tick = 0; tick < ticks; tick++) {
+#ifdef TARGET_PC
+        play->game_frame = first_logic_frame + (u32)tick;
+#endif
         Museum_Fish_RunLogicTick(actor, game);
     }
+#ifdef TARGET_PC
+    play->game_frame = saved_game_frame;
+#endif
     game->graph->dt_num_60fps_frames = saved_dt;
 }
 

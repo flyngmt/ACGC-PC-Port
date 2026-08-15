@@ -1,5 +1,9 @@
 static int mMsg_Check_ScrollOrder(mMsg_Window_c* msg_p) {
+#ifdef PC_ENHANCEMENTS
+  return (chkTrigger(BUTTON_A) || chkTrigger(BUTTON_B) || chkTrigger(BUTTON_DDOWN) || chkTrigger(BUTTON_DUP) || chkTrigger(BUTTON_DLEFT) || chkTrigger(BUTTON_DRIGHT));
+#else
   return (chkTrigger(BUTTON_A) || chkTrigger(BUTTON_B));
+#endif
 }
 
 static int mMsg_MsgTimeEnd_dec(mMsg_Window_c* msg_p) {

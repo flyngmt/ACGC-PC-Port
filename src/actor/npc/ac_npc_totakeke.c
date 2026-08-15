@@ -80,6 +80,10 @@ static void aNTT_actor_ct(ACTOR *actorx, GAME *game) {
         NPC_TOTAKEKE_ACTOR *totakeke = (NPC_TOTAKEKE_ACTOR *)actorx;
 
         totakeke->npc_class.schedule.schedule_proc = (aNPC_SCHEDULE_PROC)aNTT_schedule_proc;
+#ifdef TARGET_PC
+        /* Staff-roll state is authored in integer 60 Hz ticks. */
+        totakeke->staffroll_logic_accum = 0.0f;
+#endif
         CLIP(npc_clip)->ct_proc(actorx, game, &ct_data);
         totakeke->npc_class.palActorIgnoreTimer = -1;
         totakeke->npc_class.condition_info.hide_flg = FALSE;

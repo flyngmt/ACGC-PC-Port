@@ -29,6 +29,9 @@ struct tamaire_npc1_actor_s {
     u8 change_flag;
     u8 left;
     u8 right;
+#ifdef TARGET_PC
+    f32 timer_accum;
+#endif
 };
 
 extern ACTOR_PROFILE Tamaire_Npc1_Profile;

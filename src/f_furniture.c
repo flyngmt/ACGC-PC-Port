@@ -120,11 +120,15 @@ static Gfx* fFTR_GetTwoTileGfx(int width0, int height0, int scroll_x0, int scrol
     u32 ctr_ofs;
     int ofs;
 
+#ifdef TARGET_PC
+    ctr_ofs = (u32)ftr_actor->texture_scroll_frame;
+#else
     if (ftr_actor->ctr_type == aFTR_CTR_TYPE_GAME_PLAY) {
         ctr_ofs = play->game_frame;
     } else {
         ctr_ofs = play->game.frame_counter;
     }
+#endif
 
     ofs = scroll_ofs + ctr_ofs;
     return two_tex_scroll_dolphin(play->game.graph, 0, -(scroll_x0 * ofs), -(scroll_y0 * ofs), width0, height0, 1,

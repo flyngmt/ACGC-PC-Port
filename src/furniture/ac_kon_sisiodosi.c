@@ -18,7 +18,7 @@ static void aKonSisiodosi_ct(FTR_ACTOR* ftr_actor, u8* data){
 
 static void aKonSisiodosi_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data){
 
-    if(ftr_actor->keyframe.frame_control.current_frame == 20.0f){
+    if(cKF_FrameControl_passCheck_now(&ftr_actor->keyframe.frame_control, 20.0f)){
         if(aFTR_CAN_PLAY_SE(ftr_actor)){
             sAdo_OngenTrgStart(0x18, &ftr_actor->position);
         }

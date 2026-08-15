@@ -3709,6 +3709,10 @@ extern void Na_SceneMode(u8 a) {
                         Sou_lev_ongen_data_struct_clear();
                         Sou_SeVolumeReset();
                     } break;
+#ifdef TARGET_PC
+                    case 0x12:
+                        /* Card B return enters the field directly after this mode stops the SFX sequence. */
+#endif
                     case 0: {
                         Sou_lev_ongen_data_struct_clear();
                         Sou_SeVolumeReset();

@@ -244,6 +244,10 @@ struct furniture_actor_s {
     s16 birth_anim_counter;
     s16 birth_anim_step;
     s16 rotation_delay_timer;
+#ifdef TARGET_PC
+    f32 rotation_delay_accum;
+    f32 texture_scroll_frame;
+#endif
     s16 dynamic_work_s[5]; /* reserved for any use by each unique furniture actor */
     f32 dynamic_work_f[2]; /* reserved for any use by each unique furniture actor */
     s16 layer;             /* layer the furniture actor resides on */

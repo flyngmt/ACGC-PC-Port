@@ -47,6 +47,9 @@ struct npc_totakeke_s {
     /* 0x9a9 */ u8 majin_flag;
     /* 0x9aa */ u8 _9aa;
     /* 0x9ab */ u8 _9ab;
+#ifdef TARGET_PC
+    /* 0x9ac */ f32 staffroll_logic_accum;
+#endif
 };
 
 struct npc_totakeke_think_data_s {

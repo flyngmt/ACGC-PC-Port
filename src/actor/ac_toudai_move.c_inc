@@ -147,7 +147,7 @@ static void aTOU_lighting(ACTOR* actor, GAME_PLAY* play){
 static void aTOU_lightout(ACTOR* actor, GAME_PLAY* play){
     TOUDAI_ACTOR* light = (TOUDAI_ACTOR*)actor; 
 
-    if(light->current_frame == 0x33){
+    if(cKF_FrameControl_passCheck_now(&light->keyframe.frame_control, 51.0f)){
             light->keyframe.frame_control.speed = 0.0f;
             light->ready_flag = 0; 
             aTOU_setup_action(actor, 1);

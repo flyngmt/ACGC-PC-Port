@@ -118,10 +118,45 @@ static void aEGH_bye(EV_GHOST_ACTOR* ghost, GAME_PLAY* play) {
     }
 }
 
+#ifdef TARGET_PC
+static void aEGH_byebye_step(EV_GHOST_ACTOR* ghost) {
+    if (ghost->bye_bye_timer != 0) {
+        ghost->bye_bye_timer--;
+
+        if (ghost->bye_bye_timer == 0) {
+            sAdo_SysTrgStart(0x16C);
+        }
+    } else {
+        if (ghost->bye_bye_angle < 30000) {
+            ghost->bye_bye_angle += 60;
+        }
+
+        ghost->npc_class.actor_class.shape_info.rotation.y += ghost->bye_bye_angle;
+        ghost->npc_class.actor_class.world.angle.y = ghost->npc_class.actor_class.shape_info.rotation.y;
+        ghost->npc_class.movement.mv_angl = ghost->npc_class.actor_class.world.angle.y;
+        ghost->npc_class.movement.mv_add_angl = 0;
+    }
+
+    if (ghost->bye_bye_scale_timer != 0) {
+        ghost->bye_bye_scale_timer--;
+    } else {
+        ghost->npc_class.actor_class.scale.x += -0.00004f;
+        ghost->npc_class.actor_class.scale.z = ghost->npc_class.actor_class.scale.x;
+    }
+}
+#endif
+
 static void aEGH_byebye(EV_GHOST_ACTOR* ghost, GAME_PLAY* play) {
     if (ghost->alpha == 0) {
         Actor_delete((ACTOR*)ghost);
     } else {
+#ifdef TARGET_PC
+        int ticks = graph_dt_60hz_ticks((GAME*)play, &ghost->byebye_accum);
+
+        while (ticks-- > 0) {
+            aEGH_byebye_step(ghost);
+        }
+#else
         if (ghost->bye_bye_timer != 0) {
             ghost->bye_bye_timer--;
 
@@ -145,6 +180,7 @@ static void aEGH_byebye(EV_GHOST_ACTOR* ghost, GAME_PLAY* play) {
             ghost->npc_class.actor_class.scale.x += -0.00004f;
             ghost->npc_class.actor_class.scale.z = ghost->npc_class.actor_class.scale.x;
         }
+#endif
     }
 }
 
@@ -226,6 +262,9 @@ static void aEGH_byebye_init(EV_GHOST_ACTOR* ghost, GAME_PLAY* play) {
     ghost->bye_bye_timer = 25;
     ghost->bye_bye_scale_timer = 48;
     ghost->bye_bye_transparency_delay_timer = 43;
+#ifdef TARGET_PC
+    ghost->byebye_accum = 0.0f;
+#endif
     aEGH_normal_wait_init(ghost, play);
     ghost->npc_class.head.lock_flag = TRUE;
 }

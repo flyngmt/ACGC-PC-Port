@@ -109,7 +109,7 @@ typedef struct gyo_ctrl_actor_s aGYO_CTRL_ACTOR;
 
 typedef void (*aGYO_ACT_PROC)(ACTOR*, GAME*);
 
-/* sizeof(aGYO_CTRL_ACTOR) == 0x258 */
+/* sizeof(aGYO_CTRL_ACTOR) == 0x254 */
 struct gyo_ctrl_actor_s {
     /* 0x000 */ TOOLS_ACTOR tools_class;
     /* 0x1CC */ ACTOR* linked_actor; /* Generally UKI_ACTOR */
@@ -146,18 +146,18 @@ struct gyo_ctrl_actor_s {
     /* 0x244 */ int alpha;
     /* 0x248 */ int col_flags;
     /* 0x24C */ u8* overlay_p;
-    /* 0x250 */ f32 logic_accum;
-    /* 0x254 */ f32 draw_accum;
+    /* 0x250 */ f32 draw_accum;
 };
 
 typedef struct gyoei_actor_s GYOEI_ACTOR;
 
-/* sizeof(GYOEI_ACTOR) == 0x638 */
+/* sizeof(GYOEI_ACTOR) == 0x634 */
 struct gyoei_actor_s {
     /* 0x000 */ ACTOR actor_class;
     /* 0x174 */ aGYO_CTRL_ACTOR ctrl[aGYO_MAX_GYOEI];
-    /* 0x624 */ u8 exist[aGYO_EXIST_MAX];
-    /* 0x628 */ int segment_type[aGYO_EXIST_MAX];
+    /* 0x61C */ u8 exist[aGYO_EXIST_MAX];
+    /* 0x620 */ int segment_type[aGYO_EXIST_MAX];
+    /* 0x630 */ f32 logic_accum;
 };
 
 extern void aGTT_actor_init(ACTOR* actorx, GAME* game); // ac_gyo_test.c

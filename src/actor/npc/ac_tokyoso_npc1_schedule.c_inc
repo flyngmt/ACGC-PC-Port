@@ -36,13 +36,36 @@ static void aTKN1_birth(TOKYOSO_NPC1_ACTOR* actor, GAME_PLAY* play) {
     }
 }
 
-static void aTKN1_warmup(TOKYOSO_NPC1_ACTOR* actor, GAME_PLAY* play) {
-    if (!aTKN1_local_redy_check(actor, play)) {
+#ifdef TARGET_PC
+static int aTKN1_warmup_timer_elapsed(TOKYOSO_NPC1_ACTOR* actor, GAME_PLAY* play) {
+    int ticks = graph_dt_60hz_ticks((GAME*)play, &actor->timer_accum);
+
+    while (ticks-- > 0) {
         if (actor->timer > 0) {
             actor->timer--;
         } else {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+#endif
+
+static void aTKN1_warmup(TOKYOSO_NPC1_ACTOR* actor, GAME_PLAY* play) {
+    if (!aTKN1_local_redy_check(actor, play)) {
+#ifdef TARGET_PC
+        if (aTKN1_warmup_timer_elapsed(actor, play)) {
+#else
+        if (actor->timer > 0) {
+            actor->timer--;
+        } else {
+#endif
             actor->move_think_idx = 7;
             actor->timer = (1.0f + RANDOM_F(1.0f)) * 60.0f;
+#ifdef TARGET_PC
+            actor->timer_accum = 0.0f;
+#endif
             CLIP(tokyoso_clip)->next_warmup_proc((ACTOR*)actor);
             aTKN1_setup_think_proc(actor, play, 3);
         }
@@ -51,9 +74,13 @@ static void aTKN1_warmup(TOKYOSO_NPC1_ACTOR* actor, GAME_PLAY* play) {
 
 static void aTKN1_warmup3(TOKYOSO_NPC1_ACTOR* actor, GAME_PLAY* play) {
     if (!aTKN1_local_redy_check(actor, play)) {
+#ifdef TARGET_PC
+        if (aTKN1_warmup_timer_elapsed(actor, play)) {
+#else
         if (actor->timer > 0) {
             actor->timer--;
         } else {
+#endif
             actor->move_think_idx = 5;
             CLIP(tokyoso_clip)->next_warmup_proc((ACTOR*)actor);
             aTKN1_setup_think_proc(actor, play, 3);
@@ -251,9 +278,21 @@ static void aTKN1_think_main_proc(NPC_ACTOR* nactorx, GAME_PLAY* play) {
     }
 
     if (actor->think_idx == 11) {
+#ifdef TARGET_PC
+        int ticks = graph_dt_60hz_ticks((GAME*)play, &actor->dash_effect_accum);
+
+        while (ticks-- > 0) {
+            if (RANDOM_F(1.0f) < 0.1f) {
+                eEC_CLIP->effect_make_proc(eEC_EFFECT_DASH_ASIMOTO, actorx->world.position, 1,
+                                           actorx->shape_info.rotation.y, (GAME*)play, actorx->npc_id,
+                                           actorx->bg_collision_check.result.unit_attribute, 0);
+            }
+        }
+#else
         if (RANDOM_F(1.0f) < 0.1f) {
             eEC_CLIP->effect_make_proc(eEC_EFFECT_DASH_ASIMOTO, actorx->world.position, 1, actorx->shape_info.rotation.y, (GAME*)play, actorx->npc_id, actorx->bg_collision_check.result.unit_attribute, 0);
         }
+#endif
     }
 
     if ((actor->flags & 0x1) != 0 && CLIP(tokyoso_clip) != NULL) {

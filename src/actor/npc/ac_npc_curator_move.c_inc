@@ -21,7 +21,11 @@ static int aCR_check_sleep_time() {
 }
 
 static void aCR_sleep_wait(NPC_CURATOR_ACTOR* curator, GAME_PLAY* play) {
+#ifdef TARGET_PC
+    curator->sleep_wait_timer -= graph_dt_60hz_ticks((GAME*)play, &curator->sleep_wait_accum);
+#else
     curator->sleep_wait_timer--;
+#endif
 
     if (curator->sleep_wait_timer <= 0) {
         aCR_setupAction(curator, play, aCR_ACTION_SLEEP); // Go back to sleep
@@ -38,6 +42,9 @@ static void aCR_wait_init(NPC_CURATOR_ACTOR* curator) {
 static void aCR_sleep_wait_init(NPC_CURATOR_ACTOR* curator) {
     aCR_wait_init(curator);
     curator->sleep_wait_timer = aCR_SLEEP_WAIT_TIMER;
+#ifdef TARGET_PC
+    curator->sleep_wait_accum = 0.0f;
+#endif
 }
 
 static void aCR_sleep_init(NPC_CURATOR_ACTOR* curator) {

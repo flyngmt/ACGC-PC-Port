@@ -30,7 +30,15 @@ static void aEDSN_game_start_call_wait(EV_DESIGNER_ACTOR* designer, GAME_PLAY* p
 
 static void aEDSN_game_end_wait(EV_DESIGNER_ACTOR* designer, GAME_PLAY* play) {
     f32 speed = designer->clean_speed;
+    f32 speed_decay = 0.07f;
+    int wash_ticks = 1;
     aEv_designer_c* tmp_data_p = designer->tmp_save_p;
+
+#ifdef TARGET_PC
+    /* PC render rate is variable; preserve the original 60 Hz minigame timing. */
+    speed_decay *= (f32)play->game.graph->dt_num_60fps_frames;
+    wash_ticks = graph_dt_60hz_ticks((GAME*)play, &designer->wash_time_accum);
+#endif
 
     if (chkTrigger(BUTTON_A)) {
         tmp_data_p->button_count++;
@@ -40,7 +48,7 @@ static void aEDSN_game_end_wait(EV_DESIGNER_ACTOR* designer, GAME_PLAY* play) {
             speed = 2.25f;
         }
     } else {
-        speed -= 0.07f;
+        speed -= speed_decay;
         if (speed < 0.0f) {
             speed = 0.0f;
         }
@@ -49,7 +57,7 @@ static void aEDSN_game_end_wait(EV_DESIGNER_ACTOR* designer, GAME_PLAY* play) {
     designer->clean_speed = speed;
 
     mPlib_Set_AnimeSpeedWashCar(speed);
-    designer->wash_time--;
+    designer->wash_time -= wash_ticks;
     if (designer->wash_time <= 0) {
         tmp_data_p->result = 2;
         aEDSN_setup_think_proc(designer, play, aEDSN_THINK_GAME_END_CALL);
@@ -104,6 +112,9 @@ static void aEDSN_game_end_wait_init(EV_DESIGNER_ACTOR* designer, GAME_PLAY* pla
     designer->npc_class.talk_info.melody_inst = 0;
     designer->wash_time = 1080;
     designer->clean_speed = 0.0f;
+#ifdef TARGET_PC
+    designer->wash_time_accum = 0.0f;
+#endif
     tmp_data_p->button_count = 0;
 }
 

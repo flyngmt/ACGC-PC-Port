@@ -63,6 +63,10 @@ struct ev_ghost_s {
   /* 0x9AA */ u8 _9AA;
   /* 0x9AB */ u8 roof_pal;
   /* 0x9AC */ u8 _9AC;
+#ifdef TARGET_PC
+  f32 alpha_accum;
+  f32 byebye_accum;
+#endif
 };
 
 extern ACTOR_PROFILE Ev_Ghost_Profile;

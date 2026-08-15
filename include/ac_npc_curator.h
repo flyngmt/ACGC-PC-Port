@@ -31,6 +31,9 @@ struct npc_curator_actor_s {
   int msg_no;
   int _9B0; // might be unused 'awake' state
   mActor_name_t donated_item;
+#ifdef TARGET_PC
+  f32 sleep_wait_accum;
+#endif
 };
 
 extern ACTOR_PROFILE Npc_Curator_Profile;

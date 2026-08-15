@@ -29,6 +29,9 @@ static void Player_actor_setup_main_Pickup(ACTOR* actorx, GAME* game) {
     int signboard_flag;
     int anim1_idx;
     int part_table_idx;
+#ifdef PC_ENHANCEMENTS
+    int putaway_money = FALSE;
+#endif
 
     slot_idx = req_pickup_p->inv_slot;
     item = req_pickup_p->item;
@@ -49,8 +52,30 @@ static void Player_actor_setup_main_Pickup(ACTOR* actorx, GAME* game) {
         aSIGN_erase_white_sign(game, target_pos_p);
     }
 
+#ifdef PC_ENHANCEMENTS
+    /* bells go straight to wallet when the whole amount fits; otherwise the bag is picked up normally */
+    {
+        u32 bell_amount = mPr_GetAmountForMoneyItem(item);
+        if (bell_amount > 0 && mPr_GivePossessionBells(bell_amount)) {
+            sAdo_SysTrgStart(SE_REGISTER);
+            if (target_pos_p != NULL) {
+                mFI_SetFG_common(EMPTY_NO, *target_pos_p, TRUE);
+            }
+            putaway_money = TRUE;
+        } else {
+            Player_actor_putin_item(slot_idx, item, target_pos_p);
+        }
+    }
+#else
     Player_actor_putin_item(slot_idx, item, target_pos_p);
+#endif
 
+#ifdef PC_ENHANCEMENTS
+    /* the bells never entered a pocket, so the pockets-full exchange must not offer them again. money duplication otherwise. */
+    if (putaway_money) {
+        main_pickup_p->exchange_flag = FALSE;
+    } else
+#endif
     if (slot_idx >= 0) {
         main_pickup_p->exchange_flag = FALSE;
     } else if (mEv_IsTitleDemo()) {

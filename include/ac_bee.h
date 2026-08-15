@@ -25,7 +25,7 @@ struct bee_actor_s {
     f32 speed;
     f32 start_frame;
     f32 pos_y;
-    int alpha;
+    f32 alpha;
     s16 bobbing_counter;
     s16 add_angle;
     s16 fly_angle[2];

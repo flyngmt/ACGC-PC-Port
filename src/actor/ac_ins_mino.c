@@ -23,6 +23,7 @@
 #define aIMN_SHAKE_POS_X(ins) ((ins)->f32_work1)
 #define aIMN_SHAKE_POS_Y(ins) ((ins)->f32_work2)
 #define aIMN_BASE_POS_Z(ins) ((ins)->f32_work3)
+#define aIMN_IDLE_TIMER_ACCUM(ins) ((ins)->_258)
 
 enum {
     aIMN_ACT_AVOID,
@@ -379,10 +380,14 @@ static void aIMN_wait(ACTOR* actorx, GAME* game) {
                     actorx->actor_specific--;
                     if (actorx->actor_specific < 0) {
                         actorx->actor_specific = 0x133 + (s16)(60.0f * RANDOM_F(5.0f));
+                        aIMN_IDLE_TIMER_ACCUM(insect) = 0.0f;
                     }
                 }
             } else {
-                actorx->actor_specific--;
+                int idle_timer = actorx->actor_specific - 6;
+
+                aINS_dt_dec_s32_timer(game, &idle_timer, &aIMN_IDLE_TIMER_ACCUM(insect));
+                actorx->actor_specific = idle_timer + 6;
             }
         }
 
@@ -513,6 +518,7 @@ static void aIMN_wait_init(aINS_INSECT_ACTOR* insect, GAME* game) {
     insect->target_speed = 0.0f;
     insect->speed_step = 0.0f;
     insect->tools_actor.actor_class.actor_specific = 0x133 + (s16)(60.0f * RANDOM_F(5.0f));
+    aIMN_IDLE_TIMER_ACCUM(insect) = 0.0f;
     aIMN_SHAKE_POS_X(insect) = insect->tools_actor.actor_class.world.position.x;
     aIMN_SHAKE_POS_Y(insect) = insect->tools_actor.actor_class.world.position.y;
 }

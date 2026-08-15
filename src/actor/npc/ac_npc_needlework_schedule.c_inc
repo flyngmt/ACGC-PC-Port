@@ -62,7 +62,13 @@ static int player_buy(NPC_NEEDLEWORK_ACTOR* actor, GAME_PLAY* play) {
     ACTOR* playerx = GET_PLAYER_ACTOR_ACTOR(play);
 
     if (actor->delay_frames != 0) {
+#ifdef TARGET_PC
+        int ticks = graph_dt_60hz_ticks((GAME*)play, &actor->delay_accum);
+
+        actor->delay_frames = ticks >= actor->delay_frames ? 0 : actor->delay_frames - ticks;
+#else
         actor->delay_frames--;
+#endif
         return FALSE;
     } else if (playerx != NULL) {
         PLAYER_ACTOR* player = (PLAYER_ACTOR*)playerx;
@@ -78,6 +84,9 @@ static int player_buy(NPC_NEEDLEWORK_ACTOR* actor, GAME_PLAY* play) {
                 if (ux == table_ux[i] && uz == table_uz[i]) {
                     actor->buy_ut_idx = i;
                     actor->delay_frames = 10;
+#ifdef TARGET_PC
+                    actor->delay_accum = 0.0f;
+#endif
                     return TRUE;
                 }
             }
@@ -336,6 +345,9 @@ static void aNNW_my_proc_player_init(NPC_NEEDLEWORK_ACTOR* actor, GAME_PLAY* pla
 
     actor->_9B6 = 1;
     actor->proc_delay_frames = 5;
+#ifdef TARGET_PC
+    actor->proc_delay_accum = 0.0f;
+#endif
     aNNW_set_request_act(actor, 4, aNPC_ACT_RUN, aNPC_ACT_TYPE_TO_POINT, aNPC_ACT_OBJ_DEFAULT, playerx->world.position.x, playerx->world.position.z);
 }
 
@@ -432,7 +444,14 @@ static void aNNW_my_proc_player(NPC_NEEDLEWORK_ACTOR* actor, GAME_PLAY* play) {
     switch (aNNW_next_target(actor, play)) {
         case 1:
             if (actor->proc_delay_frames > 0) {
+#ifdef TARGET_PC
+                int ticks = graph_dt_60hz_ticks((GAME*)play, &actor->proc_delay_accum);
+
+                actor->proc_delay_frames =
+                    ticks >= actor->proc_delay_frames ? 0 : actor->proc_delay_frames - ticks;
+#else
                 actor->proc_delay_frames--;
+#endif
             } else {
                 aNNW_my_proc_init(actor, play, aNNW_MY_PROC_PLAYER);
             }

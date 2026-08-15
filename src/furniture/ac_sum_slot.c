@@ -17,11 +17,20 @@ static void aSumSlot_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, 
 
     if (ftr_actor->dynamic_work_s[0] == TRUE) {
         if (cKF_SkeletonInfo_R_play(keyframe) != cKF_STATE_STOPPED) {
-            keyframe->frame_control.speed = 0.5f;
-            ftr_actor->tex_animation.frame++;
+            int tex_anim_ticks;
 
-            if (ftr_actor->tex_animation.frame >= 242 || ftr_actor->tex_animation.frame < 0) {
-                ftr_actor->tex_animation.frame = 0;
+            keyframe->frame_control.speed = 0.5f;
+
+#ifdef TARGET_PC
+            tex_anim_ticks = graph_dt_60hz_ticks(game, &ftr_actor->dynamic_work_f[0]);
+#else
+            tex_anim_ticks = 1;
+#endif
+            while (tex_anim_ticks-- > 0) {
+                ftr_actor->tex_animation.frame++;
+                if (ftr_actor->tex_animation.frame >= 242 || ftr_actor->tex_animation.frame < 0) {
+                    ftr_actor->tex_animation.frame = 0;
+                }
             }
 
             if (aFTR_CAN_PLAY_SE(ftr_actor)) {

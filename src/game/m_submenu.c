@@ -8,6 +8,10 @@
 #include "m_quest.h"
 #include "libultra/libultra.h"
 
+#ifdef PC_ENHANCEMENTS
+#include "m_museum_display.h"
+#endif
+
 static mSM_dlftbl_c SubmenuArea_dlftbl[mSM_DLF_NUM] = { { NULL, 0, 0, 0, 0, 0, "submenu_ovl" },
                                                         { NULL, 0, 0, 0, 0, 0, "player_actor" } };
 
@@ -572,7 +576,16 @@ static int mSM_check_item_for_curator(int slot_no, int param_2) {
 
     if (item != EMPTY_NO && mPr_GET_ITEM_COND(priv->inventory.item_conditions, slot_no) == mPr_ITEM_COND_NORMAL &&
         item != ITM_KNIFE_AND_FORK && !(item >= ITM_EXCERCISE_CARD00 && item <= ITM_EXCERCISE_CARD12)) {
+#ifdef PC_ENHANCEMENTS
+        /* only show items the curator can accept */
+        if (item == ITM_FOSSIL) {
+            res = TRUE; /* fossils are always selectable */
+        } else if (mMmd_GetDisplayInfo(item) == mMmd_DISPLAY_CAN_DONATE) {
+            res = TRUE;
+        }
+#else
         res = TRUE;
+#endif
     }
 
     return res;

@@ -1582,6 +1582,9 @@ static int aMR_ReserveFurniture(GAME* game, u16 ftr_no, int free_idx, int ut_x, 
                 my_room->rsv_ftr[i].layer = layer;
                 my_room->rsv_ftr[i].frames = 46;
                 my_room->rsv_ftr[i].initial_frames_num = 46;
+#ifdef TARGET_PC
+                my_room->rsv_ftr[i].frame_accum = 0.0f;
+#endif
                 my_room->rsv_ftr[i].ut_x = ut_x;
                 my_room->rsv_ftr[i].ut_z = ut_z;
 
@@ -2368,6 +2371,9 @@ static void aMR_FtrRotate(FTR_ACTOR* ftr_actor, GAME* game, MY_ROOM_ACTOR* my_ro
     f32 rotate_amount = aMR_GetEllipseSpeed(ftr_actor->angle_y, ftr_actor->angle_y_target, 5.6f, 90.0f);
     f32 delta_angle = ABS(ftr_actor->angle_y - ftr_actor->angle_y_target);
 
+    /* Preserve the original 60 Hz furniture rotation speed on the PC frame loop. */
+    rotate_amount *= (f32)game->graph->dt_num_60fps_frames;
+
     if (delta_angle <= rotate_amount + 1.0f) {
         ftr_actor->angle_y = ftr_actor->angle_y_target;
         ftr_actor->state = aFTR_STATE_STOP;
@@ -2597,19 +2603,35 @@ static void aMR_FtrDeath(FTR_ACTOR* ftr_actor, GAME* game, MY_ROOM_ACTOR* my_roo
 }
 
 static void aMR_FtrWaitRrotate(FTR_ACTOR* ftr_actor, GAME* game, MY_ROOM_ACTOR* my_room) {
-    if (ftr_actor->rotation_delay_timer <= 0) {
-        ftr_actor->state = aFTR_STATE_RROTATE;
-    }
+#ifdef TARGET_PC
+    int ticks = graph_dt_60hz_ticks(game, &ftr_actor->rotation_delay_accum);
+#else
+    int ticks = 1;
+#endif
 
-    ftr_actor->rotation_delay_timer--;
+    while (ticks-- > 0) {
+        if (ftr_actor->rotation_delay_timer <= 0) {
+            ftr_actor->state = aFTR_STATE_RROTATE;
+        }
+
+        ftr_actor->rotation_delay_timer--;
+    }
 }
 
 static void aMR_FtrWaitLrotate(FTR_ACTOR* ftr_actor, GAME* game, MY_ROOM_ACTOR* my_room) {
-    if (ftr_actor->rotation_delay_timer <= 0) {
-        ftr_actor->state = aFTR_STATE_LROTATE;
-    }
+#ifdef TARGET_PC
+    int ticks = graph_dt_60hz_ticks(game, &ftr_actor->rotation_delay_accum);
+#else
+    int ticks = 1;
+#endif
 
-    ftr_actor->rotation_delay_timer--;
+    while (ticks-- > 0) {
+        if (ftr_actor->rotation_delay_timer <= 0) {
+            ftr_actor->state = aFTR_STATE_LROTATE;
+        }
+
+        ftr_actor->rotation_delay_timer--;
+    }
 }
 
 static void aMR_GetItemPosOnMovingFurniture(MY_ROOM_ACTOR* my_room, FTR_ACTOR* ftr_actor) {
@@ -2662,6 +2684,9 @@ static void aMR_FurnitureMoveFunction(ACTOR* actorx, GAME* game) {
             aFTR_PROFILE* profile = aMR_GetFurnitureProfile(ftr_actor->name);
 
             if (profile != NULL) {
+#ifdef TARGET_PC
+                ftr_actor->texture_scroll_frame += (f32)game->graph->dt_num_60fps_frames;
+#endif
                 (*fproc[ftr_actor->state])(ftr_actor, game, my_room);
                 ftr_actor->s_angle_y = RAD2SHORT_ANGLE2(DEG2RAD(ftr_actor->angle_y));
 
@@ -2725,43 +2750,54 @@ static void aMR_SetReserveFurniture(MY_ROOM_ACTOR* my_room, GAME* game) {
     if (play->submenu.process_status == mSM_PROCESS_WAIT) {
         for (i = 0; i < aMR_RSV_FTR_NUM; i++) {
             if (my_room->rsv_ftr[i].exist_flag) {
-                if (my_room->rsv_ftr[i].frames == my_room->rsv_ftr[i].initial_frames_num) {
-                    u16 ftr_no = my_room->rsv_ftr[i].ftr_name;
-                    mActor_name_t item = aMR_GetBirthFurniture(ftr_no, my_room->rsv_ftr[i].angle_idx);
+#ifdef TARGET_PC
+                int ticks = graph_dt_60hz_ticks(game, &my_room->rsv_ftr[i].frame_accum);
+#else
+                int ticks = 1;
+#endif
+                int tick;
 
-                    if (aMR_GetFurnitureBank2(ftr_no, game, item)) {
-                        if (my_room->rsv_ftr[i].free_no != -1) {
-                            used[my_room->rsv_ftr[i].free_no] = TRUE;
-                            aMR_FurnitureCt(ftr_actor + my_room->rsv_ftr[i].free_no, game, my_room->rsv_ftr[i].ut_x,
-                                            my_room->rsv_ftr[i].ut_z, item, my_room->rsv_ftr[i].free_no,
-                                            aFTR_STATE_BIRTH_WAIT, my_room->rsv_ftr[i].layer, TRUE);
-                            aMR_PlussWeight(actorx, &ftr_actor[my_room->rsv_ftr[i].free_no]);
-                            mMkRm_ReportChangePlayerRoom();
+                for (tick = 0; tick < ticks && my_room->rsv_ftr[i].exist_flag; tick++) {
+                    if (my_room->rsv_ftr[i].frames == my_room->rsv_ftr[i].initial_frames_num) {
+                        u16 ftr_no = my_room->rsv_ftr[i].ftr_name;
+                        mActor_name_t item = aMR_GetBirthFurniture(ftr_no, my_room->rsv_ftr[i].angle_idx);
+
+                        if (aMR_GetFurnitureBank2(ftr_no, game, item)) {
+                            if (my_room->rsv_ftr[i].free_no != -1) {
+                                used[my_room->rsv_ftr[i].free_no] = TRUE;
+                                aMR_FurnitureCt(ftr_actor + my_room->rsv_ftr[i].free_no, game,
+                                                my_room->rsv_ftr[i].ut_x, my_room->rsv_ftr[i].ut_z, item,
+                                                my_room->rsv_ftr[i].free_no, aFTR_STATE_BIRTH_WAIT,
+                                                my_room->rsv_ftr[i].layer, TRUE);
+                                aMR_PlussWeight(actorx, &ftr_actor[my_room->rsv_ftr[i].free_no]);
+                                mMkRm_ReportChangePlayerRoom();
+                            } else {
+                                my_room->rsv_ftr[i].exist_flag = FALSE;
+                            }
                         } else {
                             my_room->rsv_ftr[i].exist_flag = FALSE;
                         }
-                    } else {
+                    } else if (my_room->rsv_ftr[i].frames <= 0) {
                         my_room->rsv_ftr[i].exist_flag = FALSE;
-                    }
-                } else if (my_room->rsv_ftr[i].frames <= 0) {
-                    my_room->rsv_ftr[i].exist_flag = FALSE;
-                } else if (my_room->rsv_ftr[i].frames + 1 == my_room->rsv_ftr[i].initial_frames_num) {
-                    int ftrID = my_room->rsv_ftr[i].free_no;
-                    mActor_name_t item = mRmTp_FtrIdx2FtrItemNo(my_room->rsv_ftr[i].ftr_name, mRmTp_DIRECT_SOUTH);
-                    s16 icon_no = aMR_ItemNo2IconNo(item);
+                    } else if (my_room->rsv_ftr[i].frames + 1 == my_room->rsv_ftr[i].initial_frames_num) {
+                        int ftrID = my_room->rsv_ftr[i].free_no;
+                        mActor_name_t item =
+                            mRmTp_FtrIdx2FtrItemNo(my_room->rsv_ftr[i].ftr_name, mRmTp_DIRECT_SOUTH);
+                        s16 icon_no = aMR_ItemNo2IconNo(item);
 
-                    if (ftrID != -1) {
-                        xyz_t effect_pos;
+                        if (ftrID != -1) {
+                            xyz_t effect_pos;
 
-                        aMR_GetFtrShapeCenter(&effect_pos, &l_aMR_work.ftr_actor_list[ftrID]);
-                        if (eEC_CLIP != NULL) {
-                            eEC_CLIP->effect_make_proc(eEC_EFFECT_KAGU_HAPPA, effect_pos, 2, 0, game, RSV_NO, icon_no,
-                                                       0);
+                            aMR_GetFtrShapeCenter(&effect_pos, &l_aMR_work.ftr_actor_list[ftrID]);
+                            if (eEC_CLIP != NULL) {
+                                eEC_CLIP->effect_make_proc(eEC_EFFECT_KAGU_HAPPA, effect_pos, 2, 0, game, RSV_NO,
+                                                           icon_no, 0);
+                            }
                         }
                     }
-                }
 
-                my_room->rsv_ftr[i].frames--;
+                    my_room->rsv_ftr[i].frames--;
+                }
             }
         }
     }

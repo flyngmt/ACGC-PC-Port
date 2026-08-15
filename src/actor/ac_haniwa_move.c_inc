@@ -537,7 +537,11 @@ static void aHNW_pl_approach_door(HANIWA_ACTOR* haniwa, GAME* game) {
 
     ACTOR* playerx = GET_PLAYER_ACTOR_GAME_ACTOR(game);
 
+#ifdef TARGET_PC
+    haniwa->door_approach_frame += graph_dt_60hz_ticks(game, &haniwa->door_approach_accum);
+#else
     haniwa->door_approach_frame++;
+#endif
     if (playerx != NULL) {
         int house_idx = haniwa->house_idx;
         int stage = ((chk_posX[house_idx] - playerx->world.position.x) * chk_val[house_idx]) <= 0.0f;
@@ -575,6 +579,9 @@ static void aHNW_door_open_wait(HANIWA_ACTOR* haniwa, GAME* game) {
         if (house_actor != GET_PLAYER_ACTOR_NOW()->get_door_label_proc(gamePT)) {
             aHNW_setupAction(haniwa, game, aHNW_ACTION_DOOR_OPEN_TIMER);
             haniwa->door_approach_frame = 0;
+#ifdef TARGET_PC
+            haniwa->door_approach_accum = 0.0f;
+#endif
         } else {
             aHNW_setupAction(haniwa, game, aHNW_ACTION_WAIT);
         }
@@ -590,7 +597,11 @@ static void aHNW_door_open_timer(HANIWA_ACTOR* haniwa, GAME* game) {
         if (house_actor == GET_PLAYER_ACTOR_NOW()->get_door_label_proc(gamePT)) {
             aHNW_setupAction(haniwa, game, aHNW_ACTION_WAIT);
         } else {
+#ifdef TARGET_PC
+            haniwa->door_approach_frame += graph_dt_60hz_ticks(game, &haniwa->door_approach_accum);
+#else
             haniwa->door_approach_frame++;
+#endif
             if (haniwa->door_approach_frame > 80) {
                 house_actor->structure_class.actor_class.world.angle.z = 1;
                 aHNW_setupAction(haniwa, game, aHNW_ACTION_WAIT);
@@ -618,6 +629,9 @@ static void aHNW_pl_approach_door_init(HANIWA_ACTOR* haniwa, GAME* game) {
     game->pad_initialized = FALSE;
     haniwa->player_approach_door_stage = -1;
     haniwa->door_approach_frame = 0;
+#ifdef TARGET_PC
+    haniwa->door_approach_accum = 0.0f;
+#endif
 }
 
 typedef void (*HANIWA_PROC)(HANIWA_ACTOR*, GAME*);

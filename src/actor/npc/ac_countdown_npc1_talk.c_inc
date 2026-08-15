@@ -129,7 +129,7 @@ static void aCD1_front_turn(COUNTDOWN_NPC1_ACTOR* actor) {
 static void aCD1_front_wait(COUNTDOWN_NPC1_ACTOR* actor) {
     if (Common_Get(time.now_sec) > mTM_TIME2SEC(23, 59, 50)) {
         actor->npc_class.draw.loop_flag = 2;
-        actor->fire_delay = RANDOM(10);
+        actor->fire_delay = (f32)RANDOM(10);
         aCD1_setupAction(actor, aCD1_ACT_COUNT_WAIT);
     }
 }
@@ -140,7 +140,7 @@ static void aCD1_count_wait(COUNTDOWN_NPC1_ACTOR* actor) {
             actor->next_action = aCD1_ACT_FIRE;
             actor->npc_class.action.step = aNPC_ACTION_END_STEP;
         } else {
-            actor->fire_delay--;
+            actor->fire_delay -= (f32)gamePT->graph->dt_num_60fps_frames;
         }
     }
 }

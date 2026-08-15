@@ -54,6 +54,10 @@ typedef struct game_select_s {
   /* 0x0220 */ int button_step;
   /* 0x0224 */ u8 name[PLAYER_NAME_LEN];
   /* 0x0228 */ int unk_228[3];
+#ifdef TARGET_PC
+  /* Preserve the original 60 Hz D-pad repeat cadence at variable frame rates. */
+  f32 button_step_accum;
+#endif
 } GAME_SELECT;
 
 extern void select_init(GAME* game);

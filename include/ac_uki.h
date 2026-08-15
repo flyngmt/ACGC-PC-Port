@@ -25,7 +25,7 @@ enum {
 typedef void (*aUKI_SET_VALUE_PROC)(ACTOR* actorx, xyz_t pos, xyz_t pos_speed, int angle_speed_y, int command);
 typedef mActor_name_t (*aUKI_GET_FISH_TYPE)(ACTOR* actorx);
 
-/* sizeof(UKI_ACTOR) == 0x2C0 */
+/* sizeof(UKI_ACTOR) == 0x2C8 */
 typedef struct actor_uki_s {
     /* 0x000 */ ACTOR actor_class;
     /* 0x174 */ ACTOR* child_actor;
@@ -65,6 +65,8 @@ typedef struct actor_uki_s {
     /* 0x2B5 */ u8 _2B5;
     /* 0x2B8 */ f32 hamon_accum;
     /* 0x2BC */ f32 touch_vib_accum;
+    /* 0x2C0 */ f32 logic_accum;
+    /* 0x2C4 */ int logic_ticks;
 } UKI_ACTOR;
 
 extern ACTOR_PROFILE Uki_Profile;

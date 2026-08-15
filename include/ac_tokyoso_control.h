@@ -106,6 +106,9 @@ struct tokyoso_control_actor_s {
     aTKC_PROC act_proc;
     int action;
     s16 timer;
+#ifdef TARGET_PC
+    f32 logic_accum;
+#endif
 };
 
 extern ACTOR_PROFILE Tokyoso_Control_Profile;

@@ -518,9 +518,12 @@ static void aITB_touch_water_reverse(ACTOR* actorx, GAME* game) {
     
     if (ins->timer > 0) {
         ins->timer -= (f32)game->graph->dt_num_60fps_frames;
+        if (ins->timer < 0.0f) {
+            ins->timer = 0.0f;
+        }
     }
 
-    if (ins->timer == 0) {
+    if (ins->timer <= 0.0f) {
         aITB_setupAction(ins, aITB_ACT_HOVER_WAIT_ON_WATER, game);
     }
 }
@@ -536,9 +539,12 @@ static void aITB_hover_wait_on_water(ACTOR* actorx, GAME* game) {
 
     if (ins->timer > 0) {
         ins->timer -= (f32)game->graph->dt_num_60fps_frames;
+        if (ins->timer < 0.0f) {
+            ins->timer = 0.0f;
+        }
     }
 
-    if (ins->timer == 0) {
+    if (ins->timer <= 0.0f) {
         int action;
 
         if (ins->flag < 2) {

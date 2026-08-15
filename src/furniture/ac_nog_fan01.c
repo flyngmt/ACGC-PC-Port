@@ -40,6 +40,9 @@ static void aNogFan_ct(FTR_ACTOR* ftr_actor, u8* data) {
     keyf->frame_control.speed = 0.5f;
 
     ftr_actor->dynamic_work_s[0] = 0;
+#ifdef TARGET_PC
+    ftr_actor->dynamic_work_f[1] = 0.0f;
+#endif
 
     if (ftr_actor->switch_bit != FALSE) {
         ftr_actor->dynamic_work_f[0] = 0.5f;
@@ -56,6 +59,7 @@ static void aNogFan_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u
 #endif
     int num;
     int idx;
+    int tex_anim_ticks;
 
     cKF_SkeletonInfo_R_c* keyf;
 
@@ -76,29 +80,39 @@ static void aNogFan_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u
     cKF_SkeletonInfo_R_play(keyf);
 
     idx = 9.0f - (2.0f * (ftr_actor->dynamic_work_f[0] * 9.0f));
-    
+
+#ifdef TARGET_PC
+    tex_anim_ticks = graph_dt_60hz_ticks(game, &ftr_actor->dynamic_work_f[1]);
+#else
+    tex_anim_ticks = 1;
+#endif
+
 #if VERSION >= VER_GAFU01_00
     if ((idx != ARRAY_COUNT(fan_rot_frame_counter_dat) - 1)) {
+        while (tex_anim_ticks-- > 0) {
+            ftr_actor->dynamic_work_s[0]++;
+            num = fan_rot_frame_counter_dat[idx];
+            if ((ftr_actor->dynamic_work_s[0] >= num)) {
+                ftr_actor->dynamic_work_s[0] = 0;
+                ftr_actor->tex_animation.frame++;
+
+                if (ftr_actor->tex_animation.frame >= 6 || ftr_actor->tex_animation.frame < 0) {
+                    ftr_actor->tex_animation.frame = 0;
+                }
+            }
+        }
+    }
+#else
+    while (tex_anim_ticks-- > 0) {
         ftr_actor->dynamic_work_s[0]++;
-        num = fan_rot_frame_counter_dat[idx];
-        if ((ftr_actor->dynamic_work_s[0] >= num)) {
+        num = fan_kurukuru_data[idx];
+        if ((num != -1) && (ftr_actor->dynamic_work_s[0] >= num)) {
             ftr_actor->dynamic_work_s[0] = 0;
             ftr_actor->tex_animation.frame++;
 
             if (ftr_actor->tex_animation.frame >= 6 || ftr_actor->tex_animation.frame < 0) {
                 ftr_actor->tex_animation.frame = 0;
             }
-        }
-    }
-#else
-    ftr_actor->dynamic_work_s[0]++;
-    num = fan_kurukuru_data[idx];
-    if ((num != -1) && (ftr_actor->dynamic_work_s[0] >= num)) {
-        ftr_actor->dynamic_work_s[0] = 0;
-        ftr_actor->tex_animation.frame++;
-
-        if (ftr_actor->tex_animation.frame >= 6 || ftr_actor->tex_animation.frame < 0) {
-            ftr_actor->tex_animation.frame = 0;
         }
     }
 #endif

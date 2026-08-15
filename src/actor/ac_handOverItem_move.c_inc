@@ -311,7 +311,7 @@ static void aHOI_calc_scale(HANDOVERITEM_ACTOR* handOverItem) {
   handOverItem->scale = scale + step / (data[i + 1].frame - data[i].frame);
 }
 
-static void aHOI_anime_proc(HANDOVERITEM_ACTOR* handOverItem) {
+static void aHOI_anime_proc(HANDOVERITEM_ACTOR* handOverItem, GAME* game) {
   static f32 max_anm_cnt[aHOI_REQUEST_NUM] = {
     1.0f,
     39.0f,
@@ -351,7 +351,7 @@ static void aHOI_anime_proc(HANDOVERITEM_ACTOR* handOverItem) {
   f32 anm_cnt = handOverItem->anm_cnt;
   f32 anm_cnt_max = table[handOverItem->item_type][handOverItem->mode];
 
-  anm_cnt += 0.5f;
+  anm_cnt += 0.5f * (f32)game->graph->dt_num_60fps_frames;
   if (anm_cnt > anm_cnt_max) {
     anm_cnt = anm_cnt_max;
   }
@@ -443,5 +443,5 @@ static void aHOI_actor_move(ACTOR* actorx, GAME* game) {
   }
 
   aHOI_set_se(handOverItem);
-  aHOI_anime_proc(handOverItem);
+  aHOI_anime_proc(handOverItem, game);
 }

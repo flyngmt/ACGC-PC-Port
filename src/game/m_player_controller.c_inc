@@ -116,7 +116,14 @@ static int Player_actor_CheckController_forShake_tree(GAME* game) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actorx;
     s8 kind = Player_actor_Get_ItemKind(actorx, player->now_main_index);
 
+#ifdef PC_ENHANCEMENTS
+    /* net/rod no longer block tree shaking */
+    if (!mPlayer_ITEM_KIND_CHECK(kind, 0, mPlayer_ITEM_KIND_NUM) ||
+        mPlayer_ITEM_IS_NOT_TOOL(kind) != FALSE ||
+        mPlayer_ITEM_IS_NET(kind) || mPlayer_ITEM_IS_ROD(kind)) {
+#else
     if (!mPlayer_ITEM_KIND_CHECK(kind, 0, mPlayer_ITEM_KIND_NUM) || mPlayer_ITEM_IS_NOT_TOOL(kind) != FALSE) {
+#endif
         if (mEv_IsTitleDemo()) {
             mPlayer_Controller_Data_c* data = mPlib_Get_controller_data_for_title_demo_p();
             return (data->trigger_btn_a != 0) && (data->btn_b == 0);

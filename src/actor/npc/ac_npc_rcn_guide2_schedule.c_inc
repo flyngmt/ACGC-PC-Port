@@ -190,7 +190,11 @@ static void aNRG2_job_start_wait(NPC_RCN_GUIDE2_ACTOR* rcn_guide2, GAME_PLAY* pl
 
 static void aNRG2_all_job_end(NPC_RCN_GUIDE2_ACTOR* rcn_guide2, GAME_PLAY* play) {
     if (play->fb_wipe_mode == WIPE_MODE_NONE) {
+#ifdef TARGET_PC
+        rcn_guide2->counter += graph_dt_60hz_ticks((GAME*)play, &rcn_guide2->wipe_wait_accum);
+#else
         rcn_guide2->counter++;
+#endif
 
         if (rcn_guide2->counter > 60) {
             aNRG2_setup_think_proc(rcn_guide2, play, aNRG2_THINK_SEND_AWAY);
@@ -262,6 +266,10 @@ static void aNRG2_job_start_wait_init(NPC_RCN_GUIDE2_ACTOR* rcn_guide2, GAME_PLA
 static void aNRG2_all_job_end_init(NPC_RCN_GUIDE2_ACTOR* rcn_guide2, GAME_PLAY* play) {
     INTRO_DEMO_ACTOR* intro_demo;
 
+#ifdef TARGET_PC
+    rcn_guide2->counter = 0;
+    rcn_guide2->wipe_wait_accum = 0.0f;
+#endif
     mPlib_request_main_demo_wait_type1(&play->game, 0, NULL);
     intro_demo =
         (INTRO_DEMO_ACTOR*)Actor_info_name_search(&play->actor_info, mAc_PROFILE_INTRO_DEMO, ACTOR_PART_CONTROL);

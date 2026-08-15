@@ -206,19 +206,19 @@ static int aNPS_talk_end_chk(ACTOR* actorx, GAME* game) {
         p_sel->talk_end_flag = TRUE;
         res = TRUE;
     } else {
-        int silent_counter = p_sel->silent_counter;
+        f32 silent_counter = p_sel->silent_counter;
 
         if (mMsg_Check_MainNormal(msg_p) == TRUE || mChoice_CHECK_MAIN_NORMAL() == TRUE) {
-            silent_counter++;
-            if (silent_counter > 600) {
-                silent_counter = 600;
+            silent_counter += (f32)game->graph->dt_num_60fps_frames;
+            if (silent_counter > 600.0f) {
+                silent_counter = 600.0f;
             }
         } else {
-            silent_counter = 0;
+            silent_counter = 0.0f;
         }
 
         if (mDemo_Get_OrderValue(mDemo_ORDER_NPC0, 0) == 0) {
-            if (silent_counter >= 600) {
+            if (silent_counter >= 600.0f) {
                 if (p_sel->npc_class.draw.animation_id != aNPC_ANIM_4HAKU_E1) {
                     mDemo_Set_OrderValue(mDemo_ORDER_NPC0, 0, 255);
                 }

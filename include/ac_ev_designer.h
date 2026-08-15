@@ -36,6 +36,9 @@ struct ev_designer_actor_s {
     f32 clean_speed;
     aEv_designer_c* tmp_save_p;
     ACTOR* s_car_p;
+#ifdef TARGET_PC
+    f32 wash_time_accum;
+#endif
 };
 
 extern ACTOR_PROFILE Ev_Designer_Profile;

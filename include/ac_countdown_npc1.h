@@ -19,7 +19,7 @@ struct countdown_npc1_actor_s {
     int next_action;
     aCD1_ACT_PROC act_proc;
     int term;
-    int fire_delay;
+    f32 fire_delay;
     int event_idx;
     s16 base_angle;
 };

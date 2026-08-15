@@ -310,12 +310,23 @@ static void mAD_turn_page_proc(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     u8 idx;
     int i;
     f32 pos;
+#ifdef TARGET_PC
+    f32 dt = (f32)gamePT->graph->dt_num_60fps_frames;
+#endif
 
     pos = fabsf(adrs_ovl->pos_x);
     if (pos < 14.0f) {
+#ifdef TARGET_PC
+        adrs_ovl->speed_x *= DTCONV_GRAPH(sqrtf(2.0f), gamePT->graph);
+#else
         adrs_ovl->speed_x *= sqrtf(2.0f);
+#endif
     } else if (pos > 30.0f) {
+#ifdef TARGET_PC
+        adrs_ovl->speed_x *= DTCONV_GRAPH(sqrtf(0.5f), gamePT->graph);
+#else
         adrs_ovl->speed_x *= sqrtf(0.5f);
+#endif
 
         if (fabsf(adrs_ovl->speed_x) < 0.25f) {
             idx = adrs_ovl->curIdx;
@@ -335,7 +346,11 @@ static void mAD_turn_page_proc(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
         }
     }
 
+#ifdef TARGET_PC
+    adrs_ovl->pos_x += adrs_ovl->speed_x * dt;
+#else
     adrs_ovl->pos_x += adrs_ovl->speed_x;
+#endif
     for (i = 0; i < mAD_PAGE_NUM; i++) {
         chase_f(&adrs_ovl->pile[i], adrs_ovl->goal_pile[i], 0.6f * (f32)gamePT->graph->dt_num_60fps_frames);
     }
@@ -344,15 +359,30 @@ static void mAD_turn_page_proc(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 static void mAD_turn_page2_proc(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     mAD_Ovl_c* adrs_ovl = submenu->overlay->address_ovl;
     f32 pos;
+#ifdef TARGET_PC
+    f32 dt = (f32)gamePT->graph->dt_num_60fps_frames;
+#endif
 
     pos = fabsf(adrs_ovl->pos_x);
     if (pos > 30.0f) {
+#ifdef TARGET_PC
+        adrs_ovl->speed_x *= DTCONV_GRAPH(sqrtf(2.0f), gamePT->graph);
+#else
         adrs_ovl->speed_x *= sqrtf(2.0f);
+#endif
     } else if (pos < 14.0f) {
+#ifdef TARGET_PC
+        adrs_ovl->speed_x *= DTCONV_GRAPH(sqrtf(0.5f), gamePT->graph);
+#else
         adrs_ovl->speed_x *= sqrtf(0.5f);
+#endif
     }
 
+#ifdef TARGET_PC
+    adrs_ovl->pos_x += adrs_ovl->speed_x * dt;
+#else
     adrs_ovl->pos_x += adrs_ovl->speed_x;
+#endif
     if (adrs_ovl->pos_x * adrs_ovl->speed_x > 0.0f) {
         adrs_ovl->pos_x = 0.0f;
         adrs_ovl->speed_x = 0.0f;

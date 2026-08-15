@@ -87,6 +87,9 @@ static void aNHM_schedule_init_proc(NPC_ACTOR* actorx, GAME_PLAY* play) {
                                          aNPC_COND_DEMO_SKIP_MOVE_CIRCLE_REV | aNPC_COND_DEMO_SKIP_MOVE_Y;
     hem->actor.collision.check_kind = aNPC_BG_CHECK_TYPE_ONLY_GROUND;
     hem->talk_timer = 90;
+#ifdef TARGET_PC
+    hem->talk_timer_accum = 0.0f;
+#endif
     hem->actor.actor_class.status_data.weight = MASSTYPE_HEAVY;
     hem->actor.actor_class.world.position.x += 20.f;
     hem->actor.actor_class.world.position.z -= 20.f;
@@ -148,7 +151,11 @@ static BOOL aNHM_talk_init(ACTOR* actorx, GAME* game) {
     NPC_HEM_ACTOR* hem = (NPC_HEM_ACTOR*)actorx;
     BOOL ret = FALSE;
 
+#ifdef TARGET_PC
+    hem->talk_timer -= graph_dt_60hz_ticks(game, &hem->talk_timer_accum);
+#else
     hem->talk_timer--;
+#endif
     if (hem->talk_timer <= 0) {
         hem->actor.talk_info.talk_request_proc = (aNPC_TALK_REQUEST_PROC)none_proc1;
         aNHM_change_talk_proc(hem, aNHM_TALK_TRANS_DEMO_START_WAIT);

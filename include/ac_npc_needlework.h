@@ -51,6 +51,10 @@ struct npc_needlework_actor_s {
     u8 _9BB;
     u8 gba_ready;
     u8 gba_wait_frames;
+#ifdef TARGET_PC
+    f32 proc_delay_accum;
+    f32 delay_accum;
+#endif
 };
 
 extern ACTOR_PROFILE Npc_Needlework_Profile;

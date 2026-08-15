@@ -65,25 +65,26 @@ static u8 bite_check(void) {
 
 static void aGYO_actor_move(ACTOR* actorx, GAME* game) {
     GYOEI_ACTOR* gyoei = (GYOEI_ACTOR*)actorx;
-    aGYO_CTRL_ACTOR* ctrl = gyoei->ctrl;
     GAME_PLAY* play = (GAME_PLAY*)game;
+    double saved_dt = game->graph->dt;
+    double saved_dt_frames = game->graph->dt_num_60fps_frames;
     int i;
     int tick;
+    int ticks = graph_dt_60hz_ticks(game, &gyoei->logic_accum);
 
-    for (i = 0; i < aGYO_MAX_GYOEI; i++) {
-        if (ctrl->exist == TRUE) {
-            ((ACTOR*)ctrl)->state_bitfield &= ~ACTOR_STATE_24;
+    /* Run complete vanilla ticks so movement, collision, and reactions keep their original ordering at any FPS. */
+    game->graph->dt = 1.0 / 60.0;
+    game->graph->dt_num_60fps_frames = 1.0;
+    for (tick = 0; tick < ticks; tick++) {
+        aGYO_CTRL_ACTOR* ctrl = gyoei->ctrl;
 
-            if ((((ACTOR*)ctrl)->state_bitfield & (ACTOR_STATE_NO_CULL | ACTOR_STATE_NO_MOVE_WHILE_CULLED)) != 0) {
-                ctrl->logic_accum += (f32)game->graph->dt_num_60fps_frames;
-                if (ctrl->logic_accum > 4.0f) {
-                    ctrl->logic_accum = 4.0f;
-                }
+        for (i = 0; i < aGYO_MAX_GYOEI; i++) {
+            if (ctrl->exist == TRUE) {
+                ((ACTOR*)ctrl)->state_bitfield &= ~ACTOR_STATE_24;
 
-                aGYO_position_move(ctrl);
-
-                for (tick = 0; ctrl->logic_accum >= 1.0f && tick < 4; tick++) {
-                    ctrl->logic_accum -= 1.0f;
+                if ((((ACTOR*)ctrl)->state_bitfield &
+                     (ACTOR_STATE_NO_CULL | ACTOR_STATE_NO_MOVE_WHILE_CULLED)) != 0) {
+                    aGYO_position_move(ctrl);
                     aGYO_BGcheck(ctrl);
 
                     if (bite_check()) {
@@ -99,17 +100,20 @@ static void aGYO_actor_move(ACTOR* actorx, GAME* game) {
                     }
 
                     (*((ACTOR*)ctrl)->mv_proc)((ACTOR*)ctrl, game);
+                    Actor_world_to_eye((ACTOR*)ctrl, 0.0f);
                 }
-                Actor_world_to_eye((ACTOR*)ctrl, 0.0f);
+
+                aGYO_cull_check((ACTOR*)ctrl, play);
+                if ((ctrl->gyo_flags & 0x20) != 0) {
+                    ctrl->gyo_flags &= ~0x20;
+                    aGYO_destruct((ACTOR*)ctrl, game);
+                }
             }
 
-            aGYO_cull_check((ACTOR*)ctrl, play);
-            if ((ctrl->gyo_flags & 0x20) != 0) {
-                ctrl->gyo_flags &= ~0x20;
-                aGYO_destruct((ACTOR*)ctrl, game);
-            }
+            ctrl++;
         }
-
-        ctrl++;
     }
+
+    game->graph->dt = saved_dt;
+    game->graph->dt_num_60fps_frames = saved_dt_frames;
 }

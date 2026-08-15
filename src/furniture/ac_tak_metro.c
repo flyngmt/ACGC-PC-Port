@@ -25,7 +25,11 @@ static void aTakMetro_ct(FTR_ACTOR* ftr_actor, u8* data) {
 static void aTakMetro_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data) {
     GAME_PLAY* play = (GAME_PLAY*)game;
     cKF_SkeletonInfo_R_c* keyframe = &ftr_actor->keyframe;
-    f32 frame = keyframe->frame_control.current_frame;
+    cKF_FrameControl_c* frame_control = &keyframe->frame_control;
+    int passed_stop_frame = cKF_FrameControl_passCheck_now(frame_control, 17.0f) ||
+                            cKF_FrameControl_passCheck_now(frame_control, 47.0f);
+    int passed_sound_frame = cKF_FrameControl_passCheck_now(frame_control, 30.0f) ||
+                             cKF_FrameControl_passCheck_now(frame_control, 60.0f);
 
     if (ftr_actor->switch_changed_flag) {
         switch (aTakMetro_DISABLED(ftr_actor)) {
@@ -44,7 +48,7 @@ static void aTakMetro_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game,
         }
     }
 
-    if (ftr_actor->dynamic_work_s[0] == 1 && (frame == 17.0f || frame == 47.0f)) {
+    if (ftr_actor->dynamic_work_s[0] == 1 && passed_stop_frame) {
         ftr_actor->dynamic_work_s[0] = 0;
         aTakMetro_DISABLED(ftr_actor) = TRUE;
         ftr_actor->switch_bit = FALSE;
@@ -56,14 +60,8 @@ static void aTakMetro_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game,
     }
 
     if (ftr_actor->dynamic_work_s[0] == 0 && aTakMetro_DISABLED(ftr_actor) == FALSE) {
-        if (frame == 60.0f) {
-            if (aFTR_CAN_PLAY_SE(ftr_actor)) {
-                sAdo_OngenTrgStart(0x19, &ftr_actor->position);
-            }
-        } else if (frame == 30.0f) {
-            if (aFTR_CAN_PLAY_SE(ftr_actor)) {
-                sAdo_OngenTrgStart(0x19, &ftr_actor->position);
-            }
+        if (passed_sound_frame && aFTR_CAN_PLAY_SE(ftr_actor)) {
+            sAdo_OngenTrgStart(0x19, &ftr_actor->position);
         }
     }
 }

@@ -34,6 +34,9 @@ typedef struct npc_hem_actor_s {
     u8 disappear_flag;
     u8 trans_flag;
     s16 talk_timer;
+#ifdef TARGET_PC
+    f32 talk_timer_accum;
+#endif
 } NPC_HEM_ACTOR;
 
 static void aNHM_actor_ct(ACTOR* actorx, GAME* game);

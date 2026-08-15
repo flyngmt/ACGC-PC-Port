@@ -45,6 +45,7 @@ add_compile_definitions(
     F3DEX_GBI_2
     NDEBUG
     BUGFIXES        # Fix OOB reads in letter scoring tables (m_mail_check_ovl.c).
+    PC_ENHANCEMENTS # Enable PC quality-of-life and visual improvements.
     _LANGUAGE_C    # Required for N64 GBI/ultratypes headers
 )
 

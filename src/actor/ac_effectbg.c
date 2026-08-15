@@ -951,8 +951,12 @@ static int EffectBG_object_before_display(GAME* game, cKF_SkeletonInfo_R_c* keyf
             ((efbg->status & EffectBg_STATUS_XMAS) == 0)) {
             *joint_shape = NULL;
         } else {
+#ifdef TARGET_PC
+            int type = (((u32)graph_dt_frame_time(game) & ~0x1F) + efbg->block_ux + efbg->block_uz) % 3;
+#else
             GAME_PLAY* play = (GAME_PLAY*)game;
             int type = ((play->game_frame & ~0x1F) + efbg->block_ux + efbg->block_uz) % 3;
+#endif
 
             OPEN_DISP(game->graph);
             if (type == 0) {
@@ -986,8 +990,12 @@ static int EffectBG_object_before_display_xlu(GAME* game, cKF_SkeletonInfo_R_c* 
             ((efbg->status & EffectBg_STATUS_XMAS) == 0)) {
             *joint_shape = NULL;
         } else {
+#ifdef TARGET_PC
+            int type = (((u32)graph_dt_frame_time(game) & ~0x1F) + efbg->block_ux + efbg->block_uz) % 3;
+#else
             GAME_PLAY* play = (GAME_PLAY*)game;
             int type = ((play->game_frame & ~0x1F) + efbg->block_ux + efbg->block_uz) % 3;
+#endif
             f32 remain = efbg->timer_max - efbg->timer;
             f32 divisor = efbg->timer_max - 70;
             u8 alpha = (u8)(255.0f * (remain / divisor));

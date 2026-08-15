@@ -144,17 +144,18 @@ static void aBEE_calc_fly_angle(ACTOR* actorx) {
 static void aBEE_appear(ACTOR* actorx, GAME* game) {
     BEE_ACTOR* bee = (BEE_ACTOR*)actorx;
     ACTOR* player = GET_PLAYER_ACTOR_GAME_ACTOR(game);
+    f32 dt = (f32)game->graph->dt_num_60fps_frames;
 
     if (player != NULL) {
         bee->pos_y = player->world.position.y + 50.0f;
     }
 
     actorx->shape_info.rotation.x = DEG2SHORT_ANGLE2(180.0f) - 1;
-    actorx->shape_info.rotation.z += DEG2SHORT_ANGLE2(22.5f);
+    actorx->shape_info.rotation.z += (s16)(DEG2SHORT_ANGLE2(22.5f) * dt);
     
-    bee->alpha += 3;
-    if (bee->alpha >= 255) {
-        bee->alpha = 255;
+    bee->alpha += 3.0f * dt;
+    if (bee->alpha >= 255.0f) {
+        bee->alpha = 255.0f;
         aBEE_setupAction(bee, aBEE_ACT_FLY, game);
     } else {
         aBEE_calc_scale(bee, 0.1f, 0.005f);
@@ -290,13 +291,14 @@ static void aBEE_attack(ACTOR* actorx, GAME* game) {
 
 static void aBEE_disappear(ACTOR* actorx, GAME* game) {
     BEE_ACTOR* bee = (BEE_ACTOR*)actorx;
+    f32 dt = (f32)game->graph->dt_num_60fps_frames;
 
     bee->size.x = 0.03f;
     bee->size.y = bee->size.z = bee->size.x;
-    bee->alpha -= 15;
+    bee->alpha -= 15.0f * dt;
 
-    if (bee->alpha < 0) {
-        bee->alpha = 0;
+    if (bee->alpha < 0.0f) {
+        bee->alpha = 0.0f;
         Actor_delete(actorx);
     } else {
         aBEE_calc_scale(bee, 0.1f, 0.01f);
@@ -307,6 +309,7 @@ static void aBEE_appear_init(BEE_ACTOR* bee, GAME* game) {
     static xyz_t Size_data = { 0.01f, 0.01f, 0.01f };
 
     xyz_t_move(&bee->size, &Size_data);
+    bee->alpha = 0.0f;
     Common_Set(player_bee_chase_flag, TRUE);
 }
 
@@ -391,7 +394,7 @@ static void aBEE_actor_draw(ACTOR* actorx, GAME* game) {
 
         OPEN_POLY_XLU_DISP(graph);
 
-        gDPSetPrimColor(POLY_XLU_DISP++, 0, 255, 0, 0, 0, bee->alpha);
+        gDPSetPrimColor(POLY_XLU_DISP++, 0, 255, 0, 0, 0, (u8)bee->alpha);
         gSPSegment(POLY_XLU_DISP++, ANIME_1_TXT_SEG, gfx);
 
         CLOSE_POLY_XLU_DISP(graph);

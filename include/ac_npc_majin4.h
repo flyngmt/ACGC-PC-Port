@@ -23,6 +23,9 @@ struct npc_majin4_actor_s {
     aMJN4_TALK_PROC talk_proc;
     int reset_timer;
     int se_clear_timer;
+#ifdef TARGET_PC
+    f32 timing_accum;
+#endif
 };
 
 extern ACTOR_PROFILE Npc_Majin4_Profile;

@@ -24,6 +24,9 @@ struct ac_npc_soncho2 {
     /* 0x99b */ lbRTC_day_t day;
     /* 0x99c */ mActor_name_t item;
     /* 0x99e */ s16 timer;
+#ifdef TARGET_PC
+    f32 timer_accum;
+#endif
     /* 0x9a0 */ s16 center_x;
     /* 0x9a2 */ s16 center_z;
     /* 0x9a4 */ s16 goal_x;

@@ -75,6 +75,9 @@ struct npc_station_actor_s {
     u8 station_check_res;
     u8 chan;
     u8 station_err;
+#ifdef TARGET_PC
+    f32 train_setup_accum;
+#endif
 };
 
 extern ACTOR_PROFILE Npc_Station_Master_Profile;

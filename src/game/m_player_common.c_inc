@@ -8033,13 +8033,23 @@ static void Player_actor_Check_player_sunburn_rankup(ACTOR* actorx) {
 
                     if (player->player_sunburn_rankdown == FALSE) {
                         int last_sunburn_time = Common_Get(sunburn_time);
+#ifdef TARGET_PC
+                        int max_sunburn_time = mFI_CheckInIsland() == FALSE ? mPlayer_SUNBURN_TIME_VILLAGE
+                                                                            : mPlayer_SUNBURN_TIME_ISLAND;
+                        int sunburn_ticks = graph_dt_60hz_ticks(gamePT, &player->sunburn_time_accum);
+#else
                         int max_sunburn_time = mFI_CheckInIsland() == FALSE ? (s16)mPlayer_SUNBURN_TIME_VILLAGE
                                                                             : mPlayer_SUNBURN_TIME_ISLAND;
+#endif
                         if (last_sunburn_time >= max_sunburn_time) {
                             player->player_sunburn_rankup = TRUE;
                         }
 
+#ifdef TARGET_PC
+                        Common_Set(sunburn_time, last_sunburn_time + sunburn_ticks);
+#else
                         Common_Set(sunburn_time, last_sunburn_time + 1);
+#endif
                     }
                 }
             }
@@ -8098,6 +8108,9 @@ static int Player_actor_Set_player_sunburn_rankup(ACTOR* actorx) {
         sunburn->last_changed_date = now_date;
         sunburn->rankdown_days = 2;
         Common_Set(sunburn_time, 0);
+#ifdef TARGET_PC
+        player->sunburn_time_accum = 0.0f;
+#endif
         player->player_sunburn_rankup = FALSE;
         return TRUE;
     }

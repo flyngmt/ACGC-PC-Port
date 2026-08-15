@@ -18,8 +18,10 @@ static void aKonCracker_ct(FTR_ACTOR* ftr_actor, u8* data) {
 }
 
 static void aKonCracker_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data) {
-    if (aFTR_CAN_PLAY_SE(ftr_actor) && (ftr_actor->keyframe.frame_control.current_frame == 8.0f ||
-                                        ftr_actor->keyframe.frame_control.current_frame == 24.0f)) {
+    cKF_FrameControl_c* frame_control = &ftr_actor->keyframe.frame_control;
+
+    if (aFTR_CAN_PLAY_SE(ftr_actor) && (cKF_FrameControl_passCheck_now(frame_control, 8.0f) ||
+                                        cKF_FrameControl_passCheck_now(frame_control, 24.0f))) {
         sAdo_OngenTrgStart(0x812C, &ftr_actor->position);
     }
 }

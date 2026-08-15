@@ -1430,6 +1430,9 @@ static void aNNW_set_norm_talk_info(ACTOR* actorx) {
             }
 
             actor->delay_frames = 10;
+#ifdef TARGET_PC
+            actor->delay_accum = 0.0f;
+#endif
         }
 
         aNNW_change_talk_proc(actor, talk_idx);

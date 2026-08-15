@@ -37,7 +37,11 @@ static void bXI_actor_move(ACTOR* actorx, GAME* game) {
     {
         bg_item_blk_idx_info_c* blk_info = bg_item->item_idx_info;
         bg_item_idx_info_c* item_idx_info;
+#ifdef TARGET_PC
+        u32 frame = (u32)graph_dt_frame_time(game) & ~0x1F;
+#else
         u32 frame = play->game_frame & ~0x1F;
+#endif
         int i;
 
         for (i = 0; i < mFM_VISIBLE_BLOCK_NUM; i++, blk_info++) {

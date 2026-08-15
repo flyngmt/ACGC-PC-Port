@@ -509,6 +509,9 @@ static int Player_actor_request_main_demo_getoff_boat_all(GAME* game, const xyz_
 static void Player_actor_init_value(ACTOR* actorx, GAME* game) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actorx;
 
+#ifdef TARGET_PC
+    player->sunburn_time_accum = 0.0f;
+#endif
     player->actor_class.gravity = -1.0f;
     player->actor_class.max_velocity_y = -8.0f;
     player->actor_class.scale.x = 0.01f;
@@ -1450,6 +1453,146 @@ static void Player_actor_main_Demo_get_golden_item(ACTOR*, GAME*);
 static void Player_actor_main_Demo_get_golden_item2(ACTOR*, GAME*);
 static void Player_actor_main_Demo_get_golden_axe_wait(ACTOR*, GAME*);
 
+#ifdef PC_ENHANCEMENTS
+
+    static int WrapToolSlot(int slot) {
+        if (slot < 0) {
+            return mPr_POCKETS_SLOT_COUNT - 1;
+        }
+        if (slot >= mPr_POCKETS_SLOT_COUNT) {
+            return 0;
+        }
+        return slot;
+    }
+
+    #define IS_CUSTOM_UMBRELLA(item) ((item) >= ITM_MY_ORG_UMBRELLA0 && (item) <= ITM_MY_ORG_UMBRELLA7)
+
+    /* next slot the cycle search starts from; after a putaway, the slot holding the put-away tool */
+    static int last_tool_slot = 0;
+    static int last_direction = 0;
+
+    static void TrySwitchToolSlot(GAME* game, int direction) {
+        Private_c* priv;
+        mActor_name_t held_item;
+        mActor_name_t slot_item;
+        int search_slot;
+        int i;
+
+        priv = Common_Get(now_private);
+        held_item = priv->equipment;
+
+        if (last_tool_slot < 0 || last_tool_slot >= mPr_POCKETS_SLOT_COUNT) {
+            last_tool_slot = 0;
+        }
+
+        /* try last used slot first */
+        if (held_item == EMPTY_NO) {
+            slot_item = priv->inventory.pockets[last_tool_slot];
+
+            if (mPr_GET_ITEM_COND(priv->inventory.item_conditions, last_tool_slot) == mPr_ITEM_COND_NORMAL &&
+                ITEM_IS_TOOL(slot_item)) {
+                priv->equipment = slot_item;
+                mPr_SetPossessionItem(priv, last_tool_slot, EMPTY_NO, 0);
+                Player_actor_request_main_takeout_item(game, mPlayer_REQUEST_PRIORITY_37);
+                return;
+            }
+        }
+
+        /* direction changed, undo previous step so the search lands on the tool just swapped out */
+        if (last_direction != 0 && direction != last_direction) {
+            last_tool_slot = WrapToolSlot(last_tool_slot - last_direction);
+        }
+
+        search_slot = last_tool_slot;
+
+        for (i = 0; i < mPr_POCKETS_SLOT_COUNT; i++) {
+            slot_item = priv->inventory.pockets[search_slot];
+
+            if (mPr_GET_ITEM_COND(priv->inventory.item_conditions, search_slot) == mPr_ITEM_COND_NORMAL &&
+                ITEM_IS_TOOL(slot_item)) {
+                if (held_item != EMPTY_NO && !IS_CUSTOM_UMBRELLA(held_item)) {
+                    mPr_SetPossessionItem(priv, search_slot, held_item, 0);
+                } else {
+                    mPr_SetPossessionItem(priv, search_slot, EMPTY_NO, 0);
+                }
+
+                priv->equipment = slot_item;
+                last_tool_slot = WrapToolSlot(search_slot + direction);
+                last_direction = direction;
+                Player_actor_request_main_takeout_item(game, mPlayer_REQUEST_PRIORITY_37);
+                return;
+            }
+
+            search_slot = WrapToolSlot(search_slot + direction);
+        }
+    }
+
+    static void TryPutawayTool(GAME* game) {
+        Private_c* priv = Common_Get(now_private);
+        mActor_name_t held_item = priv->equipment;
+        int slot;
+
+        if (held_item == EMPTY_NO) {
+            return;
+        }
+
+        if (!IS_CUSTOM_UMBRELLA(held_item)) {
+            slot = mPr_GetPossessionItemIdx(priv, EMPTY_NO);
+            if (slot == -1) {
+                sAdo_SysTrgStart(0x100A);
+                return;
+            }
+            mPr_SetPossessionItem(priv, slot, held_item, 0);
+            last_tool_slot = slot;
+        }
+
+        priv->equipment = EMPTY_NO;
+        last_direction = 0;
+        Player_actor_request_main_putin_item(game, 0x25);
+    }
+
+    static void Player_actor_check_and_switch_tool(GAME* game) {
+        GAME_PLAY* play = (GAME_PLAY*)game;
+        PLAYER_ACTOR* player;
+        int main_index;
+
+        /* outdoors only, and not while a submenu is open or opening */
+        if (mFI_GET_TYPE(mFI_GetFieldId()) != mFI_FIELDTYPE2_FG ||
+            play->submenu.start_refuse ||
+            play->submenu.current_menu_type != mSM_OVL_NONE ||
+            play->submenu.menu_type != mSM_OVL_NONE) {
+            return;
+        }
+
+        player = GET_PLAYER_ACTOR_GAME(game);
+
+        /* only during free movement (walk/run/stand/dash), not mid-demo */
+        main_index = player->now_main_index;
+        if (main_index < mPlayer_INDEX_WAIT || main_index > mPlayer_INDEX_DASH) {
+            return;
+        }
+
+        if (Player_actor_Check_is_demo_mode(main_index) != 0) {
+            return;
+        }
+        if (Player_actor_Check_is_demo_mode(player->requested_main_index) != 0) {
+            return;
+        }
+
+        if (chkTrigger(BUTTON_DLEFT)) {
+            TrySwitchToolSlot(game, -1);
+            return;
+        }
+        if (chkTrigger(BUTTON_DRIGHT)) {
+            TrySwitchToolSlot(game, 1);
+            return;
+        }
+        if (chkTrigger(BUTTON_DDOWN)) {
+            TryPutawayTool(game);
+        }
+    }
+#endif
+
 extern void Player_actor_move(ACTOR* actorx, GAME* game) {
     static const mPlayer_MAIN_PROC proc[] = {
         &Player_actor_main_Dma,
@@ -1585,6 +1728,10 @@ extern void Player_actor_move(ACTOR* actorx, GAME* game) {
 
     (*proc[idx])(actorx, game);
     Player_actor_move_other_func2(actorx, game); //
+
+#ifdef PC_ENHANCEMENTS
+    Player_actor_check_and_switch_tool(game);
+#endif
 }
 
 typedef void (*mPlayer_DRAW_PROC)(ACTOR*, GAME*);

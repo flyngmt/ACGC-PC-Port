@@ -166,6 +166,9 @@ typedef struct room_rsv_ftr_s {
     s16 layer;
     s16 frames;
     s16 initial_frames_num;
+#ifdef TARGET_PC
+    f32 frame_accum;
+#endif
     int ut_x;
     int ut_z;
 } aMR_rsv_ftr_c;
@@ -196,6 +199,9 @@ typedef struct emu_info_s {
     char* famicom_names_p;
     s16 save_msg_timer;
     s16 external_rom;
+#ifdef TARGET_PC
+    f32 save_msg_timer_accum;
+#endif
 } aMR_emu_info_c;
 
 typedef void (*aMR_GOKI_CT_PROC)(ACTOR*, GAME*);

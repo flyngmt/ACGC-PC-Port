@@ -191,6 +191,8 @@ static void aFLAG_menu_end_wait(STRUCTURE_ACTOR* flag, GAME_PLAY* game_play) {
 }
 
 static void aFLAG_up(STRUCTURE_ACTOR* flag, GAME_PLAY* game_play) {
+    int ticks;
+    int i;
     f32 starting_x;
     f32 middle_x;
     f32 ending_x;
@@ -237,38 +239,49 @@ static void aFLAG_up(STRUCTURE_ACTOR* flag, GAME_PLAY* game_play) {
         third_point_frame = REGADDR(NMREG, 6);
     }
 
-    if (flag->arg1 == second_point_frame) {
-        sAdo_OngenTrgStart(0x163U, &flag->actor_class.world.position);
-    }
+    ticks = graph_dt_60hz_ticks((GAME*)game_play, &flag->arg3_f);
+    for (i = 0; i < ticks; i++) {
+        if (flag->arg1 == second_point_frame) {
+            sAdo_OngenTrgStart(0x163U, &flag->actor_class.world.position);
+        }
 
-    if (flag->arg1 <= first_point_frame) {
-        normalized_x_length = (middle_x - starting_x) / (first_point_frame * second_point_frame);
-        flag->arg1_f = starting_x + (normalized_x_length * flag->arg1 * flag->arg1);
-    } else if (flag->arg1 <= second_point_frame) {
-        normalized_x_length = (middle_x - starting_x) / (second_point_frame * (first_point_frame - second_point_frame));
-        flag->arg1_f =
-            middle_x + (normalized_x_length * (flag->arg1 - second_point_frame) * (flag->arg1 - second_point_frame));
-    } else if (flag->arg1 <= third_point_frame) {
-        normalized_x_length =
-            (ending_x - middle_x) / ((third_point_frame - second_point_frame) * (ending_frame - second_point_frame));
-        flag->arg1_f =
-            middle_x + (normalized_x_length * (flag->arg1 - second_point_frame) * (flag->arg1 - second_point_frame));
-    } else {
-        normalized_x_length =
-            (ending_x - middle_x) / ((ending_frame - second_point_frame) *
-                                     ((third_point_frame - second_point_frame) - (ending_frame - second_point_frame)));
-        flag->arg1_f = ending_x + (normalized_x_length * (flag->arg1 - ending_frame) * (flag->arg1 - ending_frame));
-    }
+        if (flag->arg1 <= first_point_frame) {
+            normalized_x_length = (middle_x - starting_x) / (first_point_frame * second_point_frame);
+            flag->arg1_f = starting_x + (normalized_x_length * flag->arg1 * flag->arg1);
+        } else if (flag->arg1 <= second_point_frame) {
+            normalized_x_length =
+                (middle_x - starting_x) / (second_point_frame * (first_point_frame - second_point_frame));
+            flag->arg1_f = middle_x +
+                           (normalized_x_length * (flag->arg1 - second_point_frame) *
+                            (flag->arg1 - second_point_frame));
+        } else if (flag->arg1 <= third_point_frame) {
+            normalized_x_length =
+                (ending_x - middle_x) / ((third_point_frame - second_point_frame) * (ending_frame - second_point_frame));
+            flag->arg1_f = middle_x +
+                           (normalized_x_length * (flag->arg1 - second_point_frame) *
+                            (flag->arg1 - second_point_frame));
+        } else {
+            normalized_x_length =
+                (ending_x - middle_x) / ((ending_frame - second_point_frame) *
+                                         ((third_point_frame - second_point_frame) -
+                                          (ending_frame - second_point_frame)));
+            flag->arg1_f =
+                ending_x + (normalized_x_length * (flag->arg1 - ending_frame) * (flag->arg1 - ending_frame));
+        }
 
-    flag->arg1 += 1;
-    if (flag->arg1 >= ending_frame) {
-        flag->arg1 = 0;
-        mMsg_request_main_forceoff();
-        aFLAG_setup_action(flag, aFLAG_ACTION_WAIT);
+        flag->arg1 += 1;
+        if (flag->arg1 >= ending_frame) {
+            flag->arg1 = 0;
+            mMsg_request_main_forceoff();
+            aFLAG_setup_action(flag, aFLAG_ACTION_WAIT);
+            break;
+        }
     }
 }
 
 static void aFLAG_down(STRUCTURE_ACTOR* flag, GAME_PLAY* game_play) {
+    int ticks;
+    int i;
     f32 normalized_x_length;
     f32 x_length;
     f32 starting_x;
@@ -300,24 +313,28 @@ static void aFLAG_down(STRUCTURE_ACTOR* flag, GAME_PLAY* game_play) {
         }
 
         x_length = ending_x - starting_x;
-        if (flag->arg1 == 2) {
-            sAdo_OngenTrgStart(0x164U, &flag->actor_class.world.position);
-        }
+        ticks = graph_dt_60hz_ticks((GAME*)game_play, &flag->arg3_f);
+        for (i = 0; i < ticks; i++) {
+            if (flag->arg1 == 2) {
+                sAdo_OngenTrgStart(0x164U, &flag->actor_class.world.position);
+            }
 
-        // arg1_f is used to set the joint x position
-        if (flag->arg1 <= midpoint_frame) {
-            normalized_x_length = -(x_length / (midpoint_frame * ending_frame));
-            flag->arg1_f = ending_x + (flag->arg1 * (normalized_x_length * flag->arg1));
-        } else {
-            normalized_x_length = -(x_length / (ending_frame * (midpoint_frame - ending_frame)));
-            flag->arg1_f =
-                starting_x + (normalized_x_length * (flag->arg1 - ending_frame) * (flag->arg1 - ending_frame));
-        }
+            // arg1_f is used to set the joint x position
+            if (flag->arg1 <= midpoint_frame) {
+                normalized_x_length = -(x_length / (midpoint_frame * ending_frame));
+                flag->arg1_f = ending_x + (flag->arg1 * (normalized_x_length * flag->arg1));
+            } else {
+                normalized_x_length = -(x_length / (ending_frame * (midpoint_frame - ending_frame)));
+                flag->arg1_f =
+                    starting_x + (normalized_x_length * (flag->arg1 - ending_frame) * (flag->arg1 - ending_frame));
+            }
 
-        flag->arg1 += 1;
-        if (flag->arg1 >= ending_frame) {
-            flag->arg1 = 0;
-            aFLAG_setup_action(flag, aFLAG_ACTION_OPEN_WAIT);
+            flag->arg1 += 1;
+            if (flag->arg1 >= ending_frame) {
+                flag->arg1 = 0;
+                aFLAG_setup_action(flag, aFLAG_ACTION_OPEN_WAIT);
+                break;
+            }
         }
     }
 }
@@ -328,6 +345,7 @@ static void aFLAG_setup_action(STRUCTURE_ACTOR* flag, int action) {
     };
 
     flag->action_proc = process[action];
+    flag->arg3_f = 0.0f;
 }
 
 static void aFLAG_actor_move(ACTOR* actor, GAME* game) {

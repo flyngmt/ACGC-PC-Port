@@ -46,37 +46,45 @@ static int mTI_get_now_min(Submenu* submenu) {
 static void mTI_set_time(Submenu* submenu) {
   mTI_Ovl_c* timeIn_ovl = submenu->overlay->timeIn_ovl;
   int min = mTI_get_now_min(submenu);
-  int now_min;
-  int old_min;
+#ifdef TARGET_PC
+  int ticks = graph_dt_60hz_ticks(gamePT, &timeIn_ovl->clock_step_accum);
 
-  old_min = timeIn_ovl->saved_min;
-  now_min = old_min + 12;
+  while (ticks-- > 0 && timeIn_ovl->input_disabled_flag == TRUE) {
+#endif
+    int now_min;
+    int old_min;
 
-  if (now_min >= 12 * lbRTC_MINUTES_PER_HOUR) {
-    now_min -= (12 * lbRTC_MINUTES_PER_HOUR);
-  }
+    old_min = timeIn_ovl->saved_min;
+    now_min = old_min + 12;
 
-  if (
-    (old_min < min && min <= now_min) ||
-    (old_min > now_min &&	(old_min < min || min <= now_min))
-  ) {
-
-    if (timeIn_ovl->init_flag) {
-      now_min = min;
-      timeIn_ovl->input_disabled_flag = FALSE;
-      sAdo_SysLevStop(0xA);
-      sAdo_SysTrgStart(0x41B);
+    if (now_min >= 12 * lbRTC_MINUTES_PER_HOUR) {
+      now_min -= (12 * lbRTC_MINUTES_PER_HOUR);
     }
-    else {
-      now_min = old_min;
+
+    if (
+      (old_min < min && min <= now_min) ||
+      (old_min > now_min &&	(old_min < min || min <= now_min))
+    ) {
+
+      if (timeIn_ovl->init_flag) {
+        now_min = min;
+        timeIn_ovl->input_disabled_flag = FALSE;
+        sAdo_SysLevStop(0xA);
+        sAdo_SysTrgStart(0x41B);
+      }
+      else {
+        now_min = old_min;
+      }
     }
-  }
 
-  if (timeIn_ovl->init_flag == FALSE) {
-    timeIn_ovl->init_flag = TRUE;
-  }
+    if (timeIn_ovl->init_flag == FALSE) {
+      timeIn_ovl->init_flag = TRUE;
+    }
 
-  timeIn_ovl->saved_min = now_min;
+    timeIn_ovl->saved_min = now_min;
+#ifdef TARGET_PC
+  }
+#endif
 }
 
 static void mTI_window_close(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
@@ -145,6 +153,9 @@ static void mTI_move_Play(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
           timeIn_ovl->input_disabled_flag = TRUE;
           sAdo_SysLevStart(0xA);
           timeIn_ovl->init_flag = FALSE;
+#ifdef TARGET_PC
+          timeIn_ovl->clock_step_accum = 0.0f;
+#endif
         }
       }
 

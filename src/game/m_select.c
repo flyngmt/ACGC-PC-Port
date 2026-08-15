@@ -416,6 +416,26 @@ static void select_move_setup(GAME_SELECT* select) {
 
 typedef void (*SELECT_MOVE_TIME_PROC)(int);
 
+static int select_advance_button_step(GAME_SELECT* select, int step) {
+    int repeats = 0;
+
+#ifdef TARGET_PC
+    select->button_step_accum += (f32)select->game.graph->dt_num_60fps_frames;
+    while (select->button_step_accum >= 1.0f) {
+#endif
+        select->button_step += step;
+        if (select->button_step == step * 6) {
+            repeats++;
+            select->button_step = 0;
+        }
+#ifdef TARGET_PC
+        select->button_step_accum -= 1.0f;
+    }
+#endif
+
+    return repeats;
+}
+
 static void select_move_time_year_set(int adjust) {
     int year = Common_Get(time.rtc_time.year);
     year += adjust;
@@ -527,26 +547,24 @@ static void select_move_time_set(GAME_SELECT* select) {
             if (chkTrigger(BUTTON_DDOWN)) {
                 adjust = -1;
                 select->button_step = -16;
+#ifdef TARGET_PC
+                select->button_step_accum = 0.0f;
+#endif
             }
 
-            select->button_step++;
-            if (select->button_step == 6) {
-                adjust = -1;
-                select->button_step = 0;
-            }
+            adjust -= select_advance_button_step(select, 1);
         }
 
         if (chkButton(BUTTON_DUP)) {
             if (chkTrigger(BUTTON_DUP)) {
                 adjust = 1;
                 select->button_step = 16;
+#ifdef TARGET_PC
+                select->button_step_accum = 0.0f;
+#endif
             }
 
-            select->button_step--;
-            if (select->button_step == -6) {
-                adjust = 1;
-                select->button_step = 0;
-            }
+            adjust += select_advance_button_step(select, -1);
         }
 
         if (chkButton(BUTTON_B)) {
@@ -586,26 +604,24 @@ static void select_move_cloth_sel(GAME_SELECT* select) {
             if (chkTrigger(BUTTON_DDOWN)) {
                 cloth += adjust;
                 select->button_step = -16;
+#ifdef TARGET_PC
+                select->button_step_accum = 0.0f;
+#endif
             }
 
-            select->button_step++;
-            if (select->button_step == 6) {
-                cloth += adjust;
-                select->button_step = 0;
-            }
+            cloth += adjust * select_advance_button_step(select, 1);
         }
 
         if (chkButton(BUTTON_DUP)) {
             if (chkTrigger(BUTTON_DUP)) {
                 cloth -= adjust;
                 select->button_step = 16;
+#ifdef TARGET_PC
+                select->button_step_accum = 0.0f;
+#endif
             }
 
-            select->button_step--;
-            if (select->button_step == -6) {
-                cloth -= adjust;
-                select->button_step = 0;
-            }
+            cloth -= adjust * select_advance_button_step(select, -1);
         }
 
         while (cloth < 0) {
@@ -1047,6 +1063,9 @@ extern void select_init(GAME* game) {
     select->cursor_y = 10;
     select->step = 0;
     select->step_add = 0;
+#ifdef TARGET_PC
+    select->button_step_accum = 0.0f;
+#endif
 
     initView(&select->view, game->graph);
     select->view.flag = VIEW_UPDATE_SCISSOR | VIEW_UPDATE_ORTHOGRAPHIC;

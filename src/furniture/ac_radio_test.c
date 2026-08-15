@@ -26,27 +26,24 @@ static void fRT_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* d
 }
 
 extern Gfx radio_DL_model[];
+#ifdef TARGET_PC
+extern u16 obj_e_radio_pal[];
+#else
+ATTRIBUTE_ALIGN(32) static u16 radio_pal[] = {
+#include "assets/radio_pal.inc"
+};
+#endif
 
 static void fRT_dw(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* game, u8* data) {
-    #ifdef TARGET_PC
-    ATTRIBUTE_ALIGN(32) static u16 radio_pal[0x20 / sizeof(u16)];
-    static int radio_pal_loaded = 0;
-    if (!radio_pal_loaded) {
-        extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
-        pc_load_asset("assets/radio_pal.bin", radio_pal, 0x20, 0x0, 2, 1);
-        radio_pal_loaded = 1;
-    }
-    #else
-        ATTRIBUTE_ALIGN(32) static u16 radio_pal[] = {
-        #include "assets/radio_pal.inc"
-     };
-    #endif
-
     OPEN_DISP(game->graph);
 
     Matrix_RotateY(DEG2SHORT_ANGLE(-157.5f), MTX_MULT);
     gSPMatrix(NEXT_POLY_OPA_DISP, _Matrix_to_Mtx_new(game->graph), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+#ifdef TARGET_PC
+    gSPSegment(NEXT_POLY_OPA_DISP, G_MWO_SEGMENT_8, obj_e_radio_pal);
+#else
     gSPSegment(NEXT_POLY_OPA_DISP, G_MWO_SEGMENT_8, radio_pal);
+#endif
     gSPDisplayList(NEXT_POLY_OPA_DISP, radio_DL_model);
 
     CLOSE_DISP(game->graph);

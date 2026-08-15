@@ -213,6 +213,10 @@ static void aNNW_actor_ct(ACTOR* actorx, GAME* game) {
         actor->_9B4 = 0;
         actor->proc_delay_frames = 0;
         actor->delay_frames = 0;
+#ifdef TARGET_PC
+        actor->proc_delay_accum = 0.0f;
+        actor->delay_accum = 0.0f;
+#endif
         actor->gba_ready = FALSE;
     }
 }

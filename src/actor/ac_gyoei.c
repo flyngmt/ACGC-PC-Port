@@ -57,6 +57,8 @@ static void aGYO_actor_ct(ACTOR* actorx, GAME* game) {
         gyoei->segment_type[i] = -1;
     }
 
+    gyoei->logic_accum = 0.0f;
+
     aGYO_ctrlActor = (ACTOR*)gyoei;
     aGYO_init_dma_and_clip_area();
 }

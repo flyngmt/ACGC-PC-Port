@@ -39,6 +39,9 @@ struct npc_shop_mastersp_actor_s {
     int ut[2];
     int melody_bak;
     s16 base_pos[11][2];
+#ifdef TARGET_PC
+    f32 timer_accum;
+#endif
 };
 
 extern ACTOR_PROFILE Npc_Shop_Mastersp_Profile;

@@ -59,7 +59,7 @@ static void Camera2_DirectionCalc(GAME_PLAY* play) {
     camera->direction_velocity.z = camera->direction.z - dir.z;
 }
 
-static int Camera2_InDoorCheck() {
+int Camera2_InDoorCheck() {
     mActor_name_t field_id = mFI_GetFieldId();
     int res = FALSE;
 
@@ -72,7 +72,7 @@ static int Camera2_InDoorCheck() {
 }
 
 static int Camera2_CheckInDoorNearFar(GAME_PLAY* play) {
-    if (play->camera.indoor_distance_addition_idx == 0 ||
+    if ((play->camera.indoor_distance_addition_idx == 0 && Camera2_InDoorCheck()) ||
         (Save_Get(scene_no) == SCENE_BROKER_SHOP && play->camera.now_main_index == CAMERA2_PROCESS_TALK)) {
         return TRUE;
     }
@@ -498,7 +498,12 @@ static void Camera2_Get_GoalDistanceAndDirection(GAME_PLAY* play, f32* dist, s_x
     *dist = distance_array[main_index];
     *dir = direction_array[main_index];
 
+#ifdef PC_ENHANCEMENTS
+    /* C-stick camera now works in every scene */
+    if (main_index == CAMERA2_PROCESS_NORMAL) {
+#else
     if (main_index == CAMERA2_PROCESS_NORMAL && Camera2_InDoorCheck()) {
+#endif
         if (add_dist_idx < 0 || add_dist_idx >= 3) {
             add_dist_idx = 1;
         }
@@ -987,6 +992,15 @@ static void Camera2_setup_main_Wade(GAME_PLAY* play) {
 
     Camera2_setup_main_Base(play);
     play->camera.requested_main_index_priority = 9;
+
+#ifdef PC_ENHANCEMENTS
+    /* Reset any outdoor C-stick camera changes instead of a weird double transition */
+    if (!mPlib_IsWadeDisabled()){
+        play->camera.indoor_distance_addition_idx = 1;
+        play->camera.indoor_direction_addition_idx = 1;
+    }
+  
+#endif
 }
 
 static void Camera2_SetPos_Wade(GAME_PLAY* play) {

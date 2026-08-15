@@ -48,14 +48,41 @@ static void aTMN1_Next_move(TAMAIRE_NPC1_ACTOR* actor) {
     actor->move_pos[1] = actor->yasiro_pos[1] + cos_s(angle) * r;
 }
 
+#ifdef TARGET_PC
+static void aTMN1_set_timer(TAMAIRE_NPC1_ACTOR* actor, s16 timer) {
+    actor->timer = timer;
+    actor->timer_accum = 0.0f;
+}
+
+static int aTMN1_timer_elapsed(TAMAIRE_NPC1_ACTOR* actor, GAME_PLAY* play) {
+    int ticks = graph_dt_60hz_ticks((GAME*)play, &actor->timer_accum);
+
+    while (ticks-- > 0) {
+        if (actor->timer > 0) {
+            actor->timer--;
+        } else {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+#endif
+
 static void aTMN1_timer_next(TAMAIRE_NPC1_ACTOR* actor, GAME_PLAY* play) {
     ACTOR* actorx = (ACTOR*)actor;
 
+#ifdef TARGET_PC
+    if (aTMN1_timer_elapsed(actor, play)) {
+        aTMN1_setup_think_proc(actor, play, ++actor->think_idx);
+    }
+#else
     if (actor->timer > 0) {
         actor->timer--;
     } else {
         aTMN1_setup_think_proc(actor, play, ++actor->think_idx);
     }
+#endif
 }
 
 static void aTMN1_birth(TAMAIRE_NPC1_ACTOR* actor, GAME_PLAY* play) {
@@ -79,13 +106,23 @@ static void aTMN1_walk(TAMAIRE_NPC1_ACTOR* actor, GAME_PLAY* play) {
     if ((actor->npc_class.action.idx == aNPC_ACT_RUN && actor->npc_class.action.step == aNPC_ACTION_END_STEP) || (s16)actor->npc_class.movement.dst_pos_x != actor->move_pos[0] || (s16)actor->npc_class.movement.dst_pos_z != actor->move_pos[1]) {
         aTMN1_setup_think_proc(actor, play, aTMN1_THINK_HIROU_MAE);
     } else if (actor->npc_class.collision.collision_flag != 0) {
+#ifdef TARGET_PC
+        if (aTMN1_timer_elapsed(actor, play)) {
+            aTMN1_setup_think_proc(actor, play, aTMN1_THINK_HIROU_MAE);
+        }
+#else
         if (actor->timer > 0) {
             actor->timer--;
         } else {
             aTMN1_setup_think_proc(actor, play, aTMN1_THINK_HIROU_MAE);
         }
+#endif
     } else {
+#ifdef TARGET_PC
+        aTMN1_set_timer(actor, 20);
+#else
         actor->timer = 20;
+#endif
     }
 }
 
@@ -138,8 +175,12 @@ static void aTMN1_nageru_end(TAMAIRE_NPC1_ACTOR* actor, GAME_PLAY* play) {
     xyz_t pos;
     ACTOR* actorx = (ACTOR*)actor;
 
+#ifdef TARGET_PC
+    if (!aTMN1_timer_elapsed(actor, play)) {
+#else
     if (actor->timer > 0) {
         actor->timer--;
+#endif
         pos.x = actor->yasiro_pos[0];
         pos.y = actorx->world.position.y + 80.0f;
         pos.z = actor->yasiro_pos[1];
@@ -184,7 +225,11 @@ static void aTMN1_normal_wait_init(TAMAIRE_NPC1_ACTOR* actor, GAME_PLAY* play) {
 static void aTMN1_hirou_mae_init(TAMAIRE_NPC1_ACTOR* actor, GAME_PLAY* play) {
     if (!aTMN1_nageru_bitcheck(actor) && RANDOM_F(1.0f) < 0.8f) {
         aTMN1_normal_wait_init(actor, play);
+#ifdef TARGET_PC
+        aTMN1_set_timer(actor, 10);
+#else
         actor->timer = 10;
+#endif
         aTMN1_nageru_bitset(actor);
     } else {
         aTMN1_setup_think_proc(actor, play, aTMN1_THINK_KYORO_MAE);
@@ -198,19 +243,31 @@ static void aTMN1_move_init(TAMAIRE_NPC1_ACTOR* actor, GAME_PLAY* play) {
 
 static void aTMN1_kyoro_mae_init(TAMAIRE_NPC1_ACTOR* actor, GAME_PLAY* play) {
     aTMN1_normal_wait_init(actor, play);
+#ifdef TARGET_PC
+    aTMN1_set_timer(actor, 10);
+#else
     actor->timer = 10;
+#endif
 }
 
 static void aTMN1_kyoro_init(TAMAIRE_NPC1_ACTOR* actor, GAME_PLAY* play) {
     NPC_CLIP->animation_init_proc((ACTOR*)actor, aNPC_ANIM_KYORO1, FALSE);
     actor->npc_class.draw.main_animation.keyframe.frame_control.mode = cKF_FRAMECONTROL_REPEAT;
+#ifdef TARGET_PC
+    aTMN1_set_timer(actor, 124);
+#else
     actor->timer = 124;
+#endif
 }
 
 static void aTMN1_walk_turn_init(TAMAIRE_NPC1_ACTOR* actor, GAME_PLAY* play) {
     aTMN1_Next_move(actor);
     aTMN1_set_request_act(actor, 4, aNPC_ACT_TURN, aNPC_ACT_TYPE_TO_POINT, aNPC_ACT_OBJ_DEFAULT, actor->move_pos[0], actor->move_pos[1]);
+#ifdef TARGET_PC
+    aTMN1_set_timer(actor, 20);
+#else
     actor->timer = 20;
+#endif
 }
 
 static void aTMN1_hirou_init(TAMAIRE_NPC1_ACTOR* actor, GAME_PLAY* play) {
@@ -238,7 +295,11 @@ static void aTMN1_nageru_init(TAMAIRE_NPC1_ACTOR* actor, GAME_PLAY* play) {
 
 static void aTMN1_nageru_end_init(TAMAIRE_NPC1_ACTOR* actor, GAME_PLAY* play) {
     NPC_CLIP->animation_init_proc((ACTOR*)actor, aNPC_ANIM_WAIT1, FALSE);
+#ifdef TARGET_PC
+    aTMN1_set_timer(actor, 120);
+#else
     actor->timer = 120;
+#endif
     aTMN1_nageru_bitclr(actor);
 }
 

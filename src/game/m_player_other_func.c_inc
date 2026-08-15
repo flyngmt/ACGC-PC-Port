@@ -311,4 +311,7 @@ static void Player_actor_Item_main_other_func1(ACTOR* actor, GAME* game) {
 
 static void Player_actor_setup_main_Demo_geton_boat_other_func2(ACTOR* actor, GAME* game) {
     Common_Set(sunburn_time, 0);
+#ifdef TARGET_PC
+    ((PLAYER_ACTOR*)actor)->sunburn_time_accum = 0.0f;
+#endif
 }

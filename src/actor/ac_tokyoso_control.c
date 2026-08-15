@@ -78,6 +78,9 @@ static void aTKC_actor_ct(ACTOR* actorx, GAME* game) {
     actor->clip.set_talk_request_proc = aTKC_clip_set_talk_request;
     CLIP(tokyoso_clip) = &actor->clip;
     aTKC_setupAction(actor, aTKC_ACT_WAIT);
+#ifdef TARGET_PC
+    actor->logic_accum = 0.0f;
+#endif
 }
 
 static void aTKC_actor_dt(ACTOR* actorx, GAME* game) {
@@ -89,11 +92,23 @@ static void aTKC_actor_move(ACTOR* actorx, GAME* game) {
     TOKYOSO_CONTROL_ACTOR* actor = (TOKYOSO_CONTROL_ACTOR*)actorx;
     aEv_tokyoso_c* tokyoso = (aEv_tokyoso_c*)mEv_get_save_area(mEv_EVENT_SPORTS_FAIR_FOOT_RACE, 8);
 
+#ifdef TARGET_PC
+    int ticks = graph_dt_60hz_ticks(game, &actor->logic_accum);
+
+    while (ticks-- > 0) {
+        if (tokyoso->_00 == 3 && actor->action != aTKC_ACT_WAIT2) {
+            aTKC_setupAction(actor, aTKC_ACT_WAIT2);
+        } else {
+            actor->act_proc(actor, (GAME_PLAY*)game);
+        }
+    }
+#else
     if (tokyoso->_00 == 3 && actor->action != aTKC_ACT_WAIT2) {
         aTKC_setupAction(actor, aTKC_ACT_WAIT2);
     } else {
         actor->act_proc(actor, (GAME_PLAY*)game);
     }
+#endif
 }
 
 static void aTKC_irekae_2(TOKYOSO_CONTROL_ACTOR* actor, GAME_PLAY* play) {

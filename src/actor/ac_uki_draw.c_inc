@@ -1,11 +1,16 @@
-static void aUKI_rotate_calc(UKI_ACTOR* uki) {
+static void aUKI_add_calc_angle(s16* angle, s16 target, f32 fraction, s16 max_step, s16 min_step) {
+    add_calc_short_angle2(angle, target, fraction, max_step, min_step);
+}
+
+static void aUKI_rotate_calc(UKI_ACTOR* uki, GAME* game) {
     f32 angle_x = (uki->position_speed.x * 30.0f) / 6.0f;
     f32 angle_z = (uki->position_speed.z * 30.0f) / 6.0f;
     f32 sin = sin_s(uki->uki_rot_speed);
+    f32 dt = (f32)game->graph->dt_num_60fps_frames;
 
     uki->uki_angle.x = DEG2SHORT_ANGLE2(180.0f + (angle_x * sin));
     uki->uki_angle.z = DEG2SHORT_ANGLE2(180.0f + (angle_z * sin));
-    uki->uki_rot_speed += DEG2SHORT_ANGLE2(5.625f);
+    uki->uki_rot_speed += (s16)(DEG2SHORT_ANGLE2(5.625f) * dt);
 }
 
 extern Gfx tol_uki1_model[];
@@ -24,7 +29,7 @@ static void aUKI_actor_draw(ACTOR* actorx, GAME* game) {
 
     switch (uki->proc) {
         case aUKI_PROC_CARRY:
-            aUKI_rotate_calc(uki);
+            aUKI_rotate_calc(uki, game);
             Matrix_RotateY(player_actor->shape_info.rotation.y, MTX_MULT);
             break;
         case aUKI_PROC_READY:
@@ -36,7 +41,7 @@ static void aUKI_actor_draw(ACTOR* actorx, GAME* game) {
             Matrix_RotateX(uki->uki_angle.x, MTX_MULT);
             break;
         case aUKI_PROC_CAST:
-            add_calc_short_angle2(&uki->uki_angle.x, DEG2SHORT_ANGLE2(90.0f), 1.0f - sqrtf(0.95f), 1024, 0);
+            aUKI_add_calc_angle(&uki->uki_angle.x, DEG2SHORT_ANGLE2(90.0f), 1.0f - sqrtf(0.95f), 1024, 0);
             uki->uki_angle.y = search_position_angleY(&actorx->world.position, &uki->rod_top_position);
             Matrix_RotateY(uki->uki_angle.y, MTX_MULT);
             Matrix_RotateX(uki->uki_angle.x, MTX_MULT);
@@ -44,7 +49,7 @@ static void aUKI_actor_draw(ACTOR* actorx, GAME* game) {
         case aUKI_PROC_HIT:
             uki->uki_angle.y = search_position_angleY(&actorx->world.position, &uki->rod_top_position);
             if (uki->frame_timer < 10) {
-                add_calc_short_angle2(&uki->uki_angle.x, DEG2SHORT_ANGLE2(0.0f), 1.0f - sqrtf(0.9f), 2048, 0);
+                aUKI_add_calc_angle(&uki->uki_angle.x, DEG2SHORT_ANGLE2(0.0f), 1.0f - sqrtf(0.9f), 2048, 0);
             } else {
                 uki->uki_angle.x = search_position_angleX(&actorx->world.position, &uki->rod_top_position);
                 uki->uki_angle.x += DEG2SHORT_ANGLE2(-90.0f);
@@ -54,10 +59,10 @@ static void aUKI_actor_draw(ACTOR* actorx, GAME* game) {
             break;
         case aUKI_PROC_WAIT:
             if (uki->cast_timer == 0) {
-                add_calc_short_angle2(&uki->uki_angle.x, DEG2SHORT_ANGLE2(0.0f), 1.0f - sqrtf(0.8f),
-                                      DEG2SHORT_ANGLE2(45.0f), 0);
+                aUKI_add_calc_angle(&uki->uki_angle.x, DEG2SHORT_ANGLE2(0.0f), 1.0f - sqrtf(0.8f),
+                                   DEG2SHORT_ANGLE2(45.0f), 0);
             } else {
-                add_calc_short_angle2(&uki->uki_angle.x, DEG2SHORT_ANGLE2(90.0f), 1.0f - sqrtf(0.95f), 1024, 0);
+                aUKI_add_calc_angle(&uki->uki_angle.x, DEG2SHORT_ANGLE2(90.0f), 1.0f - sqrtf(0.95f), 1024, 0);
             }
             uki->uki_angle.y = search_position_angleY(&actorx->world.position, &uki->rod_top_position);
             Matrix_RotateY(uki->uki_angle.y, MTX_MULT);
@@ -65,7 +70,7 @@ static void aUKI_actor_draw(ACTOR* actorx, GAME* game) {
             break;
         case aUKI_PROC_BITE:
             if (uki->gyo_status == 4) {
-                add_calc_short_angle2(&uki->uki_angle.x, DEG2SHORT_ANGLE2(-90.0f), 1.0f - sqrtf(0.95f), 1024, 0);
+                aUKI_add_calc_angle(&uki->uki_angle.x, DEG2SHORT_ANGLE2(-90.0f), 1.0f - sqrtf(0.95f), 1024, 0);
                 Matrix_RotateY(uki->uki_angle.y, MTX_MULT);
             }
             break;

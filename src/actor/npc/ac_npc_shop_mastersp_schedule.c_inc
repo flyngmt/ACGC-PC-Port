@@ -131,7 +131,7 @@ static void aSHM_wait_player4(NPC_SHOP_MASTERSP_ACTOR* shop_mastersp, GAME_PLAY*
     }
 }
 
-static void aSHM_hirou(NPC_SHOP_MASTERSP_ACTOR* shop_mastersp, GAME_PLAY* play) {
+static void aSHM_hirou_tick(NPC_SHOP_MASTERSP_ACTOR* shop_mastersp, GAME_PLAY* play) {
     mActor_name_t* item_p = Save_Get(shop).lottery_items;
 
     if (shop_mastersp->timer == 10) {
@@ -147,6 +147,18 @@ static void aSHM_hirou(NPC_SHOP_MASTERSP_ACTOR* shop_mastersp, GAME_PLAY* play) 
     aSHM_set_start_avoid_pos(shop_mastersp, shop_mastersp->root + 1);
     shop_mastersp->move_think_idx = aSHM_THINK_10;
     aSHM_setup_think_proc(shop_mastersp, play, aSHM_THINK_MOVE_TURN);
+}
+
+static void aSHM_hirou(NPC_SHOP_MASTERSP_ACTOR* shop_mastersp, GAME_PLAY* play) {
+#ifdef TARGET_PC
+    int ticks = graph_dt_60hz_ticks((GAME*)play, &shop_mastersp->timer_accum);
+
+    while (ticks-- > 0 && shop_mastersp->think_idx == aSHM_THINK_HIROU) {
+        aSHM_hirou_tick(shop_mastersp, play);
+    }
+#else
+    aSHM_hirou_tick(shop_mastersp, play);
+#endif
 }
 
 static void aSHM_happy_academy3(NPC_SHOP_MASTERSP_ACTOR* shop_mastersp, GAME_PLAY* play) {
@@ -217,6 +229,9 @@ static void aSHM_hirou_init(NPC_SHOP_MASTERSP_ACTOR* shop_mastersp, GAME_PLAY* p
                          shop_mastersp->base_pos[shop_mastersp->now_idx][0],
                          shop_mastersp->base_pos[shop_mastersp->now_idx][1] - 10);
     shop_mastersp->timer = 20;
+#ifdef TARGET_PC
+    shop_mastersp->timer_accum = 0.0f;
+#endif
 }
 
 static void aSHM_happy_academy_init(NPC_SHOP_MASTERSP_ACTOR* shop_mastersp, GAME_PLAY* play) {

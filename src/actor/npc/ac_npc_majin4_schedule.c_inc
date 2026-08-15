@@ -72,7 +72,21 @@ static void aMJN4_think_main_proc(NPC_ACTOR* nactorx, GAME_PLAY* play) {
     NPC_MAJIN4_ACTOR* actor = (NPC_MAJIN4_ACTOR*)nactorx;
 
     if (nactorx->action.idx == aNPC_ACT_SPECIAL) {
+#ifdef TARGET_PC
+        if (actor->think_idx == aMJN4_THINK_FORCE_RESET_END_WAIT ||
+            actor->think_idx == aMJN4_THINK_COLOR_FILTER_END_WAIT) {
+            int ticks = graph_dt_60hz_ticks((GAME*)play, &actor->timing_accum);
+
+            while (ticks-- > 0 && (actor->think_idx == aMJN4_THINK_FORCE_RESET_END_WAIT ||
+                                   actor->think_idx == aMJN4_THINK_COLOR_FILTER_END_WAIT)) {
+                actor->think_proc(actor, play);
+            }
+        } else {
+            actor->think_proc(actor, play);
+        }
+#else
         actor->think_proc(actor, play);
+#endif
     } else if (nactorx->action.step == aNPC_ACTION_END_STEP) {
         aMJN4_set_request_act(actor);
     }
@@ -129,6 +143,9 @@ static void aMJN4_force_reset_end_wait_init(NPC_MAJIN4_ACTOR* actor, GAME_PLAY* 
     sAdo_OngenTrgStart(NA_SE_43E, &actor->npc_class.actor_class.world.position);
     actor->reset_timer = 180;
     actor->se_clear_timer = 8;
+#ifdef TARGET_PC
+    actor->timing_accum = 0.0f;
+#endif
 }
 
 static void aMJN4_color_filter_end_wait_init(NPC_MAJIN4_ACTOR* actor, GAME_PLAY* play) {

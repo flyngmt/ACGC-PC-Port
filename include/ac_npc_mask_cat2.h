@@ -34,7 +34,11 @@ struct npc_mask_cat2_s {
     /* 0x9B8 */ float obj_dist_ground;
     /* 0x9BC */ BOOL camera_eyes_flag;
     /* 0x9C0 */ float wait_timer;
-    /* 0x9C4 */ int unkRotation; // related to head rotation (see aNM2_sitdown_init)
+#ifdef TARGET_PC
+    /* 0x9C4 */ f32 conductor_spawn_timer;
+#else
+    /* 0x9C4 */ int conductor_spawn_timer;
+#endif
     /* 0x9C8 */ u32 arg;
     /* 0x9CC */ ACTOR* sasho_actor;
 };

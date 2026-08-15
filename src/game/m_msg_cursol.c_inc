@@ -1105,6 +1105,13 @@ static int mMsg_Main_Cursol_ControlCursol(mMsg_Window_c* msg_p) {
   int utter = FALSE;
   int processed = FALSE;
 
+#ifdef PC_ENHANCEMENTS
+  /* B latches fast text for the rest of the message; L/R or DPAD also speed it up */
+  if ((msg_p->status_flags & mMsg_STATUS_FLAG_CURSOL_JUST) == 0 &&
+      (chkTrigger(BUTTON_B) || chkButton(BUTTON_L) || chkButton(BUTTON_R) || chkButton(BUTTON_DDOWN) || chkButton(BUTTON_DUP) || chkButton(BUTTON_DLEFT) || chkButton(BUTTON_DRIGHT))) {
+    msg_p->status_flags |= mMsg_STATUS_FLAG_FAST_TEXT;
+  }
+#else
   if ((msg_p->status_flags & mMsg_STATUS_FLAG_CURSOL_JUST) == 0) {
     if (chkButton(BUTTON_B)) {
       msg_p->status_flags |= mMsg_STATUS_FLAG_FAST_TEXT;
@@ -1113,6 +1120,7 @@ static int mMsg_Main_Cursol_ControlCursol(mMsg_Window_c* msg_p) {
       msg_p->status_flags &= ~mMsg_STATUS_FLAG_FAST_TEXT;
     }
   }
+#endif
 
   if (mMsg_Check_CancelOrder(msg_p)) {
     msg_p->cancel_flag = TRUE;

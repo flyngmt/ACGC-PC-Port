@@ -20,7 +20,7 @@ struct npc_p_sel_s {
     /* 0x998 */ int next_talk_idx;
     /* 0x99C */ aNPS_TALK_PROC talk_proc;
     /* 0x9A0 */ int talk_end_flag;
-    /* 0x9A4 */ int silent_counter;
+    /* 0x9A4 */ f32 silent_counter;
     /* 0x9A8 */ f32 strum_timer;
     /* 0x9AC */ f32 bgm_stop_timer;
 };

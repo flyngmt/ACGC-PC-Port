@@ -155,7 +155,7 @@ static void aSTM_interrupt_move(NPC_STATION_MASTER_ACTOR* actor, GAME_PLAY* play
     aSTM_setup_think_proc(actor, play, think_idx);
 }
 
-static void aSTM_make_train_bf(NPC_STATION_MASTER_ACTOR* actor, GAME_PLAY* play) {
+static void aSTM_make_train_bf_tick(NPC_STATION_MASTER_ACTOR* actor, GAME_PLAY* play) {
     STRUCTURE_ACTOR* train1 = (STRUCTURE_ACTOR*)Actor_info_fgName_search(&play->actor_info, TRAIN1, ACTOR_PART_ITEM);
 
     if (actor->timer != 0) {
@@ -169,6 +169,18 @@ static void aSTM_make_train_bf(NPC_STATION_MASTER_ACTOR* actor, GAME_PLAY* play)
         aSTM_setup_think_proc(actor, play, aSTM_THINK_TRAIN_ARRIVE_WAIT);
         aSTM_Change_sound(actor, BGM_TRAIN_PULL_INTO_TOWN);
     }
+}
+
+static void aSTM_make_train_bf(NPC_STATION_MASTER_ACTOR* actor, GAME_PLAY* play) {
+#ifdef TARGET_PC
+    int ticks = graph_dt_60hz_ticks((GAME*)play, &actor->train_setup_accum);
+
+    while (ticks-- > 0 && actor->think_idx == aSTM_THINK_MAKE_TRAIN_BF) {
+        aSTM_make_train_bf_tick(actor, play);
+    }
+#else
+    aSTM_make_train_bf_tick(actor, play);
+#endif
 }
 
 static void aSTM_make_train(NPC_STATION_MASTER_ACTOR* actor, GAME_PLAY* play) {
@@ -321,6 +333,9 @@ static void aSTM_interrupt_move_init(NPC_STATION_MASTER_ACTOR* actor, GAME_PLAY*
 
 static void aSTM_make_train_bf_init(NPC_STATION_MASTER_ACTOR* actor, GAME_PLAY* play) {
     actor->timer = 60;
+#ifdef TARGET_PC
+    actor->train_setup_accum = 0.0f;
+#endif
     play->submenu.start_refuse = TRUE;
 }
 

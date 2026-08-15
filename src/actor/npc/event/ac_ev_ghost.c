@@ -214,6 +214,9 @@ static void aEGH_actor_move(ACTOR* actorx, GAME* game) {
   int alpha;
   int target_alpha;
   int delta_alpha;
+#ifdef TARGET_PC
+  int alpha_ticks = graph_dt_60hz_ticks(game, &ghost->alpha_accum);
+#endif
 
   if (aEGH_bitcheck_func(aEGH_BIT_FOUND_GHOST) != FALSE) {
     actorx->actor_specific = 1;
@@ -234,7 +237,11 @@ static void aEGH_actor_move(ACTOR* actorx, GAME* game) {
   alpha = ghost->alpha;
 
   if (aEGH_bitcheck_func(aEGH_BIT_FOUND_GHOST) != FALSE) {
+#ifdef TARGET_PC
+    step = alpha_ticks;
+#else
     step = 1;
+#endif
     
     if (mDemo_Get_talk_actor() == actorx) {
       ghost->npc_class.draw.anim_speed_type = aNPC_ANIM_SPEED_TYPE_LOCKED;
@@ -270,6 +277,22 @@ static void aEGH_actor_move(ACTOR* actorx, GAME* game) {
       }
     }
   }
+#ifdef TARGET_PC
+  else {
+    while (alpha_ticks-- > 0) {
+      if (ghost->bye_bye_transparency_delay_timer != 0) {
+        ghost->bye_bye_transparency_delay_timer--;
+      }
+      else {
+        alpha -= 4;
+
+        if (alpha < 0) {
+          alpha = 0;
+        }
+      }
+    }
+  }
+#else
   else if (ghost->bye_bye_transparency_delay_timer != 0) {
     ghost->bye_bye_transparency_delay_timer--;
   }
@@ -280,6 +303,7 @@ static void aEGH_actor_move(ACTOR* actorx, GAME* game) {
       alpha = 0;
     }
   }
+#endif
 
   ghost->alpha = alpha;
   actorx->shape_info.draw_shadow = FALSE;

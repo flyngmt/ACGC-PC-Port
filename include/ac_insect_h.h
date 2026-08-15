@@ -217,7 +217,7 @@ typedef struct insect_actor_s {
     f32 f32_work3;
 
     int _254;
-    int _258;
+    f32 _258;
     int alpha0;
     int alpha1;
     int alpha2;

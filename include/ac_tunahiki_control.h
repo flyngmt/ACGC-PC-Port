@@ -56,6 +56,9 @@ struct tunahiki_control_actor_s {
     ACTOR actor_class;
     aTNC_PROC act_proc;
     int action;
+#ifdef TARGET_PC
+    f32 logic_accum;
+#endif
 };
 
 extern ACTOR_PROFILE Tunahiki_Control_Profile;

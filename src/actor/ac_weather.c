@@ -406,12 +406,20 @@ static void aWeather_SnowInAdvance(ACTOR* actorx, GAME* game, int moves) {
     WEATHER_ACTOR* weather = (WEATHER_ACTOR*)actorx;
     int prev_spawn_in_advance = weather->spawn_in_advance;
     int i;
+#ifdef TARGET_PC
+    double saved_dt = game->graph->dt_num_60fps_frames;
+
+    game->graph->dt_num_60fps_frames = 1.0;
+#endif
 
     weather->spawn_in_advance = TRUE;
     for (i = 0; i < moves; i++) {
         Weather_Actor_move(actorx, game);
     }
     weather->spawn_in_advance = prev_spawn_in_advance;
+#ifdef TARGET_PC
+    game->graph->dt_num_60fps_frames = saved_dt;
+#endif
 }
 
 static void Weather_Actor_ct(ACTOR* actor, GAME* game) {

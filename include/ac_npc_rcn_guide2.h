@@ -27,6 +27,9 @@ struct npc_rcn_guide2_s {
     /* 0x9B0 */ int counter;
     /* 0x9B4 */ int daily_speak_flag;
     /* 0x9B8 */ int can_ask_again_flag;
+#ifdef TARGET_PC
+    f32 wipe_wait_accum;
+#endif
 };
 
 extern ACTOR_PROFILE Npc_Rcn_Guide2_Profile;

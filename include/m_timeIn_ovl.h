@@ -41,6 +41,9 @@ struct timeIn_ovl_s {
     u16 input_disabled_flag;
     lbRTC_time_c original_time;
     int init_flag;
+#ifdef TARGET_PC
+    f32 clock_step_accum;
+#endif
 };
 
 extern void mTI_timeIn_ovl_set_proc(Submenu* submenu);

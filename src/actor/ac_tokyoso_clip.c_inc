@@ -71,6 +71,9 @@ static void aTKN1_warmup_init(TOKYOSO_NPC1_ACTOR* actor, GAME_PLAY* play) {
     NPC_CLIP->animation_init_proc((ACTOR*)actor, aNPC_ANIM_WARMUP1, FALSE);
     tokyoso->flags &= ~aTKC_NPCIDX2STRETCHFLG(actor->npc_class.actor_class.npc_id);
     actor->timer = 240;
+#ifdef TARGET_PC
+    actor->timer_accum = 0.0f;
+#endif
 }
 
 static void aTKN1_ready_init(TOKYOSO_NPC1_ACTOR* actor, GAME_PLAY* play) {

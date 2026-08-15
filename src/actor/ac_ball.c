@@ -63,6 +63,20 @@ static s16 aBALL_dt_angle_step(GAME* game, s16 step) {
     return (s16)dt_step;
 }
 
+static void aBALL_collider_timer_step(BALL_ACTOR* actor, GAME* game) {
+    int ticks = graph_dt_60hz_ticks(game, &actor->collider_timer_accum);
+
+    while (ticks-- > 0) {
+        if (actor->unk20C <= 0) {
+            actor->collider = NULL;
+            actor->collider_timer_accum = 0.0f;
+            break;
+        }
+
+        actor->unk20C--;
+    }
+}
+
 ClObjPipeData_c aBALL_CoInfoData = {
     { 0x39, 0x20, ClObj_TYPE_PIPE }, // collision data
     { 1 },                           // element data
@@ -175,6 +189,7 @@ static void aBALL_actor_ct(ACTOR* actor, GAME* game) {
 
     ball->unk20A = 0;
     ball->unk20C = 0;
+    ball->collider_timer_accum = 0.0f;
 }
 
 static void aBALL_actor_dt(ACTOR* actor, GAME* game) {
@@ -325,6 +340,7 @@ static void aBALL_OBJcheck(BALL_ACTOR* actor, GAME* game) {
                 pos_speed = collided->position_speed;
                 actor->collider = collided;
                 actor->unk20C = GETREG(TAKREG, 15) + 30;
+                actor->collider_timer_accum = 0.0f;
                 angle = atans_table(actor->actor_class.world.position.z - collided->world.position.z,
                                     actor->actor_class.world.position.x - collided->world.position.x);
                 sin = sin_s(angle);
@@ -367,6 +383,7 @@ static void aBALL_OBJcheck(BALL_ACTOR* actor, GAME* game) {
                 actor->actor_class.speed *= 0.9f;
                 sAdo_OngenTrgStartSpeed(actor->actor_class.speed, NA_SE_25, &actor->actor_class.world.position);
                 actor->unk20C = GETREG(TAKREG, 15) + 30;
+                actor->collider_timer_accum = 0.0f;
             } else {
                 collision = actor->actor_class.status_data.collision_vec;
 
@@ -381,18 +398,10 @@ static void aBALL_OBJcheck(BALL_ACTOR* actor, GAME* game) {
             }
 
         } else {
-            if (actor->unk20C <= 0) {
-                actor->collider = NULL;
-            } else {
-                actor->unk20C--;
-            }
+            aBALL_collider_timer_step(actor, game);
         }
     } else {
-        if (actor->unk20C <= 0) {
-            actor->collider = NULL;
-        } else {
-            actor->unk20C--;
-        }
+        aBALL_collider_timer_step(actor, game);
     }
 }
 

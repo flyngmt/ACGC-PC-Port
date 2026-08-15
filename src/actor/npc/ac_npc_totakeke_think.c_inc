@@ -128,7 +128,15 @@ static aNTT_PROC proc_table[7] = {
 };
 
 static void aNTT_think_main_proc(NPC_TOTAKEKE_ACTOR *totakeke, GAME_PLAY *play) {
+#ifdef TARGET_PC
+    int ticks = graph_dt_60hz_ticks((GAME*)play, &totakeke->staffroll_logic_accum);
+
+    while (ticks-- > 0) {
+        proc_table[totakeke->think_proc_id](totakeke, play);
+    }
+#else
     proc_table[totakeke->think_proc_id](totakeke, play);
+#endif
 }
 
 static void aNTT_think_init_proc(NPC_TOTAKEKE_ACTOR *totakeke, GAME_PLAY *play) {

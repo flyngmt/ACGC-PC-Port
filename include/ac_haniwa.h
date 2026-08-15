@@ -67,6 +67,9 @@ struct actor_haniwa_s {
     /* 0x282 */ u8 submenu_type;
     /* 0x283 */ u8 house_idx;
     /* 0x284 */ u8 playing_save_bgm;
+#ifdef TARGET_PC
+    f32 door_approach_accum;
+#endif
 };
 
 extern ACTOR_PROFILE Haniwa_Profile;

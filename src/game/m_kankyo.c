@@ -1,5 +1,6 @@
 #include "m_kankyo.h"
 
+#include "m_camera2.h"
 #include "m_room_type.h"
 #include "m_scene_table.h"
 #include "m_common_data.h"
@@ -882,6 +883,7 @@ typedef struct electric_light_s {
     f32 change_weather_env_rate;
     s16 light_animating_on;
     s16 light_anime_frame;
+    f32 light_anime_accum;
     int point_light_on_type;
     int point_light_off_type;
     f32 point_light_off_step;
@@ -1853,7 +1855,7 @@ static void mEnv_SetDiffuseLight(Kankyo* kankyo) {
     kankyo->moon_light.lights.diffuse.z = kankyo->base_light.moon_dir[2];
 }
 
-static void mEnv_SetFog(Kankyo* kankyo, Global_light* global_light) {
+static void mEnv_SetFog(GAME_PLAY* play, Kankyo* kankyo, Global_light* global_light) {
     int field_id = mFI_GetFieldId();
     int fog_near;
     int fog_far;
@@ -1878,6 +1880,15 @@ static void mEnv_SetFog(Kankyo* kankyo, Global_light* global_light) {
         global_light->fogFar = 1000;
         global_light->fogNear = 1000;
     }
+#ifdef PC_ENHANCEMENTS
+    /* reset fog if rotated camera with C-stick outside*/
+    else if  (play->camera.focus_distance != 620.0){
+        if  (play->camera.now_main_index == CAMERA2_PROCESS_NORMAL || play->camera.now_main_index == CAMERA2_PROCESS_WADE){
+            global_light->fogFar = 1000;
+            global_light->fogNear = 1000;
+        } 
+    }  
+#endif
 }
 
 static void mEnv_PermitCheckDiffuseLight(Kankyo* kankyo) {
@@ -2014,6 +2025,7 @@ extern int mEnv_RequestChangeLightON(GAME_PLAY* play, int light_on_type, int pla
 
             l_mEnv_electric_light.light_animating_on = TRUE;
             l_mEnv_electric_light.light_anime_frame = 0;
+            l_mEnv_electric_light.light_anime_accum = 0.0f;
 
             if (play_sfx == TRUE) {
                 sAdo_SysTrgStart(NA_SE_LIGHT_ON);
@@ -2041,23 +2053,26 @@ extern int mEnv_RequestChangeLightOFF(GAME_PLAY* play, int light_off_type, f32 s
     return FALSE;
 }
 
-static void mEnv_LightAnimeToSwitchON() {
+static void mEnv_LightAnimeToSwitchON(GAME* game) {
     static f32 switch_on_anime_percent_table[mEnv_LIGHT_ANIME_FRAMES] = { 0.00f, 0.05f, 0.10f, 0.15f, 0.20f,
                                                                           0.25f, 0.30f, 0.25f, 0.20f, 0.15f,
                                                                           0.10f, 0.30f, 0.35f, 0.40f, 0.45f,
                                                                           0.50f, 0.45f, 0.40f, 0.35f, 0.30f };
+    int ticks = graph_dt_60hz_ticks(game, &l_mEnv_electric_light.light_anime_accum);
 
-    int frame = l_mEnv_electric_light.light_anime_frame;
+    while (ticks-- > 0) {
+        int frame = l_mEnv_electric_light.light_anime_frame;
 
-    if (frame >= mEnv_LIGHT_ANIME_FRAMES) {
-        l_mEnv_electric_light.light_animating_on = FALSE;
-        return;
+        if (frame >= mEnv_LIGHT_ANIME_FRAMES) {
+            l_mEnv_electric_light.light_animating_on = FALSE;
+            return;
+        }
+
+        l_mEnv_electric_light.point_light_percent =
+            l_mEnv_electric_light.point_light_min +
+            (1.0f - l_mEnv_electric_light.point_light_min) * switch_on_anime_percent_table[frame];
+        l_mEnv_electric_light.light_anime_frame++;
     }
-
-    l_mEnv_electric_light.point_light_percent =
-        l_mEnv_electric_light.point_light_min +
-        (1.0f - l_mEnv_electric_light.point_light_min) * switch_on_anime_percent_table[frame];
-    l_mEnv_electric_light.light_anime_frame++;
 }
 
 extern void mEnv_ManagePointLight(GAME_PLAY* play, Kankyo* kankyo, Global_light* global_light) {
@@ -2067,7 +2082,7 @@ extern void mEnv_ManagePointLight(GAME_PLAY* play, Kankyo* kankyo, Global_light*
 
     if (lightswitch_on) {
         if (l_mEnv_electric_light.light_animating_on == TRUE) {
-            mEnv_LightAnimeToSwitchON();
+            mEnv_LightAnimeToSwitchON((GAME*)play);
         } else {
             if (l_mEnv_electric_light.point_light_on_type == mEnv_LIGHT_TYPE_LIGHTHOUSE) {
                 add_calc(&l_mEnv_electric_light.point_light_percent, 1.0f, 0.02f, 0.02f, 0.00007f);
@@ -2184,7 +2199,7 @@ extern void Global_kankyo_set(GAME_PLAY* play, Kankyo* kankyo, Global_light* glo
     mEnv_AddAndSetRGBColor(global_light->ambientColor, kankyo->base_light.ambient_color,
                            kankyo->add_light_info.ambient_color);
     mEnv_SetDiffuseLight(kankyo);
-    mEnv_SetFog(kankyo, global_light);
+    mEnv_SetFog(play, kankyo, global_light);
     mEnv_PermitCheckDiffuseLight(kankyo);
     mEnv_TaimatuPointLightWaveMoveProc(play);
     mEnv_CheckNpcLight_ToSwitchON(play);
@@ -2241,9 +2256,11 @@ static int mEnv_CheckNpcRoomPointLightNiceStatus() {
 
 static void mEnv_TaimatuPointLightWaveMoveProc(GAME_PLAY* play) {
     static s16 point_light_wave_counter;
+    static f32 point_light_wave_accum;
     u8* point_light_color;
+    int ticks = graph_dt_60hz_ticks((GAME*)play, &point_light_wave_accum);
 
-    point_light_wave_counter += 400;
+    point_light_wave_counter += (s16)(400 * ticks);
     point_light_color = l_mEnv_electric_light.point_light_color;
 
     if (l_mEnv_electric_light.point_light_is_flame) {

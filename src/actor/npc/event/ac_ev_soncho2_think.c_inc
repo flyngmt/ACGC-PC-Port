@@ -96,10 +96,35 @@ static void aES2_bskt_move_next(NPC_SONCHO2* soncho, GAME_PLAY* play) {
     }
 }
 
+#ifdef TARGET_PC
+static int aES2_timer_elapsed(NPC_SONCHO2* soncho, GAME_PLAY* play) {
+    int ticks = graph_dt_60hz_ticks((GAME*)play, &soncho->timer_accum);
+
+    while (ticks-- > 0) {
+        if (soncho->timer > 0) {
+            soncho->timer--;
+        } else {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
+static void aES2_set_timer(NPC_SONCHO2* soncho, s16 timer) {
+    soncho->timer = timer;
+    soncho->timer_accum = 0.0f;
+}
+#endif
+
 static void aES2_bskt_timer_next(NPC_SONCHO2* soncho, GAME_PLAY* play) {
+#ifdef TARGET_PC
+    if (aES2_timer_elapsed(soncho, play)) {
+#else
     if (soncho->timer > 0) {
         soncho->timer--;
     } else {
+#endif
         u8 think_proc = soncho->think_idx;
         if (think_proc >= aES2_THINK_d) {
             aES2_setup_think_proc(soncho, play, aES2_THINK_LIGHTHOUSE_QUEST_START);
@@ -111,11 +136,17 @@ static void aES2_bskt_timer_next(NPC_SONCHO2* soncho, GAME_PLAY* play) {
 }
 
 static void aES2_tug_of_war(NPC_SONCHO2* soncho, GAME_PLAY* play) {
+#ifdef TARGET_PC
+    if (aES2_timer_elapsed(soncho, play)) {
+        aES2_setup_think_proc(soncho, play, soncho->think_idx);
+    }
+#else
     if (soncho->timer > 0) {
         soncho->timer--;
     } else {
         aES2_setup_think_proc(soncho, play, soncho->think_idx);
     }
+#endif
     if (soncho->npc_class.draw.animation_id == aNPC_ANIM_CLAP1) {
         sAdo_OngenPos((JaudioObjectId)(uintptr_t)soncho, NA_SE_2F,
                       &soncho->npc_class.actor_class.world.position);
@@ -150,7 +181,11 @@ static void aES2_bskt_turn_init(NPC_SONCHO2* soncho, GAME_PLAY* play) {
 }
 
 static void aES2_bskt_move_init(NPC_SONCHO2* soncho, GAME_PLAY* play) {
+#ifdef TARGET_PC
+    aES2_set_timer(soncho, 0x12c);
+#else
     soncho->timer = 0x12c;
+#endif
     aES2_set_request_act(soncho, 0x4, aNPC_ACT_WALK, aNPC_ACT_TYPE_TO_POINT, aNPC_ACT_OBJ_DEFAULT, soncho->goal_x,
                          soncho->goal_z);
 }
@@ -164,7 +199,11 @@ static void aES2_tug_of_war_init(NPC_SONCHO2* soncho, GAME_PLAY* play) {
     ACTOR* actorx = (ACTOR*)soncho;
     soncho->npc_class.action.idx = aNPC_ACT_WAIT;
     aES2_normal_wait_init(soncho, play);
+#ifdef TARGET_PC
+    aES2_set_timer(soncho, 0x12c);
+#else
     soncho->timer = 0x12c;
+#endif
     CLIP(npc_clip)->set_dst_pos_proc((NPC_ACTOR*)soncho, actorx->world.position.x - 20.0f,
                                      actorx->world.position.z + 50.0f);
     soncho->npc_class.draw.main_animation.keyframe.frame_control.mode = cKF_FRAMECONTROL_REPEAT;

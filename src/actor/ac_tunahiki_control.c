@@ -39,6 +39,9 @@ static void aTNC_actor_ct(ACTOR* actorx, GAME* game) {
     aEv_tunahiki_c* tunahiki = (aEv_tunahiki_c*)mEv_get_save_area(mEv_EVENT_SPORTS_FAIR_TUG_OF_WAR, 9);
 
     aTNC_setupAction(actor, aTNC_ACT_WAIT);
+#ifdef TARGET_PC
+    actor->logic_accum = 0.0f;
+#endif
     if (tunahiki == NULL) {
         tunahiki = (aEv_tunahiki_c*)mEv_reserve_save_area(mEv_EVENT_SPORTS_FAIR_TUG_OF_WAR, 9);
         if (tunahiki != NULL) {
@@ -59,7 +62,20 @@ static void aTNC_actor_move(ACTOR* actorx, GAME* game) {
     TUNAHIKI_CONTROL_ACTOR* actor = (TUNAHIKI_CONTROL_ACTOR*)actorx;
     GAME_PLAY* play = (GAME_PLAY*)game;
 
+#ifdef TARGET_PC
+    int ticks = graph_dt_60hz_ticks(game, &actor->logic_accum);
+    u32 saved_game_frame = play->game_frame;
+    u32 first_logic_frame = (u32)graph_dt_frame_time(game) - (u32)ticks + 1;
+    int tick;
+
+    for (tick = 0; tick < ticks; tick++) {
+        play->game_frame = first_logic_frame + (u32)tick;
+        actor->act_proc(actor, play);
+    }
+    play->game_frame = saved_game_frame;
+#else
     actor->act_proc(actor, play);
+#endif
 }
 
 static void aTNC_wait(TUNAHIKI_CONTROL_ACTOR* actor, GAME_PLAY* play) {

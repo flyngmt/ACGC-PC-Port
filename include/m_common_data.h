@@ -314,7 +314,12 @@ typedef struct common_data_s {
     /* 0x02DB46 */ mCD_persistent_data_c travel_persistent_data; /* used for checking if travelling back to town */
     /* 0x02DBA2 */ s16 island_weather;
     /* 0x02DBA4 */ s16 island_weather_intensity;
-    /* 0x02DBA6 */ s16 sunburn_time;
+    /* 0x02DBA6 */
+#ifdef TARGET_PC
+    u16 sunburn_time; /* Village exposure exceeds S16_MAX. */
+#else
+    s16 sunburn_time;
+#endif
     /* 0x02DBA8 */ u8 memcard_slot;
     /* 0X02DBAC */ int my_room_message_control_flags;
     /* 0x02DBB0 */ s16 can_look_goki_count;

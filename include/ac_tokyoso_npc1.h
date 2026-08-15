@@ -28,6 +28,10 @@ struct tokyoso_npc1_actor_s {
     u8 talk_idx;
     u8 change_flag;
     u8 flags;
+#ifdef TARGET_PC
+    f32 timer_accum;
+    f32 dash_effect_accum;
+#endif
 };
 
 extern ACTOR_PROFILE Tokyoso_Npc1_Profile;

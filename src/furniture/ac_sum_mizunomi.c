@@ -17,7 +17,7 @@ static void aSumMizunomi_mv(FTR_ACTOR* ftr_actor, ACTOR* my_room_actor, GAME* ga
     if (aFTR_CAN_PLAY_SE(ftr_actor)) {
         cKF_SkeletonInfo_R_c* keyframe = &ftr_actor->keyframe;
 
-        if (keyframe->frame_control.current_frame == 19.0f) {
+        if (cKF_FrameControl_passCheck_now(&keyframe->frame_control, 19.0f)) {
             sAdo_OngenTrgStart(0x12A, &ftr_actor->position);
         }
     }
