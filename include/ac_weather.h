@@ -16,6 +16,8 @@ extern int aWeather_ChangingWeather();
 extern void aWeather_RequestChangeWeatherToIsland();
 extern void aWeather_RequestChangeWeatherFromIsland();
 extern int aWeather_ShouldSpawnEvery(ACTOR* actorx, f32 period_frames);
+extern f32 aWeather_GetHorizontalScale();
+extern int aWeather_IsScreenPositionVisible(const xyz_t* screen_pos);
 
 extern ACTOR_PROFILE Weather_Profile;
 

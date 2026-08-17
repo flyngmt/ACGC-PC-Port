@@ -6,6 +6,7 @@
 #include "ac_weather_sakura.h"
 #include "ac_weather_leaf.h"
 
+#include "main.h"
 #include "m_common_data.h"
 #include "m_rcp.h"
 #include "m_field_info.h"
@@ -357,6 +358,28 @@ extern int aWeather_ShouldSpawnEvery(ACTOR* actorx, f32 period_frames) {
     return FALSE;
 }
 
+extern f32 aWeather_GetHorizontalScale() {
+#ifdef TARGET_PC
+    f32 aspect_factor = pc_widescreen_get_aspect_factor();
+
+    /* Weather volumes and their CPU-side visibility checks use the original
+     * 4:3 projection, so widen them by the same amount as the hor+ frustum. */
+    if (aspect_factor < 1.0f) {
+        return 1.0f / aspect_factor;
+    }
+#endif
+    return 1.0f;
+}
+
+extern int aWeather_IsScreenPositionVisible(const xyz_t* screen_pos) {
+    f32 screen_center = SCREEN_WIDTH_F * 0.5f;
+    f32 screen_half_width = screen_center * aWeather_GetHorizontalScale();
+
+    return screen_pos->x >= screen_center - screen_half_width &&
+           screen_pos->x < screen_center + screen_half_width && screen_pos->y >= 0.0f &&
+           screen_pos->y < SCREEN_HEIGHT_F;
+}
+
 static void aWeather_SecureWeatherPrivateWork(ACTOR* actorx) {
     WEATHER_ACTOR* weather = (WEATHER_ACTOR*)actorx;
     int i;
@@ -412,6 +435,7 @@ static void aWeather_SnowInAdvance(ACTOR* actorx, GAME* game, int moves) {
     game->graph->dt_num_60fps_frames = 1.0;
 #endif
 
+    moves = (int)((f32)moves * aWeather_GetHorizontalScale() + 0.5f);
     weather->spawn_in_advance = TRUE;
     for (i = 0; i < moves; i++) {
         Weather_Actor_move(actorx, game);

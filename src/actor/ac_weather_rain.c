@@ -34,14 +34,21 @@ aWeather_Profile_c iam_weather_rain = {
 
 static int aWeatherRain_DecideMakeRainCount(ACTOR* actor) {
     WEATHER_ACTOR* weather = (WEATHER_ACTOR*)actor;
+    int base_count;
+    int count;
 
     if (weather->current_level == mEnv_WEATHER_INTENSITY_LIGHT) {
-        return 1;
+        base_count = 1;
     } else if (weather->current_level == mEnv_WEATHER_INTENSITY_NORMAL) {
-        return 2;
+        base_count = 2;
     } else {
-        return 3;
+        base_count = 3;
     }
+
+    weather->spawn_accum += (f32)base_count * aWeather_GetHorizontalScale();
+    count = (int)weather->spawn_accum;
+    weather->spawn_accum -= (f32)count;
+    return count;
 }
 
 static void aWeatherRain_make(ACTOR* actor, GAME* game) {
@@ -56,6 +63,7 @@ static void aWeatherRain_make(ACTOR* actor, GAME* game) {
     WEATHER_ACTOR* weather = (WEATHER_ACTOR*)actor;
 
     f32 x, y, z;
+    f32 horizontal_half_width = 130.0f * aWeather_GetHorizontalScale();
 
     count = aWeatherRain_DecideMakeRainCount(actor);
     pos = weather->pos;
@@ -64,7 +72,7 @@ static void aWeatherRain_make(ACTOR* actor, GAME* game) {
 
         priv_num = Common_Get(clip.weather_clip)->get_priv_num(&weather->actor_class);
         if (priv_num != -1) {
-            x = -130.0f + (RANDOM_F(260.0f));
+            x = -horizontal_half_width + RANDOM_F(horizontal_half_width * 2.0f);
             z = -200.0f + (RANDOM_F(360.0f));
 
             pos_mod = pos;

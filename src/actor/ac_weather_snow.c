@@ -24,13 +24,14 @@ aWeather_Profile_c iam_weather_snow = {
 
 static int aWeatherSnow_DecideMakeSnowCount(ACTOR* actor, GAME* game) {
     WEATHER_ACTOR* weather = (WEATHER_ACTOR*)actor;
+    f32 horizontal_scale = aWeather_GetHorizontalScale();
 
     if (weather->current_level == mEnv_WEATHER_INTENSITY_LIGHT) {
-        return aWeather_ShouldSpawnEvery(actor, 8.0f);
+        return aWeather_ShouldSpawnEvery(actor, 8.0f / horizontal_scale);
     } else if (weather->current_level == mEnv_WEATHER_INTENSITY_NORMAL) {
-        return aWeather_ShouldSpawnEvery(actor, 4.0f);
+        return aWeather_ShouldSpawnEvery(actor, 4.0f / horizontal_scale);
     }
-    return aWeather_ShouldSpawnEvery(actor, 2.0f);
+    return aWeather_ShouldSpawnEvery(actor, 2.0f / horizontal_scale);
 }
 
 static void aWeatherSnow_make(ACTOR* actor, GAME* game) {
@@ -44,11 +45,12 @@ static void aWeatherSnow_make(ACTOR* actor, GAME* game) {
     int count = Common_Get(clip.weather_clip)->get_priv_num(actor);
     xyz_t base = { 0.0f, 0.0f, 0.0f };
     xyz_t mod_pos;
+    f32 horizontal_half_width = 100.0f * aWeather_GetHorizontalScale();
 
     if (aWeatherSnow_DecideMakeSnowCount(actor, game) != 0) {
         base.y = -0.5f + (RANDOM_F(-2.0f));
         if (count != -1) {
-            x = -100.0f + (RANDOM_F(200.0f));
+            x = -horizontal_half_width + RANDOM_F(horizontal_half_width * 2.0f);
             z = -200.0f + (RANDOM_F(380.0f));
 
             mod_pos = pos;
@@ -75,14 +77,15 @@ static int aWeatherSnow_CheckSnowBorder(aWeather_Priv* priv, GAME_PLAY* play) {
     WEATHER_ACTOR* weather = (WEATHER_ACTOR*)Common_Get(clip.weather_clip)->actor;
     int ret = 0;
     f32 wtemp, ptemp;
+    f32 horizontal_half_width = 100.0f * aWeather_GetHorizontalScale();
     if (weather != NULL) {
         wtemp = weather->pos.x;
         ptemp = priv->pos.x;
 
-        if (ptemp < (-100.0f + wtemp)) {
+        if (ptemp < (-horizontal_half_width + wtemp)) {
             ret |= 2;
         }
-        if (ptemp > (100.0f + wtemp)) {
+        if (ptemp > (horizontal_half_width + wtemp)) {
             ret |= 8;
         }
         wtemp = weather->pos.z;
@@ -102,13 +105,14 @@ static int aWeatherSnow_CheckSnowBorder(aWeather_Priv* priv, GAME_PLAY* play) {
 static void aWeatherSnow_CheckSnowScroll(aWeather_Priv* priv, GAME_PLAY* play) {
     int border = aWeatherSnow_CheckSnowBorder(priv, play);
     PLAYER_ACTOR* player = get_player_actor_withoutCheck(play);
+    f32 horizontal_width = 200.0f * aWeather_GetHorizontalScale();
 
     if (border != 0) {
         if ((border >> 1) & 1) {
-            priv->pos.x += 200.0f;
+            priv->pos.x += horizontal_width;
         }
         if ((border >> 3) & 1) {
-            priv->pos.x -= 200.0f;
+            priv->pos.x -= horizontal_width;
         }
         if ((border >> 2) & 1) {
             priv->pos.z -= 380.0f;
@@ -184,8 +188,7 @@ void aWeatherSnow_draw(aWeather_Priv* priv, GAME* game) {
 
     Game_play_Projection_Trans(play, &pos, &screen_pos);
 
-    if ((0.0f <= screen_pos.x) && (screen_pos.x < SCREEN_WIDTH_F) && (0.0f <= screen_pos.y) &&
-        (screen_pos.y < SCREEN_HEIGHT_F)) {
+    if (aWeather_IsScreenPositionVisible(&screen_pos)) {
 
         work = GRAPH_ALLOC_TYPE(game->graph, N64Mtx, 1);
 
