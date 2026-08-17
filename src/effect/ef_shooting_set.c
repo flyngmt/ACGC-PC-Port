@@ -1,7 +1,11 @@
 #include "ef_effect_control.h"
 
+#include "m_camera2.h"
 #include "m_common_data.h"
 #include "m_player_lib.h"
+#ifdef TARGET_PC
+#include "pc_platform.h"
+#endif
 
 static void eShootingSet_init(xyz_t pos, int prio, s16 angle, GAME* game, u16 item_name, s16 arg0, s16 arg1);
 static void eShootingSet_ct(eEC_Effect_c* effect, GAME* game, void* ct_arg);
@@ -19,6 +23,17 @@ eEC_PROFILE_c iam_ef_shooting_set = {
     eEC_IGNORE_DEATH_DIST,
     // clang-format on
 };
+
+static f32 eShootingSet_GetHorizontalScale() {
+#ifdef TARGET_PC
+    f32 aspect_factor = pc_widescreen_get_aspect_factor();
+
+    if (aspect_factor < 1.0f) {
+        return 1.0f / aspect_factor;
+    }
+#endif
+    return 1.0f;
+}
 
 static void eShootingSet_SearchNicePos(xyz_t* out_pos, GAME* game) {
     int bx, bz;
@@ -58,6 +73,7 @@ static f32 eShooting_AdjustValue(int now, int start, int end, f32 start_val, f32
 
 static s16 eShootingSet_GetFrame_MakeNextShooting() {
     s16 adjust;
+    f32 interval;
 
     if ((Common_Get(time).now_sec < 64800) || (Common_Get(time).now_sec >= 75600)) {
         adjust = 600;
@@ -67,7 +83,8 @@ static s16 eShootingSet_GetFrame_MakeNextShooting() {
         adjust = eShooting_AdjustValue(Common_Get(time).now_sec, 70200, 75600, 120.0f, 600.0f);
     }
 
-    return adjust + (RANDOM_F(120.0f) - 60.0f);
+    interval = adjust + (RANDOM_F(120.0f) - 60.0f);
+    return (s16)(interval / eShootingSet_GetHorizontalScale());
 }
 
 static void eShootingSet_ct(eEC_Effect_c* effect, GAME* game, void* ct_arg) {
@@ -76,6 +93,7 @@ static void eShootingSet_ct(eEC_Effect_c* effect, GAME* game, void* ct_arg) {
     effect->effect_specific[0] = 0;
     effect->effect_specific[1] = eShootingSet_GetFrame_MakeNextShooting();
     effect->effect_specific[2] = 0;
+    effect->offset.x = 0.0f;
 }
 
 static void eShootingSet_mv(eEC_Effect_c* effect, GAME* game) {
@@ -89,12 +107,16 @@ static void eShootingSet_mv(eEC_Effect_c* effect, GAME* game) {
     eEC_CLIP->set_continious_env_proc(effect, 100, 100);
 
     if (mEv_CheckTitleDemo() != mEv_TITLEDEMO_STAFFROLL) {
-        effect->effect_specific[2] += F32_TO_S16(dt * 10.0f);
-        if (effect->effect_specific[2] >= effect->effect_specific[1] * 10) {
-            effect->effect_specific[2] = 0;
+        // DT fix, completely breaks above 600 fps otherwise
+        effect->offset.x += dt * 10.0f;
+        if (effect->offset.x >= (f32)effect->effect_specific[1] * 10.0f) {
+            effect->offset.x = 0.0f;
             effect->effect_specific[1] = eShootingSet_GetFrame_MakeNextShooting();
 
             if (eEC_CLIP->check_lookat_block_proc(effect->position)) {
+                xyz_t* lookat;
+                f32 horizontal_scale;
+
                 rng = RANDOM(10.0f) & 1;
                 if (rng == 1) {
                     angle = DEG2SHORT_ANGLE(315.0f) + (s16)RANDOM_F(6144.0f);
@@ -115,6 +137,10 @@ static void eShootingSet_mv(eEC_Effect_c* effect, GAME* game) {
                 pos.z *= 0.5f;
                 pos.x += temp * cos_s(rnd_angle);
                 pos.z += temp * cos_s(rnd_angle);
+
+                lookat = Camera2_getCenterPos_p();
+                horizontal_scale = eShootingSet_GetHorizontalScale();
+                pos.x = lookat->x + (pos.x - lookat->x) * horizontal_scale;
 
                 eEC_CLIP->effect_make_proc(eEC_EFFECT_SHOOTING, pos, effect->prio, angle, game, (u16)effect->item_name,
                                            0, 0);
