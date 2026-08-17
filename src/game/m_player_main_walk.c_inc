@@ -202,8 +202,8 @@ static void Player_actor_Movement_Walk(ACTOR* actor, GAME* game, f32* frame) {
         s16 angle = actor->world.angle.y;
         f32 mod;
 
-        sin = 0.5f * old_speed * sin_s(angle);
-        cos = 0.5f * old_speed * cos_s(angle);
+        sin = 0.5f * dt_frames * old_speed * sin_s(angle);
+        cos = 0.5f * dt_frames * old_speed * cos_s(angle);
 
         pos.x += sin;
         pos.z += cos;
