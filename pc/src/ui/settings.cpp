@@ -8,6 +8,7 @@
 #include "acgc/ui/modal.hpp"
 #include "acgc/ui/number_button.hpp"
 #include "acgc/ui/pane.hpp"
+#include "acgc/ui/localization.hpp"
 
 #include "borealis/io.hpp"
 
@@ -59,7 +60,7 @@ void add_bool(Pane& left, Pane& right, ConfigVar<bool>& variable, Rml::String la
             },
             .isModified = [&variable] { return modified(variable); },
         }),
-        right, [help = std::move(help)](Pane& pane) { pane.add_rml(help); });
+        right, [help = std::move(help)](Pane& pane) { pane.add_text(help); });
 }
 
 void add_bool(Pane& left, Pane& right, ConfigVar<bool>& variable, Rml::String label, Rml::String help)
@@ -69,14 +70,16 @@ void add_bool(Pane& left, Pane& right, ConfigVar<bool>& variable, Rml::String la
 
 Rml::String msaa_label(int samples)
 {
-    return samples <= 1 ? "Off" : std::to_string(samples) + "x";
+    return samples <= 1 ? localization::get("common.off")
+                        : std::to_string(samples) + "x";
 }
 
 constexpr std::array kUiScales = {50, 75, 0, 125, 150, 175, 200};
 
 Rml::String ui_scale_label(int percent)
 {
-    return percent == 0 ? "Automatic" : std::to_string(percent) + "%";
+    return percent == 0 ? localization::get("settings.video.ui_scale.automatic")
+                        : std::to_string(percent) + "%";
 }
 
 struct ResolutionPreset {
@@ -134,7 +137,7 @@ Rml::String resolution_label(const ResolutionPreset& preset)
 {
     Rml::String label = std::to_string(preset.width) + " x " + std::to_string(preset.height);
     if (preset.desktop) {
-        label += " (Desktop)";
+        label += localization::get("settings.video.resolution.desktop_suffix");
     }
     return label;
 }
@@ -165,7 +168,8 @@ public:
                 selection = i;
             }
         }
-        mSelect->Add("Custom", std::to_string(mPresets.size()));
+        mSelect->Add(escape(localization::get("settings.video.resolution.custom")),
+                     std::to_string(mPresets.size()));
         mSelect->SetSelection(selection);
 
         listen(mRoot, Rml::EventId::Change, [this](Rml::Event& event) {
@@ -227,6 +231,43 @@ private:
 
 #if ACGC_CAN_CHANGE_DATA_FOLDER
 
+Rml::String data_folder_error_message(const borealis::data::Status& status)
+{
+    using enum borealis::data::ErrorCode;
+    Rml::String message;
+    switch (status.code) {
+    case NotInitialized: message = localization::get("settings.data.error.not_initialized"); break;
+    case PreferencePathUnavailable:
+        message = localization::get("settings.data.error.system_path_unavailable");
+        break;
+    case EmptyPath: message = localization::get("settings.data.error.empty_path"); break;
+    case CreateDirectoryFailed: message = localization::get("settings.data.error.create_failed"); break;
+    case NotDirectory: message = localization::get("settings.data.error.not_directory"); break;
+    case WriteProbeFailed: message = localization::get("settings.data.error.not_writable"); break;
+    case WriteProbeCleanupFailed:
+        message = localization::get("settings.data.error.validation_failed");
+        break;
+    case DescriptorWriteFailed: message = localization::get("settings.data.error.save_failed"); break;
+    case MigrationIncomplete:
+        message = localization::get("settings.data.error.migration_incomplete");
+        break;
+    case OverrideActive: message = localization::get("settings.data.error.override_active"); break;
+    case Unsupported: message = localization::get("settings.data.error.unsupported"); break;
+    case OpenFolderFailed: message = localization::get("settings.data.error.open_failed"); break;
+    case None: message = localization::get("settings.data.error_fallback"); break;
+    }
+
+    if (!status.path.empty()) {
+        message = localization::format("settings.data.error.with_path", message,
+                                       borealis::io::fs_path_to_string(status.path));
+    }
+    if (status.systemError) {
+        message = localization::format("settings.data.error.with_system_error", message,
+                                       status.systemError.message());
+    }
+    return message;
+}
+
 /* Live view of the configured data folder plus the pending-restart notice. */
 class DataFolderPathText : public Component {
 public:
@@ -234,10 +275,10 @@ public:
 
     void update() override
     {
-        Rml::String rml = "Current data folder:<br/>" +
+        Rml::String rml = escape(localization::get("settings.data.current_folder")) + "<br/>" +
                           escape(data::abbreviated_path_string(data::configured_data_path()));
         if (data::is_data_path_restart_pending()) {
-            rml += "<br/><br/>Restart the game to move data to the new folder.";
+            rml += "<br/><br/>" + escape(localization::get("settings.data.restart_pending"));
         }
         if (rml != mCurrentRml) {
             mRoot->SetInnerRML(rml);
@@ -254,11 +295,11 @@ void show_data_folder_error_modal(std::string_view message)
 {
     auto dismiss = [](Modal& modal) { modal.pop(); };
     push_document(std::make_unique<Modal>(Modal::Props{
-        .title = "Data Folder Not Changed",
+        .title = escape(localization::get("settings.data.error_title")),
         .bodyRml = escape(message),
         .actions = {
             ModalAction{
-                .label = "OK",
+                .label = localization::get("common.ok"),
                 .onPressed = dismiss,
             },
         },
@@ -274,14 +315,12 @@ void apply_data_folder_selection(void* userdata)
 {
     std::unique_ptr<std::string> selection(static_cast<std::string*>(userdata));
 
-    std::string dataPathError;
-    if (data::set_custom_data_path(selection->c_str(), &dataPathError)) {
+    const auto status = data::set_custom_data_path(
+        borealis::io::fs_path_from_utf8(*selection));
+    if (status) {
         return;
     }
-    if (dataPathError.empty()) {
-        dataPathError = "The selected folder could not be used as the data folder.";
-    }
-    show_data_folder_error_modal(dataPathError);
+    show_data_folder_error_modal(data_folder_error_message(status));
 }
 
 /* SDL may invoke dialog callbacks off the main thread; the UI (and the
@@ -304,52 +343,52 @@ void data_folder_dialog_callback(void*, const char* const* filelist, int)
 
 SettingsWindow::SettingsWindow()
 {
-    add_tab("Animal Crossing", [this](Rml::Element* content) {
+    add_tab(localization::get("settings.tabs.general"), [this](Rml::Element* content) {
         auto& current = settings();
         auto& left = add_child<Pane>(content, Pane::Type::Controlled);
         auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
 
 #if ACGC_CAN_CHANGE_DATA_FOLDER
-        left.add_section("Data");
+        left.add_section(localization::get("settings.data.section"));
         left.register_control(
             left.add_select_button({
-                .key = "Data Folder",
+                .key = localization::get("settings.data.folder"),
                 .getValue = [] {
                     return Rml::String(data::abbreviated_path_string(data::configured_data_path()));
                 },
                 .isModified = [] { return data::is_data_path_restart_pending(); },
             }),
             right, [](Pane& pane) {
-                pane.add_text("The data folder is where the game stores saves, settings, "
-                              "input mappings, texture packs, and NES ROMs.");
+                pane.add_text(localization::get("settings.data.help"));
                 pane.add_child<DataFolderPathText>();
 #if ACGC_CAN_OPEN_DATA_FOLDER
-                pane.add_button("Open Data Folder").on_pressed([] {
+                pane.add_button(localization::get("settings.data.open")).on_pressed([] {
                     data::open_data_path();
                 });
 #endif
-                pane.add_button("Change Data Folder").on_pressed([] {
+                pane.add_button(localization::get("settings.data.change")).on_pressed([] {
                     const std::string current = borealis::io::fs_path_to_string(data::configured_data_path());
                     SDL_ShowOpenFolderDialog(&data_folder_dialog_callback, nullptr,
                                              aurora::window::get_sdl_window(),
                                              current.empty() ? nullptr : current.c_str(), false);
                 });
                 pane.add_button(ControlledButton::Props{
-                    .text = "Reset to Default",
+                    .text = localization::get("settings.data.reset"),
                     .isDisabled = [] { return data::is_default_data_path(); },
                 }).on_pressed([] {
                     data::reset_data_path();
                 });
-                pane.add_text("Changes take effect after restarting the game; recognized data "
-                              "moves to the new folder on the next launch.");
+                pane.add_text(localization::get("settings.data.change_help"));
             });
 #endif
 
-        left.add_section("Startup");
-        add_bool(left, right, current.backend.skipPrelaunch, "Skip Prelaunch Menu",
-                 "Launch the last verified disc image immediately on future starts.");
-        add_bool(left, right, current.backend.checkForUpdates, "Check for Updates",
-                 "Check GitHub releases when the prelaunch menu opens. No personal data is collected.");
+        left.add_section(localization::get("settings.startup.section"));
+        add_bool(left, right, current.backend.skipPrelaunch,
+                 localization::get("settings.startup.skip_prelaunch"),
+                 localization::get("settings.startup.skip_prelaunch_help"));
+        add_bool(left, right, current.backend.checkForUpdates,
+                 localization::get("settings.startup.check_updates"),
+                 localization::get("settings.startup.check_updates_help"));
     });
 
     /* Created once per window, outside the tab builder, so rebuilding the tab
@@ -366,15 +405,15 @@ SettingsWindow::SettingsWindow()
         .custom = !currentIsPreset,
     });
 
-    add_tab("Video", [this, resolutionPresets, resolutionState](Rml::Element* content) {
+    add_tab(localization::get("settings.tabs.video"), [this, resolutionPresets, resolutionState](Rml::Element* content) {
         auto& current = settings();
         auto& left = add_child<Pane>(content, Pane::Type::Controlled);
         auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
 
-        left.add_section("Display");
+        left.add_section(localization::get("settings.video.display_section"));
         left.register_control(
             left.add_child<BoolButton>(BoolButton::Props{
-                .key = "Fullscreen",
+                .key = localization::get("settings.video.fullscreen"),
                 .getValue = [&current] { return current.video.windowMode.value() != 0; },
                 .setValue = [&current](bool value) {
                     current.video.windowMode.set_value(value ? 1 : 0);
@@ -384,22 +423,22 @@ SettingsWindow::SettingsWindow()
                 .isModified = [&current] { return modified(current.video.windowMode); },
             }),
             right, [](Pane& pane) {
-                pane.add_text("Display the game in Aurora's borderless fullscreen mode.");
+                pane.add_text(localization::get("settings.video.fullscreen_help"));
             });
 
-        add_bool(left, right, current.video.vsync, "Vertical Sync",
-                 "Synchronize presentation with the display refresh rate.",
+        add_bool(left, right, current.video.vsync, localization::get("settings.video.vsync"),
+                 localization::get("settings.video.vsync_help"),
                  [](bool value) { aurora_enable_vsync(value); });
 
         left.register_control(
             left.add_select_button({
-                .key = "Window Size",
+                .key = localization::get("settings.video.window_size"),
                 .getValue = [&current, resolutionState] {
                     Rml::String value = std::to_string(resolutionState->width) + " x " +
                                         std::to_string(resolutionState->height);
                     if (resolutionState->width != current.video.windowWidth.value() ||
                         resolutionState->height != current.video.windowHeight.value()) {
-                        value += " (pending)";
+                        value += localization::get("settings.video.resolution.pending_suffix");
                     }
                     return value;
                 },
@@ -409,10 +448,10 @@ SettingsWindow::SettingsWindow()
                 },
             }),
             right, [&current, resolutionPresets, resolutionState](Pane& pane) {
-                pane.add_section("Resolution");
+                pane.add_section(localization::get("settings.video.resolution.section"));
                 pane.add_child<ResolutionDropdown>(resolutionPresets, resolutionState);
                 auto& widthField = pane.add_child<ConditionalNumberButton>(NumberButton::Props{
-                    .key = "Width",
+                    .key = localization::get("settings.video.resolution.width"),
                     .getValue = [resolutionState] { return resolutionState->width; },
                     .setValue = [resolutionState](int value) { resolutionState->width = value; },
                     .isDisabled = [resolutionState] { return !resolutionState->custom; },
@@ -420,10 +459,11 @@ SettingsWindow::SettingsWindow()
                         return resolutionState->custom &&
                                resolutionState->width != current.video.windowWidth.value();
                     },
-                    .min = 320, .max = 7680, .step = 16, .suffix = " px",
+                    .min = 320, .max = 7680, .step = 16,
+                    .suffix = " px",
                 }, [resolutionState] { return resolutionState->custom; });
                 auto& heightField = pane.add_child<ConditionalNumberButton>(NumberButton::Props{
-                    .key = "Height",
+                    .key = localization::get("settings.video.resolution.height"),
                     .getValue = [resolutionState] { return resolutionState->height; },
                     .setValue = [resolutionState](int value) { resolutionState->height = value; },
                     .isDisabled = [resolutionState] { return !resolutionState->custom; },
@@ -431,9 +471,10 @@ SettingsWindow::SettingsWindow()
                         return resolutionState->custom &&
                                resolutionState->height != current.video.windowHeight.value();
                     },
-                    .min = 240, .max = 4320, .step = 16, .suffix = " px",
+                    .min = 240, .max = 4320, .step = 16,
+                    .suffix = " px",
                 }, [resolutionState] { return resolutionState->custom; });
-                pane.add_button("Apply").on_pressed(
+                pane.add_button(localization::get("common.apply")).on_pressed(
                     [&current, resolutionState, &widthField, &heightField] {
                         widthField.commit_pending_edit();
                         heightField.commit_pending_edit();
@@ -442,18 +483,17 @@ SettingsWindow::SettingsWindow()
                         aurora::window::set_window_size(resolutionState->width, resolutionState->height);
                         persist();
                     });
-                pane.add_text("Choose a preset or Custom, then select Apply.");
+                pane.add_text(localization::get("settings.video.resolution.help"));
             });
 
         left.register_control(
             left.add_select_button({
-                .key = "UI Scale",
+                .key = localization::get("settings.video.ui_scale.label"),
                 .getValue = [&current] { return ui_scale_label(current.video.uiScale.value()); },
                 .isModified = [&current] { return modified(current.video.uiScale); },
             }),
             right, [&current](Pane& pane) {
-                pane.add_text("Scale the interface relative to the display's DPI scale. "
-                              "Automatic matches the DPI scale exactly.");
+                pane.add_text(localization::get("settings.video.ui_scale.help"));
                 for (const int percent : kUiScales) {
                     pane.add_button(ControlledButton::Props{
                         .text = ui_scale_label(percent),
@@ -467,10 +507,10 @@ SettingsWindow::SettingsWindow()
                 }
             });
 
-        left.add_section("Performance");
+        left.add_section(localization::get("settings.video.performance_section"));
         left.register_control(
             left.add_child<NumberButton>(NumberButton::Props{
-                .key = "Frame Limit",
+                .key = localization::get("settings.video.frame_limit"),
                 .getValue = [&current] { return current.video.maxFrameRate.value(); },
                 .setValue = [&current](int value) {
                     current.video.maxFrameRate.set_value(value);
@@ -483,11 +523,11 @@ SettingsWindow::SettingsWindow()
                 .step = 5,
                 .suffix = " FPS",
             }),
-            right, [](Pane& pane) { pane.add_text("Set to 0 for uncapped presentation."); });
+            right, [](Pane& pane) { pane.add_text(localization::get("settings.video.frame_limit_help")); });
 
         left.register_control(
             left.add_select_button({
-                .key = "Multisample Antialiasing",
+                .key = localization::get("settings.video.msaa"),
                 .getValue = [&current] { return msaa_label(current.video.msaa.value()); },
                 .isModified = [&current] { return modified(current.video.msaa); },
             }),
@@ -501,56 +541,57 @@ SettingsWindow::SettingsWindow()
                         save_settings();
                     });
                 }
-                pane.add_text("MSAA changes take effect after restarting the game.");
+                pane.add_text(localization::get("settings.video.msaa_help"));
             });
 
-        left.add_section("Textures");
+        left.add_section(localization::get("settings.video.textures_section"));
         left.register_control(
             left.add_select_button({
-                .key = "Texture Pack",
+                .key = localization::get("settings.video.texture_pack"),
                 .getValue = [] {
-                    return std::to_string(texture_replacements::registration_count()) + " loaded";
+                    return localization::format("settings.video.texture_pack_loaded",
+                                           texture_replacements::registration_count());
                 },
             }),
             right, [](Pane& pane) {
-                pane.add_button("Reload Texture Pack").on_pressed([] {
+                pane.add_button(localization::get("settings.video.texture_pack_reload")).on_pressed([] {
                     texture_replacements::reload();
                 });
-                pane.add_text("Loads Dolphin-format DDS and PNG replacements recursively from " +
-                              borealis::io::fs_path_to_string(texture_replacements::directory()) +
-                              ". Aurora indexes filenames at startup and loads image data on demand. "
-                              "Legacy preload/cache values remain accepted in config for compatibility.");
+                pane.add_text(localization::format(
+                    "settings.video.texture_pack_help",
+                    borealis::io::fs_path_to_string(texture_replacements::directory())));
             });
     });
 
-    add_tab("Audio", [this](Rml::Element* content) {
+    add_tab(localization::get("settings.tabs.audio"), [this](Rml::Element* content) {
         auto& current = settings();
         auto& left = add_child<Pane>(content, Pane::Type::Controlled);
         auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
-        left.add_section("Volume");
+        left.add_section(localization::get("settings.audio.volume_section"));
         left.register_control(
             left.add_child<NumberButton>(NumberButton::Props{
-                .key = "Master Volume",
+                .key = localization::get("settings.audio.master_volume"),
                 .getValue = [&current] { return current.audio.masterVolume.value(); },
                 .setValue = [&current](int value) {
                     current.audio.masterVolume.set_value(value);
                     persist();
                 },
                 .isModified = [&current] { return modified(current.audio.masterVolume); },
-                .min = 0, .max = 100, .step = 5, .suffix = "%",
+                .min = 0, .max = 100, .step = 5,
+                .suffix = "%",
             }),
-            right, [](Pane& pane) { pane.add_text("Adjust the host audio stream gain immediately."); });
+            right, [](Pane& pane) { pane.add_text(localization::get("settings.audio.master_volume_help")); });
     });
 
-    add_tab("Gameplay", [this](Rml::Element* content) {
+    add_tab(localization::get("settings.tabs.gameplay"), [this](Rml::Element* content) {
         auto& current = settings();
         auto& left = add_child<Pane>(content, Pane::Type::Controlled);
         auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
 
-        left.add_section("Original Experience");
+        left.add_section(localization::get("settings.gameplay.original_section"));
         left.register_control(
             left.add_child<BoolButton>(BoolButton::Props{
-                .key = "Resetti",
+                .key = localization::get("settings.gameplay.resetti"),
                 .getValue = [&current] { return !current.enhancements.disableResetti.value(); },
                 .setValue = [&current](bool value) {
                     current.enhancements.disableResetti.set_value(!value);
@@ -558,12 +599,12 @@ SettingsWindow::SettingsWindow()
                 },
                 .isModified = [&current] { return modified(current.enhancements.disableResetti); },
             }),
-            right, [](Pane& pane) { pane.add_text("Enable the normal Resetti consequence after quitting without saving."); });
+            right, [](Pane& pane) { pane.add_text(localization::get("settings.gameplay.resetti_help")); });
 
-        left.add_section("Quality of Life");
+        left.add_section(localization::get("settings.gameplay.qol_section"));
         left.register_control(
             left.add_child<BoolButton>(BoolButton::Props{
-                .key = "Single-Player Shop Upgrades",
+                .key = localization::get("settings.gameplay.single_player_shop"),
                 .getValue = [&current] { return current.enhancements.disableShopVisitorRequirement.value(); },
                 .setValue = [&current](bool value) {
                     current.enhancements.disableShopVisitorRequirement.set_value(value);
@@ -571,55 +612,58 @@ SettingsWindow::SettingsWindow()
                 },
                 .isModified = [&current] { return modified(current.enhancements.disableShopVisitorRequirement); },
             }),
-            right, [](Pane& pane) { pane.add_text("Remove the visiting-player requirement from the final Nook shop upgrade."); });
+            right, [](Pane& pane) { pane.add_text(localization::get("settings.gameplay.single_player_shop_help")); });
 
-        add_bool(left, right, current.enhancements.borderlessAcres, "Borderless Acres",
-                 "Remove acre-boundary movement restrictions. Enabling it refreshes nearby collision state.",
+        add_bool(left, right, current.enhancements.borderlessAcres,
+                 localization::get("settings.gameplay.borderless_acres"),
+                 localization::get("settings.gameplay.borderless_acres_help"),
                  [](bool) { apply_runtime_settings(true); });
-        add_bool(left, right, current.enhancements.pillarboxNes, "NES 4:3 Aspect",
-                 "Keep embedded NES games at their original 4:3 aspect ratio.");
+        add_bool(left, right, current.enhancements.pillarboxNes,
+                 localization::get("settings.gameplay.nes_aspect"),
+                 localization::get("settings.gameplay.nes_aspect_help"));
     });
 
-    add_tab("Controller", [this](Rml::Element* content) {
+    add_tab(localization::get("settings.tabs.controller"), [this](Rml::Element* content) {
         auto& current = settings();
         auto& left = add_child<Pane>(content, Pane::Type::Controlled);
         auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
 
-        left.add_section("Configuration");
+        left.add_section(localization::get("settings.controller.configuration_section"));
         left.register_control(
-            left.add_button("Configure Controllers").on_pressed([this] {
+            left.add_button(localization::get("settings.controller.configure")).on_pressed([this] {
                 push(std::make_unique<ControllerConfigWindow>());
             }),
             right, [](Pane& pane) {
-                pane.add_text("Choose devices and configure keyboard and controller buttons, "
-                              "sticks, triggers, dead zones, and rumble for all four ports.");
+                pane.add_text(localization::get("settings.controller.configure_help"));
             });
 
-        left.add_section("Dead Zones");
+        left.add_section(localization::get("settings.controller.dead_zones_section"));
         left.register_control(
             left.add_child<NumberButton>(NumberButton::Props{
-                .key = "Control Stick Deadzone",
+                .key = localization::get("settings.controller.control_stick_deadzone"),
                 .getValue = [&current] { return current.input.stickDeadzone.value(); },
                 .setValue = [&current](int value) {
                     current.input.stickDeadzone.set_value(value);
                     persist();
                 },
                 .isModified = [&current] { return modified(current.input.stickDeadzone); },
-                .min = 0, .max = 40, .step = 2, .suffix = "%",
+                .min = 0, .max = 40, .step = 2,
+                .suffix = "%",
             }),
-            right, [](Pane& pane) { pane.add_text("Global left-stick deadzone for newly connected and active controllers."); });
+            right, [](Pane& pane) { pane.add_text(localization::get("settings.controller.control_stick_deadzone_help")); });
         left.register_control(
             left.add_child<NumberButton>(NumberButton::Props{
-                .key = "C-Stick Deadzone",
+                .key = localization::get("settings.controller.c_stick_deadzone"),
                 .getValue = [&current] { return current.input.cstickDeadzone.value(); },
                 .setValue = [&current](int value) {
                     current.input.cstickDeadzone.set_value(value);
                     persist();
                 },
                 .isModified = [&current] { return modified(current.input.cstickDeadzone); },
-                .min = 0, .max = 40, .step = 2, .suffix = "%",
+                .min = 0, .max = 40, .step = 2,
+                .suffix = "%",
             }),
-            right, [](Pane& pane) { pane.add_text("Global C-stick deadzone for newly connected and active controllers."); });
+            right, [](Pane& pane) { pane.add_text(localization::get("settings.controller.c_stick_deadzone_help")); });
     });
 }
 

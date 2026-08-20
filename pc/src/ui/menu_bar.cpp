@@ -3,6 +3,7 @@
 #include "acgc/ui/controller_config.hpp"
 #include "acgc/ui/modal.hpp"
 #include "acgc/ui/settings.hpp"
+#include "acgc/ui/localization.hpp"
 #include "acgc/ui/ui.hpp"
 
 extern "C" int g_pc_running;
@@ -36,16 +37,18 @@ MenuBar::MenuBar()
         .onClose = [this] { hide(false); },
         .autoSelect = false,
     });
-    mTabBar->add_tab("Settings", [this] { push(std::make_unique<SettingsWindow>()); });
-    mTabBar->add_tab("Controllers", [this] { push(std::make_unique<ControllerConfigWindow>()); });
-    mTabBar->add_tab("Quit", [this] {
+    mTabBar->add_tab(localization::get("common.settings"),
+                     [this] { push(std::make_unique<SettingsWindow>()); });
+    mTabBar->add_tab(localization::get("menu.controllers"),
+                     [this] { push(std::make_unique<ControllerConfigWindow>()); });
+    mTabBar->add_tab(localization::get("common.quit"), [this] {
         mTabBar->set_active_tab(-1);
         push(std::make_unique<Modal>(Modal::Props{
-            .title = "Quit Animal Crossing",
-            .bodyRml = "Unsaved progress may be lost.",
+            .title = escape(localization::get("menu.quit.title")),
+            .bodyRml = escape(localization::get("menu.quit.warning")),
             .actions = {
-                {"Cancel", [](Modal& modal) { modal.pop(); }},
-                {"Quit", [](Modal& modal) {
+                {localization::get("common.cancel"), [](Modal& modal) { modal.pop(); }},
+                {localization::get("common.quit"), [](Modal& modal) {
                     modal.pop();
                     g_pc_running = 0;
                 }},

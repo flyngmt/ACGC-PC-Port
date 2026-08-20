@@ -68,14 +68,11 @@ std::string status_message(const borealis::data::Status& status) {
     return message;
 }
 
-bool operation_succeeded(const borealis::data::Status& status, std::string* errorOut = nullptr) {
+bool operation_succeeded(const borealis::data::Status& status) {
     if (status) {
         return true;
     }
     const auto message = status_message(status);
-    if (errorOut != nullptr) {
-        *errorOut = message;
-    }
     Log.warn("{}", message);
     return false;
 }
@@ -139,18 +136,10 @@ bool open_data_path() {
     return operation_succeeded(manager().open_active_data_path());
 }
 
-bool set_custom_data_path(const std::filesystem::path& path, std::string* errorOut) {
-    return operation_succeeded(manager().set_custom_data_path(path), errorOut);
-}
-
-bool set_custom_data_path(const char* path, std::string* errorOut) {
-    if (path == nullptr) {
-        if (errorOut != nullptr) {
-            *errorOut = "Choose a folder.";
-        }
-        return false;
-    }
-    return set_custom_data_path(borealis::io::fs_path_from_utf8(path), errorOut);
+borealis::data::Status set_custom_data_path(const std::filesystem::path& path) {
+    auto status = manager().set_custom_data_path(path);
+    operation_succeeded(status);
+    return status;
 }
 
 bool reset_data_path() {

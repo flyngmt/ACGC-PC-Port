@@ -203,6 +203,7 @@ set(PC_SOURCES
     ${PC_ROOT}/src/ui/document.cpp
     ${PC_ROOT}/src/ui/event.cpp
     ${PC_ROOT}/src/ui/input.cpp
+    ${PC_ROOT}/src/ui/localization.cpp
     ${PC_ROOT}/src/ui/menu_bar.cpp
     ${PC_ROOT}/src/ui/modal.cpp
     ${PC_ROOT}/src/ui/number_button.cpp

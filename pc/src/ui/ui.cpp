@@ -4,6 +4,7 @@
 #include "acgc/ui/input.hpp"
 #include "acgc/ui/menu_bar.hpp"
 #include "acgc/ui/overlay.hpp"
+#include "acgc/ui/localization.hpp"
 
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_video.h>
@@ -123,6 +124,7 @@ bool initialize() noexcept
         return false;
     }
 
+    localization::load();
     sInitialized = true;
     push_document(std::make_unique<MenuBar>(), false);
     push_document(std::make_unique<Overlay>());
@@ -135,6 +137,7 @@ void shutdown() noexcept
     sDocumentStack.clear();
     sPassiveDocuments.clear();
     sScopedStyles.clear();
+    localization::shutdown();
     input::reset_input_state();
     input::release_input_block();
     g_pc_paused = 0;

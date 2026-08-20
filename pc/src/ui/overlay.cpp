@@ -1,5 +1,7 @@
 #include "acgc/ui/overlay.hpp"
 
+#include "acgc/ui/localization.hpp"
+
 #include "pc_typing.h"
 
 #include <algorithm>
@@ -10,25 +12,28 @@ namespace {
 
 constexpr float kMarginDp = 20.0f;
 
-const Rml::String kDocumentSource = R"RML(
+Rml::String document_source()
+{
+    return R"RML(
 <rml>
 <head>
     <link type="text/rcss" href="res/rml/overlay.rcss" />
 </head>
 <body>
     <typing-status id="typing-status">
-        <label>Keyboard typing</label>
+        <label>)RML" + escape(localization::get("overlay.keyboard_typing")) + R"RML(</label>
         <key>Tab</key>
-        <state id="typing-state">Off</state>
+        <state id="typing-state">)RML" + escape(localization::get("common.off")) + R"RML(</state>
     </typing-status>
 </body>
 </rml>
 )RML";
+}
 
 } // namespace
 
 Overlay::Overlay()
-    : Document(kDocumentSource, true, DocumentScope::Overlay)
+    : Document(document_source(), true, DocumentScope::Overlay)
     , mTypingStatus(mDocument ? mDocument->GetElementById("typing-status") : nullptr)
     , mTypingState(mDocument ? mDocument->GetElementById("typing-state") : nullptr)
 {
@@ -64,7 +69,8 @@ void Overlay::update()
             mTypingStatus->RemoveAttribute("active");
         }
         if (mTypingState != nullptr) {
-            mTypingState->SetInnerRML(typingActive ? "On" : "Off");
+            mTypingState->SetInnerRML(escape(typingActive ? localization::get("common.on")
+                                                         : localization::get("common.off")));
         }
         mWasTypingActive = typingActive;
     }

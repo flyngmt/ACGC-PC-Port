@@ -4,6 +4,7 @@
 #include "acgc/settings.hpp"
 #include "acgc/ui/modal.hpp"
 #include "acgc/ui/settings.hpp"
+#include "acgc/ui/localization.hpp"
 #include "acgc/ui/ui.hpp"
 
 #include <SDL3/SDL_error.h>
@@ -13,7 +14,6 @@
 #include <borealis/update.hpp>
 #include <borealis/version.h>
 #include <fmt/format.h>
-
 #include "extern/aurora/lib/window.hpp"
 
 #include <algorithm>
@@ -30,7 +30,9 @@ namespace {
 
 constexpr borealis::Log Log{"acgc::ui::prelaunch"};
 
-const Rml::String kDocumentSource = R"RML(
+Rml::String document_source()
+{
+    return R"RML(
 <rml>
 <head>
     <link type="text/rcss" href="res/rml/prelaunch.rcss" />
@@ -52,7 +54,7 @@ const Rml::String kDocumentSource = R"RML(
             <span id="disc-version" class="detail" />
         </disc-info>
         <version-info class="intro-item delay-5">
-            <div class="version">Version <span id="version-text"></span></div>
+            <div class="version">)RML" + escape(localization::get("prelaunch.version")) + R"RML( <span id="version-text"></span></div>
             <div id="update-status" class="update">
                 <span id="update-message"></span>
                 <button id="update-download">
@@ -65,11 +67,16 @@ const Rml::String kDocumentSource = R"RML(
 </body>
 </rml>
 )RML";
+}
 
-const std::vector<borealis::file_select::Filter> kDiscFileFilters{
-    {"Game Disc Images", "iso;gcm;ciso;gcz;nfs;rvz;wbfs;wia;tgc"},
-    {"All Files", "*"},
-};
+std::vector<borealis::file_select::Filter> disc_file_filters()
+{
+    return {
+        {localization::get("prelaunch.file_filter.disc_images"),
+         "iso;gcm;ciso;gcz;nfs;rvz;wbfs;wia;tgc"},
+        {localization::get("prelaunch.file_filter.all_files"), "*"},
+    };
+}
 
 struct DiscVerificationResult {
     std::string path;
@@ -272,20 +279,21 @@ void open_update_release()
 std::string verification_error_message(disc::ValidationError error)
 {
     switch (error) {
-    case disc::ValidationError::IOError: return "Unable to read the selected file.";
+    case disc::ValidationError::IOError: return localization::get("prelaunch.verification.error.io");
     case disc::ValidationError::InvalidImage:
-        return "The selected file is not a valid disc image.";
+        return localization::get("prelaunch.verification.error.invalid_image");
     case disc::ValidationError::WrongGame:
-        return "The selected disc image is not Animal Crossing.";
+        return localization::get("prelaunch.verification.error.wrong_game");
     case disc::ValidationError::WrongVersion:
-        return "This Animal Crossing disc is not the supported GAFE01 Rev 0 release.";
+        return localization::get("prelaunch.verification.error.wrong_version");
     case disc::ValidationError::Canceled:
-        return "Disc verification was canceled. Compatibility cannot be guaranteed.";
+        return localization::get("prelaunch.verification.error.canceled");
     case disc::ValidationError::HashMismatch:
-        return "The selected disc image did not pass hash verification. It may be corrupt or modified.";
-    case disc::ValidationError::Success: return "The selected disc image is valid.";
+        return localization::get("prelaunch.verification.error.hash_mismatch");
+    case disc::ValidationError::Success:
+        return localization::get("prelaunch.verification.success");
     case disc::ValidationError::Unknown:
-    default: return "The selected disc image could not be verified.";
+    default: return localization::get("prelaunch.verification.error.unknown");
     }
 }
 
@@ -349,7 +357,7 @@ public:
         header->SetClass("modal-header", true);
         auto* title = append(header, "div");
         title->SetClass("modal-title", true);
-        title->SetInnerRML("Verifying disc image");
+        title->SetInnerRML(escape(localization::get("prelaunch.verification.title")));
         auto* icon = append(header, "icon");
         icon->SetClass("verifying", true);
 
@@ -368,7 +376,7 @@ public:
 
         auto* actions = append(mDialog, "div");
         actions->SetClass("modal-actions", true);
-        mCancelButton = std::make_unique<Button>(actions, "Cancel");
+        mCancelButton = std::make_unique<Button>(actions, localization::get("common.cancel"));
         mCancelButton->root()->SetClass("modal-btn", true);
         mCancelButton->on_pressed([this] { request_cancel(); });
         refresh();
@@ -414,7 +422,7 @@ private:
         }
         mCancelRequested = true;
         sDiscVerificationTask->status.cancelRequested.store(true, std::memory_order_relaxed);
-        mCancelButton->set_text("Cancelling...");
+        mCancelButton->set_text(localization::get("prelaunch.verification.cancelling"));
         mCancelButton->set_disabled(true);
     }
 
@@ -435,7 +443,7 @@ private:
             sDiscVerificationTask->status.bytesTotal.load(std::memory_order_relaxed);
         if (bytesTotal == 0) {
             mProgress->SetAttribute("value", 0.0f);
-            mDetail->SetInnerRML("Opening disc image...");
+            mDetail->SetInnerRML(escape(localization::get("prelaunch.verification.opening")));
             return;
         }
         const float fraction = std::clamp(
@@ -461,7 +469,7 @@ void file_dialog_callback(borealis::file_select::Result result)
                result.status == borealis::file_select::Status::Unsupported) {
         Log.warn("File selection failed: {}", result.message);
         auto& state = prelaunch_state();
-        state.errorString = escape(result.message.empty() ? "File selection is unavailable." : result.message);
+        state.errorString = escape(localization::get("prelaunch.file_picker_unavailable"));
     }
 }
 
@@ -543,7 +551,7 @@ void open_disc_picker() noexcept
     borealis::file_select::open_file(
         {
             .parentWindow = aurora::window::get_sdl_window(),
-            .filters = kDiscFileFilters,
+            .filters = disc_file_filters(),
             .defaultLocation = prelaunch_state().configuredDiscPath,
         },
         &file_dialog_callback);
@@ -571,7 +579,8 @@ void try_push_verification_modal(Document& host)
     };
 
     if (!state.pendingDiscPath.empty()) {
-        const Rml::String body = state.errorString + "<br/><br/>You may continue at your own risk.";
+        const Rml::String body = state.errorString + "<br/><br/>" +
+            escape(localization::get("prelaunch.verification.continue_risk"));
         auto accept = [](Modal& modal) {
             auto& current = prelaunch_state();
             const std::string path = std::move(current.pendingDiscPath);
@@ -585,9 +594,10 @@ void try_push_verification_modal(Document& host)
             modal.pop();
         };
         host.push(std::make_unique<Modal>(Modal::Props{
-            .title = "Disc verification warning",
+            .title = escape(localization::get("prelaunch.verification.warning_title")),
             .bodyRml = body,
-            .actions = {{"Cancel", dismiss}, {"Continue anyway", accept}},
+            .actions = {{localization::get("common.cancel"), dismiss},
+                        {localization::get("prelaunch.verification.continue"), accept}},
             .onDismiss = dismiss,
             .variant = "danger",
             .icon = "warning",
@@ -596,16 +606,16 @@ void try_push_verification_modal(Document& host)
     }
 
     host.push(std::make_unique<Modal>(Modal::Props{
-        .title = "Disc verification error",
+        .title = escape(localization::get("prelaunch.verification.error_title")),
         .bodyRml = state.errorString,
-        .actions = {{"OK", dismiss}},
+        .actions = {{localization::get("common.ok"), dismiss}},
         .onDismiss = dismiss,
         .icon = "error",
     }));
 }
 
 Prelaunch::Prelaunch()
-    : Document(kDocumentSource, false, DocumentScope::Prelaunch)
+    : Document(document_source(), false, DocumentScope::Prelaunch)
     , mRoot(mDocument != nullptr ? mDocument->GetElementById("root") : nullptr)
 {
     ensure_prelaunch_initialized();
@@ -617,7 +627,8 @@ Prelaunch::Prelaunch()
     if (auto* menuList = mDocument->GetElementById("menu-list")) {
         const bool ready = prelaunch_state().configuredDiscCanLaunch;
         mMenuButtons.push_back(
-            std::make_unique<Button>(menuList, ready ? "Play" : "Select Disc Image"));
+            std::make_unique<Button>(menuList, ready ? localization::get("prelaunch.play")
+                                                     : localization::get("prelaunch.select_disc")));
         mMenuButtons.back()->on_pressed([this] {
             auto& state = prelaunch_state();
             if (!state.configuredDiscCanLaunch) {
@@ -631,12 +642,13 @@ Prelaunch::Prelaunch()
         });
         apply_intro_animation(mMenuButtons.back()->root(), "delay-1");
 
-        mMenuButtons.push_back(std::make_unique<Button>(menuList, "Settings"));
+        mMenuButtons.push_back(
+            std::make_unique<Button>(menuList, localization::get("common.settings")));
         mMenuButtons.back()->on_pressed(
             [this] { push(std::make_unique<SettingsWindow>()); });
         apply_intro_animation(mMenuButtons.back()->root(), "delay-2");
 
-        mMenuButtons.push_back(std::make_unique<Button>(menuList, "Quit"));
+        mMenuButtons.push_back(std::make_unique<Button>(menuList, localization::get("common.quit")));
         mMenuButtons.back()->on_pressed([] { prelaunch_state().quitRequested = true; });
         apply_intro_animation(mMenuButtons.back()->root(), "delay-3");
     }
@@ -710,7 +722,8 @@ void Prelaunch::update()
     }
     if (!mMenuButtons.empty()) {
         mMenuButtons.front()->set_text(
-            state.configuredDiscCanLaunch ? "Play" : "Select Disc Image");
+            state.configuredDiscCanLaunch ? localization::get("prelaunch.play")
+                                           : localization::get("prelaunch.select_disc"));
     }
 
     auto* statusLabel = mDiscStatus != nullptr
@@ -719,24 +732,24 @@ void Prelaunch::update()
     if (mDiscStatus != nullptr && statusLabel != nullptr) {
         if (sDiscVerificationTask != nullptr) {
             mDiscStatus->SetAttribute("status", "verifying");
-            statusLabel->SetInnerRML("Verifying disc image...");
+            statusLabel->SetInnerRML(escape(localization::get("prelaunch.status.verifying")));
         } else if (state.configuredDiscCanLaunch &&
                    state.configuredDiscValidation == disc::ValidationError::Success) {
             mDiscStatus->SetAttribute("status", "good");
-            statusLabel->SetInnerRML("Disc ready");
+            statusLabel->SetInnerRML(escape(localization::get("prelaunch.status.ready")));
         } else if (state.configuredDiscCanLaunch &&
                    state.configuredDiscValidation == disc::ValidationError::HashMismatch) {
             mDiscStatus->SetAttribute("status", "mismatch");
-            statusLabel->SetInnerRML("Disc hash mismatch");
+            statusLabel->SetInnerRML(escape(localization::get("prelaunch.status.hash_mismatch")));
         } else {
             mDiscStatus->SetAttribute("status", "bad");
-            statusLabel->SetInnerRML("Select an Animal Crossing disc image");
+            statusLabel->SetInnerRML(escape(localization::get("prelaunch.status.select_disc")));
         }
     }
     if (mDiscDetail != nullptr) {
         if (state.configuredDiscCanLaunch) {
             mDiscDetail->SetProperty(Rml::PropertyId::Display, Rml::Style::Display::Block);
-            mDiscDetail->SetInnerRML(escape(fmt::format("{} • {} Rev {}",
+            mDiscDetail->SetInnerRML(escape(localization::format("prelaunch.disc_detail",
                 borealis::file_select::display_name(state.configuredDiscPath),
                 state.configuredDiscInfo.gameId, state.configuredDiscInfo.revision)));
         } else {
@@ -759,7 +772,7 @@ void Prelaunch::update()
         }
         if (sUpdateCheckTask != nullptr) {
             mUpdateStatus->SetAttribute("state", "checking");
-            mUpdateMessage->SetInnerRML("Checking for updates...");
+            mUpdateMessage->SetInnerRML(escape(localization::get("prelaunch.update.checking")));
         } else if (!sUpdateCheckResult.has_value() ||
                    sUpdateCheckResult->status == borealis::update::Status::UpToDate ||
                    sUpdateCheckResult->status == borealis::update::Status::Disabled) {
@@ -767,14 +780,14 @@ void Prelaunch::update()
             mUpdateMessage->SetInnerRML("");
         } else if (sUpdateCheckResult->status == borealis::update::Status::UpdateAvailable) {
             mUpdateStatus->SetAttribute("state", "available");
-            mUpdateMessage->SetInnerRML("Update available");
+            mUpdateMessage->SetInnerRML(escape(localization::get("prelaunch.update.available")));
             if (mUpdateDownloadLabel != nullptr) {
-                mUpdateDownloadLabel->SetInnerRML(escape(
-                    fmt::format("Get {}", update_release_label(sUpdateCheckResult->latest))));
+                mUpdateDownloadLabel->SetInnerRML(escape(localization::format(
+                    "prelaunch.update.get", update_release_label(sUpdateCheckResult->latest))));
             }
         } else {
             mUpdateStatus->SetAttribute("state", "failed");
-            mUpdateMessage->SetInnerRML("Update check failed");
+            mUpdateMessage->SetInnerRML(escape(localization::get("prelaunch.update.failed")));
         }
     }
     Document::update();

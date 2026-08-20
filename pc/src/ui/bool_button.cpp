@@ -1,4 +1,5 @@
 #include "bool_button.hpp"
+#include "acgc/ui/localization.hpp"
 
 namespace acgc::ui {
 
@@ -40,7 +41,7 @@ Rml::String BoolButton::format_value()
 		}
 	}
 
-	return mGetValue() ? "On" : "Off";
+	return mGetValue() ? localization::get("common.on") : localization::get("common.off");
 }
 
 bool BoolButton::handle_nav_command(NavCommand cmd)
