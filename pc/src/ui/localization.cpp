@@ -2,9 +2,9 @@
 
 #include "acgc/ui/ui.hpp"
 
-#include <SDL3/SDL_iostream.h>
 #include <SDL3/SDL_locale.h>
 #include <SDL3/SDL_stdinc.h>
+#include <RmlUi/Core.h>
 #include <borealis/io.hpp>
 #include <borealis/log.hpp>
 #include <nlohmann/json.hpp>
@@ -46,13 +46,11 @@ bool valid_locale_part(std::string_view value)
 bool load_catalog(const std::filesystem::path& path, Catalog& catalog)
 {
     const std::string pathString = borealis::io::fs_path_to_string(path);
-    size_t size = 0;
-    void* bytes = SDL_LoadFile(pathString.c_str(), &size);
-    if (bytes == nullptr) {
+    Rml::FileInterface* fileInterface = Rml::GetFileInterface();
+    Rml::String source;
+    if (fileInterface == nullptr || !fileInterface->LoadFile(pathString, source)) {
         return false;
     }
-    const std::string source(static_cast<const char*>(bytes), size);
-    SDL_free(bytes);
 
     try {
         const nlohmann::json root = nlohmann::json::parse(source);
