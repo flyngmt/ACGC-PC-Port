@@ -2,6 +2,8 @@
 
 #include "acgc/config.hpp"
 
+#include <aurora/aurora.h>
+
 #include <cstdint>
 #include <filesystem>
 #include <string>
@@ -28,6 +30,7 @@ struct UserSettings {
     } backend;
 
     struct Video {
+        ConfigVar<AuroraBackend> renderer;
         ConfigVar<int> windowWidth;
         ConfigVar<int> windowHeight;
         ConfigVar<int> windowMode;
@@ -70,6 +73,7 @@ struct SettingsLoadResult {
 };
 
 UserSettings& settings();
+std::vector<AuroraBackend> available_renderer_backends();
 void register_settings();
 SettingsLoadResult load_settings(const std::filesystem::path& userDirectory,
                                  const std::vector<std::filesystem::path>& legacyCandidates);

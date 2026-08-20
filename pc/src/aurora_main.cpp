@@ -584,6 +584,7 @@ int main(int argc, char* argv[]) {
     config.appName = acgc::AppInfo.appName.data();
     config.userPath = user_path.empty() ? nullptr : user_path.c_str();
     config.cachePath = cache_path.empty() ? nullptr : cache_path.c_str();
+    config.desiredBackend = settings.video.renderer.value();
     config.windowPosX = -1;
     config.windowPosY = -1;
     config.windowWidth = windowDimensions.width;

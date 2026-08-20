@@ -118,6 +118,10 @@ void sanitize_settings()
         verification > static_cast<int>(DiscVerificationState::HashMismatch)) {
         current.backend.discVerification.set_value(DiscVerificationState::Unknown);
     }
+    const auto renderers = available_renderer_backends();
+    if (std::find(renderers.begin(), renderers.end(), current.video.renderer.value()) == renderers.end()) {
+        current.video.renderer.set_value(BACKEND_AUTO);
+    }
     current.video.windowWidth.set_value(std::clamp(current.video.windowWidth.value(), 320, 16384));
     current.video.windowHeight.set_value(std::clamp(current.video.windowHeight.value(), 240, 16384));
     current.video.windowMode.set_value(std::clamp(current.video.windowMode.value(), 0, 2));
@@ -143,7 +147,8 @@ UserSettings::Backend::Backend()
 }
 
 UserSettings::Video::Video()
-    : windowWidth("video.windowWidth", 1280)
+    : renderer("video.renderer", BACKEND_AUTO)
+    , windowWidth("video.windowWidth", 1280)
     , windowHeight("video.windowHeight", 960)
     , windowMode("video.windowMode", 0)
     , uiScale("video.uiScale", 0)
@@ -179,6 +184,21 @@ UserSettings& settings()
     return value;
 }
 
+std::vector<AuroraBackend> available_renderer_backends()
+{
+    std::vector<AuroraBackend> result{BACKEND_AUTO};
+    size_t count = 0;
+    const AuroraBackend* backends = aurora_get_available_backends(&count);
+    for (size_t i = 0; i < count; ++i) {
+        const AuroraBackend backend = backends[i];
+        if (backend != BACKEND_AUTO && backend != BACKEND_NULL &&
+            std::find(result.begin(), result.end(), backend) == result.end()) {
+            result.push_back(backend);
+        }
+    }
+    return result;
+}
+
 void register_settings()
 {
     auto& current = settings();
@@ -186,6 +206,7 @@ void register_settings()
     config::register_var(current.backend.discVerification);
     config::register_var(current.backend.skipPrelaunch);
     config::register_var(current.backend.checkForUpdates);
+    config::register_var(current.video.renderer);
     config::register_var(current.video.windowWidth);
     config::register_var(current.video.windowHeight);
     config::register_var(current.video.windowMode);

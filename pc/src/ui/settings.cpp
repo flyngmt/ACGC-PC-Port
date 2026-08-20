@@ -82,6 +82,31 @@ Rml::String ui_scale_label(int percent)
                         : std::to_string(percent) + "%";
 }
 
+Rml::String renderer_label(AuroraBackend renderer)
+{
+    switch (renderer) {
+    case BACKEND_AUTO:
+        return localization::get("settings.video.renderer.automatic");
+    case BACKEND_D3D11:
+        return "Direct3D 11";
+    case BACKEND_D3D12:
+        return "Direct3D 12";
+    case BACKEND_METAL:
+        return "Metal";
+    case BACKEND_VULKAN:
+        return "Vulkan";
+    case BACKEND_OPENGL:
+        return "OpenGL";
+    case BACKEND_OPENGLES:
+        return "OpenGL ES";
+    case BACKEND_WEBGPU:
+        return "WebGPU";
+    case BACKEND_NULL:
+        break;
+    }
+    return localization::get("settings.video.renderer.automatic");
+}
+
 struct ResolutionPreset {
     int width;
     int height;
@@ -404,13 +429,36 @@ SettingsWindow::SettingsWindow()
         .height = video.windowHeight.value(),
         .custom = !currentIsPreset,
     });
+    const auto rendererBackends = available_renderer_backends();
 
-    add_tab(localization::get("settings.tabs.video"), [this, resolutionPresets, resolutionState](Rml::Element* content) {
+    add_tab(localization::get("settings.tabs.video"),
+            [this, resolutionPresets, resolutionState, rendererBackends](Rml::Element* content) {
         auto& current = settings();
         auto& left = add_child<Pane>(content, Pane::Type::Controlled);
         auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
 
         left.add_section(localization::get("settings.video.display_section"));
+        left.register_control(
+            left.add_select_button({
+                .key = localization::get("settings.video.renderer"),
+                .getValue = [&current] { return renderer_label(current.video.renderer.value()); },
+                .isModified = [&current] { return modified(current.video.renderer); },
+            }),
+            right, [&current, rendererBackends](Pane& pane) {
+                for (const AuroraBackend renderer : rendererBackends) {
+                    pane.add_button(ControlledButton::Props{
+                        .text = renderer_label(renderer),
+                        .isSelected = [&current, renderer] {
+                            return current.video.renderer.value() == renderer;
+                        },
+                    }).on_pressed([&current, renderer] {
+                        current.video.renderer.set_value(renderer);
+                        save_settings();
+                    });
+                }
+                pane.add_text(localization::get("settings.video.renderer_help"));
+            });
+
         left.register_control(
             left.add_child<BoolButton>(BoolButton::Props{
                 .key = localization::get("settings.video.fullscreen"),
