@@ -54,6 +54,8 @@ MenuBar::MenuBar()
                 }},
             },
             .onDismiss = [](Modal& modal) { modal.pop(); },
+            .variant = "quit",
+            .icon = "warning",
         }));
     });
 
