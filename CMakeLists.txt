@@ -210,6 +210,7 @@ set(PC_SOURCES
     ${PC_ROOT}/src/ui/overlay.cpp
     ${PC_ROOT}/src/ui/pane.cpp
     ${PC_ROOT}/src/ui/prelaunch.cpp
+    ${PC_ROOT}/src/ui/scrolling_background.cpp
     ${PC_ROOT}/src/ui/select_button.cpp
     ${PC_ROOT}/src/ui/settings.cpp
     ${PC_ROOT}/src/ui/string_button.cpp

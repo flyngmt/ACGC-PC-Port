@@ -4,6 +4,7 @@
 #include "component.hpp"
 #include "document.hpp"
 #include "nav_types.hpp"
+#include "scrolling_background.hpp"
 #include "tab_bar.hpp"
 #include "ui.hpp"
 
@@ -63,6 +64,7 @@ protected:
 
 	Rml::Element* mRoot;
 	Rml::Element* mContentRoot;
+	ScrollingBackground mScrollingBackground;
 	std::unique_ptr<TabBar> mTabBar;
 	// Only set for tab-bar-less windows.
 	std::unique_ptr<Button> mCloseButton;

@@ -35,10 +35,13 @@ Rml::String document_source()
     return R"RML(
 <rml>
 <head>
+    <link type="text/rcss" href="res/rml/scrolling_background.rcss" />
     <link type="text/rcss" href="res/rml/prelaunch.rcss" />
 </head>
 <body>
-    <div class="background" />
+    <div class="background">
+        <scrolling-pattern id="background-pattern" />
+    </div>
     <content id="root">
         <menu>
             <hero class="intro-item delay-0">
@@ -617,6 +620,8 @@ void try_push_verification_modal(Document& host)
 Prelaunch::Prelaunch()
     : Document(document_source(), false, DocumentScope::Prelaunch)
     , mRoot(mDocument != nullptr ? mDocument->GetElementById("root") : nullptr)
+    , mScrollingBackground(
+          mDocument != nullptr ? mDocument->GetElementById("background-pattern") : nullptr)
 {
     ensure_prelaunch_initialized();
     begin_update_check();
@@ -712,6 +717,7 @@ void Prelaunch::hide(bool close)
 void Prelaunch::update()
 {
     ensure_prelaunch_initialized();
+    mScrollingBackground.update(mDocument != nullptr ? mDocument->GetContext() : nullptr);
     if (top_document() == this) {
         try_push_verification_modal(*this);
     }

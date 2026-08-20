@@ -1,0 +1,37 @@
+scrolling-pattern {
+    display: flex;
+    position: absolute;
+    left: -512dp;
+    top: -512dp;
+    flex-direction: column;
+    pointer-events: none;
+    animation: 102.4s linear-in infinite scrolling-background-pattern-scroll;
+}
+
+@keyframes scrolling-background-pattern-scroll {
+    from { transform: translateX(0dp) translateY(0dp); }
+    to { transform: translateX(-512dp) translateY(-512dp); }
+}
+
+scrolling-pattern pattern-row {
+    display: flex;
+    flex: 0 0 512dp;
+    height: 512dp;
+    flex-direction: row;
+}
+
+scrolling-pattern pattern-tile {
+    display: flex;
+    flex: 0 0 512dp;
+    width: 512dp;
+    height: 512dp;
+    align-items: center;
+    justify-content: center;
+}
+
+scrolling-pattern img.scrolling-texture {
+    display: block;
+    width: 512dp;
+    height: 512dp;
+    filter: opacity(0.10);
+}

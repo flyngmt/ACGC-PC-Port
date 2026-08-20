@@ -30,10 +30,15 @@ Rml::String window_document_source(const std::vector<Rml::String>& styleSheets)
 <rml>
 <head>
     <link type="text/rcss" href="res/rml/tabbing.rcss" />
+    <link type="text/rcss" href="res/rml/scrolling_background.rcss" />
     <link type="text/rcss" href="res/rml/window.rcss" />
 {}</head>
 <body>
-    <window id="window"></window>
+    <window id="window">
+        <window-background>
+            <scrolling-pattern id="window-background-pattern" />
+        </window-background>
+    </window>
 </body>
 </rml>
 )RML",
@@ -66,6 +71,7 @@ Rml::String small_document_source(const std::vector<Rml::String>& styleSheets)
 Window::Window(Props props)
     : Document(window_document_source(props.styleSheets), false, DocumentScope::Window)
     , mRoot(mDocument->GetElementById("window"))
+    , mScrollingBackground(mDocument->GetElementById("window-background-pattern"))
 {
 	if (props.tabBar) {
 		mTabBar = std::make_unique<TabBar>(mRoot, TabBar::Props {
@@ -142,6 +148,7 @@ void Window::hide(bool close)
 void Window::update()
 {
 	update_safe_area();
+	mScrollingBackground.update(mDocument != nullptr ? mDocument->GetContext() : nullptr);
 	for (const auto& component : mContentComponents) {
 		component->update();
 	}

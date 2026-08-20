@@ -3,6 +3,7 @@
 #include "acgc/disc.hpp"
 #include "button.hpp"
 #include "document.hpp"
+#include "scrolling_background.hpp"
 
 #include <memory>
 #include <string>
@@ -28,6 +29,7 @@ private:
     bool mEntranceAnimationStarted = false;
     std::vector<std::unique_ptr<Button>> mMenuButtons;
     Rml::Element* mRoot = nullptr;
+    ScrollingBackground mScrollingBackground;
     Rml::Element* mDiscStatus = nullptr;
     Rml::Element* mDiscDetail = nullptr;
     Rml::Element* mVersion = nullptr;
