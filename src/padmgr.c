@@ -319,10 +319,10 @@ static void padmgr_UpdatePC(void) {
     int i;
 
     JW_JUTGamePad_read();
-    PADRead(pad_status);
+    JW_getPadStatus(pad_status);
 
-    /* Convert PADStatus (GC format) to OSContPad (N64 format).
-       PADRead returns GC button masks; the game uses N64-style button constants.
+    /* Convert the clamped PADStatus (GC format) to OSContPad (N64 format).
+       PADStatus uses GC button masks; the game uses N64-style button constants.
        GC PAD bits:  A=0x0100 B=0x0200 X=0x0400 Y=0x0800 START=0x1000
                      Z=0x0010 R=0x0020 L=0x0040
                      DUp=0x0008 DDown=0x0004 DLeft=0x0001 DRight=0x0002
