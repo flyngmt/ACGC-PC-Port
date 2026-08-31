@@ -35,7 +35,26 @@ Open **MSYS2 MINGW32** from your Start menu and install:
 pacman -S mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-SDL2 mingw-w64-i686-make
 ```
 
-### Build Steps
+## Building from Source
+
+Only needed if you want to modify the code. Otherwise, use the [pre-built release](https://github.com/flyngmt/ACGC-PC-Port/releases) above.
+
+### Windows Instructions:
+
+#### Requirements
+
+- **MSYS2** (https://www.msys2.org/)
+- **Animal Crossing (USA) disc image** (ISO, GCM, or CISO format)
+
+#### MSYS2 Packages
+
+Open **MSYS2 MINGW32** from your Start menu and install:
+
+```bash
+pacman -S mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-SDL2 mingw-w64-i686-make
+```
+
+#### Build Steps
 
 1. Clone the repository:
    ```bash
@@ -58,6 +77,53 @@ pacman -S mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-SDL2 mingw-w64-
    pc/build32/bin/AnimalCrossing.exe
    ```
 
+### Linux Cross Compile Instructions
+#### Requirements
+
+- **Animal Crossing (USA) disc image** (ISO, GCM, or CISO format)
+
+- **And the repo:**
+   ```bash
+   git clone https://github.com/flyngmt/ACGC-PC-Port.git
+   cd ACGC-PC-Port
+   ```
+   
+   **AND**
+#### Packages
+You need to use Mingw GCC 15.2 (newer versions seem to introduce a graphical regression) and you need some other older packages as well. If you cross compile from some other systems you may be fine using the existing mingw toolchain, but if you can't you will need to build a separate environment. To build an environment for compiling and building the program follow these instructions:
+
+Download from the Arch Linux Archive, and extract each .pkg.tar.zst into ExternalResources/toolchains/mingw-w64-15.2/ so the tree looks like ExternalResources/toolchains/mingw-w64-15.2/usr/{bin,lib,i686-w64-mingw32,...}:
+   [Mingw w64 gcc 15.2](https://archive.archlinux.org/packages/m/mingw-w64-gcc/mingw-w64-gcc-15.2.0-1-x86_64.pkg.tar.zst) ,
+   [Mingw w64 binutils 2.45](https://archive.archlinux.org/packages/m/mingw-w64-binutils/mingw-w64-binutils-2.45-1-x86_64.pkg.tar.zst) ,
+   [Mingw w64 crt 14](https://archive.archlinux.org/packages/m/mingw-w64-crt/mingw-w64-crt-14.0.0-1-any.pkg.tar.zst) ,
+   [Mingw w64 headers 14](https://archive.archlinux.org/packages/m/mingw-w64-headers/mingw-w64-headers-14.0.0-1-any.pkg.tar.zst) , 
+   [Mingw w64 winpthreads 14](https://archive.archlinux.org/packages/m/mingw-w64-winpthreads/mingw-w64-winpthreads-14.0.0-1-any.pkg.tar.zst)
+   
+#### Build Steps
+
+1. Make sure youve got all the required packages
+
+2. Run the correct toolchain in pc/cmake/*
+   ```bash
+   cmake -S pc -B pc/build_32 -march=pentium4 -DCMAKE_TOOLCHAIN_FILE="$(pwd)/pc/cmake/Toolchain-mingw32.cmake">
+   ```
+   Then
+   ```bash
+   cmake --build pc/build_32 -j"$(nproc)"
+   ```
+   if you have the right packages installed **OR**
+   ``` 
+   cmake -S pc -B pc/build_32 -march=pentium4  -DCMAKE_TOOLCHAIN_FILE="$(pwd)/pc/cmake/Toolchain-mingw32-gcc152.cmake"
+   ```
+   Then
+   ```
+   cmake --build pc/build_32 -j"$(nproc)"
+   ```
+   if you made a separate environment for compilation packages in ExternalResources.
+
+4. Place your image in the rom folder.
+
+5. Launch the game .exe through a recent version of wine or proton.
 ## Controls
 
 Keyboard bindings are customizable via `keybindings.ini` (next to the executable). Mouse buttons (Mouse1/Mouse2/Mouse3) can also be assigned.
