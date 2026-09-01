@@ -2786,9 +2786,10 @@ static void aMR_SetReserveFurniture(MY_ROOM_ACTOR* my_room, GAME* game) {
                         s16 icon_no = aMR_ItemNo2IconNo(item);
 
                         if (ftrID != -1) {
+                            FTR_ACTOR* reserved_ftr = &l_aMR_work.ftr_actor_list[ftrID];
                             xyz_t effect_pos;
-
-                            aMR_GetFtrShapeCenter(&effect_pos, &l_aMR_work.ftr_actor_list[ftrID]);
+                            aMR_MakeFurnitureCollisionData(reserved_ftr->edge_collision, reserved_ftr);
+                            aMR_GetFtrShapeCenter(&effect_pos, reserved_ftr);
                             if (eEC_CLIP != NULL) {
                                 eEC_CLIP->effect_make_proc(eEC_EFFECT_KAGU_HAPPA, effect_pos, 2, 0, game, RSV_NO,
                                                            icon_no, 0);
