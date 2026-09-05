@@ -461,11 +461,18 @@ typedef struct delay_ {
     /* 0x2A0 */ adpcmloop adpcm_loop;
 } delay;
 
-/* sizeof(macro) == 0x1C */
+/* Overflows above 4 loops, causes issues with 64 bit */
+#ifdef TARGET_PC
+#define AUDIO_MACRO_STACK_DEPTH 16
+#else
+#define AUDIO_MACRO_STACK_DEPTH 4
+#endif
+
+/* sizeof(macro) == 0x1C on GameCube */
 typedef struct macro_ {
     /* 0x00 */ u8* pc;
-    /* 0x04 */ u8* stack[4];
-    /* 0x14 */ u8 remaining_loop_iters[4];
+    /* 0x04 */ u8* stack[AUDIO_MACRO_STACK_DEPTH];
+    /* 0x14 */ u8 remaining_loop_iters[AUDIO_MACRO_STACK_DEPTH];
     /* 0x18 */ u8 depth;
     /* 0x19 */ s8 value;
 } macro;
