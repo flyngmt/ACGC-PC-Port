@@ -324,8 +324,7 @@ extern int mCD_save_data_aram_to_main(void* dst, u32 size, u32 idx);
 extern int mCD_save_data_main_to_aram(void* src, u32 size, u32 idx);
 
 #ifdef TARGET_PC
-/* These structs are local to m_card.c in the original decomp, but the PC port
-   needs them in pc_m_card.c and pc_save_bswap.c for foreigner/travel support. */
+/* PC travel shares the passport structs that are local to m_card.c on GC. */
 
 typedef struct {
     u16 checksum;

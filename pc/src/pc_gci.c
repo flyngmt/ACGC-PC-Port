@@ -77,6 +77,22 @@ static u32 get_be32(const void* source) {
     return ((u32)bytes[0] << 24) | ((u32)bytes[1] << 16) | ((u32)bytes[2] << 8) | bytes[3];
 }
 
+static u16 pc_checksum_be(const u8* data, u32 size, u16 old_checksum) {
+    u32 i;
+    u32 sum = 0;
+    u32 num_u16 = size / 2;
+    u16 raw;
+
+    for (i = 0; i < num_u16; i++) {
+        u16 val = get_be16(data + i * 2);
+        sum += val;
+    }
+
+    /* Two's complement: subtract old_checksum (included in sum), negate */
+    raw = (u16)((sum - old_checksum) & 0xFFFF);
+    return (u16)((~raw + 1) & 0xFFFF);
+}
+
 static int pc_gci_sibling_path(char* output, const char* base, const char* suffix) {
     int length = snprintf(output, PC_GCI_PATH_MAX, "%s%s", base, suffix);
     return length >= 0 && length < PC_GCI_PATH_MAX;
