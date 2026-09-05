@@ -138,14 +138,6 @@ static void aAL_actor_dt(ACTOR* actor, GAME* game) {
 static void aAL_title_game_data_init_start_select(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
   GAME_PLAY* play = (GAME_PLAY*)game;
 
-#ifdef TARGET_PC
-  /* Reload save from disk; the title demo mutated save data in RAM.
-   * On GC the memory card is re-read; on PC re-read the GCI file. */
-  if (pc_save_loaded) {
-    pc_save_reload();
-  }
-#endif
-
   play->fb_fade_type = FADE_TYPE_SELECT;
   play->fb_wipe_type = WIPE_TYPE_FADE_BLACK;
   Common_Set(transition.wipe_type, WIPE_TYPE_FADE_BLACK);
