@@ -940,9 +940,7 @@ static int verify_compare(const char* label, const u8* original, const u8* round
         }
     }
 
-    if (mismatches == 0) {
-        OSReport("[PC] BSWAP verify: %s round-trip PASSED (%u bytes)\n", label, size);
-    } else {
+    if (mismatches != 0) {
         OSReport("[PC] BSWAP verify: %s total mismatches: %d / %u bytes\n", label, mismatches, size);
     }
     return mismatches;
