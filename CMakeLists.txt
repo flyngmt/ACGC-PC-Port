@@ -218,6 +218,7 @@ set(PC_SOURCES
     ${PC_ROOT}/src/ui/ui.cpp
     ${PC_ROOT}/src/ui/window.cpp
     ${PC_ROOT}/src/pc_audio.c
+    ${PC_ROOT}/src/pc_gci.c
     ${PC_ROOT}/src/pc_m_card.c
     ${PC_ROOT}/src/pc_model_viewer.c
     ${PC_ROOT}/src/pc_save_bswap.c

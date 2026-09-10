@@ -19,6 +19,7 @@
 #include <filesystem>
 #include <string>
 #include <system_error>
+#include <vector>
 extern "C" {
     void pc_fixnes_init(unsigned char* ines_data, int ines_size);
     void pc_fixnes_set_input(unsigned char buttons);
@@ -26,6 +27,7 @@ extern "C" {
     void pc_fixnes_render_frame(unsigned short* fb);
     void pc_fixnes_cleanup(void);
     void pc_fixnes_reset(void);
+    unsigned int pc_fixnes_prg_ram_size(const unsigned char* rom);
 
     /* fixNES battery RAM — sync with famicomCommon.bbramp for save persistence */
     extern unsigned char* emuPrgRAM;
@@ -40,6 +42,15 @@ extern "C" {
 
 #define PC_NES_SAVE_FILENAME "DobutsunomoriP_F_SAVE.sav"
 #define PC_NES_SAVE_PATH_MAX 1024
+
+static FILE* pc_nes_open_file(const std::filesystem::path& path, const char* mode) {
+#ifdef _WIN32
+    const std::wstring wide_mode(mode, mode + strlen(mode));
+    return _wfopen(path.c_str(), wide_mode.c_str());
+#else
+    return fopen(path.c_str(), mode);
+#endif
+}
 
 static int pc_nes_save_path(char* path, size_t path_size) {
     const char* relative_path = mCD_GetThisLandSlotNo() == 1
@@ -76,7 +87,7 @@ static const std::filesystem::path& pc_nes_roms_dir(void) {
         std::error_code error;
         std::filesystem::path primary = PC_NES_ROMS_DIR;
         if (pc_platform_user_path(PC_NES_ROMS_DIR, buffer, sizeof(buffer))) {
-            primary = std::filesystem::path(buffer);
+            primary = borealis::io::fs_path_from_utf8(buffer);
         }
         if (std::filesystem::is_directory(primary, error)) {
             return primary;
@@ -86,9 +97,9 @@ static const std::filesystem::path& pc_nes_roms_dir(void) {
             return std::filesystem::path(PC_NES_ROMS_DIR);
         }
         error.clear();
-        if (pc_platform_base_path(PC_NES_ROMS_DIR, buffer, sizeof(buffer)) &&
-            std::filesystem::is_directory(buffer, error)) {
-            return std::filesystem::path(buffer);
+        if (pc_platform_base_path(PC_NES_ROMS_DIR, buffer, sizeof(buffer))) {
+            const auto base_path = borealis::io::fs_path_from_utf8(buffer);
+            if (std::filesystem::is_directory(base_path, error)) return base_path;
         }
         return primary;
     }();
@@ -222,134 +233,203 @@ Famicom_MallocInfo* my_malloc_current = nullptr;
 static JKRArchive* famicom_arc = nullptr;
 static bool famicom_arc_mounting = FALSE;
 
+static void famicom_save_data_setup(FamicomSaveDataHeader* header, u32 size, u8* identifier);
+static void famicom_save_data_init(FamicomSaveDataHeader* header, u32 size, u8* identifier);
+static int famicom_save_data_check(const FamicomSaveDataHeader* header, int ignore_player_no, const u8* identifier);
+
 #ifdef TARGET_PC
-static bool pc_nes_save_file_has_expected_size(const std::filesystem::path& path) {
-    std::error_code error;
-    return std::filesystem::is_regular_file(path, error) &&
-           std::filesystem::file_size(path, error) == sizeof(famicomCommonSave);
-}
+enum PcNesReadResult { PC_NES_MISSING, PC_NES_LOADED, PC_NES_INVALID, PC_NES_IO_ERROR };
 
-static void pc_nes_import_legacy_save(const char* destination) {
-    const std::filesystem::path target = destination;
-    char base_source[PC_NES_SAVE_PATH_MAX] = {0};
-    std::filesystem::path sources[2];
-    sources[0] = pc_nes_legacy_save_path();
-    if (pc_platform_base_path(pc_nes_legacy_save_path(), base_source, sizeof(base_source))) {
-        sources[1] = base_source;
-    }
-    std::error_code error;
-
-    if (std::filesystem::exists(target, error)) {
-        return;
-    }
-
-    for (const std::filesystem::path& source : sources) {
-        error.clear();
-        if (source.empty() || !pc_nes_save_file_has_expected_size(source) ||
-            (std::filesystem::exists(source, error) &&
-             std::filesystem::equivalent(source, target, error))) {
-            continue;
-        }
-
-        error.clear();
-        std::filesystem::create_directories(target.parent_path(), error);
-        if (error) {
-            OSReport("[PC] NES save: could not create '%s': %s\n",
-                     borealis::io::fs_path_to_string(target.parent_path()).c_str(), error.message().c_str());
-            return;
-        }
-
-        std::filesystem::copy_file(source, target, std::filesystem::copy_options::skip_existing,
-                                   error);
-        if (!error && pc_nes_save_file_has_expected_size(target)) {
-            OSReport("[PC] Imported legacy NES save '%s' -> '%s' (source retained)\n",
-                     borealis::io::fs_path_to_string(source).c_str(), borealis::io::fs_path_to_string(target).c_str());
-            return;
-        }
-        if (error) {
-            OSReport("[PC] NES save: import failed: %s\n", error.message().c_str());
-        }
-    }
-}
-
-static bool pc_nes_read_save(const std::filesystem::path& path) {
-    if (!pc_nes_save_file_has_expected_size(path)) {
-        return false;
-    }
-
-    FILE* file = fopen(borealis::io::fs_path_to_string(path).c_str(), "rb");
-    if (file == nullptr) {
-        return false;
-    }
-    const bool ok = fread(famicomCommonSave, 1, sizeof(famicomCommonSave), file) ==
-                    sizeof(famicomCommonSave);
-    fclose(file);
-    return ok;
-}
-
-enum PcNesSaveSource {
-    PC_NES_SAVE_SOURCE_NONE,
-    PC_NES_SAVE_SOURCE_PRIMARY,
-    PC_NES_SAVE_SOURCE_BACKUP,
+struct PcNesSaveState {
+    std::filesystem::path path;
+    int slot = -1;
+    bool writable = false;
+    bool recovered = false;
 };
 
-static PcNesSaveSource pc_nes_save_source = PC_NES_SAVE_SOURCE_NONE;
+struct PcNesCartridge {
+    PcNesSaveState save;
+    std::vector<u8> image;
+    std::string filename;
+    u32 ram_size = 0;
+};
 
-static bool pc_nes_write_save(const std::filesystem::path& path, bool preserve_backup) {
-    std::filesystem::path temporary = path;
-    std::filesystem::path displaced = path;
-    temporary += ".tmp";
-    displaced += preserve_backup ? ".invalid" : ".bak1";
+static PcNesSaveState pc_nes_common_save;
+static PcNesCartridge pc_nes_cartridge;
+static const char* const pc_nes_save_suffixes[] = { "", ".write", ".write.temp", ".tmp", ".bak1" };
+
+static std::filesystem::path pc_nes_sibling(const std::filesystem::path& path, const char* suffix) {
+    std::filesystem::path sibling = path;
+    sibling += suffix;
+    return sibling;
+}
+
+static bool pc_nes_valid_image(const FamicomSaveDataHeader* header, u32 block_size, const u8* identifier) {
+    return header->headerSize == FAMICOM_SAVE_HEADER_SIZE && header->size == block_size &&
+           famicom_save_data_check(header, -1, identifier) == 0;
+}
+
+static PcNesReadResult pc_nes_read_save(const std::filesystem::path& path,
+                                      FamicomSaveDataHeader* header, u32 block_size, const u8* identifier) {
     std::error_code error;
+    const bool exists = std::filesystem::exists(path, error);
+    if (error) return PC_NES_IO_ERROR;
+    if (!exists) return PC_NES_MISSING;
+    const size_t size = FAMICOM_SAVE_HEADER_SIZE + block_size * PLAYER_NUM;
+    const auto file_size = std::filesystem::file_size(path, error);
+    if (error) return PC_NES_IO_ERROR;
+    if (file_size != size) return PC_NES_INVALID;
 
-    std::filesystem::create_directories(path.parent_path(), error);
-    if (error) {
-        OSReport("[PC] NES save: could not create '%s': %s\n",
-                 borealis::io::fs_path_to_string(path.parent_path()).c_str(), error.message().c_str());
-        return false;
+    FILE* file = pc_nes_open_file(path, "rb");
+    if (file == nullptr) return PC_NES_IO_ERROR;
+    std::vector<u8> data(size);
+    const bool read = fread(data.data(), 1, size, file) == size;
+    const bool failed = ferror(file) != 0;
+    fclose(file);
+    if (!read) return failed ? PC_NES_IO_ERROR : PC_NES_INVALID;
+    if (!pc_nes_valid_image((const FamicomSaveDataHeader*)data.data(), block_size, identifier)) {
+        return PC_NES_INVALID;
     }
+    if (header != nullptr) memcpy(header, data.data(), size);
+    return PC_NES_LOADED;
+}
 
-    std::filesystem::remove(temporary, error);
-    FILE* file = fopen(borealis::io::fs_path_to_string(temporary).c_str(), "wb");
-    if (file == nullptr) {
-        return false;
-    }
-    const bool wrote = fwrite(famicomCommonSave, 1, sizeof(famicomCommonSave), file) ==
-                       sizeof(famicomCommonSave);
-    const bool flushed = fflush(file) == 0;
+static bool pc_nes_write_file(const std::filesystem::path& path, const void* data, size_t size) {
+    FILE* file = pc_nes_open_file(path, "wb");
+    if (file == nullptr) return false;
+    const bool wrote = fwrite(data, 1, size, file) == size;
+    const bool flushed = pc_platform_flush_file(file);
     const bool closed = fclose(file) == 0;
-    if (!wrote || !flushed || !closed) {
-        std::filesystem::remove(temporary, error);
-        return false;
+    return wrote && flushed && closed;
+}
+
+static bool pc_nes_import_legacy_save(const std::filesystem::path& target) {
+    std::error_code error;
+    for (const char* suffix : pc_nes_save_suffixes) {
+        if (std::filesystem::exists(pc_nes_sibling(target, suffix), error)) return true;
+        if (error) return false;
     }
 
-    const bool had_previous = std::filesystem::exists(path, error);
-    if (error) {
-        std::filesystem::remove(temporary, error);
-        return false;
+    char base_source[PC_NES_SAVE_PATH_MAX] = {0};
+    std::filesystem::path sources[2] = { borealis::io::fs_path_from_utf8(pc_nes_legacy_save_path()), {} };
+    if (pc_platform_base_path(pc_nes_legacy_save_path(), base_source, sizeof(base_source))) {
+        sources[1] = borealis::io::fs_path_from_utf8(base_source);
     }
-    if (had_previous) {
-        error.clear();
-        std::filesystem::remove(displaced, error);
-        error.clear();
-        std::filesystem::rename(path, displaced, error);
-        if (error) {
-            std::filesystem::remove(temporary, error);
-            return false;
+    std::vector<u8> data(sizeof(famicomCommonSave));
+    bool failed = false;
+    for (const auto& source : sources) {
+        if (source.empty() || source.lexically_normal() == target.lexically_normal()) continue;
+        bool imported = false;
+        for (const char* suffix : pc_nes_save_suffixes) {
+            const auto from = pc_nes_sibling(source, suffix);
+            const auto to = pc_nes_sibling(target, suffix);
+            const PcNesReadResult result = pc_nes_read_save(from, (FamicomSaveDataHeader*)data.data(),
+                                                          0x660, (const u8*)"GAFEFSC\x1A");
+            if (result == PC_NES_MISSING) continue;
+            if (result != PC_NES_LOADED) { failed = true; continue; }
+            std::filesystem::create_directories(target.parent_path(), error);
+            if (error) return false;
+            const auto temporary = pc_nes_sibling(to, ".import");
+            if (!pc_nes_write_file(temporary, data.data(), data.size())) return false;
+            if (std::filesystem::exists(to, error) || error) return false;
+            std::filesystem::rename(temporary, to, error);
+            if (error) return false;
+            imported = true;
+        }
+        if (imported) {
+            OSReport("[PC] NES save: imported legacy image and recovery files (sources retained)\n");
+            return true;
         }
     }
+    return !failed;
+}
 
-    error.clear();
-    std::filesystem::rename(temporary, path, error);
+static PcNesReadResult pc_nes_load_image(PcNesSaveState& state, const std::filesystem::path& path,
+                                       FamicomSaveDataHeader* header, u32 block_size, u8* identifier) {
+    state = {};
+    state.path = path;
+    state.slot = mCD_GetThisLandSlotNo();
+    PcNesReadResult failure = PC_NES_MISSING;
+    for (const char* suffix : pc_nes_save_suffixes) {
+        const auto candidate = pc_nes_sibling(path, suffix);
+        const PcNesReadResult result = pc_nes_read_save(candidate, header, block_size, identifier);
+        if (result == PC_NES_LOADED) {
+            state.writable = true;
+            state.recovered = suffix[0] != '\0';
+            if (state.recovered) {
+                OSReport("[PC] NES save: recovered from '%s'\n", borealis::io::fs_path_to_string(candidate).c_str());
+            }
+            return PC_NES_LOADED;
+        }
+        if (result == PC_NES_IO_ERROR || failure == PC_NES_MISSING) failure = result;
+    }
+    famicom_save_data_init(header, block_size, identifier);
+    state.writable = failure == PC_NES_MISSING;
+    return failure;
+}
+
+static bool pc_nes_write_save(const PcNesSaveState& state, const FamicomSaveDataHeader* header,
+                              u32 block_size, const u8* identifier) {
+    const auto temporary = pc_nes_sibling(state.path, ".write");
+    const auto preserved = pc_nes_sibling(state.path, ".write.temp");
+    const auto displaced = pc_nes_sibling(state.path, state.recovered ? ".invalid" : ".bak1");
+    const size_t size = FAMICOM_SAVE_HEADER_SIZE + block_size * PLAYER_NUM;
+    std::error_code error;
+    std::filesystem::create_directories(state.path.parent_path(), error);
+    if (error) return false;
+
+    const PcNesReadResult result = pc_nes_read_save(temporary, nullptr, block_size, identifier);
+    if (result == PC_NES_IO_ERROR) return false;
+    if (result == PC_NES_LOADED) {
+        std::filesystem::remove(preserved, error);
+        if (error) return false;
+        std::filesystem::rename(temporary, preserved, error);
+        if (error) return false;
+    }
+    if (!pc_nes_write_file(temporary, header, size)) return false;
+
+    const bool had_previous = std::filesystem::exists(state.path, error);
+    if (error) return false;
+    if (had_previous) {
+        std::filesystem::remove(displaced, error);
+        if (error) return false;
+        std::filesystem::rename(state.path, displaced, error);
+        if (error) return false;
+    }
+    std::filesystem::rename(temporary, state.path, error);
     if (error) {
         if (had_previous) {
             std::error_code restore_error;
-            std::filesystem::rename(displaced, path, restore_error);
+            std::filesystem::rename(displaced, state.path, restore_error);
         }
-        std::filesystem::remove(temporary, error);
         return false;
     }
+    std::filesystem::remove(preserved, error);
+    std::filesystem::remove(pc_nes_sibling(state.path, ".tmp"), error);
     return true;
+}
+
+static int pc_nes_save_image(PcNesSaveState& state, FamicomSaveDataHeader* header,
+                             u32 block_size, u8* identifier) {
+    if (!state.writable || state.slot != mCD_GetThisLandSlotNo() ||
+        !pc_nes_valid_image(header, block_size, identifier)) {
+        return FAMICOM_RESULT_BROKEN;
+    }
+    const bool no_save = header->no_save;
+    std::error_code error;
+    const bool exists = std::filesystem::exists(state.path, error);
+    if (error || (no_save && exists)) return FAMICOM_RESULT_BROKEN;
+    header->no_save = FALSE;
+    famicom_save_data_setup(header, block_size, identifier);
+    if (!pc_nes_write_save(state, header, block_size, identifier)) {
+        header->no_save = no_save;
+        famicom_save_data_setup(header, block_size, identifier);
+        OSReport("[PC] NES save: write failed; recovery files retained\n");
+        return FAMICOM_RESULT_BROKEN;
+    }
+    state.recovered = false;
+    OSReport("[PC] NES save: wrote '%s'\n", borealis::io::fs_path_to_string(state.path).c_str());
+    return FAMICOM_RESULT_OK;
 }
 
 #endif
@@ -1487,6 +1567,9 @@ static s32 memcard_game_load(
     (void)unused_save_data_start_ofs;
     (void)memcard_save_comment;
 
+    famicomCommon.save_data_header = nullptr;
+    famicomCommon.internal_save_datap = nullptr;
+    pc_nes_cartridge = {};
     char** names;
     int count = pc_nes_rom_scan(&names);
     if (rom_idx < 0 || rom_idx >= count) {
@@ -1494,8 +1577,8 @@ static s32 memcard_game_load(
         return CARD_RESULT_FATAL_ERROR;
     }
 
-    const std::string rom_path = borealis::io::fs_path_to_string(pc_nes_roms_dir() / names[rom_idx]);
-    FILE* f = fopen(rom_path.c_str(), "rb");
+    const auto rom_path = pc_nes_roms_dir() / borealis::io::fs_path_from_utf8(names[rom_idx]);
+    FILE* f = pc_nes_open_file(rom_path, "rb");
     if (f == nullptr) {
         pc_nes_rom_free(names, count);
         return CARD_RESULT_FATAL_ERROR;
@@ -1519,18 +1602,38 @@ static s32 memcard_game_load(
 
     nesinfo_data_size = (u32)fsize;
 
-    /* nesinfo_tag_process1 unconditionally dereferences nesinfo_tags_start
-     * before checking for a terminator, so hand it a minimal END tag. The
-     * caller frees this via my_free when resetting state. */
+    if (memcmp(nesromp, "NES\x1A", 4) != 0) {
+        pc_nes_rom_free(names, count);
+        return CARD_RESULT_BROKEN;
+    }
+    if (nesromp[6] & 2) {
+        pc_nes_cartridge.ram_size = pc_fixnes_prg_ram_size(nesromp);
+        if (pc_nes_cartridge.ram_size > KS_NES_BBRAM_SIZE) {
+            OSReport("[PC] NES save: cartridge battery RAM exceeds the GC save buffer\n");
+            pc_nes_rom_free(names, count);
+            return CARD_RESULT_BROKEN;
+        }
+        pc_nes_cartridge.filename = names[rom_idx];
+    }
+
+    /* The original tag walkers skip the first tag, then use BBR for battery RAM. */
+    const u32 tags_size = pc_nes_cartridge.ram_size != 0 ? 16 : NESTAG_SIZE;
     if (tags_pp != nullptr) {
-        u8* end_tag = (u8*)my_malloc(NESTAG_SIZE, 1);
-        if (end_tag == nullptr) {
+        u8* tags = (u8*)my_malloc(tags_size, 1);
+        if (tags == nullptr) {
             pc_nes_rom_free(names, count);
             return CARD_RESULT_FATAL_ERROR;
         }
-        memcpy(end_tag, NESTAG_END, NESTAG_CMD_SIZE);
-        end_tag[NESTAG_CMD_SIZE] = 0;
-        *tags_pp = end_tag;
+        memset(tags, 0, tags_size);
+        if (pc_nes_cartridge.ram_size != 0) {
+            memcpy(tags, NESTAG_REM, NESTAG_CMD_SIZE);
+            memcpy(tags + 4, NESTAG_BBR, NESTAG_CMD_SIZE);
+            tags[7] = 4;
+            tags[10] = (u8)(pc_nes_cartridge.ram_size >> 8);
+            tags[11] = (u8)pc_nes_cartridge.ram_size;
+        }
+        memcpy(tags + tags_size - NESTAG_SIZE, NESTAG_END, NESTAG_CMD_SIZE);
+        *tags_pp = tags;
     }
 
     memset(game_header, 0, sizeof(MemcardGameHeader_t));
@@ -1538,7 +1641,7 @@ static s32 memcard_game_load(
     game_header->_01 = 0;
     pc_nes_rom_copy_title(game_header->mori_name, names[rom_idx]);
     game_header->nesrom_size = 0;
-    game_header->nestags_size = NESTAG_SIZE; /* just the END tag */
+    game_header->nestags_size = tags_size;
     game_header->flags0.has_comment_img = FALSE;
     game_header->flags0.no_copy_flag = FALSE;
     game_header->flags1.no_move_flag = FALSE;
@@ -2506,8 +2609,15 @@ static int famicom_rom_load() {
         famicomCommon.save_data_name = (u8*)"GAFEFSE\x1A";
         famicomCommon.save_data_single_size = max_ofs + 0xB;
         famicomCommon.save_data_total_size = famicomCommon.save_data_single_size * PLAYER_NUM + sizeof(FamicomSaveDataHeader);
+#ifdef TARGET_PC
+        pc_nes_cartridge.image.resize(famicomCommon.save_data_total_size);
+        famicomCommon.save_data_header = (FamicomSaveDataHeader*)pc_nes_cartridge.image.data();
+        famicomCommon.internal_save_datap = pc_nes_cartridge.image.data() + sizeof(FamicomSaveDataHeader) +
+                                           famicomCommon.save_data_single_size * famicomCommon.save_pl_no;
+#else
         famicomCommon.save_data_header = (FamicomSaveDataHeader*)nintendo_hi_0; // overwritten for use with save data
         famicomCommon.internal_save_datap = nintendo_hi_0 + sizeof(FamicomSaveDataHeader) + famicomCommon.save_data_single_size * famicomCommon.save_pl_no;
+#endif
         memset(famicomCommon.save_data_header, 0, famicomCommon.save_data_total_size);
     }
 
@@ -2515,7 +2625,22 @@ static int famicom_rom_load() {
         famicomCommon.internal_save_datap = famicomCommonSave + sizeof(FamicomSaveDataHeader) + 0x660 * famicomCommon.save_pl_no;
     }
     else if (famicomCommon.save_data_header != nullptr) {
+#ifdef TARGET_PC
+        char common_path[PC_NES_SAVE_PATH_MAX];
+        if (!pc_nes_save_path(common_path, sizeof(common_path))) return -1;
+        const auto path = borealis::io::fs_path_from_utf8(common_path).parent_path() / "nes_roms" /
+                          borealis::io::fs_path_from_utf8(pc_nes_cartridge.filename + ".sav");
+        if (pc_nes_cartridge.ram_size != 0) {
+            pc_nes_load_image(pc_nes_cartridge.save, path, famicomCommon.save_data_header,
+                              famicomCommon.save_data_single_size, famicomCommon.save_data_name);
+            if (!pc_nes_cartridge.save.writable) return -1;
+        } else {
+            famicom_save_data_init(famicomCommon.save_data_header, famicomCommon.save_data_single_size,
+                                   famicomCommon.save_data_name);
+        }
+#else
         famicom_common_save_initial();
+#endif
     }
 
     if (famicomCommon.internal_save_datap != nullptr) {
@@ -3116,48 +3241,19 @@ static int famicom_cardResultToMiyake(s32 cardResult) {
 
 extern int famicom_internal_data_load() {
 #ifdef TARGET_PC
-    /* PC: Load NES save data from the configured user directory. */
     memset(&famicomCommon, 0, sizeof(FamicomCommon));
-    famicomCommon.nesrom_memcard = FALSE;
-    strncpy((char*)famicomCommon.mura_save_name, "DobutsunomoriP_MURA", 32);
-    strncpy((char*)famicomCommon.famicom_save_name, "DobutsunomoriP_F_SAVE", 32);
-    famicomCommon.save_data_name = (u8*)"GAFEFSC\x1A";
-    famicomCommon.save_data_single_size = 0x660;
-    famicomCommon.save_data_total_size = sizeof(FamicomSaveDataHeader) + 0x660 * PLAYER_NUM;
-    famicomCommon.save_data_header = (FamicomSaveDataHeader*)famicomCommonSave;
-    famicomCommon.internal_save_datap = nullptr;
-    {
-        char nes_path[PC_NES_SAVE_PATH_MAX];
-        memset(famicomCommonSave, 0, sizeof(famicomCommonSave));
-        pc_nes_save_source = PC_NES_SAVE_SOURCE_NONE;
-        if (!pc_nes_save_path(nes_path, sizeof(nes_path))) {
-            OSReport("[PC] NES save path exceeds %d bytes\n", PC_NES_SAVE_PATH_MAX);
-            return FAMICOM_RESULT_BROKEN;
-        }
-        pc_nes_import_legacy_save(nes_path);
-        std::filesystem::path path = nes_path;
-        if (pc_nes_read_save(path) &&
-            famicom_save_data_check(famicomCommon.save_data_header, -1,
-                                    famicomCommon.save_data_name) == 0) {
-            pc_nes_save_source = PC_NES_SAVE_SOURCE_PRIMARY;
-        } else {
-            path += ".bak1";
-            if (pc_nes_read_save(path) &&
-                famicom_save_data_check(famicomCommon.save_data_header, -1,
-                                        famicomCommon.save_data_name) == 0) {
-                pc_nes_save_source = PC_NES_SAVE_SOURCE_BACKUP;
-                OSReport("[PC] NES save: recovered from '%s'\n", borealis::io::fs_path_to_string(path).c_str());
-            }
-        }
-
-        if (pc_nes_save_source == PC_NES_SAVE_SOURCE_NONE) {
-            famicom_save_data_init(famicomCommon.save_data_header,
-                                   famicomCommon.save_data_single_size,
-                                   famicomCommon.save_data_name);
-            OSReport("[PC] NES save: initialized a new protected common-save image\n");
-        }
+    char path_buffer[PC_NES_SAVE_PATH_MAX];
+    pc_nes_common_save = {};
+    if (!pc_nes_save_path(path_buffer, sizeof(path_buffer))) return FAMICOM_RESULT_BROKEN;
+    const auto path = borealis::io::fs_path_from_utf8(path_buffer);
+    const bool imported = pc_nes_import_legacy_save(path);
+    const PcNesReadResult result = pc_nes_load_image(pc_nes_common_save, path,
+        (FamicomSaveDataHeader*)famicomCommonSave, 0x660, (u8*)"GAFEFSC\x1A");
+    if (!imported) {
+        OSReport("[PC] NES save: legacy import incomplete; source files retained\n");
+        if (result != PC_NES_LOADED) pc_nes_common_save.writable = false;
     }
-    return FAMICOM_RESULT_OK;
+    return pc_nes_common_save.writable ? FAMICOM_RESULT_OK : FAMICOM_RESULT_BROKEN;
 #endif
     famicom_mount_archive_wait();
     memset(&famicomCommon, 0, sizeof(FamicomCommon));
@@ -3200,55 +3296,8 @@ extern int famicom_internal_data_load() {
 
 extern int famicom_internal_data_save() {
 #ifdef TARGET_PC
-    /* PC: preserve the original validation/no-save policy, then atomically
-     * write below the configured user root. */
-    {
-        famicomCommon.nesrom_memcard = FALSE;
-        strncpy((char*)famicomCommon.mura_save_name, "DobutsunomoriP_MURA", 32);
-        strncpy((char*)famicomCommon.famicom_save_name, "DobutsunomoriP_F_SAVE", 32);
-        famicomCommon.save_data_name = (u8*)"GAFEFSC\x1A";
-        famicomCommon.save_data_single_size = 0x660;
-        famicomCommon.save_data_total_size = sizeof(FamicomSaveDataHeader) + 0x660 * PLAYER_NUM;
-        famicomCommon.save_data_header = (FamicomSaveDataHeader*)famicomCommonSave;
-        famicomCommon.internal_save_datap = nullptr;
-
-        char nes_path[PC_NES_SAVE_PATH_MAX];
-        if (!pc_nes_save_path(nes_path, sizeof(nes_path))) {
-            OSReport("[PC] NES save path exceeds %d bytes\n", PC_NES_SAVE_PATH_MAX);
-            return FAMICOM_RESULT_BROKEN;
-        }
-
-        if (famicom_save_data_check(famicomCommon.save_data_header, -1,
-                                    famicomCommon.save_data_name) != 0) {
-            OSReport("[PC] NES save: refusing to write an invalid common-save image\n");
-            return FAMICOM_RESULT_BROKEN;
-        }
-
-        const bool no_save = famicomCommon.save_data_header->no_save;
-        std::error_code error;
-        const bool primary_exists = std::filesystem::exists(nes_path, error);
-        if (error || (no_save && primary_exists)) {
-            OSReport("[PC] NES save: protected image will not overwrite '%s'\n", nes_path);
-            return FAMICOM_RESULT_BROKEN;
-        }
-
-        famicomCommon.save_data_header->no_save = FALSE;
-        famicom_save_data_setup(famicomCommon.save_data_header,
-                                famicomCommon.save_data_single_size,
-                                famicomCommon.save_data_name);
-        if (!pc_nes_write_save(nes_path,
-                               pc_nes_save_source == PC_NES_SAVE_SOURCE_BACKUP)) {
-            famicomCommon.save_data_header->no_save = no_save;
-            famicom_save_data_setup(famicomCommon.save_data_header,
-                                    famicomCommon.save_data_single_size,
-                                    famicomCommon.save_data_name);
-            OSReport("[PC] NES save: write failed\n");
-            return FAMICOM_RESULT_BROKEN;
-        }
-        pc_nes_save_source = PC_NES_SAVE_SOURCE_PRIMARY;
-        OSReport("[PC] NES save: wrote '%s'\n", nes_path);
-    }
-    return FAMICOM_RESULT_OK;
+    return pc_nes_save_image(pc_nes_common_save, (FamicomSaveDataHeader*)famicomCommonSave,
+                             0x660, (u8*)"GAFEFSC\x1A");
 #endif
     s32 result;
     s32 chan;
@@ -3305,7 +3354,14 @@ extern int famicom_internal_data_save() {
 
 extern int famicom_external_data_save() {
 #ifdef TARGET_PC
-    return 0;
+    if (pc_nes_cartridge.ram_size == 0) return FAMICOM_RESULT_OK;
+    if (!famicomCommon.nesrom_memcard || famicomCommon.save_data_header == nullptr ||
+        pc_nes_cartridge.image.empty() ||
+        (u8*)famicomCommon.save_data_header != pc_nes_cartridge.image.data()) {
+        return FAMICOM_RESULT_BROKEN;
+    }
+    return pc_nes_save_image(pc_nes_cartridge.save, famicomCommon.save_data_header,
+                             famicomCommon.save_data_single_size, famicomCommon.save_data_name);
 #endif
     s32 result;
     s32 chan;

@@ -86,6 +86,9 @@ void pc_platform_init(void);
 void pc_platform_shutdown(void);
 void pc_platform_swap_buffers(void);
 int  pc_platform_poll_events(void);
+int  pc_platform_flush_file(FILE* file);
+/* Start with an empty filename; returns successive names in order. */
+int  pc_platform_next_gci(const char* directory_path, char* filename, int filename_size);
 /* Resolve a port-owned relative path below the active data directory. */
 int  pc_platform_user_path(const char* relative_path, char* output, size_t output_size);
 /* Resolve a relative path below the executable directory (SDL_GetBasePath).
@@ -112,7 +115,6 @@ extern int pc_emu64_frame_cull_rejected;
 extern int pc_gx_draw_call_count;
 
 /* --- Audio --- */
-extern int pc_save_loaded;
 int  pc_audio_get_buffer_fill(void);
 int  pc_audio_is_active(void);
 void pc_audio_set_paused(int paused);

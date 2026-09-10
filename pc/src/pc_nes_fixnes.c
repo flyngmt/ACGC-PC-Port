@@ -229,6 +229,12 @@ static void fixnes_capture_audio(void) {
  * Public API
  * ====================================================================== */
 
+unsigned int pc_fixnes_prg_ram_size(const unsigned char* rom) {
+    unsigned int mapper = (rom[6] >> 4) | (rom[7] & 0xF0);
+    if (mapper == 5) return 0x10000;
+    return rom[8] != 0 ? rom[8] * 0x2000u : 0x2000u;
+}
+
 void pc_fixnes_init(uint8_t *ines_data, int ines_size) {
     /* Reset all state */
     nesPAL = false;
@@ -277,12 +283,7 @@ void pc_fixnes_init(uint8_t *ines_data, int ines_size) {
     }
 
     /* Allocate PRG RAM */
-    if (mapper == 5)
-        emuPrgRAMsize = 0x10000;
-    else {
-        emuPrgRAMsize = emuNesROM[8] * 0x2000;
-        if (emuPrgRAMsize == 0) emuPrgRAMsize = 0x2000;
-    }
+    emuPrgRAMsize = pc_fixnes_prg_ram_size(emuNesROM);
     emuPrgRAM = malloc(emuPrgRAMsize);
     memset(emuPrgRAM, 0, emuPrgRAMsize);
 

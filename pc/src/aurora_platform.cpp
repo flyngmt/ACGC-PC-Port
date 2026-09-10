@@ -3,7 +3,6 @@
 #include <dolphin/gx/GXAurora.h>
 #include <dolphin/os.h>
 
-#include "acgc/data.hpp"
 #include "boot.h"
 #include "GBA/gba.h"
 #include "pc_platform.h"
@@ -23,8 +22,15 @@
 #include <filesystem>
 #include <memory>
 #include <mutex>
+#include <string>
 #include <thread>
 #include <unordered_map>
+
+#ifdef _WIN32
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
 
 namespace {
 
@@ -722,84 +728,40 @@ void msleep(int milliseconds) {
     SDL_Delay(static_cast<Uint32>(milliseconds));
 }
 
-int pc_card_scan_for_gci(s32 channel, char* out_path, int out_size) {
-    if (out_path == nullptr || out_size <= 0) {
-        return 0;
-    }
-    char directory_path[1024];
-    const char* relative_path = channel == 1 ? "save/card_b" : "save/card_a";
-    if (!pc_platform_user_path(relative_path, directory_path, sizeof(directory_path))) {
-        return 0;
-    }
-    const std::filesystem::path directory = directory_path;
-    const auto is_valid_gci = [](const std::filesystem::path& path) {
-        FILE* file = open_file(borealis::io::fs_path_to_string(path).c_str(), "rb");
-        if (file == nullptr) {
-            return false;
-        }
+int pc_platform_flush_file(FILE* file) {
+    if (std::fflush(file) != 0) return false;
+#ifdef _WIN32
+    return _commit(_fileno(file)) == 0;
+#else
+    return fsync(fileno(file)) == 0;
+#endif
+}
+
+int pc_platform_next_gci(const char* directory_path, char* filename, int filename_size) {
+    if (directory_path == nullptr || filename == nullptr || filename_size <= 0) return 0;
+    const std::string previous{filename};
+    std::string next;
+    std::error_code error;
+    std::filesystem::directory_iterator entry{directory_path, error};
+    for (; !error && entry != std::filesystem::directory_iterator{}; entry.increment(error)) {
+        if (!entry->is_regular_file(error) || entry->path().extension() != ".gci") continue;
+        const std::string name = borealis::io::fs_path_to_string(entry->path().filename());
+        if (name <= previous || (!next.empty() && name >= next) ||
+            name.size() + 1 > static_cast<size_t>(filename_size)) continue;
+
+        FILE* file = open_file(borealis::io::fs_path_to_string(entry->path()).c_str(), "rb");
+        if (file == nullptr) continue;
         u8 header[4] = {};
-        const bool valid = std::fread(header, 1, sizeof(header), file) == sizeof(header) && header[0] == 'G' &&
-                           header[1] == 'A' && header[2] == 'F';
+        const bool valid = std::fread(header, 1, sizeof(header), file) == sizeof(header) &&
+                           header[0] == 'G' && header[1] == 'A' && header[2] == 'F';
         std::fclose(file);
-        return valid;
-    };
-    const auto return_path = [out_path, out_size](const std::filesystem::path& path) {
-        const std::string path_string = borealis::io::fs_path_to_string(path);
-        if (path_string.size() + 1 > static_cast<size_t>(out_size)) {
-            return 0;
-        }
-        std::memcpy(out_path, path_string.c_str(), path_string.size() + 1);
-        return 1;
-    };
-    const auto scan_directory = [&](const std::filesystem::path& source_directory, bool import_legacy) {
-        std::error_code error;
-        for (const auto& entry : std::filesystem::directory_iterator(source_directory, error)) {
-            if (error || !entry.is_regular_file() || entry.path().extension() != ".gci" ||
-                !is_valid_gci(entry.path())) {
-                continue;
-            }
+        if (!valid) continue;
 
-            if (!import_legacy) {
-                return return_path(entry.path());
-            }
-
-            const std::filesystem::path imported_path = directory / entry.path().filename();
-            error.clear();
-            std::filesystem::create_directories(directory, error);
-            error.clear();
-            std::filesystem::copy_file(entry.path(), imported_path,
-                                       std::filesystem::copy_options::skip_existing, error);
-            if (!is_valid_gci(imported_path)) {
-                continue;
-            }
-            OSReport("[PC] Imported legacy Card %c save '%s' -> '%s' (source retained)\n",
-                     channel == 1 ? 'B' : 'A', borealis::io::fs_path_to_string(entry.path()).c_str(),
-                     borealis::io::fs_path_to_string(imported_path).c_str());
-            return return_path(imported_path);
-        }
-        return 0;
-    };
-
-    if (scan_directory(directory, false)) {
-        return 1;
+        next = name;
     }
-
-    const std::filesystem::path legacy_directories[] = {
-        relative_path,
-        acgc::data::base_path_relative(relative_path),
-    };
-    for (const auto& legacy_directory : legacy_directories) {
-        std::error_code error;
-        if (legacy_directory.empty() || !std::filesystem::exists(legacy_directory, error)) {
-            continue;
-        }
-        error.clear();
-        if (!std::filesystem::equivalent(directory, legacy_directory, error) &&
-            scan_directory(legacy_directory, true)) {
-            return 1;
-        }
-    }
-    return 0;
+    if (error || next.empty()) return 0;
+    std::memcpy(filename, next.c_str(), next.size() + 1);
+    return 1;
 }
 
 } // extern "C"

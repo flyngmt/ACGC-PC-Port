@@ -92,13 +92,4 @@ extern void second_game_init(GAME* game) {
   init_rnd();
   __osInitialize_common();
 
-#ifdef TARGET_PC
-  /* Load save file AFTER common_data_init() has run (in first_game exit_game).
-   * This overwrites common_data.save.save with saved state. */
-  {
-    extern int pc_save_check_and_load(void);
-    extern int pc_save_loaded;
-    pc_save_loaded = pc_save_check_and_load();
-  }
-#endif
 }

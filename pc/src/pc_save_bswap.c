@@ -940,9 +940,7 @@ static int verify_compare(const char* label, const u8* original, const u8* round
         }
     }
 
-    if (mismatches == 0) {
-        OSReport("[PC] BSWAP verify: %s round-trip PASSED (%u bytes)\n", label, size);
-    } else {
+    if (mismatches != 0) {
         OSReport("[PC] BSWAP verify: %s total mismatches: %d / %u bytes\n", label, mismatches, size);
     }
     return mismatches;
@@ -997,30 +995,4 @@ int pc_save_bswap_verify_roundtrip_diary(const u8* original_be, u32 size) {
     result = verify_compare("keep_diary", original_be, temp, size);
     free(temp);
     return result;
-}
-
-void pc_save_bswap_foreigner(mCD_foreigner_c* f, pc_bswap_dir_t dir) {
-    swap16(&f->checksum);
-    swap_Private(&f->priv, dir);
-    swap_Animal(&f->remove_animal, dir, 0);
-    swap16(&f->copy_protect);
-}
-
-/* BE-aware checksum matching mFRm_GetFlatCheckSum on GC.
- * Reads byte stream as BE u16 pairs (GC reads native PPC u16 directly). */
-
-u16 pc_checksum_be(const u8* data, u32 size, u16 old_checksum) {
-    u32 i;
-    u32 sum = 0;
-    u32 num_u16 = size / 2;
-    u16 raw;
-
-    for (i = 0; i < num_u16; i++) {
-        u16 val = ((u16)data[i * 2] << 8) | data[i * 2 + 1];
-        sum += val;
-    }
-
-    /* Two's complement: subtract old_checksum (included in sum), negate */
-    raw = (u16)((sum - old_checksum) & 0xFFFF);
-    return (u16)((~raw + 1) & 0xFFFF);
 }

@@ -142,38 +142,8 @@ static void trademark_goto_demo_scene(GAME_TRADEMARK* trademark) {
         Common_Set(door_data, *demo_door_data);
         Common_Set(door_data.next_scene_id, demo_door_data->next_scene_id + 1); // go to next demo scene
         mTM_demotime_set(demo_no);                                              // set demo date, time, and weather
-#ifdef TARGET_PC
-        /* On PC, save data lives only in memory. The title demo functions
-         * mPr_RandomSetPlayerData_title_demo and set_npc_4_title_demo both
-         * mutate Save_t data (player private data and animal data respectively).
-         * On GC this doesn't matter because the real save lives on the memory card
-         * and gets reloaded. On PC we must save and restore the data. */
-        {
-            extern int pc_save_loaded;
-            static Private_c pc_saved_private[PLAYER_NUM];
-            static Animal_c pc_saved_animals[ANIMAL_NUM_MAX];
-            static u8 pc_saved_door_original[PLAYER_NUM];
-            if (pc_save_loaded) {
-                for (i = 0; i < PLAYER_NUM; i++) {
-                    pc_saved_private[i] = Save_Get(private_data[i]);
-                    pc_saved_door_original[i] = Save_Get(homes[i]).door_original;
-                }
-                memcpy(pc_saved_animals, Save_Get(animals), sizeof(pc_saved_animals));
-            }
-            mPr_RandomSetPlayerData_title_demo();
-            set_npc_4_title_demo(trademark);
-            if (pc_save_loaded) {
-                for (i = 0; i < PLAYER_NUM; i++) {
-                    Save_Get(private_data[i]) = pc_saved_private[i];
-                    Save_Get(homes[i]).door_original = pc_saved_door_original[i];
-                }
-                memcpy(Save_Get(animals), pc_saved_animals, sizeof(pc_saved_animals));
-            }
-        }
-#else
         mPr_RandomSetPlayerData_title_demo();                                   // randomize player data
         set_npc_4_title_demo(trademark);                                        // set animals in the demo
-#endif
         Common_Set(transition.wipe_type, WIPE_TYPE_FADE_BLACK);
     }
 
