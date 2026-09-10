@@ -335,7 +335,7 @@ extern void mMsr_FirstClearMushroom() {
     lbRTC_time_c* rtc_time = Common_GetPointer(time.rtc_time);
 
     mMsr_Mushtime2Rtc(&mush_rtc_time, mush_time);
-    if (mTM_AreTimesEqual(&mush_rtc_time, &l_mmsr_zeto_time) == TRUE) {
+    if (lbRTC_IsEqualTime(&mush_rtc_time, &l_mmsr_zeto_time, lbRTC_CHECK_ALL & ~lbRTC_CHECK_WEEKDAYS) == TRUE) {
         lbRTC_TimeCopy(&mush_rtc_time, rtc_time);
     }
 
