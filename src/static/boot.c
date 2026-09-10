@@ -34,11 +34,9 @@
 #include "m_map_ovl.h"
 #include "pc_bswap.h"
 
-/* Raw binary display lists (u8[] with BE data from ROM .inc files).
-   On LE these need u32 byte-swap so emu64 reads correct commands. */
-extern u8 cal_win_nen_before[];
-extern u8 des_win_before[];
-extern u8 des_win_suuji_before[];
+extern Gfx cal_win_nen_before[5];
+extern Gfx des_win_before[4];
+extern Gfx des_win_suuji_before[5];
 
 /* u8[] arrays used as TLUT palettes via gsDPLoadTLUT_Dolphin.
    These contain raw BE byte pairs from ROM .inc files. On LE, pairs must
@@ -59,15 +57,23 @@ extern u8 obj_item_omikuji[];
 extern u8 rom_museum4_step_pal2[];
 extern u8 int_iid_diary[];  /* static in original, non-static on PC */
 
-static void pc_bswap_raw_display_lists(void) {
-    struct { u8* data; int size; } lists[] = {
-        { cal_win_nen_before, 40 },     /* 5 Gfx commands */
-        { des_win_before, 32 },          /* 4 Gfx commands */
-        { des_win_suuji_before, 40 },    /* 5 Gfx commands */
+static void pc_convert_raw_display_lists(void) {
+    struct { Gfx* data; int count; } lists[] = {
+        { cal_win_nen_before, ARRAY_COUNT(cal_win_nen_before) },
+        { des_win_before, ARRAY_COUNT(des_win_before) },
+        { des_win_suuji_before, ARRAY_COUNT(des_win_suuji_before) },
     };
     int i;
-    for (i = 0; i < 3; i++) {
-        pc_bswap32_array(lists[i].data, lists[i].size / 4);
+    for (i = 0; i < ARRAY_COUNT(lists); i++) {
+        int j;
+        /* These state-only lists have 8-byte ROM commands. Expand backwards to preserve unread bytes. */
+        for (j = lists[i].count - 1; j >= 0; j--) {
+            Gfx command = { 0 };
+            memcpy(&command, (u8*)lists[i].data + j * 8, 8);
+            command.words.w0 = pc_bswap32(command.words.w0);
+            command.words.w1 = pc_bswap32(command.words.w1);
+            lists[i].data[j] = command;
+        }
     }
 }
 
@@ -788,7 +794,7 @@ int main(int argc, const char** argv) {
   JC_JKRExpHeap_changeGroupID(JC_JFWSystem_getSystemHeap(), 5);
 
 #ifdef TARGET_PC
-  pc_bswap_raw_display_lists();
+  pc_convert_raw_display_lists();
   mFM_InitActableEndian();
   pc_bswap_u8_tlut_palettes();
   pc_bswap_house_pos_list();

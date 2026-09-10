@@ -94,7 +94,7 @@ Vtx des_suuji_v[] = {
 #endif
 
 #ifdef TARGET_PC
-u8 des_win_suuji_before[0x28];
+Gfx des_win_suuji_before[5];
 #else
 u8 des_win_suuji_before[] = {
 #include "assets/des_win_suuji_before.inc"
