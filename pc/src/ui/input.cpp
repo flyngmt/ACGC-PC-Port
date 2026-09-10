@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <array>
+#include <utility>
 
 namespace acgc::ui::input {
 namespace {
@@ -57,6 +58,7 @@ std::array<GamepadRepeatState, kGamepadAxisDirectionCount> sGamepadAxisRepeats;
 std::array<u32, PAD_MAX_CONTROLLERS> sPadHoldMasks;
 std::array<bool, PAD_MAX_CONTROLLERS> sMenuChordConsumed;
 TouchTapState sTouchMenuTap;
+bool sDispatchingControllerKey = false;
 
 double now_seconds() noexcept
 {
@@ -462,21 +464,30 @@ bool touch_moved_too_far(const TouchTapFinger& finger, Rml::Vector2f position, R
 	return delta.SquaredMagnitude() > threshold * threshold;
 }
 
-void emit_key_press(Rml::Context& context, Rml::Input::KeyIdentifier key) noexcept
+void emit_controller_key_down(Rml::Context& context, Rml::Input::KeyIdentifier key) noexcept
 {
-	context.ProcessMouseLeave();
+	const bool previous = std::exchange(sDispatchingControllerKey, true);
 	context.ProcessKeyDown(key, 0);
+	sDispatchingControllerKey = previous;
 }
 
-void emit_key_tap(Rml::Context& context, Rml::Input::KeyIdentifier key) noexcept
+void emit_controller_key_press(Rml::Context& context, Rml::Input::KeyIdentifier key) noexcept
 {
-	emit_key_press(context, key);
+	context.ProcessMouseLeave();
+	emit_controller_key_down(context, key);
+}
+
+void emit_controller_key_tap(Rml::Context& context, Rml::Input::KeyIdentifier key) noexcept
+{
+	emit_controller_key_press(context, key);
 	context.ProcessKeyUp(key, 0);
 }
 
 void dispatch_menu_key(Rml::Context& context) noexcept
 {
-	emit_key_tap(context, kMenuKey);
+	context.ProcessMouseLeave();
+	context.ProcessKeyDown(kMenuKey, 0);
+	context.ProcessKeyUp(kMenuKey, 0);
 }
 
 bool handle_touch_menu_tap(Rml::Context& context, const SDL_Event& event) noexcept
@@ -651,7 +662,7 @@ void process_axis_direction(Rml::Context& context, const SDL_GamepadAxisEvent& e
 	if (repeat->held) {
 		if (released) {
 			if (repeat->pending) {
-				emit_key_tap(context, repeat->key);
+				emit_controller_key_tap(context, repeat->key);
 			} else {
 				context.ProcessKeyUp(repeat->key, 0);
 			}
@@ -683,10 +694,15 @@ void process_axis_direction(Rml::Context& context, const SDL_GamepadAxisEvent& e
 	}
 
 	begin_gamepad_key(*repeat, key);
-	emit_key_press(context, key);
+	emit_controller_key_press(context, key);
 }
 
 } // namespace
+
+bool is_dispatching_controller_key() noexcept
+{
+	return sDispatchingControllerKey;
+}
 
 void sync_input_block() noexcept
 {
@@ -762,7 +778,7 @@ void handle_event(const SDL_Event& event) noexcept
 				}
 			}
 			if (!deferred) {
-				emit_key_press(*context, key);
+				emit_controller_key_press(*context, key);
 			}
 		}
 	} else {
@@ -775,7 +791,7 @@ void handle_event(const SDL_Event& event) noexcept
 				*repeat = { };
 			}
 			if (wasPending) {
-				emit_key_tap(*context, key);
+				emit_controller_key_tap(*context, key);
 			} else {
 				context->ProcessKeyUp(key, 0);
 			}
@@ -803,7 +819,7 @@ void update_input() noexcept
 					repeat.pending      = false;
 					repeat.pressedAt    = now;
 					repeat.nextRepeatAt = repeat.repeatable ? now + kGamepadRepeatInitialDelay : 0.0;
-					emit_key_press(*context, repeat.key);
+					emit_controller_key_press(*context, repeat.key);
 					continue;
 				}
 
@@ -811,7 +827,7 @@ void update_input() noexcept
 					continue;
 				}
 
-				context->ProcessKeyDown(repeat.key, 0);
+				emit_controller_key_down(*context, repeat.key);
 				const double heldFor = now - repeat.pressedAt;
 				repeat.nextRepeatAt  = now + repeat_interval(heldFor);
 			}

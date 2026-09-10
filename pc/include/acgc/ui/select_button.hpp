@@ -28,13 +28,19 @@ public:
 	SelectButton& on_pressed(SelectButtonCallback callback);
 
 protected:
+	void set_adjustable();
+	void set_adjustment_enabled(bool left, bool right);
+	void update_value_label();
 	void update_props(Props props);
 	virtual bool handle_nav_command(NavCommand cmd);
 
 	Props mProps;
-	Rml::Element* mKeyElem   = nullptr;
-	Rml::Element* mIconElem  = nullptr;
-	Rml::Element* mValueElem = nullptr;
+	Rml::Element* mKeyElem        = nullptr;
+	Rml::Element* mIconElem       = nullptr;
+	Rml::Element* mValueElem      = nullptr;
+	Rml::Element* mValueLabelElem = nullptr;
+	Rml::Element* mLeftArrowElem  = nullptr;
+	Rml::Element* mRightArrowElem = nullptr;
 };
 
 class BaseControlledSelectButton : public SelectButton {

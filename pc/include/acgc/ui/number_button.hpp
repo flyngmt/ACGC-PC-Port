@@ -22,6 +22,7 @@ public:
 	};
 
 	NumberButton(Rml::Element* parent, Props props);
+	void update() override;
 
 	bool modified() const override;
 	bool disabled() const override;

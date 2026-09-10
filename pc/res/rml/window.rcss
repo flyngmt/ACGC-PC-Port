@@ -352,6 +352,33 @@ select-button value.modified {
     color: #009c9b;
 }
 
+select-button.adjustable value {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    overflow: visible;
+}
+
+select-button .value-label {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+select-button .adjust-arrow {
+    flex: 0 0 auto;
+    padding: 0 6dp;
+    font-family: "Material Symbols Rounded";
+    font-weight: normal;
+    focus: none;
+}
+
+select-button .adjust-arrow.unavailable {
+    opacity: 0.3;
+    cursor: default;
+}
+
 select-button input {
     text-align: right;
     font-family: "ACGC Body";

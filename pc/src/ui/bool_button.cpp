@@ -15,6 +15,7 @@ BoolButton::BoolButton(Rml::Element* parent, Props props)
     , mIsModified(std::move(props.isModified))
     , mValueOverride(std::move(props.valueOverride))
 {
+	set_adjustable();
 }
 
 bool BoolButton::modified() const

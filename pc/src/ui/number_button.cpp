@@ -1,5 +1,8 @@
 #include "number_button.hpp"
 
+#include "input.hpp"
+
+#include <algorithm>
 #include <charconv>
 #include <fmt/format.h>
 
@@ -17,6 +20,15 @@ NumberButton::NumberButton(Rml::Element* parent, Props props)
     , mPrefix(std::move(props.prefix))
     , mSuffix(std::move(props.suffix))
 {
+	set_adjustable();
+}
+
+void NumberButton::update()
+{
+	BaseStringButton::update();
+	const int value       = mGetValue();
+	const bool adjustable = mSetValue && mStep > 0;
+	set_adjustment_enabled(adjustable && value > mMin, adjustable && value < mMax);
 }
 
 bool NumberButton::modified() const
@@ -64,9 +76,17 @@ void NumberButton::set_value(Rml::String value)
 
 bool NumberButton::handle_nav_command(NavCommand cmd)
 {
+	if (!is_editing() && cmd == NavCommand::Confirm && input::is_dispatching_controller_key()) {
+		return true;
+	}
 	if (!is_editing() && (cmd == NavCommand::Left || cmd == NavCommand::Right)) {
-		const int newValue = std::clamp(mGetValue() + (cmd == NavCommand::Right ? mStep : -mStep), mMin, mMax);
-		if (newValue != mGetValue()) {
+		if (!mSetValue || mStep <= 0) {
+			return true;
+		}
+		const int value = mGetValue();
+		const long long delta = cmd == NavCommand::Right ? static_cast<long long>(mStep) : -static_cast<long long>(mStep);
+		const int newValue = static_cast<int>(std::clamp<long long>(value + delta, mMin, mMax));
+		if (newValue != value) {
 			mSetValue(newValue);
 			play_menu_sound(kSoundItemChange);
 		}

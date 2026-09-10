@@ -2,7 +2,6 @@
 
 #include "ui.hpp"
 
-#include <fmt/format.h>
 #include <utility>
 
 namespace acgc::ui {
@@ -20,9 +19,10 @@ Rml::Element* createRoot(Rml::Element* parent)
 SelectButton::SelectButton(Rml::Element* parent, Props props)
     : FluentComponent(createRoot(parent))
 {
-	mKeyElem   = append(mRoot, "key");
-	mIconElem  = append(mRoot, "icon");
-	mValueElem = append(mRoot, "value");
+	mKeyElem        = append(mRoot, "key");
+	mIconElem       = append(mRoot, "icon");
+	mValueElem      = append(mRoot, "value");
+	mValueLabelElem = mValueElem;
 	update_props(std::move(props));
 	on_nav_command([this](Rml::Event&, NavCommand cmd) { return handle_nav_command(cmd); });
 }
@@ -32,15 +32,48 @@ bool SelectButton::modified() const
 	return mProps.modified;
 }
 
+void SelectButton::set_adjustable()
+{
+	if (mLeftArrowElem != nullptr) {
+		return;
+	}
+	mRoot->SetClass("adjustable", true);
+	mValueElem->SetInnerRML("");
+	auto add_arrow = [this](NavCommand cmd, const char* glyph) {
+		auto* arrow = append(mValueElem, "span");
+		arrow->SetClass("adjust-arrow", true);
+		arrow->SetInnerRML(glyph);
+		Component::listen(arrow, Rml::EventId::Click, [this, arrow, cmd](Rml::Event& event) {
+			if (!disabled() && !arrow->IsClassSet("unavailable")) {
+				handle_nav_command(cmd);
+			}
+			event.StopPropagation();
+		});
+		return arrow;
+	};
+	// Arrow_left and arrow_right
+	mLeftArrowElem  = add_arrow(NavCommand::Left, "&#xe5de;");
+	mValueLabelElem = append(mValueElem, "span");
+	mValueLabelElem->SetClass("value-label", true);
+	mRightArrowElem = add_arrow(NavCommand::Right, "&#xe5df;");
+	update_value_label();
+}
+
+void SelectButton::set_adjustment_enabled(bool left, bool right)
+{
+	mLeftArrowElem->SetClass("unavailable", !left);
+	mRightArrowElem->SetClass("unavailable", !right);
+}
+
+void SelectButton::update_value_label()
+{
+	mValueLabelElem->SetInnerRML(escape(mProps.value));
+}
+
 void SelectButton::set_modified(bool value)
 {
 	if (mProps.modified != value) {
 		mValueElem->SetClass("modified", value);
-		if (value) {
-			mValueElem->SetInnerRML(fmt::format("•&nbsp;{}", escape(mProps.value)));
-		} else {
-			mValueElem->SetInnerRML(escape(mProps.value));
-		}
 		mProps.modified = value;
 	}
 }
@@ -48,12 +81,8 @@ void SelectButton::set_modified(bool value)
 void SelectButton::set_value_label(const Rml::String& value)
 {
 	if (mProps.value != value) {
-		if (mProps.modified) {
-			mValueElem->SetInnerRML(fmt::format("•&nbsp;{}", escape(value)));
-		} else {
-			mValueElem->SetInnerRML(escape(value));
-		}
 		mProps.value = value;
+		update_value_label();
 	}
 }
 
