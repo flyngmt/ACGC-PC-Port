@@ -553,8 +553,15 @@ static void mNtc_set_auto_nwrite_string(lbRTC_year_t year) {
     int len;
     u8 buf[28];
 
+    len = 0;
+#ifdef TARGET_PC
+    if (lbRk_TryHarvestMoonDay(&harvest_moon_date, year)) {
+#else
     lbRk_HarvestMoonDay(&harvest_moon_date, year);
-    len = mNtc_make_auto_nwrite_day_string(buf, harvest_moon_date.month, harvest_moon_date.day);
+    {
+#endif
+        len = mNtc_make_auto_nwrite_day_string(buf, harvest_moon_date.month, harvest_moon_date.day);
+    }
     mHandbill_Set_free_str(2, buf, len);
     autumnal_equi_day = lbRk_AutumnalEquinoxDay(year);
     len = mNtc_make_auto_nwrite_day_string(buf, lbRTC_SEPTEMBER, autumnal_equi_day);

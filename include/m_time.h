@@ -14,7 +14,7 @@ extern "C" {
 
 #define mTM_MIN_YEAR 2001
 #ifdef TARGET_PC
-#define mTM_MAX_YEAR 2100
+#define mTM_MAX_YEAR (GAME_YEAR_MAX - 1)
 #else
 #define mTM_MAX_YEAR 2030
 #endif

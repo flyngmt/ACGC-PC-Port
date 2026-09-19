@@ -11,13 +11,17 @@ extern "C" {
 /* TODO: do these have a better header? */
 #define GAME_YEAR_MIN 2000 /* Minimum year supported by the game */
 #ifdef TARGET_PC
-#define GAME_YEAR_MAX 2100 /* Extended year range for PC port (playable 2001-2099) */
+#define GAME_YEAR_MAX 3000 /* Calendar padding year; playable through 2999. */
 #else
 #define GAME_YEAR_MAX 2032 /* Maximum year supported by the game */
 #endif
 
 #define lbRTC_YEAR_MIN 1901
+#ifdef TARGET_PC
+#define lbRTC_YEAR_MAX (GAME_YEAR_MAX - 1)
+#else
 #define lbRTC_YEAR_MAX 2099
+#endif
 
 typedef struct OSRTCTime { // from lbrtc library in N64
   u8 sec;

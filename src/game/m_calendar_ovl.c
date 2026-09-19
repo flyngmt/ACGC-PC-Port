@@ -71,7 +71,13 @@ static u32 mCD_sp_soncho_chk(lbRTC_year_t year, lbRTC_month_t month, lbRTC_day_t
             }
             break;
         default:
+#ifdef TARGET_PC
+            if (!lbRk_TryHarvestMoonDay(&harvest_moon_day, year)) {
+                break;
+            }
+#else
             lbRk_HarvestMoonDay(&harvest_moon_day, year);
+#endif
             if (month == harvest_moon_day.month && day == harvest_moon_day.day) {
                 chk = (1 << 5) | (1 << 4);
             }
@@ -240,6 +246,12 @@ static void mCD_make_calendar_event_sanka_check(lbRTC_year_t year, lbRTC_month_t
 }
 
 static void mDC_set_event_day_data(mCD_month_entry_c* entry, lbRTC_month_t month, lbRTC_day_t day, u8 event, u8 day_type, u8 p6) {
+#ifdef TARGET_PC
+    /* Algorithmic calendar failures return a zero date. */
+    if (month < lbRTC_JANUARY || month > lbRTC_DECEMBER || day < 1 || day > 31) {
+        return;
+    }
+#endif
     mCD_month_entry_c* month_entry = &entry[month - 1];
     int chg_day = mDC_day_to_day_data(month_entry, day);
     u8* data_p = &month_entry->day_data[chg_day];
@@ -393,7 +405,13 @@ static void mCD_make_calendar_data_unfixed_day_event(mCD_month_entry_c* entry, l
 
     mDC_set_event_day_data(entry, lbRTC_JULY, (lbRTC_day_t)Save_Get(town_day), mSC_EVENT_TOWN_DAY, mCD_DAY_EVENT, 0);
     
+#ifdef TARGET_PC
+    if (!lbRk_TryHarvestMoonDay(&harvest_moon_day, year)) {
+        return;
+    }
+#else
     lbRk_HarvestMoonDay(&harvest_moon_day, year);
+#endif
     mDC_set_event_day_data(entry, harvest_moon_day.month, harvest_moon_day.day, mSC_EVENT_HARVEST_MOON_FESTIVAL, mCD_DAY_EVENT, 0);
 }
 

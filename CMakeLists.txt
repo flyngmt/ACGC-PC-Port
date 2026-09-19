@@ -78,6 +78,7 @@ endif ()
 # Include paths
 # =============================================================================
 include_directories(
+    ${PC_ROOT}/lib/kyureki
     ${DECOMP_ROOT}/include
     ${DECOMP_ROOT}/src
     # Project root needed for includes like "src/actor/npc/event/file.c_inc"
@@ -99,6 +100,19 @@ file(GLOB_RECURSE GAME_CXX_SOURCES CONFIGURE_DEPENDS
 
 # Exclude files that conflict with PC port or are platform-specific
 list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/AUS/.*")  # AUS-specific versions
+
+# The PC calendar uses astronomy instead of the console's finite date tables.
+list(REMOVE_ITEM GAME_C_SOURCES "${DECOMP_ROOT}/src/lb_reki.c")
+set(KYUREKI_SOURCES
+    ${PC_ROOT}/lib/kyureki/kyureki.c
+    ${PC_ROOT}/lib/kyureki/astro_builtin.c
+    ${PC_ROOT}/lib/kyureki/lb_reki_adapter.c
+)
+if (MSVC)
+    set_source_files_properties(${KYUREKI_SOURCES} PROPERTIES COMPILE_OPTIONS /fp:precise)
+else ()
+    set_source_files_properties(${KYUREKI_SOURCES} PROPERTIES COMPILE_OPTIONS -fno-fast-math)
+endif ()
 
 # Exclude PPC-specific runtime/compiler support (Metrowerks CodeWarrior)
 list(FILTER GAME_C_SOURCES EXCLUDE REGEX ".*/TRK_MINNOW_DOLPHIN/.*")
@@ -370,6 +384,7 @@ endif()
 # Build executable
 # =============================================================================
 set(ACGC_APPLICATION_SOURCES
+    ${KYUREKI_SOURCES}
     ${PC_SOURCES}
     ${FIXNES_SOURCES}
     ${GAME_C_SOURCES}
@@ -383,6 +398,10 @@ else ()
     add_executable(acgc ${ACGC_APPLICATION_SOURCES})
 endif ()
 borealis_configure_android_application(acgc)
+
+if (UNIX)
+    target_link_libraries(acgc PRIVATE m)
+endif ()
 
 if (MSVC AND WIN32)
     # app.rc embeds the UTF-8 code-page manifest. Do not also ask link.exe to

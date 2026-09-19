@@ -48,6 +48,8 @@
 #include "dolphin/os.h"
 
 #ifdef TARGET_PC
+#include "kyureki.h"
+
 extern int g_pc_time_override;
 extern int g_pc_min_override;
 extern int g_pc_sec_override;
@@ -568,6 +570,18 @@ extern int lbRTC_IntervalTime(const lbRTC_time_c* time0, const lbRTC_time_c* tim
  * @return Number of days between the two given dates.
  */
 extern int lbRTC_GetIntervalDays(const lbRTC_time_c* t0, const lbRTC_time_c* t1) {
+#ifdef TARGET_PC
+  qk_gregorian date0 = { t0->year, t0->month, t0->day };
+  qk_gregorian date1 = { t1->year, t1->month, t1->day };
+  long day0, day1;
+
+  if (qk_gregorian_to_jdn(&date0, &day0) != QK_OK ||
+      qk_gregorian_to_jdn(&date1, &day1) != QK_OK) {
+    return 0;
+  }
+  /* This API counts civil dates, returning zero for reversed intervals. */
+  return day1 > day0 ? (int)(day1 - day0) : 0;
+#else
   static const int total_days[2][lbRTC_MONTHS_MAX + 1] = {
     // Standard year
     {
@@ -579,10 +593,10 @@ extern int lbRTC_GetIntervalDays(const lbRTC_time_c* t0, const lbRTC_time_c* t1)
     }
   };
 
-  int year_leap_period = (t1->year - t0->year) / 4; /* Total 'leap years' (missing extra not divisible by 100, except when divisible by 400 rule) */
-  int extra_years = (t1->year - t0->year) % 4; /* Non-leap year remainder */
-  int less_leap = (t0->year % 4) == 0; /* Is the lesser year a leap year? */
-  int over_leap = (t1->year % 4) == 0; /* Is the greater year a leap year? */
+  int year_leap_period = (t1->year - t0->year) / 4;
+  int extra_years = (t1->year - t0->year) % 4;
+  int less_leap = (t0->year % 4) == 0;
+  int over_leap = (t1->year % 4) == 0;
   int leap_add = ((4 - (t0->year % 4)) % 4) < extra_years; /* Add leap day when leap day occurs during 'extra years' */
 
   int days;
@@ -619,10 +633,6 @@ extern int lbRTC_GetIntervalDays(const lbRTC_time_c* t0, const lbRTC_time_c* t1)
     }
   }
 
-  /***
-   * Every four years (incorrect) has 365 * 3 + 366 * 1 days (1461).
-   * The remaining years will be 365 * years, plus 1 if leap year occurs in range.
-   ***/
   days = year_leap_period * 1461 + extra_years * 365 + leap_add;
 
   /* Add up through t1 day */
@@ -634,6 +644,7 @@ extern int lbRTC_GetIntervalDays(const lbRTC_time_c* t0, const lbRTC_time_c* t1)
   days -= total_days[less_leap][t0->month - 1];
 
   return days;
+#endif
 }
 
 /**
@@ -1018,14 +1029,6 @@ extern void lbRTC_TimeCopy(lbRTC_time_c* dst, const lbRTC_time_c* src) {
  * @return Non-zero (TRUE) if the time is valid, zero (FALSE) otherwise.
  */
 extern int lbRTC_IsValidTime(const lbRTC_time_c* time) {
-  static const u8 day_tbl[] = {
-    00,
-    31, 28, 31, 30, 31, 30,
-    31, 31, 30, 31, 30, 31
-  };
-
-  int res;
-
   if (
     (time->year < lbRTC_YEAR_MIN ||  time->year > lbRTC_YEAR_MAX) ||
     (time->month == lbRTC_MONTHS_BEGIN || time->month > lbRTC_MONTHS_MAX) ||
@@ -1034,21 +1037,10 @@ extern int lbRTC_IsValidTime(const lbRTC_time_c* time) {
     (time->min > 59) ||
     (time->sec > 59)
   ) {
-    res = FALSE;
-  }
-  else {
-    if (time->day == 29 && time->month == 2) {
-      res = lbRTC_IS_LEAPYEAR(time->year);
-    }
-    else if (time->day > day_tbl[time->month]) {
-      res = FALSE;
-    }
-    else {
-      res = TRUE;
-    }
+    return FALSE;
   }
 
-  return res;
+  return time->day <= lbRTC_GetDaysByMonth(time->year, time->month);
 }
 
 /**

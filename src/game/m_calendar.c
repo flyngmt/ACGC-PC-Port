@@ -100,7 +100,13 @@ static void mCD_calendar_clear_day(mCD_player_calendar_c* calendar, lbRTC_year_t
             case lbRTC_SEPTEMBER: {
                 lbRTC_ymd_c harvest_moon_day;
 
+#ifdef TARGET_PC
+                if (!lbRk_TryHarvestMoonDay(&harvest_moon_day, year)) {
+                    break;
+                }
+#else
                 lbRk_HarvestMoonDay(&harvest_moon_day, year);
+#endif
 
                 if (month == harvest_moon_day.month && day < harvest_moon_day.day) {
                     calendar->event_flags &= ~mCD_FLAG_HARVEST_MOON_9;
@@ -112,7 +118,13 @@ static void mCD_calendar_clear_day(mCD_player_calendar_c* calendar, lbRTC_year_t
             case lbRTC_OCTOBER: {
                 lbRTC_ymd_c harvest_moon_day;
 
+#ifdef TARGET_PC
+                if (!lbRk_TryHarvestMoonDay(&harvest_moon_day, year)) {
+                    break;
+                }
+#else
                 lbRk_HarvestMoonDay(&harvest_moon_day, year);
+#endif
 
                 if (month == harvest_moon_day.month && day < harvest_moon_day.day) {
                     calendar->event_flags &= ~mCD_FLAG_HARVEST_MOON_10;

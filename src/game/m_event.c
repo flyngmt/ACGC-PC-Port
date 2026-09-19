@@ -1450,7 +1450,15 @@ static void update_event_rumor(mEv_schedule_c* sched) {
             lbRTC_day_t end_day;
             lbRTC_month_t end_month;
 
+#ifdef TARGET_PC
+            if (!lbRk_TryHarvestMoonDay(&harvest_moon_ymd, rtc_time->year)) {
+                sched->date[0].raw = 0;
+                sched->date[1].raw = 0;
+                return;
+            }
+#else
             lbRk_HarvestMoonDay(&harvest_moon_ymd, rtc_time->year);
+#endif
             harvest_moon_day.year = harvest_moon_ymd.year;
             harvest_moon_day.month = harvest_moon_ymd.month;
             harvest_moon_day.day = harvest_moon_ymd.day;
@@ -1655,7 +1663,13 @@ static u32 decode_date(u32 d) {
     } else if ((month & mEv_SCHEDULE_HARVEST_MOON_DATE)) {
         lbRTC_ymd_c harvest_moon_ymd;
 
+#ifdef TARGET_PC
+        if (!lbRk_TryHarvestMoonDay(&harvest_moon_ymd, rtc_time->year)) {
+            return 0;
+        }
+#else
         lbRk_HarvestMoonDay(&harvest_moon_ymd, rtc_time->year);
+#endif
         date.d.month = harvest_moon_ymd.month;
         date.d.day = harvest_moon_ymd.day;
     }

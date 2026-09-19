@@ -417,7 +417,7 @@ static void mTI_set_character(Submenu* submenu, GAME* game, f32 x, f32 y) {
     { 196.0f, 141.0f }  // mTI_IDX_YEAR
   };
 
-  u8 str[2];
+  u8 str[4];
   int* col;
   mTI_Ovl_c* timeIn_ovl = submenu->overlay->timeIn_ovl;
   f32* set_pos_p = &set_pos[0][0];
@@ -438,6 +438,16 @@ static void mTI_set_character(Submenu* submenu, GAME* game, f32 x, f32 y) {
   /* Draw all numeric values */
   for (i = 0; i < mTI_IDX_NUM; set_pos_p += 2, i++) {
     if (i != mTI_IDX_MONTH) {
+      int digits = 2;
+      int value = timeIn_ovl->values[i];
+      f32 text_x = set_pos_p[0];
+#ifdef TARGET_PC
+      if (i == mTI_IDX_YEAR) {
+        value += GAME_YEAR_MIN;
+        digits = 4;
+        text_x -= 12.0f;
+      }
+#endif
       if (i == timeIn_ovl->sel_idx) {
         col = mTI_col_type0;
       }
@@ -445,11 +455,11 @@ static void mTI_set_character(Submenu* submenu, GAME* game, f32 x, f32 y) {
         col = mTI_col_type1;
       }
 
-      mFont_UnintToString(str, 2, timeIn_ovl->values[i], 2, FALSE, TRUE, TRUE);
+      mFont_UnintToString(str, digits, value, digits, FALSE, TRUE, FALSE);
       mFont_SetLineStrings(
         game,
-        str, 2,
-        x + set_pos_p[0], -y + set_pos_p[1],
+        str, digits,
+        x + text_x, -y + set_pos_p[1],
         col[0], col[1], col[2], 255,
         FALSE,
         TRUE,
@@ -535,7 +545,7 @@ static void mTI_timeIn_ovl_init(Submenu* submenu) {
     timeIn_ovl->original_time.year = GAME_YEAR_MIN + mTI_MIN_YEAR;
   }
   else {
-    timeIn_ovl->values[mTI_IDX_YEAR] = timeIn_ovl->original_time.year % 100;
+    timeIn_ovl->values[mTI_IDX_YEAR] = timeIn_ovl->original_time.year - GAME_YEAR_MIN;
   }
 
   timeIn_ovl->values[mTI_IDX_MONTH] = timeIn_ovl->original_time.month;
