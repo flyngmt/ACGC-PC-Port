@@ -1,6 +1,6 @@
 static int mMsg_Check_CancelOrder(mMsg_Window_c* msg_p) {
   if (msg_p->cancelable_flag != FALSE && msg_p->cancel_flag == FALSE && (msg_p->status_flags & mMsg_STATUS_FLAG_CURSOL_JUST) == 0) {
-    if (chkTrigger(BUTTON_A) || chkTrigger(BUTTON_B)) {
+    if (mMsg_get_trigger() & (BUTTON_A | BUTTON_B)) {
       return TRUE;
     }
   }
@@ -1108,12 +1108,17 @@ static int mMsg_Main_Cursol_ControlCursol(mMsg_Window_c* msg_p) {
 #ifdef PC_ENHANCEMENTS
   /* B latches fast text for the rest of the message; L/R or DPAD also speed it up */
   if ((msg_p->status_flags & mMsg_STATUS_FLAG_CURSOL_JUST) == 0 &&
-      (chkTrigger(BUTTON_B) || chkButton(BUTTON_L) || chkButton(BUTTON_R) || chkButton(BUTTON_DDOWN) || chkButton(BUTTON_DUP) || chkButton(BUTTON_DLEFT) || chkButton(BUTTON_DRIGHT))) {
+      ((mMsg_get_trigger() & BUTTON_B) || chkButton(BUTTON_L) || chkButton(BUTTON_R) ||
+       chkButton(BUTTON_DDOWN) || chkButton(BUTTON_DUP) || chkButton(BUTTON_DLEFT) || chkButton(BUTTON_DRIGHT))) {
     msg_p->status_flags |= mMsg_STATUS_FLAG_FAST_TEXT;
   }
 #else
   if ((msg_p->status_flags & mMsg_STATUS_FLAG_CURSOL_JUST) == 0) {
-    if (chkButton(BUTTON_B)) {
+    int fast_text = chkButton(BUTTON_B);
+#ifdef MOUSE_INPUT
+    fast_text = fast_text || (!mEv_IsTitleDemo() && (pc_mouse_button_held() & PC_MOUSE_BUTTON_RIGHT));
+#endif
+    if (fast_text) {
       msg_p->status_flags |= mMsg_STATUS_FLAG_FAST_TEXT;
     }
     else {
