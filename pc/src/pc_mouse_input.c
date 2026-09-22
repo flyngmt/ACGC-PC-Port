@@ -6,6 +6,7 @@
 
 #ifdef MOUSE_INPUT
 #include "pc_platform.h"
+#include "aurora_debug.h"
 #include "aurora_mouse_cursor.h"
 
 #include <SDL3/SDL_events.h>
@@ -31,6 +32,7 @@ static int g_mouse_active_this_frame = 0;
 static Uint64 g_mouse_pointer_last_activity = 0;
 static int g_mouse_pointer_active = 0;
 static int g_mouse_keyboard_activity = 0;
+static int g_mouse_system_cursor_hidden = 0;
 
 extern int g_pc_paused;
 
@@ -67,6 +69,17 @@ int pc_mouse_pointer_visible(void) {
            SDL_GetTicks() - g_mouse_pointer_last_activity < 5000;
 }
 
+void pc_mouse_sync_system_cursor(void) {
+    const int hide = pc_mouse_window_active() && !g_pc_paused &&
+        !(g_mouse_block_reasons & (PC_MOUSE_BLOCK_HOST_UI | PC_MOUSE_BLOCK_PAUSED));
+    ac_debug_imgui_set_game_cursor(hide);
+    if (hide != g_mouse_system_cursor_hidden) {
+        if (hide) SDL_HideCursor();
+        else SDL_ShowCursor();
+        g_mouse_system_cursor_hidden = hide;
+    }
+}
+
 void pc_mouse_cancel(void) {
     g_mouse_buttons_current = 0;
     if (g_mouse_window != NULL) {
@@ -93,6 +106,7 @@ void pc_mouse_set_blocked(u32 reason, int blocked) {
     if (reasons != g_mouse_block_reasons) {
         g_mouse_block_reasons = reasons;
         pc_mouse_cancel();
+        pc_mouse_sync_system_cursor();
     }
 }
 
@@ -154,6 +168,11 @@ void pc_mouse_initialize(SDL_Window* window) {
 }
 
 void pc_mouse_shutdown(void) {
+    ac_debug_imgui_set_game_cursor(0);
+    if (g_mouse_system_cursor_hidden) {
+        SDL_ShowCursor();
+        g_mouse_system_cursor_hidden = 0;
+    }
     pc_mouse_lock(0);
     g_mouse_window = NULL;
     g_mouse_x = g_mouse_y = 0;
@@ -185,6 +204,7 @@ void pc_mouse_handle_event(const SDL_Event* event) {
         case SDL_EVENT_WILL_ENTER_FOREGROUND:
         case SDL_EVENT_DID_ENTER_FOREGROUND:
             pc_mouse_cancel();
+            pc_mouse_sync_system_cursor();
             return;
         default:
             break;
@@ -209,6 +229,7 @@ void pc_mouse_handle_event(const SDL_Event* event) {
         case SDL_EVENT_WINDOW_MOUSE_ENTER:
         case SDL_EVENT_WINDOW_MOUSE_LEAVE:
             pc_mouse_cancel();
+            pc_mouse_sync_system_cursor();
             return;
         default:
             break;

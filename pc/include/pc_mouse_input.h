@@ -47,6 +47,7 @@ int pc_mouse_active(void);
 int pc_mouse_update_owner(int mouse_active, int controller_active);
 void pc_mouse_hide_pointer(void);
 int pc_mouse_pointer_visible(void);
+void pc_mouse_sync_system_cursor(void);
 /* Returns viewport containment in menu coordinates, including widescreen margins. */
 int pc_mouse_get_ui_position(f32* x, f32* y);
 void pc_mouse_get_native_position(s32 *x, s32 *y);
@@ -75,6 +76,7 @@ static inline int pc_mouse_moved(void) { return 0; }
 static inline int pc_mouse_active(void) { return 0; }
 static inline void pc_mouse_hide_pointer(void) {}
 static inline int pc_mouse_pointer_visible(void) { return 0; }
+static inline void pc_mouse_sync_system_cursor(void) {}
 static inline int pc_mouse_update_owner(int mouse_active, int controller_active) {
     (void)mouse_active;
     (void)controller_active;

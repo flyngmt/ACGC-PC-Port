@@ -157,6 +157,7 @@ bool ac_aurora_begin_frame() {
     }
 
     update_render_size();
+    pc_mouse_sync_system_cursor();
     s_frame_started = aurora_begin_frame();
     pc_mouse_set_blocked(PC_MOUSE_BLOCK_IMGUI, ac_debug_imgui_wants_mouse());
     pc_mouse_set_blocked(PC_MOUSE_BLOCK_PAUSED, !s_frame_started || aurora_get_timescale() == 0.0f);
@@ -171,6 +172,7 @@ void ac_aurora_end_frame() {
     if (s_frame_started) {
         acgc::ui::update();
         ac_debug_imgui_draw();
+        pc_mouse_sync_system_cursor();
         aurora_end_frame();
         pc_emu64_tlut_frame_drained();
         s_frame_started = false;
