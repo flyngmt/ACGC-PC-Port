@@ -12,20 +12,37 @@
 #include <SDL3/SDL_video.h>
 
 static SDL_Window* g_mouse_window = NULL;
-static s32 g_mouse_x = 0, g_mouse_y = 0;
+static f32 g_mouse_x = 0, g_mouse_y = 0;
 static s32 g_mouse_dx = 0, g_mouse_dy = 0;
 static s32 g_mouse_locked = 0;
-static s32 g_prev_mouse_x = 0, g_prev_mouse_y = 0;
 static s32 g_mouse_moved = 0;
 static u32 g_mouse_buttons_current = 0;
-static u32 g_mouse_buttons_previous = 0;
+static u32 g_mouse_buttons_pressed = 0;
+static u32 g_mouse_buttons_released = 0;
 static int g_mouse_active_this_frame = 0;
 
 static s32 g_mouse_wheel_delta = 0;
+static s32 g_pending_mouse_wheel_delta = 0;
+static u32 g_pending_mouse_pressed = 0;
+static u32 g_pending_mouse_released = 0;
+
+static u32 pc_mouse_buttons_from_sdl(SDL_MouseButtonFlags buttons) {
+    u32 result = 0;
+    if (buttons & SDL_BUTTON_LMASK)  result |= PC_MOUSE_BUTTON_LEFT;
+    if (buttons & SDL_BUTTON_MMASK)  result |= PC_MOUSE_BUTTON_MIDDLE;
+    if (buttons & SDL_BUTTON_RMASK)  result |= PC_MOUSE_BUTTON_RIGHT;
+    if (buttons & SDL_BUTTON_X1MASK) result |= PC_MOUSE_BUTTON_X1;
+    if (buttons & SDL_BUTTON_X2MASK) result |= PC_MOUSE_BUTTON_X2;
+    return result;
+}
 
 void pc_mouse_initialize(SDL_Window* window) {
     pc_mouse_shutdown();
     g_mouse_window = window;
+    if (g_mouse_window != NULL) {
+        g_mouse_buttons_current = pc_mouse_buttons_from_sdl(SDL_GetMouseState(&g_mouse_x, &g_mouse_y));
+        SDL_GetRelativeMouseState(NULL, NULL);
+    }
 }
 
 void pc_mouse_shutdown(void) {
@@ -33,11 +50,12 @@ void pc_mouse_shutdown(void) {
     g_mouse_window = NULL;
     g_mouse_x = g_mouse_y = 0;
     g_mouse_dx = g_mouse_dy = 0;
-    g_prev_mouse_x = g_prev_mouse_y = 0;
     g_mouse_locked = g_mouse_moved = 0;
-    g_mouse_buttons_current = g_mouse_buttons_previous = 0;
+    g_mouse_buttons_current = g_mouse_buttons_pressed = g_mouse_buttons_released = 0;
     g_mouse_active_this_frame = 0;
     g_mouse_wheel_delta = 0;
+    g_pending_mouse_wheel_delta = 0;
+    g_pending_mouse_pressed = g_pending_mouse_released = 0;
 }
 
 void pc_mouse_handle_event(const SDL_Event* event) {
@@ -49,7 +67,16 @@ void pc_mouse_handle_event(const SDL_Event* event) {
         if (event->wheel.direction == SDL_MOUSEWHEEL_FLIPPED) {
             delta = -delta;
         }
-        g_mouse_wheel_delta += delta;
+        g_pending_mouse_wheel_delta += delta;
+    } else if ((event->type == SDL_EVENT_MOUSE_BUTTON_DOWN || event->type == SDL_EVENT_MOUSE_BUTTON_UP) &&
+               event->button.windowID == SDL_GetWindowID(g_mouse_window) &&
+               event->button.button >= SDL_BUTTON_LEFT && event->button.button <= SDL_BUTTON_X2) {
+        const u32 button = pc_mouse_buttons_from_sdl(SDL_BUTTON_MASK(event->button.button));
+        if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+            g_pending_mouse_pressed |= button;
+        } else {
+            g_pending_mouse_released |= button;
+        }
     }
 }
 
@@ -58,11 +85,11 @@ u32 pc_mouse_button_held(void) {
 }
 
 u32 pc_mouse_button_pressed(void) {
-    return (g_mouse_buttons_current & ~g_mouse_buttons_previous);
+    return g_mouse_buttons_pressed;
 }
 
 u32 pc_mouse_button_released(void) {
-    return (~g_mouse_buttons_current & g_mouse_buttons_previous);
+    return g_mouse_buttons_released;
 }
 
 void pc_mouse_lock(s32 lock) {
@@ -76,14 +103,12 @@ int pc_mouse_is_locked(void) {
 }
 
 s32 pc_mouse_scroll_wheel(void) {
-    s32 wheel = g_mouse_wheel_delta;
-    if (g_mouse_wheel_delta) g_mouse_wheel_delta = 0;
-    return wheel;
+    return g_mouse_wheel_delta;
 }
 
 void pc_mouse_get_position(s32 *x, s32 *y) {
-    if (x) *x = g_mouse_x;
-    if (y) *y = g_mouse_y;
+    if (x) *x = (s32)g_mouse_x;
+    if (y) *y = (s32)g_mouse_y;
 }
 
 void pc_mouse_get_delta(s32 *dx, s32 *dy) {
@@ -135,35 +160,24 @@ void pc_mouse_update(void) {
     if (g_mouse_window == NULL) {
         return;
     }
-    g_mouse_buttons_previous = g_mouse_buttons_current;
+    const u32 previous_buttons = g_mouse_buttons_current;
+    const u32 wheel_buttons = PC_MOUSE_WHEEL_UP | PC_MOUSE_WHEEL_DOWN;
 
-    float sdl_x, sdl_y;
-    SDL_MouseButtonFlags sdl_buttons = SDL_GetMouseState(&sdl_x, &sdl_y);
-    s32 mx = (s32)sdl_x;
-    s32 my = (s32)sdl_y;
-    g_mouse_buttons_current = 0;
+    float mx, my;
+    g_mouse_buttons_current = pc_mouse_buttons_from_sdl(SDL_GetMouseState(&mx, &my));
 
-    /* Convert each SDL button to our bitflag system */
-    if (sdl_buttons & SDL_BUTTON_LMASK)  g_mouse_buttons_current |= PC_MOUSE_BUTTON_LEFT;
-    if (sdl_buttons & SDL_BUTTON_MMASK)  g_mouse_buttons_current |= PC_MOUSE_BUTTON_MIDDLE;
-    if (sdl_buttons & SDL_BUTTON_RMASK)  g_mouse_buttons_current |= PC_MOUSE_BUTTON_RIGHT;
-    if (sdl_buttons & SDL_BUTTON_X1MASK) g_mouse_buttons_current |= PC_MOUSE_BUTTON_X1;
-    if (sdl_buttons & SDL_BUTTON_X2MASK) g_mouse_buttons_current |= PC_MOUSE_BUTTON_X2;
-
-    int wheel_active = 0;
+    g_mouse_wheel_delta = g_pending_mouse_wheel_delta;
+    g_pending_mouse_wheel_delta = 0;
     if (g_mouse_wheel_delta > 0) {
         g_mouse_buttons_current |= PC_MOUSE_WHEEL_UP;
-        wheel_active = 1;
     } else if (g_mouse_wheel_delta < 0) {
         g_mouse_buttons_current |= PC_MOUSE_WHEEL_DOWN;
-        wheel_active = 1;
     }
 
-    g_mouse_moved = (mx != g_prev_mouse_x || my != g_prev_mouse_y);
-
-    g_mouse_active_this_frame = (g_mouse_moved || 
-                                 (g_mouse_buttons_current & ~(PC_MOUSE_WHEEL_UP | PC_MOUSE_WHEEL_DOWN)) ||
-                                 wheel_active);
+    g_mouse_buttons_pressed = g_pending_mouse_pressed | (g_mouse_buttons_current & ~previous_buttons) |
+                              (g_mouse_buttons_current & wheel_buttons);
+    g_mouse_buttons_released = g_pending_mouse_released | (previous_buttons & ~g_mouse_buttons_current);
+    g_pending_mouse_pressed = g_pending_mouse_released = 0;
     
     float mdx = 0, mdy = 0;
     SDL_GetRelativeMouseState(&mdx, &mdy);
@@ -171,15 +185,19 @@ void pc_mouse_update(void) {
     if (g_mouse_locked) {
         g_mouse_dx = (s32)mdx;
         g_mouse_dy = (s32)mdy;
+        g_mouse_moved = (mdx != 0.0f || mdy != 0.0f);
     } else {
-        g_mouse_dx = mx - g_mouse_x;
-        g_mouse_dy = my - g_mouse_y;
+        g_mouse_dx = (s32)(mx - g_mouse_x);
+        g_mouse_dy = (s32)(my - g_mouse_y);
+        g_mouse_moved = (mx != g_mouse_x || my != g_mouse_y);
     }
 
-    g_prev_mouse_x = g_mouse_x;
-    g_prev_mouse_y = g_mouse_y;
     g_mouse_x = mx;
     g_mouse_y = my;
+
+    g_mouse_active_this_frame = g_mouse_moved ||
+        ((g_mouse_buttons_current | g_mouse_buttons_pressed | g_mouse_buttons_released) & ~wheel_buttons) ||
+        g_mouse_wheel_delta != 0;
 }
 
 #endif /* MOUSE_INPUT */
