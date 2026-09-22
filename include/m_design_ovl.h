@@ -101,6 +101,16 @@ struct design_ovl_s {
     f32 stick_full_accum;
     f32 palette_repeat_accum;
 #endif
+#ifdef MOUSE_INPUT
+    int mouse_active;
+    int centered_x;
+    int centered_y;
+    int mouse_tool_active;
+    int mouse_tool_x;
+    int mouse_tool_y;
+    int prev_cursor_x;
+    int prev_cursor_y;
+#endif
 };
 
 extern void mDE_maskcat_init(MaskCat_c* mask_cat);

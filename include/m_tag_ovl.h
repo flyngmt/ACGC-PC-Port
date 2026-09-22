@@ -290,6 +290,16 @@ struct tag_ovl_s {
     /* 0x378 */ mTG_cporiginal_mark_entry_c original_entries[mTG_ORG_TYPE_NUM];
     /* 0x390 */ mTG_mark_original_c original_mark;
     f32 item_name_wait_accum;
+#ifdef MOUSE_INPUT
+    /* 0x??? */ u8 mouse_active;
+    /* 0x??? */ s32 mouse_x;
+    /* 0x??? */ s32 mouse_y;
+    /* 0x??? */ int hovered_table;
+    /* 0x??? */ int hovered_idx;
+    /* 0x??? */ int hovered_col;
+    /* 0x??? */ int hovered_row;
+    /* 0x??? */ int hovered_option;
+#endif
 };
 
 extern int mTG_mark_main(Submenu*, mSM_MenuInfo_c*, int, int*);
