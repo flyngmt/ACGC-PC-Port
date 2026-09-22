@@ -8,6 +8,7 @@
 #include "m_cporiginal_ovl.h"
 #include "m_gba_ovl.h"
 #include "m_inventory_ovl.h"
+#include "m_lib.h"
 #include "m_player_lib.h"
 #include "m_needlework_ovl.h"
 #include "sys_matrix.h"
@@ -167,38 +168,33 @@ static void mHD_update_logical_position(Submenu* submenu) {
 
 static void mHD_update_visual_position(Submenu* submenu) {
     mHD_Ovl_c* hand_ovl = submenu->overlay->hand_ovl;
-    mTG_Ovl_c* tag_ovl = submenu->overlay->tag_ovl;
+    f32 target_x = hand_ovl->info.pos[0];
+    f32 target_y = hand_ovl->info.pos[1];
 
 #ifdef MOUSE_INPUT
+    mTG_Ovl_c* tag_ovl = submenu->overlay->tag_ovl;
+
     if (tag_ovl->mouse_active) {
-        f32 target_x = (tag_ovl->mouse_x - 160.0f);
-        f32 target_y = (120.0f - tag_ovl->mouse_y);
-        
-        f32 dX = target_x - hand_ovl->info.visual_pos[0];
-        f32 dY = target_y - hand_ovl->info.visual_pos[1];
-        
-        if (fabsf(dX) > 0.1f || fabsf(dY) > 0.1f) {
-            f32 speed = 0.3f;
-            hand_ovl->info.visual_pos[0] += dX * speed;
-            hand_ovl->info.visual_pos[1] += dY * speed;
-        } else {
-            hand_ovl->info.visual_pos[0] = target_x;
-            hand_ovl->info.visual_pos[1] = target_y;
-        }
-    } else
+        hand_ovl->info.visual_pos[0] = tag_ovl->mouse_x - 160.0f;
+        hand_ovl->info.visual_pos[1] = 120.0f - tag_ovl->mouse_y;
+        return;
+    }
 #endif
-    {
-        f32 dX = hand_ovl->info.pos[0] - hand_ovl->info.visual_pos[0];
-        f32 dY = hand_ovl->info.pos[1] - hand_ovl->info.visual_pos[1];
-        
-        if (fabsf(dX) > 0.1f || fabsf(dY) > 0.1f) {
-            f32 speed = 0.3f;
-            hand_ovl->info.visual_pos[0] += dX * speed;
-            hand_ovl->info.visual_pos[1] += dY * speed;
-        } else {
-            hand_ovl->info.visual_pos[0] = hand_ovl->info.pos[0];
-            hand_ovl->info.visual_pos[1] = hand_ovl->info.pos[1];
-        }
+
+    f32 speed = 1.0f - DTCONV_GRAPH(0.7f, gamePT->graph);
+    if (speed <= 0.0f) {
+        return;
+    }
+
+    f32 dX = target_x - hand_ovl->info.visual_pos[0];
+    f32 dY = target_y - hand_ovl->info.visual_pos[1];
+
+    if (fabsf(dX) > 0.1f || fabsf(dY) > 0.1f) {
+        hand_ovl->info.visual_pos[0] += dX * speed;
+        hand_ovl->info.visual_pos[1] += dY * speed;
+    } else {
+        hand_ovl->info.visual_pos[0] = target_x;
+        hand_ovl->info.visual_pos[1] = target_y;
     }
 }
 

@@ -2545,10 +2545,9 @@ void mDE_move_Play(Submenu* submenu, mSM_MenuInfo_c* info) {
         design_ovl->move_pR = gamePT->mcon.move_pR;
         mDE_judge_stick_nuetral(design_ovl);
         u32 mouse_held = pc_mouse_button_held();
-        int holding_mouse = (
-            (((mouse_held >> 0) & 1 || (mouse_held >> 2) & 1) && design_ovl->mode == mDE_MODE_MAIN) || // Holding left/right click while drawing
-            ((design_ovl->_69A && design_ovl->_699 != 9) && design_ovl->mode == mDE_MAIN_MODE_WAKU) // Waku active selection
-        );
+        int holding_mouse = design_ovl->mode == mDE_MODE_MAIN &&
+            ((mouse_held & (PC_MOUSE_BUTTON_LEFT | PC_MOUSE_BUTTON_RIGHT)) ||
+             (design_ovl->main_mode_act == mDE_MAIN_MODE_WAKU && design_ovl->_69A && design_ovl->_699 != 9));
 
         int new_mode = -1;
         // Check each mode area (prioritize smaller areas first - tool and grid)

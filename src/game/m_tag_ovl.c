@@ -8424,6 +8424,7 @@ static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
                 submenu->overlay->menu_control.trigger = BUTTON_A;
                 mTG_move_decide(submenu, menu_info, tag);
                 submenu->overlay->menu_control.trigger = old_trigger;
+                return;
             }
         }
 
@@ -8443,6 +8444,7 @@ static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
                 mTG_label_table[submenu_tag->type].words[tag_ovl->hovered_option]->move_proc(submenu, menu_info);
 
                 submenu->overlay->menu_control.trigger = old_trigger;
+                return;
             }
         }
 
@@ -8467,17 +8469,22 @@ static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 
 static void mTG_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     mTG_Ovl_c* tag_ovl = submenu->overlay->tag_ovl;
-    mTG_tag_c* tag = &tag_ovl->tags[tag_ovl->sel_tag_idx];
-    mHD_Ovl_c* hand_ovl = submenu->overlay->hand_ovl;
-    mIV_Ovl_c* inv_ovl = submenu->overlay->inventory_ovl;
-
-#ifdef MOUSE_INPUT
-    mTG_mouse_move_func(submenu, menu_info);
-#endif
 
     if (tag_ovl->sel_tag_idx < 0 || tag_ovl->sel_tag_idx >= mTG_TAG_NUM) {
         return;
     }
+
+#ifdef MOUSE_INPUT
+    mTG_mouse_move_func(submenu, menu_info);
+
+    if (tag_ovl->sel_tag_idx < 0 || tag_ovl->sel_tag_idx >= mTG_TAG_NUM) {
+        return;
+    }
+#endif
+
+    mTG_tag_c* tag = &tag_ovl->tags[tag_ovl->sel_tag_idx];
+    mHD_Ovl_c* hand_ovl = submenu->overlay->hand_ovl;
+    mIV_Ovl_c* inv_ovl = submenu->overlay->inventory_ovl;
 
     if (hand_ovl->info.wait_timer > 0 && inv_ovl != NULL) {
         static f32 wait_accum = 0.0f;
