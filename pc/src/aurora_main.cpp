@@ -93,13 +93,15 @@ bool ac_aurora_begin_frame() {
     pc_emu64_frame_cull_visible = 0;
     pc_emu64_frame_cull_rejected = 0;
 
+    pc_mouse_set_blocked(PC_MOUSE_BLOCK_HOST_UI, acgc::ui::any_document_visible());
+    pc_mouse_set_blocked(PC_MOUSE_BLOCK_IMGUI, ac_debug_imgui_wants_mouse());
     const AuroraEvent* event = aurora_update();
+    pc_mouse_set_blocked(PC_MOUSE_BLOCK_HOST_UI, acgc::ui::any_document_visible());
     update_render_size();
     while (event != nullptr && event->type != AURORA_NONE) {
         if (event->type == AURORA_EXIT) {
             g_pc_running = 0;
         } else if (event->type == AURORA_SDL_EVENT) {
-            pc_mouse_handle_event(&event->sdl);
             if (!acgc::ui::any_document_visible()) {
                 pc_typing_handle_event(&event->sdl);
             }
@@ -113,6 +115,9 @@ bool ac_aurora_begin_frame() {
             if (acgc::ui::any_document_visible()) {
                 pc_typing_cancel();
             }
+            pc_mouse_handle_event(&event->sdl);
+        } else if (event->type == AURORA_PAUSED || event->type == AURORA_UNPAUSED) {
+            pc_mouse_cancel();
         } else if (event->type == AURORA_CONTROLLER_ADDED) {
             acgc::apply_runtime_settings(false);
         }
@@ -124,8 +129,10 @@ bool ac_aurora_begin_frame() {
     }
 
     update_render_size();
-    pc_mouse_update();
     s_frame_started = aurora_begin_frame();
+    pc_mouse_set_blocked(PC_MOUSE_BLOCK_IMGUI, ac_debug_imgui_wants_mouse());
+    pc_mouse_set_blocked(PC_MOUSE_BLOCK_PAUSED, !s_frame_started || aurora_get_timescale() == 0.0f);
+    pc_mouse_update();
     return s_frame_started;
 }
 

@@ -1,4 +1,5 @@
 #include "acgc/game_input_block.hpp"
+#include "pc_mouse.h"
 
 #include <dolphin/pad.h>
 
@@ -16,6 +17,9 @@ bool sBlocked = false;
 
 void set_input_blocked(InputBlockReason reason, bool blocked) noexcept
 {
+	if (reason == InputBlockReason::HostUi) {
+		pc_mouse_set_blocked(PC_MOUSE_BLOCK_HOST_UI, blocked);
+	}
 	const ReasonMask bit = static_cast<ReasonMask>(reason);
 	if (blocked) {
 		sReasons |= bit;

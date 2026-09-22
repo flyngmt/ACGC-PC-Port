@@ -19,11 +19,19 @@ typedef union SDL_Event SDL_Event;
 #define PC_MOUSE_WHEEL_UP       (1 << 5)
 #define PC_MOUSE_WHEEL_DOWN     (1 << 6)
 
+enum PCMouseBlockReason {
+    PC_MOUSE_BLOCK_HOST_UI = 1 << 0,
+    PC_MOUSE_BLOCK_IMGUI = 1 << 1,
+    PC_MOUSE_BLOCK_PAUSED = 1 << 2,
+};
+
 #ifdef MOUSE_INPUT
 
 void pc_mouse_initialize(SDL_Window* window);
 void pc_mouse_shutdown(void);
 void pc_mouse_handle_event(const SDL_Event* event);
+void pc_mouse_set_blocked(u32 reason, int blocked);
+void pc_mouse_cancel(void);
 
 u32 pc_mouse_button_held(void);
 u32 pc_mouse_button_pressed(void);
@@ -35,7 +43,7 @@ void pc_mouse_get_position(s32 *x, s32 *y);
 void pc_mouse_get_delta(s32 *dx, s32 *dy);
 int pc_mouse_moved(void);
 int pc_mouse_active(void);
-/* Returns whether the pointer is inside the 320x240 menu area. */
+/* Returns viewport containment in menu coordinates, including widescreen margins. */
 int pc_mouse_get_ui_position(f32* x, f32* y);
 void pc_mouse_get_native_position(s32 *x, s32 *y);
 void pc_mouse_update(void);
@@ -45,6 +53,8 @@ void pc_mouse_update(void);
 static inline void pc_mouse_initialize(SDL_Window* window) { (void)window; }
 static inline void pc_mouse_shutdown(void) {}
 static inline void pc_mouse_handle_event(const SDL_Event* event) { (void)event; }
+static inline void pc_mouse_set_blocked(u32 reason, int blocked) { (void)reason; (void)blocked; }
+static inline void pc_mouse_cancel(void) {}
 static inline u32 pc_mouse_button_held(void) { return 0; }
 static inline u32 pc_mouse_button_pressed(void) { return 0; }
 static inline u32 pc_mouse_button_released(void) { return 0; }

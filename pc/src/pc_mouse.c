@@ -16,6 +16,8 @@ static f32 g_mouse_x = 0, g_mouse_y = 0;
 static f32 g_mouse_ui_x = -1, g_mouse_ui_y = -1;
 static int g_mouse_inside_viewport = 0;
 static u32 g_mouse_suppressed_buttons = 0;
+static u32 g_mouse_block_reasons = 0;
+static int g_mouse_discard_frame = 0;
 static s32 g_mouse_dx = 0, g_mouse_dy = 0;
 static s32 g_mouse_locked = 0;
 static s32 g_mouse_moved = 0;
@@ -37,6 +39,42 @@ static u32 pc_mouse_buttons_from_sdl(SDL_MouseButtonFlags buttons) {
     if (buttons & SDL_BUTTON_X1MASK) result |= PC_MOUSE_BUTTON_X1;
     if (buttons & SDL_BUTTON_X2MASK) result |= PC_MOUSE_BUTTON_X2;
     return result;
+}
+
+static int pc_mouse_window_active(void) {
+    if (g_mouse_window == NULL) {
+        return 0;
+    }
+    const SDL_WindowFlags flags = SDL_GetWindowFlags(g_mouse_window);
+    return (flags & SDL_WINDOW_INPUT_FOCUS) && !(flags & (SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED)) &&
+           SDL_GetMouseFocus() == g_mouse_window;
+}
+
+void pc_mouse_cancel(void) {
+    g_mouse_buttons_current = 0;
+    if (g_mouse_window != NULL) {
+        g_mouse_buttons_current = pc_mouse_buttons_from_sdl(SDL_GetMouseState(&g_mouse_x, &g_mouse_y));
+        SDL_GetRelativeMouseState(NULL, NULL);
+        if (g_mouse_locked) {
+            pc_mouse_lock(0);
+        }
+    }
+    g_mouse_suppressed_buttons = g_mouse_buttons_current;
+    g_mouse_buttons_pressed = g_mouse_buttons_released = 0;
+    g_pending_mouse_pressed = g_pending_mouse_released = 0;
+    g_mouse_wheel_delta = g_pending_mouse_wheel_delta = 0;
+    g_mouse_dx = g_mouse_dy = g_mouse_moved = 0;
+    g_mouse_active_this_frame = g_mouse_inside_viewport = 0;
+    g_mouse_ui_x = g_mouse_ui_y = -1.0f;
+    g_mouse_discard_frame = 1;
+}
+
+void pc_mouse_set_blocked(u32 reason, int blocked) {
+    const u32 reasons = blocked ? g_mouse_block_reasons | reason : g_mouse_block_reasons & ~reason;
+    if (reasons != g_mouse_block_reasons) {
+        g_mouse_block_reasons = reasons;
+        pc_mouse_cancel();
+    }
 }
 
 static int pc_mouse_map_ui_position(f32 x, f32 y, f32* ui_x, f32* ui_y) {
@@ -97,6 +135,8 @@ void pc_mouse_shutdown(void) {
     g_mouse_ui_x = g_mouse_ui_y = -1.0f;
     g_mouse_inside_viewport = 0;
     g_mouse_suppressed_buttons = 0;
+    g_mouse_block_reasons = 0;
+    g_mouse_discard_frame = 0;
     g_mouse_dx = g_mouse_dy = 0;
     g_mouse_locked = g_mouse_moved = 0;
     g_mouse_buttons_current = g_mouse_buttons_pressed = g_mouse_buttons_released = 0;
@@ -108,6 +148,37 @@ void pc_mouse_shutdown(void) {
 
 void pc_mouse_handle_event(const SDL_Event* event) {
     if (g_mouse_window == NULL || event == NULL) {
+        return;
+    }
+    switch (event->type) {
+        case SDL_EVENT_WILL_ENTER_BACKGROUND:
+        case SDL_EVENT_DID_ENTER_BACKGROUND:
+        case SDL_EVENT_WILL_ENTER_FOREGROUND:
+        case SDL_EVENT_DID_ENTER_FOREGROUND:
+            pc_mouse_cancel();
+            return;
+        default:
+            break;
+    }
+    if (SDL_GetWindowFromEvent(event) != g_mouse_window) {
+        return;
+    }
+    switch (event->type) {
+        case SDL_EVENT_WINDOW_FOCUS_LOST:
+        case SDL_EVENT_WINDOW_FOCUS_GAINED:
+        case SDL_EVENT_WINDOW_MINIMIZED:
+        case SDL_EVENT_WINDOW_RESTORED:
+        case SDL_EVENT_WINDOW_HIDDEN:
+        case SDL_EVENT_WINDOW_SHOWN:
+        case SDL_EVENT_WINDOW_MOUSE_ENTER:
+        case SDL_EVENT_WINDOW_MOUSE_LEAVE:
+            pc_mouse_cancel();
+            return;
+        default:
+            break;
+    }
+    if (g_mouse_block_reasons || g_mouse_discard_frame || !pc_mouse_window_active()) {
+        pc_mouse_cancel();
         return;
     }
     if (event->type == SDL_EVENT_MOUSE_WHEEL && event->wheel.windowID == SDL_GetWindowID(g_mouse_window)) {
@@ -130,9 +201,8 @@ void pc_mouse_handle_event(const SDL_Event* event) {
             } else {
                 g_mouse_suppressed_buttons |= button;
             }
-        } else {
+        } else if (!(g_mouse_suppressed_buttons & button)) {
             g_pending_mouse_released |= button;
-            g_mouse_suppressed_buttons &= ~button;
         }
     }
 }
@@ -196,7 +266,17 @@ void pc_mouse_update(void) {
     if (g_mouse_window == NULL) {
         return;
     }
+    if (g_mouse_block_reasons || !pc_mouse_window_active()) {
+        pc_mouse_cancel();
+        return;
+    }
+    if (g_mouse_discard_frame) {
+        pc_mouse_cancel();
+        g_mouse_discard_frame = 0;
+        return;
+    }
     const u32 previous_buttons = g_mouse_buttons_current;
+    const u32 suppressed_buttons = g_mouse_suppressed_buttons;
     const u32 wheel_buttons = PC_MOUSE_WHEEL_UP | PC_MOUSE_WHEEL_DOWN;
 
     float mx, my;
@@ -217,7 +297,8 @@ void pc_mouse_update(void) {
 
     g_mouse_buttons_pressed = g_pending_mouse_pressed | (g_mouse_buttons_current & ~previous_buttons) |
                               (g_mouse_buttons_current & wheel_buttons);
-    g_mouse_buttons_released = g_pending_mouse_released | (previous_buttons & ~g_mouse_buttons_current);
+    g_mouse_buttons_released =
+        (g_pending_mouse_released | (previous_buttons & ~g_mouse_buttons_current)) & ~suppressed_buttons;
     g_pending_mouse_pressed = g_pending_mouse_released = 0;
     
     float mdx = 0, mdy = 0;
