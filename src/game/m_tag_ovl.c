@@ -9309,12 +9309,16 @@ static void mTG_draw_func(Submenu* submenu, GAME* game, int menu_type) {
         mSM_MenuInfo_c* menu_info = &overlay_p->menu_info[menu_type];
         int i;
         int max;
+        int draw_hand_last = (tag_ovl->nw_gba_flags & 0x8) != 0;
+#ifdef MOUSE_INPUT
+        draw_hand_last = draw_hand_last || tag_ovl->mouse_active;
+#endif
 
         if (menu_info->proc_status != mSM_OVL_PROC_MOVE && menu_info->proc_status != mSM_OVL_PROC_END) {
             mTG_single_draw_mail(submenu, graph, tag_ovl);
             mTG_single_draw_original(submenu, graph, tag_ovl);
 
-            if ((tag_ovl->nw_gba_flags & 0x8) == 0) {
+            if (!draw_hand_last) {
                 submenu->overlay->menu_control.hand_draw_func(submenu, game);
             }
 
@@ -9324,7 +9328,7 @@ static void mTG_draw_func(Submenu* submenu, GAME* game, int menu_type) {
                 mTG_set_dl(submenu, menu_info, graph, game, tag, menu_info->position[0], menu_info->position[1], i);
             }
 
-            if ((tag_ovl->nw_gba_flags & 0x8) != 0) {
+            if (draw_hand_last) {
                 submenu->overlay->menu_control.hand_draw_func(submenu, game);
             }
         }
