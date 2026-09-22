@@ -13,6 +13,7 @@
 #include "pc_assets.h"
 #include "pc_platform.h"
 #include "pc_typing.h"
+#include "pc_mouse.h"
 #include "aurora_debug.h"
 #include "acgc/app_info.hpp"
 #include "acgc/data.hpp"
@@ -97,6 +98,7 @@ bool ac_aurora_begin_frame() {
         if (event->type == AURORA_EXIT) {
             g_pc_running = 0;
         } else if (event->type == AURORA_SDL_EVENT) {
+            pc_mouse_handle_event(&event->sdl);
             if (!acgc::ui::any_document_visible()) {
                 pc_typing_handle_event(&event->sdl);
             }
@@ -121,6 +123,7 @@ bool ac_aurora_begin_frame() {
     }
 
     update_render_size();
+    pc_mouse_update();
     s_frame_started = aurora_begin_frame();
     return s_frame_started;
 }
@@ -667,6 +670,7 @@ int main(int argc, char* argv[]) {
     }
 
     pc_typing_initialize(aurora_info.window);
+    pc_mouse_initialize(aurora_info.window);
     acgc::texture_replacements::reload();
     ac_entry();
     const int result = boot_main(argc, const_cast<const char**>(argv));
@@ -674,6 +678,7 @@ int main(int argc, char* argv[]) {
     pc_audio_shutdown();
     pc_audio_mq_shutdown();
     pc_typing_shutdown();
+    pc_mouse_shutdown();
     aurora_dvd_close();
     acgc::texture_replacements::shutdown();
     acgc::ui::shutdown();

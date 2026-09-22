@@ -5,6 +5,13 @@
 #include "pc_mouse.h"
 
 #ifdef MOUSE_INPUT
+#include "pc_platform.h"
+
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_video.h>
+
+static SDL_Window* g_mouse_window = NULL;
 static s32 g_mouse_x = 0, g_mouse_y = 0;
 static s32 g_mouse_dx = 0, g_mouse_dy = 0;
 static s32 g_mouse_locked = 0;
@@ -14,7 +21,37 @@ static u32 g_mouse_buttons_current = 0;
 static u32 g_mouse_buttons_previous = 0;
 static int g_mouse_active_this_frame = 0;
 
-s32 g_mouse_wheel_delta = 0;
+static s32 g_mouse_wheel_delta = 0;
+
+void pc_mouse_initialize(SDL_Window* window) {
+    pc_mouse_shutdown();
+    g_mouse_window = window;
+}
+
+void pc_mouse_shutdown(void) {
+    pc_mouse_lock(0);
+    g_mouse_window = NULL;
+    g_mouse_x = g_mouse_y = 0;
+    g_mouse_dx = g_mouse_dy = 0;
+    g_prev_mouse_x = g_prev_mouse_y = 0;
+    g_mouse_locked = g_mouse_moved = 0;
+    g_mouse_buttons_current = g_mouse_buttons_previous = 0;
+    g_mouse_active_this_frame = 0;
+    g_mouse_wheel_delta = 0;
+}
+
+void pc_mouse_handle_event(const SDL_Event* event) {
+    if (g_mouse_window == NULL || event == NULL) {
+        return;
+    }
+    if (event->type == SDL_EVENT_MOUSE_WHEEL && event->wheel.windowID == SDL_GetWindowID(g_mouse_window)) {
+        s32 delta = event->wheel.integer_y;
+        if (event->wheel.direction == SDL_MOUSEWHEEL_FLIPPED) {
+            delta = -delta;
+        }
+        g_mouse_wheel_delta += delta;
+    }
+}
 
 u32 pc_mouse_button_held(void) {
     return g_mouse_buttons_current;
@@ -29,8 +66,9 @@ u32 pc_mouse_button_released(void) {
 }
 
 void pc_mouse_lock(s32 lock) {
-    g_mouse_locked = !!lock;
-    SDL_SetRelativeMouseMode(g_mouse_locked);
+    if (g_mouse_window != NULL && SDL_SetWindowRelativeMouseMode(g_mouse_window, lock != 0)) {
+        g_mouse_locked = SDL_GetWindowRelativeMouseMode(g_mouse_window);
+    }
 }
 
 int pc_mouse_is_locked(void) {
@@ -61,12 +99,6 @@ int pc_mouse_active(void) {
     return g_mouse_active_this_frame;
 }
 
-#ifdef PC_ENHANCEMENTS
-extern float g_aspect_factor;
-extern float g_aspect_offset;
-extern int   g_aspect_active;
-#endif
-
 /* Scale mouse position to the native's game window.
  * Makes it easier to interact with menus. */
 void pc_mouse_get_native_position(s32 *x, s32 *y) {
@@ -77,9 +109,11 @@ void pc_mouse_get_native_position(s32 *x, s32 *y) {
     
     if (g_pc_window_w > 0 && g_pc_window_h > 0) {
 #ifdef PC_ENHANCEMENTS
-        if (g_aspect_active) {
+        const f32 aspect_factor = pc_widescreen_get_aspect_factor();
+        if (aspect_factor < 1.0f) {
+            const f32 aspect_offset = (1.0f - aspect_factor) * 0.5f * PC_GC_WIDTH;
             scaled_x = ((f32)mouse_x * PC_GC_WIDTH) / g_pc_window_w;
-            scaled_x = (scaled_x - g_aspect_offset) / g_aspect_factor;
+            scaled_x = (scaled_x - aspect_offset) / aspect_factor;
 
             scaled_y = ((f32)mouse_y * PC_GC_HEIGHT) / g_pc_window_h;
         } else
@@ -98,18 +132,23 @@ void pc_mouse_get_native_position(s32 *x, s32 *y) {
 }
 
 void pc_mouse_update(void) {
+    if (g_mouse_window == NULL) {
+        return;
+    }
     g_mouse_buttons_previous = g_mouse_buttons_current;
 
-    s32 mx, my;
-    u32 sdl_buttons = SDL_GetMouseState((int*)&mx, (int*)&my);
+    float sdl_x, sdl_y;
+    SDL_MouseButtonFlags sdl_buttons = SDL_GetMouseState(&sdl_x, &sdl_y);
+    s32 mx = (s32)sdl_x;
+    s32 my = (s32)sdl_y;
     g_mouse_buttons_current = 0;
 
     /* Convert each SDL button to our bitflag system */
-    if (sdl_buttons & SDL_BUTTON(SDL_BUTTON_LEFT))   g_mouse_buttons_current |= PC_MOUSE_BUTTON_LEFT;
-    if (sdl_buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE)) g_mouse_buttons_current |= PC_MOUSE_BUTTON_MIDDLE;
-    if (sdl_buttons & SDL_BUTTON(SDL_BUTTON_RIGHT))  g_mouse_buttons_current |= PC_MOUSE_BUTTON_RIGHT;
-    if (sdl_buttons & SDL_BUTTON(SDL_BUTTON_X1))     g_mouse_buttons_current |= PC_MOUSE_BUTTON_X1;
-    if (sdl_buttons & SDL_BUTTON(SDL_BUTTON_X2))     g_mouse_buttons_current |= PC_MOUSE_BUTTON_X2;
+    if (sdl_buttons & SDL_BUTTON_LMASK)  g_mouse_buttons_current |= PC_MOUSE_BUTTON_LEFT;
+    if (sdl_buttons & SDL_BUTTON_MMASK)  g_mouse_buttons_current |= PC_MOUSE_BUTTON_MIDDLE;
+    if (sdl_buttons & SDL_BUTTON_RMASK)  g_mouse_buttons_current |= PC_MOUSE_BUTTON_RIGHT;
+    if (sdl_buttons & SDL_BUTTON_X1MASK) g_mouse_buttons_current |= PC_MOUSE_BUTTON_X1;
+    if (sdl_buttons & SDL_BUTTON_X2MASK) g_mouse_buttons_current |= PC_MOUSE_BUTTON_X2;
 
     int wheel_active = 0;
     if (g_mouse_wheel_delta > 0) {
@@ -126,12 +165,12 @@ void pc_mouse_update(void) {
                                  (g_mouse_buttons_current & ~(PC_MOUSE_WHEEL_UP | PC_MOUSE_WHEEL_DOWN)) ||
                                  wheel_active);
     
-    s32 mdx = 0, mdy = 0;
-    SDL_GetRelativeMouseState((int*)&mdx, (int*)&mdy);
+    float mdx = 0, mdy = 0;
+    SDL_GetRelativeMouseState(&mdx, &mdy);
     
     if (g_mouse_locked) {
-        g_mouse_dx = mdx;
-        g_mouse_dy = mdy;
+        g_mouse_dx = (s32)mdx;
+        g_mouse_dy = (s32)mdy;
     } else {
         g_mouse_dx = mx - g_mouse_x;
         g_mouse_dy = my - g_mouse_y;

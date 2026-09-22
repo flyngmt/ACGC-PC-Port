@@ -1,5 +1,9 @@
 #include "m_tag_ovl.h"
 
+#ifdef TARGET_PC
+#include "pc_mouse.h"
+#endif
+
 #include "m_common_data.h"
 #include "m_inventory_ovl.h"
 #include "m_hand_ovl.h"

@@ -1,13 +1,14 @@
 #ifndef PC_MOUSE_H
 #define PC_MOUSE_H
 
-#include "pc_platform.h"
+#include "pc_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifdef MOUSE_INPUT
+typedef struct SDL_Window SDL_Window;
+typedef union SDL_Event SDL_Event;
 
 /* mouse constants */
 #define PC_MOUSE_BUTTON_LEFT    (1 << 0)
@@ -18,7 +19,11 @@ extern "C" {
 #define PC_MOUSE_WHEEL_UP       (1 << 5)
 #define PC_MOUSE_WHEEL_DOWN     (1 << 6)
 
-extern s32 g_mouse_wheel_delta;
+#ifdef MOUSE_INPUT
+
+void pc_mouse_initialize(SDL_Window* window);
+void pc_mouse_shutdown(void);
+void pc_mouse_handle_event(const SDL_Event* event);
 
 u32 pc_mouse_button_held(void);
 u32 pc_mouse_button_pressed(void);
@@ -35,20 +40,24 @@ void pc_mouse_update(void);
 
 #else
 
-#define g_mouse_wheel_delta   0
-
-u32 pc_mouse_button_held(void) { return 0; }
-u32 pc_mouse_button_pressed(void) { (return 0; }
-u32 pc_mouse_button_released(void) { return 0; }
-void pc_mouse_lock(s32 lock) { (void)lock; }
-int pc_mouse_is_locked(void) { return 0; }
-s32 pc_mouse_scroll_wheel(void) { return 0; }
-void pc_mouse_get_position(s32 *x, s32 *y) { (void)x; (void)y; }
-void pc_mouse_get_delta(s32 *dx, s32 *dy)  { (void)dx; (void)dy; }
-int pc_mouse_moved(void) { return 0; }
-int pc_mouse_active(void) { return 0; }
-void pc_mouse_get_native_position(s32 *x, s32 *y)  { (void)x; (void)y; }
-void pc_mouse_update(void) {}
+static inline void pc_mouse_initialize(SDL_Window* window) { (void)window; }
+static inline void pc_mouse_shutdown(void) {}
+static inline void pc_mouse_handle_event(const SDL_Event* event) { (void)event; }
+static inline u32 pc_mouse_button_held(void) { return 0; }
+static inline u32 pc_mouse_button_pressed(void) { return 0; }
+static inline u32 pc_mouse_button_released(void) { return 0; }
+static inline void pc_mouse_lock(s32 lock) { (void)lock; }
+static inline int pc_mouse_is_locked(void) { return 0; }
+static inline s32 pc_mouse_scroll_wheel(void) { return 0; }
+static inline void pc_mouse_get_position(s32 *x, s32 *y) {
+    if (x) *x = 0;
+    if (y) *y = 0;
+}
+static inline void pc_mouse_get_delta(s32 *dx, s32 *dy) { pc_mouse_get_position(dx, dy); }
+static inline int pc_mouse_moved(void) { return 0; }
+static inline int pc_mouse_active(void) { return 0; }
+static inline void pc_mouse_get_native_position(s32 *x, s32 *y) { pc_mouse_get_position(x, y); }
+static inline void pc_mouse_update(void) {}
 
 #endif /* MOUSE_INPUT */
 
