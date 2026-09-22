@@ -74,6 +74,33 @@ extern void mCon_calc(MCON* mcon, f32 stick_x, f32 stick_y) {
 }
 
 #ifdef MOUSE_INPUT
+static int mouse_action_held;
+static int mouse_action_triggered;
+
+static int mCon_mouse_action_allowed(void) {
+  GAME_PLAY* play;
+
+  if (gamePT->exec != play_main || mEv_IsTitleDemo() || !pc_mouse_pointer_visible()) {
+    return FALSE;
+  }
+  play = (GAME_PLAY*)gamePT;
+  return play->game_frame != 0 && !play->pause.enabled &&
+         play->fb_mode == FBDEMO_MODE_NONE && play->fb_wipe_mode == WIPE_MODE_NONE &&
+         play->submenu.process_status == mSM_PROCESS_WAIT && play->submenu.menu_type == mSM_OVL_NONE &&
+         mMsg_CHECK_MAINHIDE();
+}
+
+static void mCon_update_mouse_action(void) {
+  if (!mCon_mouse_action_allowed()) {
+    mouse_action_held = mouse_action_triggered = FALSE;
+    return;
+  }
+
+  mouse_action_triggered = (pc_mouse_button_pressed() & PC_MOUSE_BUTTON_RIGHT) != 0;
+  mouse_action_held = mouse_action_triggered ||
+                     (mouse_action_held && (pc_mouse_button_held() & PC_MOUSE_BUTTON_RIGHT));
+}
+
 static int mCon_mouse_ground_offset(GAME_PLAY* play, xyz_t* position, xyz_t* offset) {
   MtxF* matrix = &play->projection_matrix;
   rect* screen = &play->view.screen;
@@ -127,7 +154,7 @@ static void mCon_mouse_move(GAME_PLAY* play, f32* stick_x, f32* stick_y) {
       player->now_main_index < mPlayer_INDEX_WAIT || player->now_main_index > mPlayer_INDEX_DASH ||
       (player->requested_main_index_changed &&
        (player->requested_main_index < mPlayer_INDEX_WAIT || player->requested_main_index > mPlayer_INDEX_DASH)) ||
-      getButton() || *stick_x * *stick_x + *stick_y * *stick_y > STICK_MIN * STICK_MIN) {
+      play->game.pads[0].now.button || *stick_x * *stick_x + *stick_y * *stick_y > STICK_MIN * STICK_MIN) {
     active = FALSE;
     return;
   }
@@ -159,6 +186,14 @@ static void mCon_mouse_move(GAME_PLAY* play, f32* stick_x, f32* stick_y) {
 }
 #endif
 
+extern int mCon_mouse_action_pressed(void) {
+#ifdef MOUSE_INPUT
+  return mouse_action_triggered && mCon_mouse_action_allowed();
+#else
+  return FALSE;
+#endif
+}
+
 /**
  * @brief Controller main process.
  * 
@@ -169,6 +204,7 @@ extern void mCon_main(GAME* game) {
   f32 stick_y = getJoystick_Y();
 
 #ifdef MOUSE_INPUT
+  mCon_update_mouse_action();
   mCon_mouse_move((GAME_PLAY*)game, &stick_x, &stick_y);
 #endif
   mCon_calc(&game->mcon, stick_x, stick_y);
@@ -185,7 +221,7 @@ extern int chkButton(u16 mask) {
     return FALSE;
   }
 
-  return (mask & (gamePT->pads[0].now.button)) == mask;
+  return (mask & getButton()) == mask;
 }
 
 /**
@@ -194,11 +230,18 @@ extern int chkButton(u16 mask) {
  * @return Pressed buttons
  **/
 extern u16 getButton() {
+  u16 buttons;
   if (mEv_IsTitleDemo()) {
     return BUTTON_NONE;
   }
 
-  return gamePT->pads[0].now.button;
+  buttons = gamePT->pads[0].now.button;
+#ifdef MOUSE_INPUT
+  if (mouse_action_held && mCon_mouse_action_allowed()) {
+    buttons |= BUTTON_A;
+  }
+#endif
+  return buttons;
 }
 
 /**
@@ -212,7 +255,7 @@ extern int chkTrigger(u16 mask) {
     return FALSE;
   }
 
-  return (mask & (gamePT->pads[0].on.button)) == mask;
+  return (mask & getTrigger()) == mask;
 }
 
 /**
@@ -221,11 +264,16 @@ extern int chkTrigger(u16 mask) {
  * @return Buttons pressed on the current frame
  **/
 extern u16 getTrigger() {
+  u16 buttons;
   if (mEv_IsTitleDemo()) {
     return BUTTON_NONE;
   }
 
-  return gamePT->pads[0].on.button;
+  buttons = gamePT->pads[0].on.button;
+  if (mCon_mouse_action_pressed()) {
+    buttons |= BUTTON_A;
+  }
+  return buttons;
 }
 
 /**

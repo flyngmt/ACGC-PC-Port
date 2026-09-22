@@ -40,6 +40,7 @@ extern void mCon_ct();
 extern void mCon_dt();
 extern void mCon_calc(MCON* mcon, f32 stick_x, f32 stick_y);
 extern void mCon_main(GAME* game);
+extern int mCon_mouse_action_pressed(void);
 
 extern int chkButton(u16 button);
 extern u16 getButton();

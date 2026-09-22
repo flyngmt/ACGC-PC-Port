@@ -9,7 +9,7 @@ static int Player_actor_CheckController_forPickup(GAME* game) {
                (data->btn_b != 0);
     }
 
-    return chkTrigger(BUTTON_B);
+    return chkTrigger(BUTTON_B) || mCon_mouse_action_pressed();
 }
 
 static int Player_actor_CheckController_forAxe(GAME* game) {
