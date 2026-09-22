@@ -21,6 +21,9 @@
 #include "m_font.h"
 #include "libultra/libultra.h"
 #include "m_flashrom.h"
+#ifdef MOUSE_INPUT
+#include "pc_mouse_input.h"
+#endif
 
 #define G_CC_TITLE PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, PRIMITIVE, 0, TEXEL0, 0
 #define G_CC_TM 0, 0, 0, PRIMITIVE, 0, 0, 0, TEXEL0
@@ -174,11 +177,10 @@ static int aAL_wipe_end_check(GAME* game) {
 }
 
 static int aAL_chk_start_key() {
-  int res = FALSE;
-
-  if (padmgr_isConnectedController(PAD0) && ((gamePT->pads[PAD0].on.button & BUTTON_START) == BUTTON_START || (gamePT->pads[PAD0].on.button & BUTTON_A) == BUTTON_A)) {
-    res = TRUE;
-  }
+  int res = (gamePT->pads[PAD0].on.button & (BUTTON_START | BUTTON_A)) != 0;
+#ifdef MOUSE_INPUT
+  res = res || (pc_mouse_button_pressed() & (PC_MOUSE_BUTTON_LEFT | PC_MOUSE_BUTTON_RIGHT));
+#endif
 
   return res;
 }
@@ -186,7 +188,7 @@ static int aAL_chk_start_key() {
 static int aAL_chk_start_key2(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
   int res = FALSE;
 
-  if (aAL_chk_start_key() == TRUE) {
+  if (padmgr_isConnectedController(PAD0) && aAL_chk_start_key()) {
     aAL_setupAction(actor, game, aAL_ACTION_START_KEY_CHK_START);
     res = TRUE;
   }
@@ -255,7 +257,7 @@ static void aAL_game_start_wait(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
     aAL_setupAction(actor, game, aAL_ACTION_6);
   }
   else if (
-     ((gamePT->pads[PAD0].on.button & BUTTON_START) == BUTTON_START || (gamePT->pads[PAD0].on.button & BUTTON_A) == BUTTON_A) &&
+     aAL_chk_start_key() &&
      mLd_CheckStartFlag() == TRUE &&
      aAL_wipe_end_check(game) == TRUE &&
      mTD_tdemo_button_ok_check()
