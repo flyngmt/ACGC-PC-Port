@@ -164,6 +164,11 @@ static int mCon_mouse_ground_offset(GAME_PLAY* play, xyz_t* position, xyz_t* off
   return w + matrix->wx * offset->x + matrix->wz * offset->z > 0.0f;
 }
 
+static int mCon_mouse_move_allowed(int main_index) {
+  return (main_index >= mPlayer_INDEX_WAIT && main_index <= mPlayer_INDEX_DASH) ||
+         main_index == mPlayer_INDEX_READY_NET || main_index == mPlayer_INDEX_READY_WALK_NET;
+}
+
 static void mCon_mouse_move(GAME_PLAY* play, f32* stick_x, f32* stick_y) {
   static int active;
   PLAYER_ACTOR* player = get_player_actor_withoutCheck(play);
@@ -183,10 +188,14 @@ static void mCon_mouse_move(GAME_PLAY* play, f32* stick_x, f32* stick_y) {
   }
   // Keep the hold while an action temporarily blocks movement. Otherwise it's very hard to escape the bees.
   // It also feels better while playing but bees made me add this lmao.
-  if (!active || play->submenu.start_refuse ||
-      player->now_main_index < mPlayer_INDEX_WAIT || player->now_main_index > mPlayer_INDEX_DASH ||
+  if (!active || !mCon_mouse_move_allowed(player->now_main_index) ||
       (player->requested_main_index_changed &&
-       (player->requested_main_index < mPlayer_INDEX_WAIT || player->requested_main_index > mPlayer_INDEX_DASH))) {
+       !mCon_mouse_move_allowed(player->requested_main_index))) {
+    return;
+  }
+  /* Net-ready states block inventory opening, but still allow walking. */
+  if (play->submenu.start_refuse && player->now_main_index != mPlayer_INDEX_READY_NET &&
+      player->now_main_index != mPlayer_INDEX_READY_WALK_NET) {
     return;
   }
 
