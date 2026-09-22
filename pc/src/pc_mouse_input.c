@@ -9,6 +9,7 @@
 
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
 
 static SDL_Window* g_mouse_window = NULL;
@@ -26,6 +27,11 @@ static u32 g_mouse_buttons_current = 0;
 static u32 g_mouse_buttons_pressed = 0;
 static u32 g_mouse_buttons_released = 0;
 static int g_mouse_active_this_frame = 0;
+static Uint64 g_mouse_pointer_last_activity = 0;
+static int g_mouse_pointer_active = 0;
+static int g_mouse_keyboard_activity = 0;
+
+extern int g_pc_paused;
 
 static s32 g_mouse_wheel_delta = 0;
 static s32 g_pending_mouse_wheel_delta = 0;
@@ -51,6 +57,15 @@ static int pc_mouse_window_active(void) {
            SDL_GetMouseFocus() == g_mouse_window;
 }
 
+void pc_mouse_hide_pointer(void) {
+    g_mouse_pointer_active = 0;
+}
+
+int pc_mouse_pointer_visible(void) {
+    return g_mouse_pointer_active && g_mouse_inside_viewport && !g_mouse_block_reasons && !g_pc_paused &&
+           SDL_GetTicks() - g_mouse_pointer_last_activity < 5000;
+}
+
 void pc_mouse_cancel(void) {
     g_mouse_buttons_current = 0;
     if (g_mouse_window != NULL) {
@@ -68,6 +83,8 @@ void pc_mouse_cancel(void) {
     g_mouse_active_this_frame = g_mouse_inside_viewport = 0;
     g_mouse_ui_x = g_mouse_ui_y = -1.0f;
     g_mouse_discard_frame = 1;
+    g_mouse_keyboard_activity = 0;
+    pc_mouse_hide_pointer();
 }
 
 void pc_mouse_set_blocked(u32 reason, int blocked) {
@@ -148,6 +165,9 @@ void pc_mouse_shutdown(void) {
     g_mouse_locked = g_mouse_moved = 0;
     g_mouse_buttons_current = g_mouse_buttons_pressed = g_mouse_buttons_released = 0;
     g_mouse_active_this_frame = 0;
+    g_mouse_pointer_active = 0;
+    g_mouse_pointer_last_activity = 0;
+    g_mouse_keyboard_activity = 0;
     g_mouse_wheel_delta = 0;
     g_pending_mouse_wheel_delta = 0;
     g_pending_mouse_pressed = g_pending_mouse_released = 0;
@@ -169,6 +189,10 @@ void pc_mouse_handle_event(const SDL_Event* event) {
     }
     if (SDL_GetWindowFromEvent(event) != g_mouse_window) {
         return;
+    }
+    if (event->type == SDL_EVENT_KEY_DOWN) {
+        g_mouse_keyboard_activity = 1;
+        pc_mouse_hide_pointer();
     }
     switch (event->type) {
         case SDL_EVENT_WINDOW_FOCUS_LOST:
@@ -260,6 +284,7 @@ int pc_mouse_active(void) {
 
 int pc_mouse_update_owner(int mouse_active, int controller_active) {
     if (controller_active) {
+        pc_mouse_hide_pointer();
         g_mouse_suppressed_buttons |= g_mouse_buttons_current;
         g_mouse_buttons_pressed = g_mouse_buttons_released = 0;
         g_mouse_wheel_delta = 0;
@@ -336,6 +361,14 @@ void pc_mouse_update(void) {
     g_mouse_y = my;
 
     g_mouse_active_this_frame = g_mouse_moved || pc_mouse_button_pressed() || g_mouse_wheel_delta != 0;
+    if (g_mouse_keyboard_activity || g_pc_paused || !g_mouse_inside_viewport) {
+        pc_mouse_hide_pointer();
+    } else if (g_mouse_active_this_frame ||
+               (g_mouse_pointer_active && pc_mouse_button_held())) {
+        g_mouse_pointer_active = 1;
+        g_mouse_pointer_last_activity = SDL_GetTicks();
+    }
+    g_mouse_keyboard_activity = 0;
 }
 
 #endif /* MOUSE_INPUT */

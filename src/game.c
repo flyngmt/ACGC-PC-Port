@@ -23,6 +23,9 @@ extern int g_pc_model_viewer;
 #include "libc64/malloc.h"
 #include "GBA/gba.h"
 #include "m_vibctl.h"
+#ifdef MOUSE_INPUT
+#include "pc_mouse_input.h"
+#endif
 
 GAME* gamePT = NULL;
 
@@ -117,6 +120,16 @@ extern void game_get_controller(GAME* this) {
     } else {
         padmgr_ClearPadData(this->pads);
     }
+#ifdef MOUSE_INPUT
+    for (int i = 0; i < MAXCONTROLLERS; i++) {
+        pad_t* pad = &this->pads[i];
+        if (pad->now.error == 0 && (pad->now.button || pad->on.button ||
+            SQ(pad->now.stick_x) + SQ(pad->now.stick_y) > SQ(STICK_MIN))) {
+            pc_mouse_hide_pointer();
+            break;
+        }
+    }
+#endif
 }
 
 extern void SetGameFrame(int frame) {
