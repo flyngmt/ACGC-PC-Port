@@ -9,6 +9,7 @@
 #include "m_play.h"
 #include "m_player_lib.h"
 #include "m_msg.h"
+#include "m_demo.h"
 #include "m_skin_matrix.h"
 #include "pc_mouse_input.h"
 #endif
@@ -77,7 +78,7 @@ extern void mCon_calc(MCON* mcon, f32 stick_x, f32 stick_y) {
 static int mouse_action_held;
 static int mouse_action_triggered;
 
-static int mCon_mouse_action_allowed(void) {
+static int mCon_mouse_gameplay_allowed(void) {
   GAME_PLAY* play;
 
   if (gamePT->exec != play_main || mEv_IsTitleDemo() || !pc_mouse_pointer_visible()) {
@@ -91,7 +92,7 @@ static int mCon_mouse_action_allowed(void) {
 }
 
 static void mCon_update_mouse_action(void) {
-  if (!mCon_mouse_action_allowed()) {
+  if (!mCon_mouse_gameplay_allowed()) {
     mouse_action_held = mouse_action_triggered = FALSE;
     return;
   }
@@ -145,15 +146,8 @@ static void mCon_mouse_move(GAME_PLAY* play, f32* stick_x, f32* stick_y) {
   f32 distance, strength;
   s16 angle;
 
-  if (!(pc_mouse_button_held() & PC_MOUSE_BUTTON_LEFT) || !pc_mouse_pointer_visible() ||
-      mEv_IsTitleDemo() || player == NULL || play->game_frame == 0 || play->pause.enabled ||
-      play->fb_mode != FBDEMO_MODE_NONE || play->fb_wipe_mode != WIPE_MODE_NONE ||
-      play->submenu.start_refuse || play->submenu.process_status != mSM_PROCESS_WAIT ||
-      play->submenu.current_menu_type != mSM_OVL_NONE || play->submenu.menu_type != mSM_OVL_NONE ||
-      !mMsg_CHECK_MAINHIDE() ||
-      player->now_main_index < mPlayer_INDEX_WAIT || player->now_main_index > mPlayer_INDEX_DASH ||
-      (player->requested_main_index_changed &&
-       (player->requested_main_index < mPlayer_INDEX_WAIT || player->requested_main_index > mPlayer_INDEX_DASH)) ||
+  if (!(pc_mouse_button_held() & PC_MOUSE_BUTTON_LEFT) || !mCon_mouse_gameplay_allowed() ||
+      player == NULL || mDemo_CheckDemo() || play->submenu.current_menu_type != mSM_OVL_NONE ||
       play->game.pads[0].now.button || *stick_x * *stick_x + *stick_y * *stick_y > STICK_MIN * STICK_MIN) {
     active = FALSE;
     return;
@@ -162,7 +156,12 @@ static void mCon_mouse_move(GAME_PLAY* play, f32* stick_x, f32* stick_y) {
   if (pc_mouse_button_pressed() & PC_MOUSE_BUTTON_LEFT) {
     active = TRUE;
   }
-  if (!active) {
+  // Keep the hold while an action temporarily blocks movement. Otherwise it's very hard to escape the bees.
+  // It also feels better while playing but bees made me add this lmao.
+  if (!active || play->submenu.start_refuse ||
+      player->now_main_index < mPlayer_INDEX_WAIT || player->now_main_index > mPlayer_INDEX_DASH ||
+      (player->requested_main_index_changed &&
+       (player->requested_main_index < mPlayer_INDEX_WAIT || player->requested_main_index > mPlayer_INDEX_DASH))) {
     return;
   }
 
@@ -188,7 +187,7 @@ static void mCon_mouse_move(GAME_PLAY* play, f32* stick_x, f32* stick_y) {
 
 extern int mCon_mouse_action_pressed(void) {
 #ifdef MOUSE_INPUT
-  return mouse_action_triggered && mCon_mouse_action_allowed();
+  return mouse_action_triggered && mCon_mouse_gameplay_allowed();
 #else
   return FALSE;
 #endif
@@ -237,7 +236,7 @@ extern u16 getButton() {
 
   buttons = gamePT->pads[0].now.button;
 #ifdef MOUSE_INPUT
-  if (mouse_action_held && mCon_mouse_action_allowed()) {
+  if (mouse_action_held && mCon_mouse_gameplay_allowed()) {
     buttons |= BUTTON_A;
   }
 #endif
