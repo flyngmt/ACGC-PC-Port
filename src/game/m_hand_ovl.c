@@ -20,6 +20,8 @@
 #include "pc_platform.h"
 
 static int mouse_pointer_menu_hand_drawn;
+static f32 mouse_pointer_animation_frame;
+static const f32 mouse_pointer_animation_end_frame = 6.0f; // First tap returns to the idle pose.
 #endif
 
 static mHD_Ovl_c hand_ovl_data;
@@ -1120,6 +1122,16 @@ void mHD_mouse_pointer_get_offset(f32* x, f32* y) {
 
 void mHD_mouse_pointer_begin_frame(void) {
     mouse_pointer_menu_hand_drawn = FALSE;
+    if (!pc_mouse_pointer_visible()) {
+        mouse_pointer_animation_frame = 0.0f;
+    } else if (pc_mouse_button_pressed() & (PC_MOUSE_BUTTON_LEFT | PC_MOUSE_BUTTON_RIGHT)) {
+        mouse_pointer_animation_frame = 1.0f;
+    } else if (mouse_pointer_animation_frame > 0.0f) {
+        mouse_pointer_animation_frame += mHD_animeSpdTable[mHD_ACTION_SASU] * gamePT->graph->dt_num_60fps_frames;
+        if (mouse_pointer_animation_frame >= mouse_pointer_animation_end_frame) {
+            mouse_pointer_animation_frame = 0.0f;
+        }
+    }
 }
 
 void mHD_mouse_pointer_draw(GAME* game) {
@@ -1127,21 +1139,33 @@ void mHD_mouse_pointer_draw(GAME* game) {
     static MtxF pointer_matrix_stack[32];
     static int initialized;
     GRAPH* graph = game->graph;
+    int frame = 0;
 
     if (mouse_pointer_menu_hand_drawn || !pc_mouse_pointer_visible()) {
         return;
     }
 
-    if (aurora_mouse_cursor_needs_capture()) {
+    if (mouse_pointer_animation_frame > 0.0f) {
+        frame = (int)((mouse_pointer_animation_frame - 1.0f) * (AURORA_MOUSE_CURSOR_FRAME_COUNT - 1) /
+                      (mouse_pointer_animation_end_frame - 1.0f) + 0.5f);
+    }
+
+    if (aurora_mouse_cursor_needs_capture(frame)) {
         Gfx* start;
+        cKF_SkeletonInfo_R_c* keyframe = &pointer_hand.info.keyframe;
+        f32 progress = (f32)frame / (AURORA_MOUSE_CURSOR_FRAME_COUNT - 1);
+        progress = progress * progress * (3.0f - 2.0f * progress);
         if (!initialized) {
-            cKF_SkeletonInfo_R_c* keyframe = &pointer_hand.info.keyframe;
+            cKF_AnimInfo_c* anim = &mHD_animeTable[mHD_ACTION_SASU];
             cKF_SkeletonInfo_R_ct(keyframe, &cKF_bs_r_hnd, NULL, pointer_hand.info.work, pointer_hand.info.morph);
-            cKF_SkeletonInfo_R_init(keyframe, &cKF_bs_r_hnd, &cKF_ba_r_hnd_sasu,
-                                   1.0f, 16.0f, 1.0f, 0.0f, 0.0f, cKF_FRAMECONTROL_STOP, NULL);
-            cKF_SkeletonInfo_R_play(keyframe);
+            cKF_SkeletonInfo_R_init(keyframe, &cKF_bs_r_hnd, anim->animation,
+                                   anim->start_frame, mouse_pointer_animation_end_frame, anim->start_frame,
+                                   0.0f, 0.0f, cKF_FRAMECONTROL_STOP, NULL);
             initialized = TRUE;
         }
+        keyframe->frame_control.current_frame = keyframe->frame_control.start_frame +
+            progress * (keyframe->frame_control.end_frame - keyframe->frame_control.start_frame);
+        cKF_SkeletonInfo_R_play(keyframe);
 
         OPEN_DISP(graph);
         start = NOW_POLY_OPA_DISP;
@@ -1162,14 +1186,14 @@ void mHD_mouse_pointer_draw(GAME* game) {
         Matrix_swap_current(previous_matrix);
 
         OPEN_DISP(graph);
-        gDPNoOpTag(NOW_POLY_OPA_DISP++, PC_NOOP_MOUSE_CAPTURE_END);
+        gDPNoOpTag(NOW_POLY_OPA_DISP++, PC_NOOP_MOUSE_CAPTURE_END + frame);
         gSPEndDisplayList(NOW_POLY_OPA_DISP++);
         gfxclose(start, NOW_POLY_OPA_DISP);
         CLOSE_DISP(graph);
     }
 
     OPEN_DISP(graph);
-    gDPNoOpTag(NOW_OVERLAY_DISP++, PC_NOOP_MOUSE_CURSOR_DRAW);
+    gDPNoOpTag(NOW_OVERLAY_DISP++, PC_NOOP_MOUSE_CURSOR_DRAW + frame);
     CLOSE_DISP(graph);
 }
 #endif

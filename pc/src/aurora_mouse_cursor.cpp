@@ -11,9 +11,12 @@
 
 namespace {
 constexpr u16 kSize = AURORA_MOUSE_CURSOR_TEXTURE_SIZE;
-alignas(32) u8 s_textureData[kSize * kSize * 4]{};
-GXTexObj s_texture{};
-bool s_ready = false;
+struct CursorFrame {
+    alignas(32) u8 data[kSize * kSize * 4]{};
+    GXTexObj texture{};
+    bool ready = false;
+};
+CursorFrame s_frames[AURORA_MOUSE_CURSOR_FRAME_COUNT];
 int s_renderWidth = 0;
 int s_renderHeight = 0;
 f32 s_offsetX = 0.0f;
@@ -22,12 +25,19 @@ f32 s_offsetY = 0.0f;
 
 extern "C" {
 
-int aurora_mouse_cursor_needs_capture(void) {
-    return !s_ready || s_renderWidth != g_pc_window_w || s_renderHeight != g_pc_window_h;
+int aurora_mouse_cursor_needs_capture(int frame) {
+    if (s_renderWidth != g_pc_window_w || s_renderHeight != g_pc_window_h) {
+        aurora_mouse_cursor_invalidate();
+        s_renderWidth = g_pc_window_w;
+        s_renderHeight = g_pc_window_h;
+    }
+    return !s_frames[frame].ready;
 }
 
 void aurora_mouse_cursor_invalidate(void) {
-    s_ready = false;
+    for (auto& frame : s_frames) {
+        frame.ready = false;
+    }
 }
 
 void aurora_mouse_cursor_capture_begin(void) {
@@ -38,26 +48,25 @@ void aurora_mouse_cursor_capture_begin(void) {
     GXSetDstAlpha(GX_FALSE, 0);
 }
 
-void aurora_mouse_cursor_capture_end(void) {
+void aurora_mouse_cursor_capture_end(int frame) {
+    auto& cached = s_frames[frame];
     GXSetTexCopySrc(0, 0, kSize, kSize);
     GXSetTexCopyDst(kSize, kSize, GX_TF_RGBA8, GX_FALSE);
     GXSetCopyFilter(GX_FALSE, nullptr, GX_FALSE, nullptr);
-    GXCopyTex(s_textureData, GX_FALSE);
+    GXCopyTex(cached.data, GX_FALSE);
     GXPixModeSync();
     GXRestoreFrameBuffer();
     GXSetAlphaUpdate(GX_FALSE);
 
-    GXInitTexObj(&s_texture, s_textureData, kSize, kSize, GX_TF_RGBA8, GX_CLAMP, GX_CLAMP, GX_FALSE);
-    GXInitTexObjLOD(&s_texture, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
-    s_renderWidth = g_pc_window_w;
-    s_renderHeight = g_pc_window_h;
+    GXInitTexObj(&cached.texture, cached.data, kSize, kSize, GX_TF_RGBA8, GX_CLAMP, GX_CLAMP, GX_FALSE);
+    GXInitTexObjLOD(&cached.texture, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
     mHD_mouse_pointer_get_offset(&s_offsetX, &s_offsetY);
-    s_ready = true;
+    cached.ready = true;
 }
 
-void aurora_mouse_cursor_draw(void) {
+void aurora_mouse_cursor_draw(int frame) {
     f32 x, y;
-    if (!s_ready || !pc_mouse_pointer_visible() || !pc_mouse_get_ui_position(&x, &y)) {
+    if (!s_frames[frame].ready || !pc_mouse_pointer_visible() || !pc_mouse_get_ui_position(&x, &y)) {
         return;
     }
 
@@ -103,7 +112,7 @@ void aurora_mouse_cursor_draw(void) {
     GXSetDstAlpha(GX_FALSE, 0);
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
     GXSetAlphaCompare(GX_GREATER, 0, GX_AOP_AND, GX_ALWAYS, 0);
-    GXLoadTexObj(&s_texture, GX_TEXMAP0);
+    GXLoadTexObj(&s_frames[frame].texture, GX_TEXMAP0);
 
     GXBegin(GX_QUADS, GX_VTXFMT0, 4);
     GXPosition2f32(left, top); GXTexCoord2f32(0.0f, 0.0f);

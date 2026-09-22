@@ -4565,12 +4565,14 @@ void emu64::dl_G_NOOP() {
                 aurora_mouse_cursor_capture_begin();
                 break;
             }
-            if (this->gfx.words.w1 == PC_NOOP_MOUSE_CAPTURE_END) {
-                aurora_mouse_cursor_capture_end();
+            if (this->gfx.words.w1 >= PC_NOOP_MOUSE_CAPTURE_END &&
+                this->gfx.words.w1 < PC_NOOP_MOUSE_CAPTURE_END + AURORA_MOUSE_CURSOR_FRAME_COUNT) {
+                aurora_mouse_cursor_capture_end(this->gfx.words.w1 - PC_NOOP_MOUSE_CAPTURE_END);
                 break;
             }
-            if (this->gfx.words.w1 == PC_NOOP_MOUSE_CURSOR_DRAW) {
-                aurora_mouse_cursor_draw();
+            if (this->gfx.words.w1 >= PC_NOOP_MOUSE_CURSOR_DRAW &&
+                this->gfx.words.w1 < PC_NOOP_MOUSE_CURSOR_DRAW + AURORA_MOUSE_CURSOR_FRAME_COUNT) {
+                aurora_mouse_cursor_draw(this->gfx.words.w1 - PC_NOOP_MOUSE_CURSOR_DRAW);
                 break;
             }
 #endif
