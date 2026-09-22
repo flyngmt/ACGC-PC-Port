@@ -1047,8 +1047,8 @@ void mDE_undo(mDE_Ovl_c* design_ovl) {
 }
 
 #ifdef MOUSE_INPUT
-    #define GET_BUTTON_PRESSED(b, m) chkTrigger(b) || (pc_mouse_button_pressed() & m)
-    #define GET_BUTTON_HELD(b, m) chkButton(b) || (pc_mouse_button_held() & m)
+    #define GET_BUTTON_PRESSED(b, m) (chkTrigger(b) || (design_ovl->mouse_active && (pc_mouse_button_pressed() & (m))))
+    #define GET_BUTTON_HELD(b, m) (chkButton(b) || (design_ovl->mouse_active && (pc_mouse_button_held() & (m))))
 #else
     #define GET_BUTTON_PRESSED(b, m) chkTrigger(b)
     #define GET_BUTTON_HELD(b, m) chkButton(b)
@@ -2534,18 +2534,16 @@ void mDE_move_Play(Submenu* submenu, mSM_MenuInfo_c* info) {
     design_ovl->centered_x = centered_x;
     design_ovl->centered_y = centered_y;
 
-    if (trigger || !inside_viewport) {
-        design_ovl->mouse_active = 0;
-    }
+    design_ovl->mouse_active = pc_mouse_update_owner(design_ovl->mouse_active,
+        trigger || getButton() || gamePT->mcon.move_pR >= 0.1f);
     if (!inside_viewport) {
         design_ovl->mouse_tool_active = 0;
-    }
-    if (pc_mouse_active()) {
-        design_ovl->mouse_active = 1;
     }
 
     // Mode switching with mouse
     if (design_ovl->mouse_active) {
+        design_ovl->move_pR = gamePT->mcon.move_pR;
+        mDE_judge_stick_nuetral(design_ovl);
         u32 mouse_held = pc_mouse_button_held();
         int holding_mouse = (
             (((mouse_held >> 0) & 1 || (mouse_held >> 2) & 1) && design_ovl->mode == mDE_MODE_MAIN) || // Holding left/right click while drawing

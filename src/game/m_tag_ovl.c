@@ -8161,17 +8161,11 @@ static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
         return;
     }
 
+    tag_ovl->mouse_active = pc_mouse_update_owner(tag_ovl->mouse_active,
+        submenu->overlay->menu_control.trigger || getButton() || gamePT->mcon.move_pR > 0.5f);
     u32 mouse_pressed = pc_mouse_button_pressed();
     s32 mouse_wheel = pc_mouse_scroll_wheel();
     s32 mouse_moved = pc_mouse_moved();
-
-    /* Controller and mouse active checks */
-    if (submenu->overlay->menu_control.trigger) {
-        tag_ovl->mouse_active = 0;
-    }
-    if (mouse_moved || mouse_pressed || mouse_wheel != 0) {
-        tag_ovl->mouse_active = 1;
-    }
 
     tag_ovl->mouse_x = logical_mouse_x;
     tag_ovl->mouse_y = logical_mouse_y;
@@ -8203,7 +8197,7 @@ static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     }
 
     /* Mouse movement logic */
-    if (mouse_moved) {
+    if (mouse_moved || mouse_pressed || mouse_wheel != 0) {
         if (tag_ovl->sel_tag_idx == 0) {
             f32 hand_x = (logical_mouse_x - 160.0f);
             f32 hand_y = (120.0f - logical_mouse_y);

@@ -32,6 +32,7 @@ void pc_mouse_shutdown(void);
 void pc_mouse_handle_event(const SDL_Event* event);
 void pc_mouse_set_blocked(u32 reason, int blocked);
 void pc_mouse_cancel(void);
+void pc_mouse_set_pad_buttons(u32 buttons);
 
 u32 pc_mouse_button_held(void);
 u32 pc_mouse_button_pressed(void);
@@ -43,6 +44,7 @@ void pc_mouse_get_position(s32 *x, s32 *y);
 void pc_mouse_get_delta(s32 *dx, s32 *dy);
 int pc_mouse_moved(void);
 int pc_mouse_active(void);
+int pc_mouse_update_owner(int mouse_active, int controller_active);
 /* Returns viewport containment in menu coordinates, including widescreen margins. */
 int pc_mouse_get_ui_position(f32* x, f32* y);
 void pc_mouse_get_native_position(s32 *x, s32 *y);
@@ -55,6 +57,7 @@ static inline void pc_mouse_shutdown(void) {}
 static inline void pc_mouse_handle_event(const SDL_Event* event) { (void)event; }
 static inline void pc_mouse_set_blocked(u32 reason, int blocked) { (void)reason; (void)blocked; }
 static inline void pc_mouse_cancel(void) {}
+static inline void pc_mouse_set_pad_buttons(u32 buttons) { (void)buttons; }
 static inline u32 pc_mouse_button_held(void) { return 0; }
 static inline u32 pc_mouse_button_pressed(void) { return 0; }
 static inline u32 pc_mouse_button_released(void) { return 0; }
@@ -68,6 +71,11 @@ static inline void pc_mouse_get_position(s32 *x, s32 *y) {
 static inline void pc_mouse_get_delta(s32 *dx, s32 *dy) { pc_mouse_get_position(dx, dy); }
 static inline int pc_mouse_moved(void) { return 0; }
 static inline int pc_mouse_active(void) { return 0; }
+static inline int pc_mouse_update_owner(int mouse_active, int controller_active) {
+    (void)mouse_active;
+    (void)controller_active;
+    return 0;
+}
 static inline int pc_mouse_get_ui_position(f32* x, f32* y) {
     if (x) *x = -1.0f;
     if (y) *y = -1.0f;

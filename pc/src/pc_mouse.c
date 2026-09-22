@@ -16,6 +16,7 @@ static f32 g_mouse_x = 0, g_mouse_y = 0;
 static f32 g_mouse_ui_x = -1, g_mouse_ui_y = -1;
 static int g_mouse_inside_viewport = 0;
 static u32 g_mouse_suppressed_buttons = 0;
+static u32 g_mouse_pad_buttons = 0;
 static u32 g_mouse_block_reasons = 0;
 static int g_mouse_discard_frame = 0;
 static s32 g_mouse_dx = 0, g_mouse_dy = 0;
@@ -77,6 +78,11 @@ void pc_mouse_set_blocked(u32 reason, int blocked) {
     }
 }
 
+void pc_mouse_set_pad_buttons(u32 buttons) {
+    g_mouse_suppressed_buttons |= g_mouse_buttons_current & (g_mouse_pad_buttons ^ buttons);
+    g_mouse_pad_buttons = buttons;
+}
+
 static int pc_mouse_map_ui_position(f32 x, f32 y, f32* ui_x, f32* ui_y) {
     int window_width, window_height, pixel_width, pixel_height;
     if (ui_x) *ui_x = -1.0f;
@@ -135,6 +141,7 @@ void pc_mouse_shutdown(void) {
     g_mouse_ui_x = g_mouse_ui_y = -1.0f;
     g_mouse_inside_viewport = 0;
     g_mouse_suppressed_buttons = 0;
+    g_mouse_pad_buttons = 0;
     g_mouse_block_reasons = 0;
     g_mouse_discard_frame = 0;
     g_mouse_dx = g_mouse_dy = 0;
@@ -208,15 +215,15 @@ void pc_mouse_handle_event(const SDL_Event* event) {
 }
 
 u32 pc_mouse_button_held(void) {
-    return g_mouse_inside_viewport ? g_mouse_buttons_current & ~g_mouse_suppressed_buttons : 0;
+    return g_mouse_inside_viewport ? g_mouse_buttons_current & ~(g_mouse_suppressed_buttons | g_mouse_pad_buttons) : 0;
 }
 
 u32 pc_mouse_button_pressed(void) {
-    return g_mouse_inside_viewport ? g_mouse_buttons_pressed & ~g_mouse_suppressed_buttons : 0;
+    return g_mouse_inside_viewport ? g_mouse_buttons_pressed & ~(g_mouse_suppressed_buttons | g_mouse_pad_buttons) : 0;
 }
 
 u32 pc_mouse_button_released(void) {
-    return g_mouse_buttons_released;
+    return g_mouse_buttons_released & ~g_mouse_pad_buttons;
 }
 
 void pc_mouse_lock(s32 lock) {
@@ -249,6 +256,17 @@ int pc_mouse_moved(void) {
 
 int pc_mouse_active(void) {
     return g_mouse_inside_viewport && g_mouse_active_this_frame;
+}
+
+int pc_mouse_update_owner(int mouse_active, int controller_active) {
+    if (controller_active) {
+        g_mouse_suppressed_buttons |= g_mouse_buttons_current;
+        g_mouse_buttons_pressed = g_mouse_buttons_released = 0;
+        g_mouse_wheel_delta = 0;
+        g_mouse_active_this_frame = 0;
+        return 0;
+    }
+    return g_mouse_inside_viewport && (mouse_active || pc_mouse_active());
 }
 
 int pc_mouse_get_ui_position(f32* x, f32* y) {
@@ -317,10 +335,7 @@ void pc_mouse_update(void) {
     g_mouse_x = mx;
     g_mouse_y = my;
 
-    g_mouse_active_this_frame = g_mouse_moved ||
-        ((g_mouse_buttons_current | g_mouse_buttons_pressed | g_mouse_buttons_released) &
-         ~(wheel_buttons | g_mouse_suppressed_buttons)) ||
-        g_mouse_wheel_delta != 0;
+    g_mouse_active_this_frame = g_mouse_moved || pc_mouse_button_pressed() || g_mouse_wheel_delta != 0;
 }
 
 #endif /* MOUSE_INPUT */
