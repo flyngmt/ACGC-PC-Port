@@ -240,7 +240,7 @@ set(PC_SOURCES
     ${PC_ROOT}/src/pc_gci.c
     ${PC_ROOT}/src/pc_m_card.c
     ${PC_ROOT}/src/pc_model_viewer.c
-    ${PC_ROOT}/src/pc_mouse.c
+    ${PC_ROOT}/src/pc_mouse_input.c
     ${PC_ROOT}/src/pc_save_bswap.c
     ${PC_ROOT}/src/pc_nes_fixnes.c
     ${PC_ROOT}/src/pc_assets.c

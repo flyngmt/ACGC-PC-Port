@@ -13,7 +13,7 @@
 #include "pc_assets.h"
 #include "pc_platform.h"
 #include "pc_typing.h"
-#include "pc_mouse.h"
+#include "pc_mouse_input.h"
 #include "aurora_debug.h"
 #include "acgc/app_info.hpp"
 #include "acgc/data.hpp"

@@ -1,7 +1,7 @@
 #include "m_design_ovl.h"
 
 #ifdef TARGET_PC
-#include "pc_mouse.h"
+#include "pc_mouse_input.h"
 #endif
 
 #include "m_debug.h"

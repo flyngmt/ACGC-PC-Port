@@ -1,5 +1,5 @@
 #include "acgc/game_input_block.hpp"
-#include "pc_mouse.h"
+#include "pc_mouse_input.h"
 
 #include <dolphin/pad.h>
 

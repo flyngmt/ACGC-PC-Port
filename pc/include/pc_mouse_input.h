@@ -1,5 +1,5 @@
-#ifndef PC_MOUSE_H
-#define PC_MOUSE_H
+#ifndef PC_MOUSE_INPUT_H
+#define PC_MOUSE_INPUT_H
 
 #include "pc_types.h"
 
@@ -90,4 +90,4 @@ static inline void pc_mouse_update(void) {}
 }
 #endif
 
-#endif /* PC_MOUSE_H */
+#endif /* PC_MOUSE_INPUT_H */

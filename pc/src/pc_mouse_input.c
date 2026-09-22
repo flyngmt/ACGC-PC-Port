@@ -1,8 +1,8 @@
-/* pc_mouse.c - Mouse input mode for menus and misc interfaces.
+/* pc_mouse_input.c - Mouse input mode for menus and misc interfaces.
  * When an interface is active, mouse can be used to interact with it.
  * There's helpers to see when a mouse is moved, wheel movement and clicks. */
 
-#include "pc_mouse.h"
+#include "pc_mouse_input.h"
 
 #ifdef MOUSE_INPUT
 #include "pc_platform.h"

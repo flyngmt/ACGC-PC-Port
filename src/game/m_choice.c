@@ -1,7 +1,7 @@
 #include "m_choice.h"
 
 #ifdef TARGET_PC
-#include "pc_mouse.h"
+#include "pc_mouse_input.h"
 #endif
 
 #include "audio.h"
