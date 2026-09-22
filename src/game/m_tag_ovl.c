@@ -4185,7 +4185,7 @@ static void mTG_free_proc(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     mTG_set_trade_cond(submenu, menu_info, mHm_HANIWA_TRADE_0, 0);
 }
 
-static void mTG_catch_proc(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
+static void mTG_catch(Submenu* submenu, mSM_MenuInfo_c* menu_info, int grab_mail_present) {
     mTG_Ovl_c* tag_ovl = submenu->overlay->tag_ovl;
     mTG_tag_c* tag = &tag_ovl->tags[0];
     mTG_tag_c* cur_tag = &tag_ovl->tags[tag_ovl->sel_tag_idx];
@@ -4211,7 +4211,7 @@ static void mTG_catch_proc(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
             return;
         }
 
-        if (submenu->overlay->tag_ovl->sel_tag_idx == 0 && menu_info->menu_type != mSM_OVL_MAILBOX &&
+        if (grab_mail_present && tag_ovl->sel_tag_idx == 0 && menu_info->menu_type != mSM_OVL_MAILBOX &&
             menu_info->menu_type != mSM_OVL_CPMAIL) {
             item_p = &mail_p->present;
             if (*item_p != EMPTY_NO) {
@@ -4275,6 +4275,10 @@ static void mTG_catch_proc(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
         mTG_catch_item_from_table(submenu, mail_p, item_p, item_cond, cur_tag->table, idx);
         mTG_return_tag_init(submenu, mTG_TYPE_NONE, mTG_RETURN_CLOSE);
     }
+}
+
+static void mTG_catch_proc(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
+    mTG_catch(submenu, menu_info, TRUE);
 }
 
 static int mTG_mail_check(Mail_c* mail) {
@@ -7618,7 +7622,7 @@ static void mTG_move_decide(Submenu* submenu, mSM_MenuInfo_c* menu_info, mTG_tag
     }
 }
 
-static void mTG_move_catch(Submenu* submenu, mSM_MenuInfo_c* menu_info, mTG_tag_c* tag) {
+static void mTG_move_catch(Submenu* submenu, mSM_MenuInfo_c* menu_info, mTG_tag_c* tag, int grab_mail_present) {
     if (
         // clang-format off
         (menu_info->menu_type == mSM_OVL_INVENTORY && (menu_info->data0 == mSM_IV_OPEN_NORMAL || menu_info->data0 == mSM_IV_OPEN_EXCHANGE)) ||
@@ -7632,7 +7636,7 @@ static void mTG_move_catch(Submenu* submenu, mSM_MenuInfo_c* menu_info, mTG_tag_
     ) {
         if (mTG_check_move_proc(submenu, tag)) {
             if (mTG_check_hand_condition(submenu) == TRUE) {
-                mTG_catch_proc(submenu, menu_info);
+                mTG_catch(submenu, menu_info, grab_mail_present);
             } else {
                 mTG_drop_item(submenu, menu_info, tag);
             }
@@ -7696,7 +7700,7 @@ static void mTG_move_base(Submenu* submenu, mSM_MenuInfo_c* menu_info, mTG_tag_c
     } else if (trigger & BUTTON_A) {
         mTG_move_decide(submenu, menu_info, tag);
     } else if (trigger & BUTTON_L) {
-        mTG_move_catch(submenu, menu_info, tag);
+        mTG_move_catch(submenu, menu_info, tag, TRUE);
     } else if (trigger & BUTTON_R) {
         mTG_move_change(submenu, menu_info, tag);
     } else if (trigger & BUTTON_X) {
@@ -8152,6 +8156,7 @@ static void mTG_get_mouse_slot_pos(Submenu* submenu, f32* pos, int table, int id
 static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     mTG_Ovl_c* tag_ovl = submenu->overlay->tag_ovl;
     mTG_tag_c* tag = &tag_ovl->tags[tag_ovl->sel_tag_idx];
+    int normal_inventory = menu_info->menu_type == mSM_OVL_INVENTORY && menu_info->data0 == mSM_IV_OPEN_NORMAL;
 
     f32 logical_mouse_x, logical_mouse_y;
     if (!pc_mouse_get_ui_position(&logical_mouse_x, &logical_mouse_y)) {
@@ -8172,6 +8177,17 @@ static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 
     if (!tag_ovl->mouse_active) {
         return;
+    }
+
+    if (normal_inventory) {
+        mHD_Ovl_c* hand_ovl = submenu->overlay->hand_ovl;
+
+        /* Placement uses the selected slot when the hand animation finishes. */
+        if (hand_ovl->info.wait_timer > 0 || hand_ovl->info.act == mHD_ACTION_CLOSE ||
+            hand_ovl->info.act == mHD_ACTION_CLOSE2 || hand_ovl->info.act == mHD_ACTION_OPEN ||
+            submenu->overlay->segment.player_anime_timer > 0) {
+            return;
+        }
     }
 
     /* Mouse scroll wheel logic */
@@ -8421,8 +8437,13 @@ static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
         if (tag_ovl->hovered_table >= 0) {
             if (mouse_pressed & (1 << 0)) { // Left click
                 u32 old_trigger = submenu->overlay->menu_control.trigger;
-                submenu->overlay->menu_control.trigger = BUTTON_A;
-                mTG_move_decide(submenu, menu_info, tag);
+                if (normal_inventory && (tag->table == mTG_TABLE_ITEM || tag->table == mTG_TABLE_MAIL)) {
+                    submenu->overlay->menu_control.trigger = BUTTON_L;
+                    mTG_move_catch(submenu, menu_info, tag, FALSE);
+                } else {
+                    submenu->overlay->menu_control.trigger = BUTTON_A;
+                    mTG_move_decide(submenu, menu_info, tag);
+                }
                 submenu->overlay->menu_control.trigger = old_trigger;
                 return;
             }
@@ -8430,8 +8451,29 @@ static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 
         if (mouse_pressed & (1 << 2)) { // Right click
             u32 old_trigger = submenu->overlay->menu_control.trigger;
-            submenu->overlay->menu_control.trigger = BUTTON_B;
-            mTG_move_cancel(submenu, menu_info, tag);
+            int hovered_item = FALSE;
+
+            if (normal_inventory && mTG_check_hand_condition(submenu)) {
+                switch (tag_ovl->hovered_table) {
+                    case mTG_TABLE_ITEM:
+                        hovered_item = Now_Private->inventory.pockets[tag_ovl->hovered_idx] != EMPTY_NO;
+                        break;
+                    case mTG_TABLE_MAIL:
+                        hovered_item = !mMl_check_not_used_mail(&Now_Private->mail[tag_ovl->hovered_idx]);
+                        break;
+                    case mTG_TABLE_PLAYER:
+                        hovered_item = Now_Private->equipment != EMPTY_NO;
+                        break;
+                }
+            }
+
+            if (hovered_item) {
+                submenu->overlay->menu_control.trigger = BUTTON_A;
+                mTG_move_decide(submenu, menu_info, tag);
+            } else {
+                submenu->overlay->menu_control.trigger = BUTTON_B;
+                mTG_move_cancel(submenu, menu_info, tag);
+            }
             submenu->overlay->menu_control.trigger = old_trigger;
         }
     } else {
