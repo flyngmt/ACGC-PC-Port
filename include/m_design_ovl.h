@@ -103,8 +103,8 @@ struct design_ovl_s {
 #endif
 #ifdef MOUSE_INPUT
     int mouse_active;
-    int centered_x;
-    int centered_y;
+    f32 centered_x;
+    f32 centered_y;
     int mouse_tool_active;
     int mouse_tool_x;
     int mouse_tool_y;

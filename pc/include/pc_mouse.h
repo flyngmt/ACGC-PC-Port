@@ -35,6 +35,8 @@ void pc_mouse_get_position(s32 *x, s32 *y);
 void pc_mouse_get_delta(s32 *dx, s32 *dy);
 int pc_mouse_moved(void);
 int pc_mouse_active(void);
+/* Returns whether the pointer is inside the 320x240 menu area. */
+int pc_mouse_get_ui_position(f32* x, f32* y);
 void pc_mouse_get_native_position(s32 *x, s32 *y);
 void pc_mouse_update(void);
 
@@ -56,6 +58,11 @@ static inline void pc_mouse_get_position(s32 *x, s32 *y) {
 static inline void pc_mouse_get_delta(s32 *dx, s32 *dy) { pc_mouse_get_position(dx, dy); }
 static inline int pc_mouse_moved(void) { return 0; }
 static inline int pc_mouse_active(void) { return 0; }
+static inline int pc_mouse_get_ui_position(f32* x, f32* y) {
+    if (x) *x = -1.0f;
+    if (y) *y = -1.0f;
+    return 0;
+}
 static inline void pc_mouse_get_native_position(s32 *x, s32 *y) { pc_mouse_get_position(x, y); }
 static inline void pc_mouse_update(void) {}
 

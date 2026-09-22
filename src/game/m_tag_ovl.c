@@ -8153,11 +8153,13 @@ static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     mTG_Ovl_c* tag_ovl = submenu->overlay->tag_ovl;
     mTG_tag_c* tag = &tag_ovl->tags[tag_ovl->sel_tag_idx];
 
-    /* Setup mouse logic */
-    s32 mouse_x, mouse_y;
-    pc_mouse_get_native_position(&mouse_x, &mouse_y);
-    f32 logical_mouse_x = mouse_x * 0.5;
-    f32 logical_mouse_y = mouse_y * 0.5;
+    f32 logical_mouse_x, logical_mouse_y;
+    if (!pc_mouse_get_ui_position(&logical_mouse_x, &logical_mouse_y)) {
+        tag_ovl->mouse_active = 0;
+        tag_ovl->hovered_table = tag_ovl->hovered_idx = -1;
+        tag_ovl->hovered_col = tag_ovl->hovered_row = tag_ovl->hovered_option = -1;
+        return;
+    }
 
     u32 mouse_pressed = pc_mouse_button_pressed();
     s32 mouse_wheel = pc_mouse_scroll_wheel();

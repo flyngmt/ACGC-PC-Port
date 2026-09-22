@@ -94,6 +94,7 @@ bool ac_aurora_begin_frame() {
     pc_emu64_frame_cull_rejected = 0;
 
     const AuroraEvent* event = aurora_update();
+    update_render_size();
     while (event != nullptr && event->type != AURORA_NONE) {
         if (event->type == AURORA_EXIT) {
             g_pc_running = 0;

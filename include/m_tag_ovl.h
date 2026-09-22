@@ -292,8 +292,8 @@ struct tag_ovl_s {
     f32 item_name_wait_accum;
 #ifdef MOUSE_INPUT
     /* 0x??? */ u8 mouse_active;
-    /* 0x??? */ s32 mouse_x;
-    /* 0x??? */ s32 mouse_y;
+    /* 0x??? */ f32 mouse_x;
+    /* 0x??? */ f32 mouse_y;
     /* 0x??? */ int hovered_table;
     /* 0x??? */ int hovered_idx;
     /* 0x??? */ int hovered_col;

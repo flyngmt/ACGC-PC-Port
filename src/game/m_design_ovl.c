@@ -2527,22 +2527,18 @@ void mDE_move_Play(Submenu* submenu, mSM_MenuInfo_c* info) {
     mDE_Ovl_c* design_ovl = submenu->overlay->design_ovl;
 
 #ifdef MOUSE_INPUT
-    // Handle mouse movement for cursor
-    s32 mouse_x, mouse_y;
-    pc_mouse_get_native_position(&mouse_x, &mouse_y);
-    
-    // Set half position for interface
-    f32 ui_x = (f32)mouse_x * 0.5f;
-    f32 ui_y = (f32)mouse_y * 0.5f;
-    
-    // Convert from top-left origin (0,0) to centered origin (0,0 at center)
+    f32 ui_x, ui_y;
+    int inside_viewport = pc_mouse_get_ui_position(&ui_x, &ui_y);
     f32 centered_x = ui_x - 160.0f;
     f32 centered_y = 120.0f - ui_y;
     design_ovl->centered_x = centered_x;
     design_ovl->centered_y = centered_y;
 
-    if (trigger) {
+    if (trigger || !inside_viewport) {
         design_ovl->mouse_active = 0;
+    }
+    if (!inside_viewport) {
+        design_ovl->mouse_tool_active = 0;
     }
     if (pc_mouse_active()) {
         design_ovl->mouse_active = 1;
