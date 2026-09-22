@@ -1168,8 +1168,15 @@ void mHD_mouse_pointer_draw(GAME* game) {
 
     if (aurora_mouse_cursor_needs_capture(frame)) {
         Gfx* start;
+        int texture_size = aurora_mouse_cursor_texture_size();
+        Vp* viewport = GRAPH_ALLOC_TYPE(graph, Vp, 1);
         cKF_SkeletonInfo_R_c* keyframe = &pointer_hand.info.keyframe;
         f32 progress = (f32)(frame - first_cached_frame) / (last_cached_frame - first_cached_frame);
+        if (viewport == NULL) {
+            return;
+        }
+        *viewport = (Vp){ texture_size * 2, texture_size * 2, 511, 0,
+                          texture_size * 2, texture_size * 2, 511, 0 };
         progress = progress * progress * (3.0f - 2.0f * progress);
         if (!initialized) {
             cKF_AnimInfo_c* anim = &mHD_animeTable[mHD_ACTION_SASU];
@@ -1191,12 +1198,16 @@ void mHD_mouse_pointer_draw(GAME* game) {
         gDPNoOpTag(NOW_POLY_OPA_DISP++, PC_NOOP_WIDESCREEN_STRETCH);
         gDPNoOpTag(NOW_POLY_OPA_DISP++, PC_NOOP_MOUSE_CAPTURE_BEGIN);
         gDPSetScissor(NOW_POLY_OPA_DISP++, G_SC_NON_INTERLACE, 0, 0,
-                      AURORA_MOUSE_CURSOR_TEXTURE_SIZE, AURORA_MOUSE_CURSOR_TEXTURE_SIZE);
+                      texture_size, texture_size);
         CLOSE_DISP(graph);
 
         MtxF* previous_matrix = Matrix_swap_current(pointer_matrix_stack);
+        /* Keep the original projection; only the capture viewport changes size. */
         mSM_change_view(graph, 80.0f, 0.0f, 0.0f, 0.0f, 0,
-                       AURORA_MOUSE_CURSOR_TEXTURE_SIZE, AURORA_MOUSE_CURSOR_TEXTURE_SIZE);
+                       AURORA_MOUSE_CURSOR_VIEW_SIZE, AURORA_MOUSE_CURSOR_VIEW_SIZE);
+        OPEN_DISP(graph);
+        gSPViewport(NOW_POLY_OPA_DISP++, viewport);
+        CLOSE_DISP(graph);
         mHD_hand_shape_draw(&pointer_hand, game, FALSE);
         Matrix_swap_current(previous_matrix);
 
