@@ -77,6 +77,8 @@ extern void mCon_calc(MCON* mcon, f32 stick_x, f32 stick_y) {
 #ifdef MOUSE_INPUT
 static int mouse_action_held;
 static int mouse_action_triggered;
+static f32 mouse_inventory_hold_frames = -1.0f;
+static int mouse_inventory_triggered;
 
 static int mCon_mouse_gameplay_allowed(void) {
   GAME_PLAY* play;
@@ -92,14 +94,37 @@ static int mCon_mouse_gameplay_allowed(void) {
 }
 
 static void mCon_update_mouse_action(void) {
+  GAME_PLAY* play = (GAME_PLAY*)gamePT;
+  PLAYER_ACTOR* player;
+
+  mouse_inventory_triggered = FALSE;
   if (!mCon_mouse_gameplay_allowed()) {
     mouse_action_held = mouse_action_triggered = FALSE;
+    mouse_inventory_hold_frames = -1.0f;
     return;
   }
 
   mouse_action_triggered = (pc_mouse_button_pressed() & PC_MOUSE_BUTTON_RIGHT) != 0;
   mouse_action_held = mouse_action_triggered ||
                      (mouse_action_held && (pc_mouse_button_held() & PC_MOUSE_BUTTON_RIGHT));
+
+  player = get_player_actor_withoutCheck(play);
+  if (!mouse_action_held || player == NULL || player->item_kind >= 0 || mDemo_CheckDemo() ||
+      play->submenu.start_refuse ||
+      player->now_main_index < mPlayer_INDEX_WAIT || player->now_main_index > mPlayer_INDEX_DASH ||
+      (player->requested_main_index_changed &&
+       (player->requested_main_index < mPlayer_INDEX_WAIT || player->requested_main_index > mPlayer_INDEX_DASH))) {
+    mouse_inventory_hold_frames = -1.0f;
+  } else if (mouse_action_triggered) {
+    mouse_inventory_hold_frames = 0.0f;
+  } else if (mouse_inventory_hold_frames >= 0.0f) {
+    mouse_inventory_hold_frames += gamePT->graph->dt_num_60fps_frames;
+    if (mouse_inventory_hold_frames >= 30.0f) {
+      mouse_inventory_triggered = TRUE;
+      mouse_inventory_hold_frames = -1.0f;
+      mouse_action_held = FALSE;
+    }
+  }
 }
 
 static int mCon_mouse_ground_offset(GAME_PLAY* play, xyz_t* position, xyz_t* offset) {
@@ -272,6 +297,11 @@ extern u16 getTrigger() {
   if (mCon_mouse_action_pressed()) {
     buttons |= BUTTON_A;
   }
+#ifdef MOUSE_INPUT
+  if (mouse_inventory_triggered && mCon_mouse_gameplay_allowed()) {
+    buttons |= mSM_INV_BUTTON_0;
+  }
+#endif
   return buttons;
 }
 
