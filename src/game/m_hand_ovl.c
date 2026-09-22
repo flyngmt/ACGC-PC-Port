@@ -1248,6 +1248,11 @@ extern void mHD_hand_ovl_construct(Submenu* submenu) {
 
     hand_ovl->info.visual_pos[0] = 0.0f;
     hand_ovl->info.visual_pos[1] = 0.0f;
+#ifdef MOUSE_INPUT
+    if (overlay->tag_ovl->mouse_active) {
+        mHD_update_visual_position(submenu);
+    }
+#endif
  
     if (menu_info->menu_type == mSM_OVL_INVENTORY && menu_info->data0 == mSM_IV_OPEN_EXCHANGE) {
         mActor_name_t item;

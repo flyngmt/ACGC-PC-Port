@@ -9365,9 +9365,10 @@ extern void mTG_tag_ovl_construct(Submenu* submenu) {
         tag_ovl_p->sel_tag_idx = -1;
         tag_ovl_p->ret_tag_idx = -1;
 #ifdef MOUSE_INPUT
-        tag_ovl_p->mouse_active = 0;
         tag_ovl_p->mouse_x = 160;
         tag_ovl_p->mouse_y = 120;
+        tag_ovl_p->mouse_active = pc_mouse_pointer_visible() &&
+            pc_mouse_get_ui_position(&tag_ovl_p->mouse_x, &tag_ovl_p->mouse_y);
         tag_ovl_p->hovered_table = -1;
         tag_ovl_p->hovered_idx = -1;
         tag_ovl_p->hovered_col = -1;
