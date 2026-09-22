@@ -15,6 +15,8 @@
 #include "m_rcp.h"
 #ifdef MOUSE_INPUT
 #include "gfxalloc.h"
+#include "m_design_ovl.h"
+#include "m_play.h"
 #include "pc_mouse_input.h"
 #include "aurora_mouse_cursor.h"
 #include "pc_platform.h"
@@ -1153,6 +1155,16 @@ void mHD_mouse_pointer_draw(GAME* game) {
 
     if (mouse_pointer_menu_hand_drawn || !pc_mouse_pointer_visible()) {
         return;
+    }
+
+    if (game->exec == play_main) {
+        Submenu* submenu = &((GAME_PLAY*)game)->submenu;
+        if (submenu->current_menu_type == mSM_OVL_DESIGN && submenu->overlay != NULL) {
+            mDE_Ovl_c* design_ovl = submenu->overlay->design_ovl;
+            if (design_ovl != NULL && design_ovl->mode == mDE_MODE_MAIN) {
+                return;
+            }
+        }
     }
 
     if (mouse_pointer_animation_frame > mouse_pointer_animation_hold_frame) {
