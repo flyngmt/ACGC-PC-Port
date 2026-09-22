@@ -22,6 +22,9 @@ extern void Matrix_pull();
 extern void Matrix_get(MtxF* m);
 extern void Matrix_put(MtxF* m);
 extern MtxF* get_Matrix_now();
+#ifdef MOUSE_INPUT
+extern MtxF* Matrix_swap_current(MtxF* matrix);
+#endif
 extern void Matrix_mult(MtxF* m, u8 flag);
 extern void Matrix_translate(f32 x, f32 y, f32 z, u8 flag);
 extern void Matrix_scale(f32 x, f32 y, f32 z, u8 flag);

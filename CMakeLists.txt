@@ -212,6 +212,7 @@ set(PC_SOURCES
     ${PC_ROOT}/src/acgc_texture_replacements.cpp
     ${PC_ROOT}/src/aurora_debug.cpp
     ${PC_ROOT}/src/aurora_main.cpp
+    ${PC_ROOT}/src/aurora_mouse_cursor.cpp
     ${PC_ROOT}/src/aurora_platform.cpp
     ${PC_ROOT}/src/aurora_widescreen.cpp
     ${PC_ROOT}/src/aurora_vi.cpp

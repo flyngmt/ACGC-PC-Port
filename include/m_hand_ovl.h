@@ -68,6 +68,10 @@ struct hand_ovl_s {
 
 extern void mHD_hand_ovl_construct(Submenu* submenu);
 extern void mHD_hand_ovl_destruct(Submenu* submenu);
+#ifdef MOUSE_INPUT
+extern void mHD_mouse_pointer_begin_frame(void);
+extern void mHD_mouse_pointer_draw(GAME* game);
+#endif
 
 #ifdef __cplusplus
 }

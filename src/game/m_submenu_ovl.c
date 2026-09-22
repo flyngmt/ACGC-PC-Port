@@ -98,7 +98,7 @@ static void mSM_setup_view(Submenu* submenu, GRAPH* graph, int init_flag) {
     CLOSE_POLY_OPA_DISP(graph);
 }
 
-static void mSM_change_view(GRAPH* graph, f32 eye_dist, f32 y_lookAt, f32 vp_x, f32 vp_y, s16 angle, int width,
+extern void mSM_change_view(GRAPH* graph, f32 eye_dist, f32 y_lookAt, f32 vp_x, f32 vp_y, s16 angle, int width,
                             int height) {
     static Vp viewport_data = { 0, 0, 511, 0, 0, 0, 511, 0 };
 

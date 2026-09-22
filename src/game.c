@@ -24,6 +24,7 @@ extern int g_pc_model_viewer;
 #include "GBA/gba.h"
 #include "m_vibctl.h"
 #ifdef MOUSE_INPUT
+#include "m_hand_ovl.h"
 #include "pc_mouse_input.h"
 #endif
 
@@ -167,7 +168,15 @@ extern void game_main(GAME* this) {
     PC_DIAG(5, "game_main: mTM_time done, calling exec=%p\n", (void*)this->exec);
     GRAPH_SET_DOING_POINT(graph, GAME_EXEC);
     TracyCZoneN(game_execute_zone, "Game execute", 1);
+#ifdef MOUSE_INPUT
+    mHD_mouse_pointer_begin_frame();
+#endif
     this->exec(this);
+#ifdef MOUSE_INPUT
+    if (!g_pc_model_viewer) {
+        mHD_mouse_pointer_draw(this);
+    }
+#endif
     TracyCZoneEnd(game_execute_zone);
     GRAPH_SET_DOING_POINT(graph, GAME_EXEC_FINISHED);
     GRAPH_SET_DOING_POINT(graph, GAME_BGM);

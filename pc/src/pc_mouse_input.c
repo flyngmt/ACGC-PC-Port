@@ -6,6 +6,7 @@
 
 #ifdef MOUSE_INPUT
 #include "pc_platform.h"
+#include "aurora_mouse_cursor.h"
 
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
@@ -140,6 +141,7 @@ static int pc_mouse_map_ui_position(f32 x, f32 y, f32* ui_x, f32* ui_y) {
 
 void pc_mouse_initialize(SDL_Window* window) {
     pc_mouse_shutdown();
+    aurora_mouse_cursor_invalidate();
     g_mouse_window = window;
     if (g_mouse_window != NULL) {
         g_mouse_buttons_current = pc_mouse_buttons_from_sdl(SDL_GetMouseState(&g_mouse_x, &g_mouse_y));
@@ -189,6 +191,9 @@ void pc_mouse_handle_event(const SDL_Event* event) {
     }
     if (SDL_GetWindowFromEvent(event) != g_mouse_window) {
         return;
+    }
+    if (event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+        aurora_mouse_cursor_invalidate();
     }
     if (event->type == SDL_EVENT_KEY_DOWN) {
         g_mouse_keyboard_activity = 1;

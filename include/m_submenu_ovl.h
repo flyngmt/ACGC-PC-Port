@@ -220,6 +220,9 @@ extern void mSM_menu_ovl_init(Submenu* submenu);
 extern void mSM_draw_original(Submenu* submenu, GRAPH* graph, f32 pos_x, f32 pos_y, f32 scale, mActor_name_t item,
                               int color_flag);
 
+extern void mSM_change_view(GRAPH* graph, f32 eye_dist, f32 y_lookAt, f32 vp_x, f32 vp_y, s16 angle,
+                           int width, int height);
+
 #ifdef __cplusplus
 }
 #endif
