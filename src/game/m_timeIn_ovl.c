@@ -3,6 +3,9 @@
 #include "m_common_data.h"
 #include "m_font.h"
 #include "sys_matrix.h"
+#ifdef MOUSE_INPUT
+#include "pc_mouse_input.h"
+#endif
 
 static mTI_Ovl_c ti_ovl_data;
 
@@ -121,9 +124,70 @@ static void mTI_move_Move(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
   (*submenu->overlay->move_Move_proc)(submenu, menu_info);
 }
 
+#ifdef MOUSE_INPUT
+static u32 mTI_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 trigger) {
+  static const f32 field_bounds[mTI_IDX_OK + 1][4] = {
+    {  77.0f, 113.0f, 101.0f, 133.0f },
+    { 101.0f, 113.0f, 125.0f, 133.0f },
+    {  77.0f, 139.0f, 147.0f, 159.0f },
+    { 149.0f, 139.0f, 173.0f, 159.0f },
+    { 182.0f, 139.0f, 218.0f, 159.0f },
+    { 218.0f, 139.0f, 244.0f, 159.0f }
+  };
+  mTI_Ovl_c* timeIn_ovl = submenu->overlay->timeIn_ovl;
+  f32 mouse_x, mouse_y;
+  u32 pressed;
+  s32 wheel;
+  int i;
+
+  if (submenu->current_menu_type != mSM_OVL_TIMEIN ||
+      timeIn_ovl->input_disabled_flag ||
+      !pc_mouse_update_owner(FALSE, trigger || getButton() || gamePT->mcon.move_pR > 0.5f) ||
+      !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+    return trigger;
+  }
+
+  mouse_x -= menu_info->position[0];
+  mouse_y += menu_info->position[1];
+  pressed = pc_mouse_button_pressed();
+  wheel = pc_mouse_scroll_wheel();
+
+  for (i = 0; i <= mTI_IDX_OK; i++) {
+    const f32* bounds = field_bounds[i];
+
+    if (mouse_x >= bounds[0] && mouse_x < bounds[2] &&
+        mouse_y >= bounds[1] && mouse_y < bounds[3]) {
+      if (timeIn_ovl->sel_idx != i) {
+        timeIn_ovl->sel_idx = i;
+        sAdo_SysTrgStart(NA_SE_CURSOL);
+      }
+
+      if (i == mTI_IDX_OK) {
+        if (pressed & PC_MOUSE_BUTTON_LEFT) {
+          trigger |= BUTTON_A;
+        }
+      }
+      else if (wheel > 0 || (pressed & PC_MOUSE_BUTTON_LEFT)) {
+        trigger |= BUTTON_CUP;
+      }
+      else if (wheel < 0 || (pressed & PC_MOUSE_BUTTON_RIGHT)) {
+        trigger |= BUTTON_CDOWN;
+      }
+      break;
+    }
+  }
+
+  return trigger;
+}
+#endif
+
 static void mTI_move_Play(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
   mTI_Ovl_c* timeIn_ovl = submenu->overlay->timeIn_ovl;
   u32 trigger = submenu->overlay->menu_control.trigger;
+
+#ifdef MOUSE_INPUT
+  trigger = mTI_mouse_trigger(submenu, menu_info, trigger);
+#endif
 
   if (timeIn_ovl->input_disabled_flag == TRUE) {
     mTI_set_time(submenu);
