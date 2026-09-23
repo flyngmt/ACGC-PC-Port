@@ -6,6 +6,9 @@
 #include "m_warning_ovl.h"
 #include "sys_matrix.h"
 #include "m_malloc.h"
+#ifdef MOUSE_INPUT
+#include "pc_mouse_input.h"
+#endif
 #ifdef TARGET_PC
 #include <math.h>
 #else
@@ -503,9 +506,97 @@ static void mCD_move_Move(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     (*submenu->overlay->move_Move_proc)(submenu, menu_info);
 }
 
+#ifdef MOUSE_INPUT
+extern Vtx cal_win_v[];
+extern Vtx cal_hyouji_v[];
+extern Vtx cal_hyouji2_v[];
+
+static u32 mCD_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 trigger, int* day_idx) {
+    mCD_Ovl_c* calendar = submenu->overlay->calendar_ovl;
+    mCD_month_entry_c* entry = &calendar->month_entries[calendar->_1056];
+    int selecting_month = calendar->move_proc_idx == mCD_MVPL_SELECT;
+    f32 mouse_x, mouse_y;
+    f32 x, y;
+    u32 pressed;
+    s32 wheel;
+    int i;
+
+    if (submenu->current_menu_type != mSM_OVL_CALENDAR ||
+        !pc_mouse_update_owner(FALSE, trigger || getButton() || gamePT->mcon.adjusted_pR >= 0.2f) ||
+        !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+        return trigger;
+    }
+
+    pressed = pc_mouse_button_pressed();
+    if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+        return trigger | BUTTON_B;
+    }
+    wheel = pc_mouse_scroll_wheel();
+    if (wheel != 0) {
+        if (selecting_month) {
+            calendar->_105C = wheel > 0 ? mCD_STICK_AREA_LEFT : mCD_STICK_AREA_RIGHT;
+            return trigger;
+        }
+        return trigger | (wheel > 0 ? BUTTON_CUP : BUTTON_CDOWN);
+    }
+
+    x = mouse_x - 160.0f;
+    y = 120.0f - mouse_y - (selecting_month ? calendar->_102C : calendar->_1030) + menu_info->position[1];
+    if (pressed & PC_MOUSE_BUTTON_LEFT) {
+        if (selecting_month) {
+            if (mSM_mouse_over_quad(&cal_hyouji_v[20], x, y, 2.0f)) {
+                calendar->_105C = mCD_STICK_AREA_LEFT;
+                return trigger;
+            }
+            if (mSM_mouse_over_quad(&cal_hyouji_v[24], x, y, 2.0f)) {
+                calendar->_105C = mCD_STICK_AREA_RIGHT;
+                return trigger;
+            }
+            if (mSM_mouse_over_quad(&cal_hyouji_v[0], x, y, 2.0f) ||
+                mSM_mouse_over_quad(&cal_hyouji_v[12], x, y, 2.0f)) {
+                return trigger | BUTTON_A;
+            }
+        } else {
+            if (mSM_mouse_over_quad(&cal_hyouji2_v[0], x, y, 2.0f) ||
+                mSM_mouse_over_quad(&cal_hyouji2_v[16], x, y, 2.0f)) {
+                return trigger | BUTTON_B;
+            }
+            if (mSM_mouse_over_quad(&cal_hyouji2_v[4], x, y, 2.0f) ||
+                mSM_mouse_over_quad(&cal_hyouji2_v[20], x, y, 2.0f)) {
+                return trigger | BUTTON_A;
+            }
+        }
+    }
+
+    x = mouse_x - 160.0f - menu_info->position[0];
+    y = 120.0f - mouse_y - menu_info->position[1];
+    for (i = 0; i < ARRAY_COUNT(entry->day_data); i++) {
+        if ((entry->day_data[i] & 0x1F) != 0 &&
+            mSM_mouse_over_quad(&cal_win_v[128], x - (i % lbRTC_WEEK) * 32.0f,
+                               y + (i / lbRTC_WEEK) * 20.0f, 0.0f)) {
+            if (!selecting_month || (pressed & PC_MOUSE_BUTTON_LEFT)) {
+                *day_idx = i;
+            }
+            return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+        }
+    }
+
+    if (selecting_month && (pressed & PC_MOUSE_BUTTON_LEFT) &&
+        mSM_mouse_over_quad(&cal_win_v[160], x, y, 2.0f)) {
+        return trigger | BUTTON_CUP;
+    }
+    return trigger;
+}
+#endif
+
 static void mCD_MVPL_select(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     mCD_Ovl_c* calendar = submenu->overlay->calendar_ovl;
     u32 trigger = submenu->overlay->menu_control.trigger;
+    int day_idx = -1;
+
+#ifdef MOUSE_INPUT
+    trigger = mCD_mouse_trigger(submenu, menu_info, trigger, &day_idx);
+#endif
 
     if ((trigger & BUTTON_B) || (trigger & BUTTON_START)) {
         (*submenu->overlay->move_chg_base_proc)(menu_info, mSM_MOVE_OUT_TOP);
@@ -542,6 +633,11 @@ static void mCD_MVPL_select(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
                 sAdo_SysTrgStart(NA_SE_5F);
             }
         } else if ((trigger & BUTTON_A)) {
+            if (day_idx == -1) {
+                day_idx = mDC_get_calendar_day_position(calendar,
+                    calendar->_1056 == calendar->_1059 ? Common_Get(time.rtc_time.day) : 1);
+            }
+            calendar->_1057 = day_idx;
             calendar->move_proc_idx = mCD_MVPL_CHG0;
             sAdo_SysTrgStart(NA_SE_5F);
             calendar->_102C = 0.0f;
@@ -633,12 +729,6 @@ static void mCD_MVPL_chg(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
         if (calendar->move_proc_idx == mCD_MVPL_CHG0) {
             calendar->move_proc_idx = mCD_MVPL_DAY;
 
-            if (calendar->_1056 == calendar->_1059) {
-                calendar->_1057 = mDC_get_calendar_day_position(calendar, Common_Get(time.rtc_time.day));
-            } else {
-                calendar->_1057 = mDC_get_calendar_day_position(calendar, 1);
-            }
-
             mDC_set_disp_table(calendar);
         } else {
             calendar->move_proc_idx = mCD_MVPL_SELECT;
@@ -650,7 +740,18 @@ static void mCD_MVPL_day(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     mCD_Ovl_c* calendar = submenu->overlay->calendar_ovl;
     u32 trigger = submenu->overlay->menu_control.trigger;
     mCD_month_entry_c* entry = &calendar->month_entries[calendar->_1056];
-    int days = entry->day_data[calendar->_1057] & 0x1F;
+    int days;
+
+#ifdef MOUSE_INPUT
+    int day_idx = calendar->_1057;
+    trigger = mCD_mouse_trigger(submenu, menu_info, trigger, &day_idx);
+    if (day_idx != calendar->_1057) {
+        calendar->_1057 = day_idx;
+        mDC_set_disp_table(calendar);
+        sAdo_SysTrgStart(NA_SE_CURSOL);
+    }
+#endif
+    days = entry->day_data[calendar->_1057] & 0x1F;
 
     if ((trigger & BUTTON_B)) {
         calendar->move_proc_idx = mCD_MVPL_CHG1;
