@@ -6,10 +6,14 @@
 #include "m_font.h"
 #include "m_lib.h"
 #include "m_common_data.h"
+#ifdef MOUSE_INPUT
+#include "pc_mouse_input.h"
+#endif
 
 static int aNSM_sack_amount[MONEY_NUM] = { 100, 1000, 10000, 30000 };
 
 static mActor_name_t aNSM_itemNo[MONEY_NUM] = { ITM_MONEY_100, ITM_MONEY_1000, ITM_MONEY_10000, ITM_MONEY_30000 };
+static u8 mBN_ok_str[] = { CHAR_O, CHAR_K };
 
 static void mBN_now_bell_2_bell(mBN_Ovl_c* bank_ovl) {
     int diff = bank_ovl->now_bell - bank_ovl->player_bell;
@@ -117,10 +121,77 @@ static void mBN_move_Move(Submenu* submenu, mSM_MenuInfo_c* menu) {
     (*submenu->overlay->move_Move_proc)(submenu, menu);
 }
 
+#ifdef MOUSE_INPUT
+static u32 mBN_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu, u32 trigger) {
+    mBN_Ovl_c* bank_ovl = submenu->overlay->bank_ovl;
+    f32 mouse_x, mouse_y;
+    u32 pressed;
+    s32 wheel;
+    int selected = -1;
+
+    if (submenu->current_menu_type != mSM_OVL_BANK ||
+        !pc_mouse_update_owner(FALSE, trigger || getButton() || gamePT->mcon.move_pR > 0.5f) ||
+        !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+        return trigger;
+    }
+
+    pressed = pc_mouse_button_pressed();
+    if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+        return trigger | BUTTON_B;
+    }
+
+    mouse_x -= menu->position[0];
+    mouse_y += menu->position[1];
+    if (mouse_y >= 124.0f && mouse_y < 140.0f) {
+        u8 amount_str[7];
+        f32 x;
+        int i;
+
+        mFont_UnintToString(amount_str, sizeof(amount_str), bank_ovl->bell, 6, FALSE, TRUE, TRUE);
+        x = 211.0f - mFont_GetStringWidth(amount_str, sizeof(amount_str), TRUE);
+        for (i = 0; i < 7; i++) {
+            int width = mFont_GetCodeWidth(amount_str[i], TRUE);
+
+            if (i != 3 && mouse_x >= x && mouse_x < x + width) {
+                selected = i < 3 ? i : i - 1;
+                break;
+            }
+            x += width;
+        }
+    } else if (mouse_y >= 140.0f && mouse_y < 156.0f && mouse_x >= 206.0f &&
+               mouse_x < 210.0f + mFont_GetStringWidth(mBN_ok_str, sizeof(mBN_ok_str), TRUE) * 0.875f) {
+        selected = mBN_CUSROL_OK;
+    }
+
+    if (selected < 0) {
+        return trigger;
+    }
+    if (bank_ovl->cursol != selected) {
+        bank_ovl->cursol = selected;
+        sAdo_SysTrgStart(NA_SE_CURSOL);
+    }
+
+    if (selected == mBN_CUSROL_OK) {
+        return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+    }
+    wheel = pc_mouse_scroll_wheel();
+    if (wheel > 0 || (pressed & PC_MOUSE_BUTTON_LEFT)) {
+        trigger |= BUTTON_CUP;
+    } else if (wheel < 0) {
+        trigger |= BUTTON_CDOWN;
+    }
+    return trigger;
+}
+#endif
+
 static void mBN_move_Play(Submenu* submenu, mSM_MenuInfo_c* menu) {
     Submenu_Overlay_c* overlay = submenu->overlay;
     int trigger = overlay->menu_control.trigger;
     mBN_Ovl_c* bank_ovl = overlay->bank_ovl;
+
+#ifdef MOUSE_INPUT
+    trigger = mBN_mouse_trigger(submenu, menu, trigger);
+#endif
 
     if (trigger & BUTTON_B) {
         (*overlay->move_chg_base_proc)(menu, mSM_MOVE_OUT_TOP);
@@ -274,7 +345,6 @@ static void mBN_set_num_str(f32 x, f32 y, GAME* game, u32 num, f32 scale, rgba_t
 static void mBN_set_character_dl(Submenu* submenu, GAME* game, mSM_MenuInfo_c* menu) {
     static u8 kingaku_str[] = { CHAR_Y, CHAR_o, CHAR_u, CHAR_r, CHAR_SPACE, CHAR_A,
                                 CHAR_c, CHAR_c, CHAR_o, CHAR_u, CHAR_n,     CHAR_t };
-    static u8 end_str[] = { CHAR_O, CHAR_K };
     static rgba_t normal_col = { 0, 50, 255, 255 };
     static rgba_t select_col = { 195, 20, 20, 255 };
     static rgba_t bank_bell_col = { 170, 60, 145, 255 };
@@ -322,7 +392,7 @@ static void mBN_set_character_dl(Submenu* submenu, GAME* game, mSM_MenuInfo_c* m
     {
         rgba_t* color = bank_ovl->cursol < mBN_CUSROL_OK ? &normal_col : &select_col;
 
-        mFont_SetLineStrings(game, end_str, sizeof(end_str), 208.0f + pos_x, 140.0f - pos_y, color->r, color->g,
+        mFont_SetLineStrings(game, mBN_ok_str, sizeof(mBN_ok_str), 208.0f + pos_x, 140.0f - pos_y, color->r, color->g,
                              color->b, 255, FALSE, TRUE, 0.875f, 0.875f, mFont_MODE_POLY);
     }
 }
