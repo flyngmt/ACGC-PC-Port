@@ -462,7 +462,8 @@ static void mAD_turn_page2_proc(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 #else
     adrs_ovl->pos_x += adrs_ovl->speed_x;
 #endif
-    if (adrs_ovl->pos_x * adrs_ovl->speed_x > 0.0f) {
+    if (adrs_ovl->pos_x * adrs_ovl->speed_x > 0.0f ||
+        (pos < 14.0f && fabsf(adrs_ovl->speed_x) < 0.25f)) {
         adrs_ovl->pos_x = 0.0f;
         adrs_ovl->speed_x = 0.0f;
         adrs_ovl->proc_idx = mAD_PROC_SELECT;
