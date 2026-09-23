@@ -28,6 +28,10 @@
 #include "m_vibctl.h"
 #include "m_debug.h"
 
+#ifdef MOUSE_INPUT
+#include "pc_mouse_input.h"
+#endif
+
 static int l_skip_other_func_set_wade = FALSE;
 static xyz_t l_wade_end_pos = { 0.0f, 0.0f, 0.0f };
 
@@ -1471,22 +1475,27 @@ static void Player_actor_main_Demo_get_golden_axe_wait(ACTOR*, GAME*);
     static int last_tool_slot = 0;
     static int last_direction = 0;
 
-    static void TrySwitchToolSlot(GAME* game, int direction) {
+    static void TryPutawayTool(GAME* game);
+
+    static void TrySwitchToolSlot(GAME* game, int direction, int include_empty_hands) {
         Private_c* priv;
         mActor_name_t held_item;
         mActor_name_t slot_item;
         int search_slot;
+        int empty_slot;
         int i;
 
         priv = Common_Get(now_private);
         held_item = priv->equipment;
+        /* One free pocket represents the empty-hands stop in the wheel cycle. */
+        empty_slot = include_empty_hands && held_item != EMPTY_NO ? mPr_GetPossessionItemIdx(priv, EMPTY_NO) : -1;
 
         if (last_tool_slot < 0 || last_tool_slot >= mPr_POCKETS_SLOT_COUNT) {
             last_tool_slot = 0;
         }
 
         /* try last used slot first */
-        if (held_item == EMPTY_NO) {
+        if (held_item == EMPTY_NO && !include_empty_hands) {
             slot_item = priv->inventory.pockets[last_tool_slot];
 
             if (mPr_GET_ITEM_COND(priv->inventory.item_conditions, last_tool_slot) == mPr_ITEM_COND_NORMAL &&
@@ -1506,6 +1515,13 @@ static void Player_actor_main_Demo_get_golden_axe_wait(ACTOR*, GAME*);
         search_slot = last_tool_slot;
 
         for (i = 0; i < mPr_POCKETS_SLOT_COUNT; i++) {
+            if (search_slot == empty_slot) {
+                TryPutawayTool(game);
+                last_tool_slot = WrapToolSlot(search_slot + direction);
+                last_direction = direction;
+                return;
+            }
+
             slot_item = priv->inventory.pockets[search_slot];
 
             if (mPr_GET_ITEM_COND(priv->inventory.item_conditions, search_slot) == mPr_ITEM_COND_NORMAL &&
@@ -1580,16 +1596,26 @@ static void Player_actor_main_Demo_get_golden_axe_wait(ACTOR*, GAME*);
         }
 
         if (chkTrigger(BUTTON_DLEFT)) {
-            TrySwitchToolSlot(game, -1);
+            TrySwitchToolSlot(game, -1, FALSE);
             return;
         }
         if (chkTrigger(BUTTON_DRIGHT)) {
-            TrySwitchToolSlot(game, 1);
+            TrySwitchToolSlot(game, 1, FALSE);
             return;
         }
         if (chkTrigger(BUTTON_DDOWN)) {
             TryPutawayTool(game);
+            return;
         }
+
+#ifdef MOUSE_INPUT
+        if (mMsg_CHECK_MAINHIDE() && pc_mouse_pointer_visible()) {
+            int mouse_wheel = pc_mouse_scroll_wheel();
+            if (mouse_wheel != 0) {
+                TrySwitchToolSlot(game, mouse_wheel > 0 ? -1 : 1, TRUE);
+            }
+        }
+#endif
     }
 #endif
 

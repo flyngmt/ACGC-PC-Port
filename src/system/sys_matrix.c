@@ -54,6 +54,14 @@ MtxF* get_Matrix_now(void) {
     return (Matrix_now);
 }
 
+#ifdef MOUSE_INPUT
+MtxF* Matrix_swap_current(MtxF* matrix) {
+    MtxF* previous = Matrix_now;
+    Matrix_now = matrix;
+    return previous;
+}
+#endif
+
 void Matrix_mult(MtxF* m, u8 mode) {
     MtxF* curm = get_Matrix_now();
 

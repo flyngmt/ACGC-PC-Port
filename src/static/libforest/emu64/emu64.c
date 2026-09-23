@@ -16,6 +16,9 @@
 #ifdef TARGET_PC
 #include "pc_emu64_geometry_cache.hpp"
 #include "pc_platform.h"
+#ifdef MOUSE_INPUT
+#include "aurora_mouse_cursor.h"
+#endif
 #else
 #define pc_widescreen_set_projection GXSetProjection
 #define pc_widescreen_set_viewport GXSetViewport
@@ -4557,6 +4560,22 @@ void emu64::dl_G_NOOP() {
 
     switch (noop->tag) {
         case G_TAG_NONE:
+#ifdef MOUSE_INPUT
+            if (this->gfx.words.w1 == PC_NOOP_MOUSE_CAPTURE_BEGIN) {
+                aurora_mouse_cursor_capture_begin();
+                break;
+            }
+            if (this->gfx.words.w1 >= PC_NOOP_MOUSE_CAPTURE_END &&
+                this->gfx.words.w1 < PC_NOOP_MOUSE_CAPTURE_END + AURORA_MOUSE_CURSOR_FRAME_COUNT) {
+                aurora_mouse_cursor_capture_end(this->gfx.words.w1 - PC_NOOP_MOUSE_CAPTURE_END);
+                break;
+            }
+            if (this->gfx.words.w1 >= PC_NOOP_MOUSE_CURSOR_DRAW &&
+                this->gfx.words.w1 < PC_NOOP_MOUSE_CURSOR_DRAW + AURORA_MOUSE_CURSOR_FRAME_COUNT) {
+                aurora_mouse_cursor_draw(this->gfx.words.w1 - PC_NOOP_MOUSE_CURSOR_DRAW);
+                break;
+            }
+#endif
 #ifdef TARGET_PC
             /* PC widescreen: skip aspect correction for transitions / bg blits.
              * See pc_platform.h for how the marker/flag mechanism works. */

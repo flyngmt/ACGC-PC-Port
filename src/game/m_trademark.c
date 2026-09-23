@@ -31,6 +31,9 @@
 #include "libc64/qrand.h"
 #include "m_common_data.h"
 #include "m_play.h"
+#ifdef MOUSE_INPUT
+#include "pc_mouse_input.h"
+#endif
 
 static int mTR_first_flag = TRUE;
 
@@ -202,7 +205,11 @@ static void trademark_cancel(GAME_TRADEMARK* trademark) {
         return;
     }
 
-    if ((gamePT->pads[0].on.button & BUTTON_START) != BUTTON_START) {
+    int start_pressed = (gamePT->pads[0].on.button & BUTTON_START) != 0;
+#ifdef MOUSE_INPUT
+    start_pressed = start_pressed || (pc_mouse_button_pressed() & (PC_MOUSE_BUTTON_LEFT | PC_MOUSE_BUTTON_RIGHT));
+#endif
+    if (!start_pressed) {
         return;
     }
 

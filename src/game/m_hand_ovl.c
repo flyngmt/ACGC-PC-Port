@@ -8,10 +8,24 @@
 #include "m_cporiginal_ovl.h"
 #include "m_gba_ovl.h"
 #include "m_inventory_ovl.h"
+#include "m_lib.h"
 #include "m_player_lib.h"
 #include "m_needlework_ovl.h"
 #include "sys_matrix.h"
 #include "m_rcp.h"
+#ifdef MOUSE_INPUT
+#include "gfxalloc.h"
+#include "m_design_ovl.h"
+#include "m_play.h"
+#include "pc_mouse_input.h"
+#include "aurora_mouse_cursor.h"
+#include "pc_platform.h"
+
+static int mouse_pointer_menu_hand_drawn;
+static f32 mouse_pointer_animation_frame;
+static const f32 mouse_pointer_animation_hold_frame = 3.0f;
+static const f32 mouse_pointer_animation_end_frame = 6.0f; // First tap returns to the idle pose.
+#endif
 
 static mHD_Ovl_c hand_ovl_data;
 
@@ -920,9 +934,18 @@ static void mHD_draw_original(Submenu* submenu, GRAPH* graph, f32* pos) {
 #define mHD_ROT_X DEG2SHORT_ANGLE(-135.0f)
 #define mHD_ROT_Y DEG2SHORT_ANGLE(0.0f)
 #define mHD_ROT_Z DEG2SHORT_ANGLE(70.3125f)
+#define mHD_SHADOW_OFFSET 2.5f
 
-static void mHD_hand_shape_draw(Submenu* submenu, GAME* game, int shadow_flag) {
-    mHD_Ovl_c* hand_ovl = submenu->overlay->hand_ovl;
+static void mHD_get_hand_draw_offset(f32* offset, f32 x, f32 y) {
+    f32 cos_x = cos_s(mHD_ROT_X);
+    f32 sin_z = sin_s(mHD_ROT_Z);
+    f32 cos_z = cos_s(mHD_ROT_Z);
+
+    offset[0] = x * cos_z + y * (-cos_x * sin_z) + 4.0f;
+    offset[1] = x * sin_z + y * (cos_x * cos_z) - 4.0f;
+}
+
+static void mHD_hand_shape_draw(mHD_Ovl_c* hand_ovl, GAME* game, int shadow_flag) {
     GRAPH* graph = game->graph;
     N64Mtx* mtx = (N64Mtx*)GRAPH_ALLOC_TYPE(graph, N64Mtx, hand_ovl->info.keyframe.skeleton->num_shown_joints);
 
@@ -974,30 +997,47 @@ static void mHD_hand_ovl_draw(Submenu* submenu, GAME* game) {
     GRAPH* graph = game->graph;
 
     if (hand_ovl->info.type != 0) {
+        int draw_hand = TRUE;
+#ifdef MOUSE_INPUT
+        mouse_pointer_menu_hand_drawn = TRUE;
+        if (submenu->overlay->tag_ovl->mouse_active) {
+            draw_hand = pc_mouse_pointer_visible();
+        }
+#endif
         f32 cos_x = cos_s(mHD_ROT_X);
         f32 sin_z = sin_s(mHD_ROT_Z);
         f32 cos_z = cos_s(mHD_ROT_Z);
         f32 target_pos[2];
         f32 pos[3];
         f32 pos_adj;
+        f32 hand_x = hand_ovl->info.pos[0];
+        f32 hand_y = hand_ovl->info.pos[1];
         mTG_tag_c* tag;
 
-        target_pos[0] =
-            (hand_ovl->info.pos[0] + hand_ovl->info.ofs[0] * cos_z + hand_ovl->info.ofs[1] * (-cos_x * sin_z)) + 4.0f;
-        target_pos[1] =
-            (hand_ovl->info.pos[1] + hand_ovl->info.ofs[0] * sin_z + hand_ovl->info.ofs[1] * (cos_x * cos_z)) - 4.0f;
+#ifdef MOUSE_INPUT
+        mTG_Ovl_c* tag_ovl = submenu->overlay->tag_ovl;
+        if (tag_ovl->mouse_active) {
+            hand_x = tag_ovl->mouse_x - 160.0f;
+            hand_y = 120.0f - tag_ovl->mouse_y;
+        }
+#endif
+        mHD_get_hand_draw_offset(target_pos, hand_ovl->info.ofs[0], hand_ovl->info.ofs[1]);
+        target_pos[0] += hand_x;
+        target_pos[1] += hand_y;
 
         /* Draw hand shadow first */
-        Matrix_push();
-        submenu->overlay->change_view_proc(graph, 80.0f, 0.0f, ((target_pos[0] + 160.0f) - 4.0f - 12.0f) * 4.0f,
-                                           (120.0f - target_pos[1] + 4.0f - 20.0f) * 4.0f, 0, 64, 64);
-        mHD_hand_shape_draw(submenu, game, TRUE);
-        submenu->overlay->setup_view_proc(submenu, graph, 0);
-        Matrix_pull();
+        if (draw_hand) {
+            Matrix_push();
+            submenu->overlay->change_view_proc(graph, 80.0f, 0.0f, ((target_pos[0] + 160.0f) - 4.0f - 12.0f) * 4.0f,
+                                               (120.0f - target_pos[1] + 4.0f - 20.0f) * 4.0f, 0, 64, 64);
+            mHD_hand_shape_draw(hand_ovl, game, TRUE);
+            submenu->overlay->setup_view_proc(submenu, graph, 0);
+            Matrix_pull();
+        }
 
         tag = &submenu->overlay->tag_ovl->tags[0];
-        target_pos[0] -= 2.5f;
-        target_pos[1] += 2.5f;
+        target_pos[0] -= mHD_SHADOW_OFFSET;
+        target_pos[1] += mHD_SHADOW_OFFSET;
 
         // is this an xyz_t?
         pos[0] = target_pos[0] + (cos_z * -6.9f + 7.0f * (-cos_x * sin_z));
@@ -1031,14 +1071,138 @@ static void mHD_hand_ovl_draw(Submenu* submenu, GAME* game) {
         mHD_draw_original(submenu, graph, pos);
 
         /* Draw hand model last */
-        Matrix_push();
-        submenu->overlay->change_view_proc(graph, 80.0f, 0.0f, ((target_pos[0] + 160.0f) - 4.0f - 12.0f) * 4.0f,
-                                           (120.0f - target_pos[1] + 4.0f - 20.0f) * 4.0f, 0, 64, 64);
-        mHD_hand_shape_draw(submenu, game, FALSE);
-        submenu->overlay->setup_view_proc(submenu, graph, 0);
-        Matrix_pull();
+        if (draw_hand) {
+            Matrix_push();
+            submenu->overlay->change_view_proc(graph, 80.0f, 0.0f, ((target_pos[0] + 160.0f) - 4.0f - 12.0f) * 4.0f,
+                                               (120.0f - target_pos[1] + 4.0f - 20.0f) * 4.0f, 0, 64, 64);
+            mHD_hand_shape_draw(hand_ovl, game, FALSE);
+            submenu->overlay->setup_view_proc(submenu, graph, 0);
+            Matrix_pull();
+        }
     }
 }
+
+#ifdef MOUSE_INPUT
+void mHD_mouse_pointer_get_offset(f32* x, f32* y) {
+    f32 offset[2];
+    mHD_get_hand_draw_offset(offset, mHD_hand_offsetX_table[mHD_ACTION_SASU],
+                            mHD_hand_offsetY_table[mHD_ACTION_SASU]);
+    *x = offset[0] - mHD_SHADOW_OFFSET;
+    *y = -(offset[1] + mHD_SHADOW_OFFSET);
+}
+
+void mHD_mouse_pointer_begin_frame(void) {
+    u32 pressed = pc_mouse_button_pressed();
+    int holding_left = (pc_mouse_button_held() & PC_MOUSE_BUTTON_LEFT) != 0;
+
+    mouse_pointer_menu_hand_drawn = FALSE;
+    if (!pc_mouse_pointer_visible()) {
+        mouse_pointer_animation_frame = 0.0f;
+    } else if ((pressed & PC_MOUSE_BUTTON_LEFT) || (!holding_left && (pressed & PC_MOUSE_BUTTON_RIGHT))) {
+        mouse_pointer_animation_frame = 1.0f;
+    } else if (mouse_pointer_animation_frame > 0.0f) {
+        mouse_pointer_animation_frame += mHD_animeSpdTable[mHD_ACTION_SASU] * gamePT->graph->dt_num_60fps_frames;
+        if (holding_left && mouse_pointer_animation_frame >= mouse_pointer_animation_hold_frame) {
+            mouse_pointer_animation_frame = mouse_pointer_animation_hold_frame;
+        } else if (mouse_pointer_animation_frame >= mouse_pointer_animation_end_frame) {
+            mouse_pointer_animation_frame = 0.0f;
+        }
+    }
+}
+
+void mHD_mouse_pointer_draw(GAME* game) {
+    static mHD_Ovl_c pointer_hand;
+    static MtxF pointer_matrix_stack[32];
+    static int initialized;
+    GRAPH* graph = game->graph;
+    int frame = 0;
+    int first_cached_frame = 0;
+    int last_cached_frame = AURORA_MOUSE_CURSOR_FRAME_COUNT / 2;
+    f32 animation_start = 1.0f;
+    f32 animation_end = mouse_pointer_animation_hold_frame;
+
+    if (mouse_pointer_menu_hand_drawn || !pc_mouse_pointer_visible()) {
+        return;
+    }
+
+    if (game->exec == play_main) {
+        Submenu* submenu = &((GAME_PLAY*)game)->submenu;
+        if (submenu->current_menu_type == mSM_OVL_DESIGN && submenu->overlay != NULL) {
+            mDE_Ovl_c* design_ovl = submenu->overlay->design_ovl;
+            if (design_ovl != NULL && design_ovl->mode == mDE_MODE_MAIN) {
+                return;
+            }
+        }
+    }
+
+    if (mouse_pointer_animation_frame > mouse_pointer_animation_hold_frame) {
+        first_cached_frame = last_cached_frame;
+        last_cached_frame = AURORA_MOUSE_CURSOR_FRAME_COUNT - 1;
+        animation_start = mouse_pointer_animation_hold_frame;
+        animation_end = mouse_pointer_animation_end_frame;
+    }
+    if (mouse_pointer_animation_frame > 0.0f) {
+        frame = first_cached_frame + (int)((mouse_pointer_animation_frame - animation_start) *
+                (last_cached_frame - first_cached_frame) / (animation_end - animation_start) + 0.5f);
+    }
+
+    if (aurora_mouse_cursor_needs_capture(frame)) {
+        Gfx* start;
+        int texture_size = aurora_mouse_cursor_texture_size();
+        Vp* viewport = GRAPH_ALLOC_TYPE(graph, Vp, 1);
+        cKF_SkeletonInfo_R_c* keyframe = &pointer_hand.info.keyframe;
+        f32 progress = (f32)(frame - first_cached_frame) / (last_cached_frame - first_cached_frame);
+        if (viewport == NULL) {
+            return;
+        }
+        *viewport = (Vp){ texture_size * 2, texture_size * 2, 511, 0,
+                          texture_size * 2, texture_size * 2, 511, 0 };
+        progress = progress * progress * (3.0f - 2.0f * progress);
+        if (!initialized) {
+            cKF_AnimInfo_c* anim = &mHD_animeTable[mHD_ACTION_SASU];
+            cKF_SkeletonInfo_R_ct(keyframe, &cKF_bs_r_hnd, NULL, pointer_hand.info.work, pointer_hand.info.morph);
+            cKF_SkeletonInfo_R_init(keyframe, &cKF_bs_r_hnd, anim->animation,
+                                   anim->start_frame, mouse_pointer_animation_end_frame, anim->start_frame,
+                                   0.0f, 0.0f, cKF_FRAMECONTROL_STOP, NULL);
+            initialized = TRUE;
+        }
+        keyframe->frame_control.current_frame = animation_start + progress * (animation_end - animation_start);
+        cKF_SkeletonInfo_R_play(keyframe);
+
+        OPEN_DISP(graph);
+        start = NOW_POLY_OPA_DISP;
+        Gfx* cursor = gfxopen(start);
+        gSPDisplayList(NOW_OVERLAY_DISP++, cursor);
+        gDPPipeSync(cursor++);
+        SET_POLY_OPA_DISP(cursor);
+        gDPNoOpTag(NOW_POLY_OPA_DISP++, PC_NOOP_WIDESCREEN_STRETCH);
+        gDPNoOpTag(NOW_POLY_OPA_DISP++, PC_NOOP_MOUSE_CAPTURE_BEGIN);
+        gDPSetScissor(NOW_POLY_OPA_DISP++, G_SC_NON_INTERLACE, 0, 0,
+                      texture_size, texture_size);
+        CLOSE_DISP(graph);
+
+        MtxF* previous_matrix = Matrix_swap_current(pointer_matrix_stack);
+        /* Keep the original projection; only the capture viewport changes size. */
+        mSM_change_view(graph, 80.0f, 0.0f, 0.0f, 0.0f, 0,
+                       AURORA_MOUSE_CURSOR_VIEW_SIZE, AURORA_MOUSE_CURSOR_VIEW_SIZE);
+        OPEN_DISP(graph);
+        gSPViewport(NOW_POLY_OPA_DISP++, viewport);
+        CLOSE_DISP(graph);
+        mHD_hand_shape_draw(&pointer_hand, game, FALSE);
+        Matrix_swap_current(previous_matrix);
+
+        OPEN_DISP(graph);
+        gDPNoOpTag(NOW_POLY_OPA_DISP++, PC_NOOP_MOUSE_CAPTURE_END + frame);
+        gSPEndDisplayList(NOW_POLY_OPA_DISP++);
+        gfxclose(start, NOW_POLY_OPA_DISP);
+        CLOSE_DISP(graph);
+    }
+
+    OPEN_DISP(graph);
+    gDPNoOpTag(NOW_OVERLAY_DISP++, PC_NOOP_MOUSE_CURSOR_DRAW + frame);
+    CLOSE_DISP(graph);
+}
+#endif
 
 static void mHD_nop_hand_func(Submenu* submenu) {
     submenu->overlay->menu_control.hand_move_func = (mSM_HAND_MOVE_FUNC)&none_proc1;

@@ -13,6 +13,7 @@
 #include "pc_assets.h"
 #include "pc_platform.h"
 #include "pc_typing.h"
+#include "pc_mouse_input.h"
 #include "aurora_debug.h"
 #include "acgc/app_info.hpp"
 #include "acgc/data.hpp"
@@ -78,6 +79,34 @@ static void pc_speedhack_toggle() {
     }
 }
 
+#ifdef MOUSE_INPUT
+static void update_mouse_pad_buttons() {
+    u32 buttons = 0;
+    const auto add_binding = [&buttons](s32 scancode) {
+        if (scancode <= PAD_KEY_MOUSE_LEFT && scancode >= PAD_KEY_MOUSE_X2) {
+            buttons |= 1u << (PAD_KEY_MOUSE_LEFT - scancode);
+        }
+    };
+    for (u32 port = 0; port < PAD_CHANMAX; ++port) {
+        u32 count = 0;
+        if (const auto* bindings = PADGetKeyButtonBindings(port, &count)) {
+            for (u32 i = 0; i < count; ++i) {
+                if (bindings[i].padButton != 0) {
+                    add_binding(bindings[i].scancode);
+                }
+            }
+        }
+        if (const auto* bindings = PADGetKeyAxisBindings(port, &count)) {
+            for (u32 i = 0; i < count; ++i) {
+                add_binding(bindings[i].scancode);
+            }
+        }
+    }
+    // PAD > Mouse
+    pc_mouse_set_pad_buttons(buttons);
+}
+#endif
+
 bool ac_aurora_begin_frame() {
     ZoneScoped;
 
@@ -92,7 +121,11 @@ bool ac_aurora_begin_frame() {
     pc_emu64_frame_cull_visible = 0;
     pc_emu64_frame_cull_rejected = 0;
 
+    pc_mouse_set_blocked(PC_MOUSE_BLOCK_HOST_UI, acgc::ui::any_document_visible());
+    pc_mouse_set_blocked(PC_MOUSE_BLOCK_IMGUI, ac_debug_imgui_wants_mouse());
     const AuroraEvent* event = aurora_update();
+    pc_mouse_set_blocked(PC_MOUSE_BLOCK_HOST_UI, acgc::ui::any_document_visible());
+    update_render_size();
     while (event != nullptr && event->type != AURORA_NONE) {
         if (event->type == AURORA_EXIT) {
             g_pc_running = 0;
@@ -110,6 +143,9 @@ bool ac_aurora_begin_frame() {
             if (acgc::ui::any_document_visible()) {
                 pc_typing_cancel();
             }
+            pc_mouse_handle_event(&event->sdl);
+        } else if (event->type == AURORA_PAUSED || event->type == AURORA_UNPAUSED) {
+            pc_mouse_cancel();
         } else if (event->type == AURORA_CONTROLLER_ADDED) {
             acgc::apply_runtime_settings(false);
         }
@@ -121,7 +157,14 @@ bool ac_aurora_begin_frame() {
     }
 
     update_render_size();
+    pc_mouse_sync_system_cursor();
     s_frame_started = aurora_begin_frame();
+    pc_mouse_set_blocked(PC_MOUSE_BLOCK_IMGUI, ac_debug_imgui_wants_mouse());
+    pc_mouse_set_blocked(PC_MOUSE_BLOCK_PAUSED, !s_frame_started || aurora_get_timescale() == 0.0f);
+#ifdef MOUSE_INPUT
+    update_mouse_pad_buttons();
+#endif
+    pc_mouse_update();
     return s_frame_started;
 }
 
@@ -129,6 +172,7 @@ void ac_aurora_end_frame() {
     if (s_frame_started) {
         acgc::ui::update();
         ac_debug_imgui_draw();
+        pc_mouse_sync_system_cursor();
         aurora_end_frame();
         pc_emu64_tlut_frame_drained();
         s_frame_started = false;
@@ -667,6 +711,7 @@ int main(int argc, char* argv[]) {
     }
 
     pc_typing_initialize(aurora_info.window);
+    pc_mouse_initialize(aurora_info.window);
     acgc::texture_replacements::reload();
     ac_entry();
     const int result = boot_main(argc, const_cast<const char**>(argv));
@@ -674,6 +719,7 @@ int main(int argc, char* argv[]) {
     pc_audio_shutdown();
     pc_audio_mq_shutdown();
     pc_typing_shutdown();
+    pc_mouse_shutdown();
     aurora_dvd_close();
     acgc::texture_replacements::shutdown();
     acgc::ui::shutdown();

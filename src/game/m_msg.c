@@ -7,10 +7,14 @@
 #include "m_common_data.h"
 #include "jsyswrap.h"
 #include "m_bgm.h"
+#include "m_event.h"
 #include "libforest/emu64/emu64_wrapper.h"
 #include "sys_matrix.h"
 #ifdef TARGET_PC
 #include "pc_bswap.h"
+#endif
+#ifdef MOUSE_INPUT
+#include "pc_mouse_input.h"
 #endif
 
 static u32 Msg_table_rom_start = 0;
@@ -24,6 +28,22 @@ typedef void (*mMsg_MAIN_PROC)(mMsg_Window_c*, GAME*);
 
 static void mMsg_MainSetup_Window(mMsg_Window_c* msg_p, GAME* game);
 static int mMsg_end_to_disappear(mMsg_Window_c* msg_p);
+
+static u16 mMsg_get_trigger(void) {
+    u16 buttons = getTrigger();
+#ifdef MOUSE_INPUT
+    if (!mEv_IsTitleDemo()) {
+        u32 mouse_buttons = pc_mouse_button_pressed();
+        if (mouse_buttons & PC_MOUSE_BUTTON_LEFT) {
+            buttons |= BUTTON_A;
+        }
+        if (mouse_buttons & PC_MOUSE_BUTTON_RIGHT) {
+            buttons |= BUTTON_B;
+        }
+    }
+#endif
+    return buttons;
+}
 
 #include "../src/game/m_msg_ctrl.c_inc"
 

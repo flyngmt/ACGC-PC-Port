@@ -8,6 +8,9 @@
 #include "m_editEndChk_ovl.h"
 #include "m_cpwarning_ovl.h"
 #include "m_malloc.h"
+#ifdef MOUSE_INPUT
+#include "pc_mouse_input.h"
+#endif
 
 enum {
     mDI_MOVE_READ,
@@ -167,7 +170,6 @@ static void mDI_make_trigger_data(mDI_Ovl_c* diary_ovl) {
 static s16 mDI_Set_command_read(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     mDI_Ovl_c* diary_ovl = submenu->overlay->diary_ovl;
 
-    mDI_make_trigger_data(diary_ovl);
     if ((diary_ovl->button & (BUTTON_DUP | BUTTON_DDOWN)) != 0) {
         if ((diary_ovl->button & (BUTTON_DUP | BUTTON_DDOWN)) == (diary_ovl->_0C & (BUTTON_DUP | BUTTON_DDOWN))) {
             diary_ovl->_0C = diary_ovl->button;
@@ -435,11 +437,63 @@ static void mDI_Play_editor_in(Submenu* submenu, mSM_MenuInfo_c* menu_info, mDI_
     }
 }
 
+#ifdef MOUSE_INPUT
+extern Vtx dia_hyouji_v[];
+
+static u32 mDI_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 trigger) {
+    mDI_Ovl_c* diary_ovl = submenu->overlay->diary_ovl;
+    f32 mouse_x, mouse_y;
+    u32 pressed;
+    s32 wheel;
+
+    if (submenu->current_menu_type != mSM_OVL_DIARY ||
+        !pc_mouse_update_owner(FALSE, trigger || getButton() || gamePT->mcon.move_pR > 0.5f) ||
+        !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+        return trigger;
+    }
+
+    pressed = pc_mouse_button_pressed();
+    if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+        return trigger | BUTTON_B;
+    }
+    if (pressed & PC_MOUSE_BUTTON_LEFT) {
+        if (menu_info->data0 == 1) {
+            return trigger | BUTTON_B;
+        }
+
+        mouse_x -= 160.0f;
+        mouse_y = 120.0f - mouse_y - menu_info->position[0];
+        if (mSM_mouse_over_quad(&dia_hyouji_v[0], mouse_x, mouse_y, 2.0f) ||
+            mSM_mouse_over_quad(&dia_hyouji_v[8], mouse_x, mouse_y, 2.0f)) {
+            return trigger | BUTTON_A;
+        }
+        if (mSM_mouse_over_quad(&dia_hyouji_v[4], mouse_x, mouse_y, 2.0f) ||
+            mSM_mouse_over_quad(&dia_hyouji_v[12], mouse_x, mouse_y, 2.0f)) {
+            return trigger | BUTTON_B;
+        }
+    }
+
+    wheel = pc_mouse_scroll_wheel();
+    if (wheel != 0) {
+        u32 direction = wheel > 0 ? BUTTON_DUP : BUTTON_DDOWN;
+        diary_ovl->trigger |= direction;
+        diary_ovl->button |= direction;
+    }
+    return trigger;
+}
+#endif
+
 static void mDI_Play_read(Submenu* submenu, mSM_MenuInfo_c* menu_info, mDI_Ovl_c* diary_ovl) {
+    u32 trigger = getTrigger();
+
+    mDI_make_trigger_data(diary_ovl);
+#ifdef MOUSE_INPUT
+    trigger = mDI_mouse_trigger(submenu, menu_info, trigger);
+#endif
     mDI_roll_control_read(submenu, menu_info);
 
-    if ((getTrigger() & (BUTTON_A | BUTTON_B | BUTTON_START)) != 0) {
-        if ((getTrigger() & (BUTTON_B)) != 0 || menu_info->data0 == 1) {
+    if ((trigger & (BUTTON_A | BUTTON_B | BUTTON_START)) != 0) {
+        if ((trigger & BUTTON_B) != 0 || menu_info->data0 == 1) {
             if (menu_info->data0 == 1) {
                 sAdo_SysTrgStart(NA_SE_5F);
             } else {

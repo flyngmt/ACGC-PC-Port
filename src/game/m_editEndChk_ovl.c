@@ -4,6 +4,9 @@
 #include "m_common_data.h"
 #include "m_font.h"
 #include "sys_matrix.h"
+#ifdef MOUSE_INPUT
+#include "pc_mouse_input.h"
+#endif
 
 typedef struct editEndChk_win_data_s {
     int answer_num;
@@ -36,6 +39,63 @@ static u8 mEE_str_data0[3] = "Yes";
 static u8 mEE_str_data1[7] = "Rewrite";
 static u8 mEE_str_data2[12] = "Throw it out";
 
+typedef struct editEndChk_str_s {
+    u8* str;
+    int len;
+} mEE_str_c;
+
+static mEE_str_c mEE_answer_strings[] = {
+    { mEE_str_data0, sizeof(mEE_str_data0) },
+    { mEE_str_data1, sizeof(mEE_str_data1) },
+    { mEE_str_data2, sizeof(mEE_str_data2) },
+};
+
+#ifdef MOUSE_INPUT
+static u32 mEE_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 trigger) {
+    mEE_Ovl_c* editEndChk_ovl = submenu->overlay->editEndChk_ovl;
+    mEE_win_data_c* data = &win_data[menu_info->data0];
+    f32 mouse_x, mouse_y;
+    u32 pressed;
+    f32 x, y;
+    int i;
+
+    if (submenu->current_menu_type != mSM_OVL_EDITENDCHK ||
+        !pc_mouse_update_owner(FALSE, trigger || getButton() || gamePT->mcon.move_pR > 0.5f) ||
+        !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+        return trigger;
+    }
+
+    pressed = pc_mouse_button_pressed();
+    if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+        return trigger | BUTTON_B;
+    }
+    if (!editEndChk_ovl->moving_in) {
+        return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+    }
+    if (editEndChk_ovl->scale < 1.0f) {
+        return trigger;
+    }
+
+    x = 160.0f + menu_info->position[0] + data->answer_x + data->char_x;
+    y = 120.0f - menu_info->position[1] - data->answer_y - data->char_y;
+    for (i = 0; i < data->answer_num; i++, y += 16.0f) {
+        mEE_str_c* answer = &mEE_answer_strings[i];
+        f32 width = mFont_GetStringWidth(answer->str, answer->len, TRUE);
+        if (mouse_x >= x && mouse_x < x + width && mouse_y >= y && mouse_y < y + 16.0f) {
+            if (editEndChk_ovl->selected_answer != i) {
+                editEndChk_ovl->selected_answer = i;
+                sAdo_SysTrgStart(NA_SE_CURSOL);
+            }
+            if (pressed & PC_MOUSE_BUTTON_LEFT) {
+                trigger |= BUTTON_A;
+            }
+            break;
+        }
+    }
+    return trigger;
+}
+#endif
+
 static void mEE_move_Move(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     (*submenu->overlay->move_Move_proc)(submenu, menu_info);
 }
@@ -46,6 +106,10 @@ static void mEE_move_Play(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     u32 trigger = submenu->overlay->menu_control.trigger;
     int max_answer_no = data->answer_num - 1;
     f32 dt = gamePT->graph->dt_num_60fps_frames;
+
+#ifdef MOUSE_INPUT
+    trigger = mEE_mouse_trigger(submenu, menu_info, trigger);
+#endif
 
     if ((trigger & BUTTON_B)) {
         sAdo_SysTrgStart(0x1003);
@@ -187,22 +251,11 @@ static void mEE_set_question_character(Submenu* submenu, GRAPH* graph, GAME* gam
                          TRUE, 1.0f, 1.0f, mFont_MODE_POLY);
 }
 
-typedef struct editEndChk_str_s {
-    u8* str;
-    int len;
-} mEE_str_c;
-
 static void mEE_set_answer_character(Submenu* submenu, GRAPH* graph, GAME* game, mEE_win_data_c* data, f32 x, f32 y) {
-    static mEE_str_c str_table[] = {
-        { mEE_str_data0, sizeof(mEE_str_data0) },
-        { mEE_str_data1, sizeof(mEE_str_data1) },
-        { mEE_str_data2, sizeof(mEE_str_data2) },
-    };
-
     static int col_table[2][3] = { { 165, 185, 185 }, { 100, 130, 245 } };
 
     mEE_Ovl_c* editEndChk_ovl = submenu->overlay->editEndChk_ovl;
-    mEE_str_c* str_p = str_table;
+    mEE_str_c* str_p = mEE_answer_strings;
     f32 scale = editEndChk_ovl->scale;
     int max = data->answer_num;
     int i;
