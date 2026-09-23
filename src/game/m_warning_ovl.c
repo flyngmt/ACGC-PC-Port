@@ -3,6 +3,9 @@
 #include "audio.h"
 #include "sys_matrix.h"
 #include "m_font.h"
+#ifdef MOUSE_INPUT
+#include "pc_mouse_input.h"
+#endif
 
 typedef struct warning_ovl_line_s {
   f32 pos_x;
@@ -266,9 +269,62 @@ static void mWR_move_Move(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
   ovl->scale = new_scale;
 }
 
+#ifdef MOUSE_INPUT
+static u32 mWR_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 trigger) {
+  mWR_Ovl_c* warning_ovl = submenu->overlay->warning_ovl;
+  mWR_data_c* data = &wr_win_data[menu_info->data0];
+  f32 scale = warning_ovl->scale;
+  f32 mouse_x, mouse_y;
+  f32 x, y;
+  u32 pressed;
+  int i;
+
+  if (submenu->current_menu_type != mSM_OVL_WARNING ||
+      !pc_mouse_update_owner(FALSE, trigger || getButton() || gamePT->mcon.move_pR > 0.5f) ||
+      !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+    return trigger;
+  }
+
+  pressed = pc_mouse_button_pressed();
+  if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+    return trigger | BUTTON_B;
+  }
+  if (menu_info->data0 != mWR_WARNING_MAILBOX) {
+    return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+  }
+
+  x = 160.0f + menu_info->position[0] - data->scale_x * 120.0f * scale;
+  y = 120.0f - menu_info->position[1] - data->scale_y * 60.0f * scale;
+  for (i = 0; i < data->num_lines; i++) {
+    mWR_line_c* line = &data->lines[i];
+
+    y += line->pos_y * scale;
+    if (i >= 3) {
+      f32 line_x = x + line->pos_x * scale;
+      f32 width = mFont_GetStringWidth(line->str, line->str_len, TRUE) * scale;
+
+      if (mouse_x >= line_x - 2.0f && mouse_x < line_x + width + 2.0f &&
+          mouse_y >= y && mouse_y < y + 16.0f * scale) {
+        if (warning_ovl->selected != i - 3) {
+          warning_ovl->selected = i - 3;
+          sAdo_SysTrgStart(NA_SE_CURSOL);
+        }
+        return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+      }
+    }
+  }
+
+  return trigger;
+}
+#endif
+
 static void mWR_move_Play(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
   u32 trigger = submenu->overlay->menu_control.trigger;
   mWR_Ovl_c* warning_ovl = submenu->overlay->warning_ovl;
+
+#ifdef MOUSE_INPUT
+  trigger = mWR_mouse_trigger(submenu, menu_info, trigger);
+#endif
 
   if ((trigger & (BUTTON_A | BUTTON_B | BUTTON_START)) != 0) {
     menu_info->proc_status = mSM_OVL_PROC_MOVE;
