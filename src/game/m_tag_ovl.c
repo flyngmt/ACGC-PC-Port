@@ -8155,6 +8155,7 @@ static void mTG_get_mouse_slot_pos(Submenu* submenu, f32* pos, int table, int id
 
 static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     mTG_Ovl_c* tag_ovl = submenu->overlay->tag_ovl;
+    mHD_Ovl_c* hand_ovl = submenu->overlay->hand_ovl;
     mTG_tag_c* tag = &tag_ovl->tags[tag_ovl->sel_tag_idx];
     int normal_inventory = menu_info->menu_type == mSM_OVL_INVENTORY && menu_info->data0 == mSM_IV_OPEN_NORMAL;
 
@@ -8179,15 +8180,11 @@ static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
         return;
     }
 
-    if (normal_inventory) {
-        mHD_Ovl_c* hand_ovl = submenu->overlay->hand_ovl;
-
-        /* Placement uses the selected slot when the hand animation finishes. */
-        if (hand_ovl->info.wait_timer > 0 || hand_ovl->info.act == mHD_ACTION_CLOSE ||
-            hand_ovl->info.act == mHD_ACTION_CLOSE2 || hand_ovl->info.act == mHD_ACTION_OPEN ||
-            submenu->overlay->segment.player_anime_timer > 0) {
-            return;
-        }
+    /* Placement uses the selected slot when the hand animation finishes. */
+    if (hand_ovl->info.wait_timer > 0 || hand_ovl->info.act == mHD_ACTION_CLOSE ||
+        hand_ovl->info.act == mHD_ACTION_CLOSE2 || hand_ovl->info.act == mHD_ACTION_OPEN ||
+        submenu->overlay->segment.player_anime_timer > 0) {
+        return;
     }
 
     /* Mouse scroll wheel logic */
