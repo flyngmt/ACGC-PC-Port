@@ -8,6 +8,9 @@
 #include "m_font.h"
 #include "m_quest.h"
 #include "sys_matrix.h"
+#ifdef MOUSE_INPUT
+#include "pc_mouse_input.h"
+#endif
 #ifdef TARGET_PC
 #include <math.h>
 #else
@@ -154,22 +157,99 @@ static void mNT_roll_control2(mSM_MenuInfo_c* menu_info) {
     }
 }
 
+#ifdef MOUSE_INPUT
+extern Vtx kei_hyouji_v[];
+
+static int mNT_mouse_over_control(int first_vertex, f32 x, f32 y) {
+    Vtx* vertices = &kei_hyouji_v[first_vertex];
+    f32 min_x = vertices[0].v.ob[0];
+    f32 max_x = min_x;
+    f32 min_y = vertices[0].v.ob[1];
+    f32 max_y = min_y;
+    int i;
+
+    for (i = 1; i < 4; i++) {
+        f32 vx = vertices[i].v.ob[0];
+        f32 vy = vertices[i].v.ob[1];
+
+        if (vx < min_x) min_x = vx;
+        if (vx > max_x) max_x = vx;
+        if (vy < min_y) min_y = vy;
+        if (vy > max_y) max_y = vy;
+    }
+
+    return x >= min_x - 2.0f && x < max_x + 2.0f && y >= min_y - 2.0f && y < max_y + 2.0f;
+}
+
+static u32 mNT_mouse_trigger(Submenu* submenu, u32 trigger) {
+    /* Quad offsets used by the control display lists in kei_hyouji.c. */
+    static const struct {
+        int first_vertex;
+        u32 trigger;
+    } controls[] = {
+        { 44, BUTTON_CLEFT },
+        { 48, BUTTON_CRIGHT },
+        { 20, BUTTON_CDOWN },
+        { 24, BUTTON_CUP },
+        { 28, BUTTON_B },
+        { 32, BUTTON_A }
+    };
+    f32 mouse_x, mouse_y;
+    u32 pressed;
+    s32 wheel;
+    int i;
+
+    if (submenu->current_menu_type != mSM_OVL_NOTICE ||
+        !pc_mouse_update_owner(FALSE, trigger || getButton() || gamePT->mcon.adjusted_pR >= 0.2f) ||
+        !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+        return trigger;
+    }
+
+    pressed = pc_mouse_button_pressed();
+    if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+        return trigger | BUTTON_B;
+    }
+
+    wheel = pc_mouse_scroll_wheel();
+    if (wheel != 0) {
+        return trigger | (wheel > 0 ? BUTTON_CLEFT : BUTTON_CRIGHT);
+    }
+
+    if (pressed & PC_MOUSE_BUTTON_LEFT) {
+        mouse_x -= 160.0f;
+        mouse_y = 120.0f - mouse_y - submenu->overlay->notice_ovl->control_position;
+        for (i = 0; i < ARRAY_COUNT(controls); i++) {
+            if (mNT_mouse_over_control(controls[i].first_vertex, mouse_x, mouse_y)) {
+                return trigger | controls[i].trigger;
+            }
+        }
+    }
+
+    return trigger;
+}
+#endif
+
 static void mNT_Play_page_read(Submenu* submenu, mSM_MenuInfo_c* menu_info, mNT_Ovl_c* notice_ovl) {
     int stick_area = notice_ovl->stick_area;
     int move_page = 0;
     int move_time;
+    u32 trigger = getTrigger();
 
-    if (notice_ovl->now_page != 0 && (stick_area == mED_STICK_AREA_LEFT || chkTrigger(BUTTON_CLEFT))) {
+#ifdef MOUSE_INPUT
+    trigger = mNT_mouse_trigger(submenu, trigger);
+#endif
+
+    if (notice_ovl->now_page != 0 && (stick_area == mED_STICK_AREA_LEFT || (trigger & BUTTON_CLEFT))) {
         move_page = -1;
     } else if (notice_ovl->now_page < (notice_ovl->page_count - 1) &&
-               (stick_area == mED_STICK_AREA_RIGHT || chkTrigger(BUTTON_CRIGHT))) {
+               (stick_area == mED_STICK_AREA_RIGHT || (trigger & BUTTON_CRIGHT))) {
         move_page = 1;
-    } else if (notice_ovl->now_page != 0 && (stick_area == mED_STICK_AREA_BOTTOM || chkTrigger(BUTTON_CDOWN))) {
+    } else if (notice_ovl->now_page != 0 && (stick_area == mED_STICK_AREA_BOTTOM || (trigger & BUTTON_CDOWN))) {
         move_page = -notice_ovl->now_page;
     } else if (notice_ovl->now_page < (notice_ovl->page_count - 1) &&
-               (stick_area == mED_STICK_AREA_TOP || chkTrigger(BUTTON_CUP))) {
+               (stick_area == mED_STICK_AREA_TOP || (trigger & BUTTON_CUP))) {
         move_page = (notice_ovl->page_count - notice_ovl->now_page) - 1;
-    } else if (chkTrigger(BUTTON_A)) {
+    } else if (trigger & BUTTON_A) {
         notice_ovl->mode = mNT_PLAY_PAGE_TO_WRITE;
         notice_ovl->now_page = mNtc_BOARD_POST_COUNT;
         menu_info->position[0] = 320.0f;
@@ -178,7 +258,7 @@ static void mNT_Play_page_read(Submenu* submenu, mSM_MenuInfo_c* menu_info, mNT_
         sAdo_SysTrgStart(0x5F);
         mSM_open_submenu_new2(submenu, mSM_OVL_EDITOR, mED_TYPE_NOTICE, 32, notice_ovl->post.message,
                               sizeof(notice_ovl->post.message));
-    } else if ((chkTrigger(BUTTON_B) | chkTrigger(BUTTON_START))) {
+    } else if (trigger & (BUTTON_B | BUTTON_START)) {
         (*submenu->overlay->move_chg_base_proc)(menu_info, mSM_MOVE_OUT_TOP);
         sAdo_SysTrgStart(0x17D);
     }
