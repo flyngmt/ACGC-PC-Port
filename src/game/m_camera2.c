@@ -440,6 +440,9 @@ static void Camera2_Normal_Swing(GAME_PLAY* play, f32* distance, s_xyz* dir) {
 }
 
 static const f32 add_distance_array[3] = { -280.0f, 0.0f, 300.0f };
+#ifdef PC_ENHANCEMENTS
+static const f32 add_distance_array_field[3] = { -200.0f, 0.0f, 200.0f };
+#endif
 
 static const s16 add_directionY_array[3] = {
     DEG2SHORT_ANGLE(-16.1f), // -2930
@@ -499,8 +502,8 @@ static void Camera2_Get_GoalDistanceAndDirection(GAME_PLAY* play, f32* dist, s_x
     *dir = direction_array[main_index];
 
 #ifdef PC_ENHANCEMENTS
-    /* C-stick camera now works in every scene */
-    if (main_index == CAMERA2_PROCESS_NORMAL) {
+    if ((main_index == CAMERA2_PROCESS_NORMAL || main_index == CAMERA2_PROCESS_WADE) &&
+        (!mEv_CheckFirstIntro() || Camera2_InDoorCheck())) {
 #else
     if (main_index == CAMERA2_PROCESS_NORMAL && Camera2_InDoorCheck()) {
 #endif
@@ -512,7 +515,11 @@ static void Camera2_Get_GoalDistanceAndDirection(GAME_PLAY* play, f32* dist, s_x
             add_dir_idx = 1;
         }
 
+#ifdef PC_ENHANCEMENTS
+        *dist += Camera2_InDoorCheck() ? add_distance_array[add_dist_idx] : add_distance_array_field[add_dist_idx];
+#else
         *dist += add_distance_array[add_dist_idx];
+#endif
         dir->y += add_directionY_array[add_dir_idx];
         dir->x += add_directionX_array[add_dist_idx]; // adjust by add_dist_idx since rotation on X axis should be
                                                       // defined by distance of camera
@@ -992,15 +999,6 @@ static void Camera2_setup_main_Wade(GAME_PLAY* play) {
 
     Camera2_setup_main_Base(play);
     play->camera.requested_main_index_priority = 9;
-
-#ifdef PC_ENHANCEMENTS
-    /* Reset any outdoor C-stick camera changes instead of a weird double transition */
-    if (!mPlib_IsWadeDisabled()){
-        play->camera.indoor_distance_addition_idx = 1;
-        play->camera.indoor_direction_addition_idx = 1;
-    }
-  
-#endif
 }
 
 static void Camera2_SetPos_Wade(GAME_PLAY* play) {
