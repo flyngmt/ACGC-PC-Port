@@ -6,6 +6,9 @@
 #include "m_font.h"
 #include "m_tag_ovl.h"
 #include "sys_matrix.h"
+#ifdef MOUSE_INPUT
+#include "pc_mouse_input.h"
+#endif
 
 static mBD_Ovl_c board_ovl_data;
 
@@ -828,7 +831,17 @@ static void mBD_move_Move(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 }
 
 static void mBD_move_Wait(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
-    if ((getTrigger() & (BUTTON_A | BUTTON_B | BUTTON_START))) {
+    u32 trigger = getTrigger();
+
+#ifdef MOUSE_INPUT
+    if (submenu->current_menu_type == mSM_OVL_BOARD &&
+        pc_mouse_update_owner(FALSE, trigger || getButton() || gamePT->mcon.move_pR > 0.5f) &&
+        (pc_mouse_button_pressed() & (PC_MOUSE_BUTTON_LEFT | PC_MOUSE_BUTTON_RIGHT))) {
+        trigger |= BUTTON_B;
+    }
+#endif
+
+    if (trigger & (BUTTON_A | BUTTON_B | BUTTON_START)) {
         (*submenu->overlay->move_chg_base_proc)(menu_info, mSM_MOVE_OUT_TOP);
         sAdo_SysTrgStart(0x5F);
     }

@@ -160,27 +160,6 @@ static void mNT_roll_control2(mSM_MenuInfo_c* menu_info) {
 #ifdef MOUSE_INPUT
 extern Vtx kei_hyouji_v[];
 
-static int mNT_mouse_over_control(int first_vertex, f32 x, f32 y) {
-    Vtx* vertices = &kei_hyouji_v[first_vertex];
-    f32 min_x = vertices[0].v.ob[0];
-    f32 max_x = min_x;
-    f32 min_y = vertices[0].v.ob[1];
-    f32 max_y = min_y;
-    int i;
-
-    for (i = 1; i < 4; i++) {
-        f32 vx = vertices[i].v.ob[0];
-        f32 vy = vertices[i].v.ob[1];
-
-        if (vx < min_x) min_x = vx;
-        if (vx > max_x) max_x = vx;
-        if (vy < min_y) min_y = vy;
-        if (vy > max_y) max_y = vy;
-    }
-
-    return x >= min_x - 2.0f && x < max_x + 2.0f && y >= min_y - 2.0f && y < max_y + 2.0f;
-}
-
 static u32 mNT_mouse_trigger(Submenu* submenu, u32 trigger) {
     /* Quad offsets used by the control display lists in kei_hyouji.c. */
     static const struct {
@@ -219,7 +198,7 @@ static u32 mNT_mouse_trigger(Submenu* submenu, u32 trigger) {
         mouse_x -= 160.0f;
         mouse_y = 120.0f - mouse_y - submenu->overlay->notice_ovl->control_position;
         for (i = 0; i < ARRAY_COUNT(controls); i++) {
-            if (mNT_mouse_over_control(controls[i].first_vertex, mouse_x, mouse_y)) {
+            if (mSM_mouse_over_quad(&kei_hyouji_v[controls[i].first_vertex], mouse_x, mouse_y, 2.0f)) {
                 return trigger | controls[i].trigger;
             }
         }

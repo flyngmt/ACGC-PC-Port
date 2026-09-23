@@ -5,6 +5,9 @@
 #include "m_editor_ovl.h"
 #include "m_font.h"
 #include "sys_matrix.h"
+#ifdef MOUSE_INPUT
+#include "pc_mouse_input.h"
+#endif
 
 static mAD_Ovl_c adrs_ovl_data;
 
@@ -143,9 +146,74 @@ static void mAD_move_between(Submenu* submenu, int add) {
     }
 }
 
-static void mAD_move_cursol(Submenu* submenu) {
+static void mAD_get_entry_position(int count, f32* x, f32* y) {
+    f32 ofs_y = 11.0f + (count - 1) * (3.0f / (mAD_PAGE_MAX_ENTRIES - 1));
+
+    *x = 160.0f + (*x + 7.0f - 34.0f);
+    *y = 120.0f - (*y - ofs_y + 17.0f);
+}
+
+#ifdef MOUSE_INPUT
+static u32 mAD_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 trigger) {
     mAD_Ovl_c* adrs_ovl = submenu->overlay->address_ovl;
-    u32 trigger = submenu->overlay->menu_control.trigger;
+    mBD_Ovl_c* board_ovl = submenu->overlay->board_ovl;
+    Mail_nm_c* names;
+    f32 mouse_x, mouse_y;
+    f32 x, y;
+    u32 pressed;
+    s32 wheel;
+    int count;
+    int i;
+
+    if ((submenu->current_menu_type != mSM_OVL_ADDRESS &&
+         !(submenu->current_menu_type == mSM_OVL_EDITOR && menu_info->next_proc_status == mSM_OVL_PROC_WAIT)) ||
+        !pc_mouse_update_owner(FALSE, trigger || getButton() || gamePT->mcon.move_pR > 0.5f) ||
+        !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+        return trigger;
+    }
+
+    pressed = pc_mouse_button_pressed();
+    if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+        return trigger | BUTTON_B;
+    }
+    if (adrs_ovl->proc_idx != mAD_PROC_SELECT) {
+        return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+    }
+
+    wheel = pc_mouse_scroll_wheel();
+    if (wheel != 0) {
+        return trigger | (wheel > 0 ? BUTTON_CUP : BUTTON_CDOWN);
+    }
+
+    count = adrs_ovl->page_entry_count[adrs_ovl->curIdx];
+    if (adrs_ovl->curIdx == mAD_PAGE_PLAYER) {
+        names = adrs_ovl->player_mail_name;
+    } else {
+        names = &adrs_ovl->animal_mail_name[(adrs_ovl->curIdx - mAD_PAGE_NPC0) * mAD_PAGE_MAX_ENTRIES];
+    }
+
+    x = (board_ovl != NULL ? board_ovl->ofs_x + 4.0f : 0.0f) + adrs_ovl->pos_x + adrs_ovl->pile[adrs_ovl->curIdx];
+    y = (board_ovl != NULL ? board_ovl->ofs_y - 20.0f : 0.0f) - adrs_ovl->pile[adrs_ovl->curIdx];
+    mAD_get_entry_position(count, &x, &y);
+    for (i = 0; i < count; i++) {
+        f32 width = mFont_GetStringWidth(names[i].personalID.player_name, PLAYER_NAME_LEN, TRUE) * 0.75f;
+
+        if (mouse_x >= x - 2.0f && mouse_x < x + width + 2.0f && mouse_y >= y && mouse_y < y + 12.0f) {
+            if (adrs_ovl->selected_entry != i) {
+                adrs_ovl->selected_entry = i;
+                sAdo_SysTrgStart(NA_SE_CURSOL);
+            }
+            return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+        }
+        y += adrs_ovl->curIdx == mAD_PAGE_PLAYER && adrs_ovl->show_museum_address && i == count - 2 ? 24.0f : 12.0f;
+    }
+
+    return trigger;
+}
+#endif
+
+static void mAD_move_cursol(Submenu* submenu, u32 trigger) {
+    mAD_Ovl_c* adrs_ovl = submenu->overlay->address_ovl;
 
     if ((trigger & BUTTON_CLEFT)) {
         mAD_move_between(submenu, -1);
@@ -227,7 +295,11 @@ static void mAD_make_npc_address(mAD_Ovl_c* adrs_ovl) {
 }
 
 static void mAD_refuse_proc(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
-    if (submenu->overlay->menu_control.trigger & (BUTTON_A | BUTTON_B | BUTTON_START)) {
+    u32 trigger = submenu->overlay->menu_control.trigger;
+#ifdef MOUSE_INPUT
+    trigger = mAD_mouse_trigger(submenu, menu_info, trigger);
+#endif
+    if (trigger & (BUTTON_A | BUTTON_B | BUTTON_START)) {
         mAD_cancel_edit(submenu, menu_info);
     }
 }
@@ -235,6 +307,10 @@ static void mAD_refuse_proc(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 static void mAD_start_proc(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     mAD_Ovl_c* adrs_ovl = submenu->overlay->address_ovl;
     u32 trigger = submenu->overlay->menu_control.trigger;
+
+#ifdef MOUSE_INPUT
+    trigger = mAD_mouse_trigger(submenu, menu_info, trigger);
+#endif
 
     if (trigger & BUTTON_B) {
         mAD_cancel_edit(submenu, menu_info);
@@ -255,6 +331,9 @@ static void mAD_select_proc(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     adrs_ovl = submenu->overlay->address_ovl;
     board_ovl = submenu->overlay->board_ovl;
     trigger = submenu->overlay->menu_control.trigger;
+#ifdef MOUSE_INPUT
+    trigger = mAD_mouse_trigger(submenu, menu_info, trigger);
+#endif
     if (trigger & BUTTON_B) {
         if (board_ovl->first == TRUE) {
             mAD_cancel_edit(submenu, menu_info);
@@ -284,7 +363,7 @@ static void mAD_select_proc(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 
         sAdo_SysTrgStart(NA_SE_MENU_EXIT);
     } else {
-        mAD_move_cursol(submenu);
+        mAD_move_cursol(submenu, trigger);
 
         if (submenu->overlay->board_ovl->first == FALSE) {
             if (trigger & BUTTON_DLEFT) {
@@ -556,13 +635,10 @@ static void mAD_set_addressSel_tag_character(Submenu* submenu, GAME* game, f32 p
     int count;
     Mail_nm_c* name_p;
     int i;
-    f32 ofs_y;
     rgba_t* color_p;
 
     count = adrs_ovl->page_entry_count[idx];
-    ofs_y = (11.0f + (count - 1) * (3.0f / (mAD_PAGE_MAX_ENTRIES - 1)));
-    pos_x = 160.0f + ((pos_x + 7.0f) + -34.0f);
-    pos_y = 120.0f - ((pos_y - ofs_y) + 17.0f);
+    mAD_get_entry_position(count, &pos_x, &pos_y);
     if (idx == mAD_PAGE_PLAYER) {
         name_p = adrs_ovl->player_mail_name;
     } else if (idx == mAD_PAGE_NPC0) {

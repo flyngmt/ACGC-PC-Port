@@ -43,6 +43,29 @@
 
 static Submenu_Overlay_c ovl_base;
 
+#ifdef MOUSE_INPUT
+extern int mSM_mouse_over_quad(const Vtx* vertices, f32 x, f32 y, f32 padding) {
+    f32 min_x = vertices[0].v.ob[0];
+    f32 max_x = min_x;
+    f32 min_y = vertices[0].v.ob[1];
+    f32 max_y = min_y;
+    int i;
+
+    for (i = 1; i < 4; i++) {
+        f32 vx = vertices[i].v.ob[0];
+        f32 vy = vertices[i].v.ob[1];
+
+        if (vx < min_x) min_x = vx;
+        if (vx > max_x) max_x = vx;
+        if (vy < min_y) min_y = vy;
+        if (vy > max_y) max_y = vy;
+    }
+
+    return x >= min_x - padding && x < max_x + padding &&
+           y >= min_y - padding && y < max_y + padding;
+}
+#endif
+
 static f32 mSM_dt_triangle(int period) {
     f32 frame_per = ((f32)graph_dt_frame_phase(gamePT, period) / (f32)period) * 2.0f;
 

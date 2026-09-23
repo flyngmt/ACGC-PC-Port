@@ -217,6 +217,9 @@ struct submenu_overlay_s {
 };
 
 extern void mSM_menu_ovl_init(Submenu* submenu);
+#ifdef MOUSE_INPUT
+extern int mSM_mouse_over_quad(const Vtx* vertices, f32 x, f32 y, f32 padding);
+#endif
 extern void mSM_draw_original(Submenu* submenu, GRAPH* graph, f32 pos_x, f32 pos_y, f32 scale, mActor_name_t item,
                               int color_flag);
 

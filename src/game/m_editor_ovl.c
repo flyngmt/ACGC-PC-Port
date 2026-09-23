@@ -19,6 +19,10 @@
 #ifdef TARGET_PC
 #include "pc_typing.h"
 #endif
+#ifdef MOUSE_INPUT
+#include "pc_mouse_input.h"
+#include <math.h>
+#endif
 
 static u8 mED_ornament_table[] = {
     // clang-format off
@@ -332,9 +336,99 @@ static void mED_move_keyboard_cursor(mED_Ovl_c* editor_ovl) {
     }
 }
 
-static int mED_check_move_cursol(mED_Ovl_c* editor_ovl) {
-    u32 buttons = (getButton() | getTrigger()) & (BUTTON_B | BUTTON_DRIGHT | BUTTON_DLEFT | BUTTON_DDOWN | BUTTON_DUP);
+extern Vtx kai_sousa2_v[];
+
+#ifdef MOUSE_INPUT
+extern Vtx kai_sousa_v[];
+
+static u32 mED_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 trigger) {
+    /* Quad offsets used by the control display lists in kai_sousa.c. */
+    static const struct {
+        int first_vertex;
+        u32 trigger;
+    } controls[] = {
+        { 0, BUTTON_L }, { 31, BUTTON_L }, { 35, BUTTON_L },
+        { 39, BUTTON_R }, { 127, BUTTON_R },
+        { 4, BUTTON_Y }, { 87, BUTTON_Y },
+        { 8, BUTTON_X }, { 91, BUTTON_X },
+        { 103, BUTTON_B }, { 119, BUTTON_B },
+        { 107, BUTTON_A },
+        { 111, BUTTON_START }, { 115, BUTTON_START }
+    };
+    mED_Ovl_c* editor_ovl = submenu->overlay->editor_ovl;
+    f32 mouse_x, mouse_y;
+    u32 pressed;
+    int i;
+
+    if (submenu->current_menu_type != mSM_OVL_EDITOR ||
+        !pc_mouse_update_owner(FALSE, trigger || getButton() || gamePT->mcon.adjusted_pR >= 0.2f) ||
+        !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+        return trigger;
+    }
+
+    pressed = pc_mouse_button_pressed();
+    if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+        return trigger | BUTTON_B;
+    }
+
+    mouse_x -= 160.0f + menu_info->position[0];
+    mouse_y = 120.0f - mouse_y - menu_info->position[1];
+    for (i = 0; i < mED_COLUMNS * mED_ROWS; i++) {
+        if (mSM_mouse_over_quad(&kai_sousa2_v[i * 4], mouse_x, mouse_y, 0.0f)) {
+            int col = i % mED_COLUMNS;
+            int row = i / mED_COLUMNS;
+
+            if (editor_ovl->select_col != col || editor_ovl->select_row != row) {
+                editor_ovl->select_col = col;
+                editor_ovl->select_row = row;
+                sAdo_SysTrgStart(0x411);
+            }
+            return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+        }
+    }
+
+    if (pressed & PC_MOUSE_BUTTON_LEFT) {
+        for (i = 0; i < mED_INPUT_MODE_NUM; i++) {
+            if (mSM_mouse_over_quad(&kai_sousa_v[12 + i * 4], mouse_x, mouse_y, 0.0f)) {
+                if (editor_ovl->input_mode != i) {
+                    editor_ovl->input_mode = i;
+                    editor_ovl->shift_mode = mED_SHIFT_LOWER;
+                    sAdo_SysTrgStart(0x37);
+                }
+                return trigger;
+            }
+        }
+        for (i = 0; i < ARRAY_COUNT(controls); i++) {
+            if (mSM_mouse_over_quad(&kai_sousa_v[controls[i].first_vertex], mouse_x, mouse_y, 0.0f)) {
+                return trigger | controls[i].trigger;
+            }
+        }
+        if (mSM_mouse_over_quad(&kai_sousa_v[83], mouse_x, mouse_y, 0.0f)) {
+            f32 center_x = 0.0f;
+            f32 center_y = 0.0f;
+
+            for (i = 83; i < 87; i++) {
+                center_x += kai_sousa_v[i].v.ob[0] * 0.25f;
+                center_y += kai_sousa_v[i].v.ob[1] * 0.25f;
+            }
+            mouse_x -= center_x;
+            mouse_y -= center_y;
+            if (fabsf(mouse_x) > fabsf(mouse_y)) {
+                return trigger | (mouse_x < 0.0f ? BUTTON_DLEFT : BUTTON_DRIGHT);
+            } else if (fabsf(mouse_y) > 2.0f) {
+                return trigger | (mouse_y < 0.0f ? BUTTON_DDOWN : BUTTON_DUP);
+            }
+        }
+    }
+
+    return trigger;
+}
+#endif
+
+static int mED_check_move_cursol(mED_Ovl_c* editor_ovl, u32 buttons) {
     int res = 0;
+
+    buttons &= BUTTON_B | BUTTON_DRIGHT | BUTTON_DLEFT | BUTTON_DDOWN | BUTTON_DUP;
 
     if (buttons == BUTTON_NONE) {
         editor_ovl->last_buttons = 0;
@@ -423,10 +517,10 @@ static int mED_check_move_cursol(mED_Ovl_c* editor_ovl) {
     return res;
 }
 
-static int mED_check_shift(mED_Ovl_c* editor_ovl) {
+static int mED_check_shift(mED_Ovl_c* editor_ovl, u32 trigger) {
     int res = FALSE;
 
-    if (chkTrigger(BUTTON_L)) {
+    if (trigger & BUTTON_L) {
         if (editor_ovl->shift_mode == mED_SHIFT_LOWER) {
             editor_ovl->shift_mode = mED_SHIFT_UPPER;
         } else {
@@ -439,10 +533,10 @@ static int mED_check_shift(mED_Ovl_c* editor_ovl) {
     return res;
 }
 
-static int mED_check_arrange(mED_Ovl_c* editor_ovl) {
+static int mED_check_arrange(mED_Ovl_c* editor_ovl, u32 trigger) {
     int res = FALSE;
 
-    if (chkTrigger(BUTTON_Z)) {
+    if (trigger & BUTTON_Z) {
         if (editor_ovl->arrange == mED_ARRANGE_QWERTY) {
             editor_ovl->arrange = mED_ARRANGE_ALPHA;
         } else {
@@ -455,10 +549,10 @@ static int mED_check_arrange(mED_Ovl_c* editor_ovl) {
     return res;
 }
 
-static int mED_check_input_mode(mED_Ovl_c* editor_ovl) {
+static int mED_check_input_mode(mED_Ovl_c* editor_ovl, u32 trigger) {
     int res = FALSE;
 
-    if (chkTrigger(BUTTON_Y)) {
+    if (trigger & BUTTON_Y) {
         editor_ovl->input_mode++;
         editor_ovl->shift_mode = mED_SHIFT_LOWER;
 
@@ -472,17 +566,17 @@ static int mED_check_input_mode(mED_Ovl_c* editor_ovl) {
     return res;
 }
 
-static int mED_check_now_code(mED_Ovl_c* editor_ovl) {
+static int mED_check_now_code(mED_Ovl_c* editor_ovl, u32 trigger) {
     int res = FALSE;
 
-    if (chkTrigger(BUTTON_A)) {
+    if (trigger & BUTTON_A) {
         int code = mED_get_code(editor_ovl, editor_ovl->select_col, editor_ovl->select_row);
 
         if (code != CHAR_SPACE_3) {
             editor_ovl->now_code = code;
             res = TRUE;
         }
-    } else if (chkTrigger(BUTTON_R)) {
+    } else if (trigger & BUTTON_R) {
         editor_ovl->now_code = CHAR_SPACE;
         res = TRUE;
     }
@@ -490,34 +584,34 @@ static int mED_check_now_code(mED_Ovl_c* editor_ovl) {
     return res;
 }
 
-static int mED_check_output_code(mED_Ovl_c* editor_ovl) {
+static int mED_check_output_code(mED_Ovl_c* editor_ovl, u32 trigger) {
     int res = mED_COMMAND_NONE;
 
-    if (mED_check_shift(editor_ovl) == TRUE) {
+    if (mED_check_shift(editor_ovl, trigger) == TRUE) {
         if (editor_ovl->input_mode == mED_INPUT_MODE_LETTER) {
             sAdo_SysTrgStart(0x37);
         }
-    } else if (mED_check_arrange(editor_ovl) == TRUE) {
+    } else if (mED_check_arrange(editor_ovl, trigger) == TRUE) {
         sAdo_SysTrgStart(0x37);
-    } else if (mED_check_input_mode(editor_ovl) == TRUE) {
+    } else if (mED_check_input_mode(editor_ovl, trigger) == TRUE) {
         sAdo_SysTrgStart(0x37);
-    } else if (mED_check_now_code(editor_ovl) == TRUE) {
+    } else if (mED_check_now_code(editor_ovl, trigger) == TRUE) {
         res = mED_COMMAND_OUTPUT_CODE;
     }
 
     return res;
 }
 
-static void mED_set_command(mED_Ovl_c* editor_ovl) {
-    if (chkTrigger(BUTTON_START)) {
+static void mED_set_command(mED_Ovl_c* editor_ovl, u32 trigger) {
+    if (trigger & BUTTON_START) {
         editor_ovl->command = mED_COMMAND_END_EDIT;
-    } else if (chkTrigger(BUTTON_X)) {
+    } else if (trigger & BUTTON_X) {
         editor_ovl->command = mED_COMMAND_EXCHANGE_CODE;
     } else {
-        editor_ovl->command = mED_check_move_cursol(editor_ovl);
+        editor_ovl->command = mED_check_move_cursol(editor_ovl, getButton() | trigger);
 
         if (editor_ovl->command == mED_COMMAND_NONE) {
-            editor_ovl->command = mED_check_output_code(editor_ovl);
+            editor_ovl->command = mED_check_output_code(editor_ovl, trigger);
         }
     }
 }
@@ -1862,11 +1956,21 @@ static void mED_move_Play(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 #ifdef TARGET_PC
         if (!mED_apply_pc_typing_command(editor_ovl)) {
 #endif
+            u32 trigger = getTrigger();
+
             mED_set_stick_area(editor_ovl);
             mED_move_keyboard_cursor(editor_ovl);
-            mED_set_command(editor_ovl);
+#ifdef MOUSE_INPUT
+            trigger = mED_mouse_trigger(submenu, menu_info, trigger);
+#endif
+            mED_set_command(editor_ovl, trigger);
 #ifdef TARGET_PC
         }
+#ifdef MOUSE_INPUT
+        else {
+            pc_mouse_update_owner(FALSE, TRUE);
+        }
+#endif
 #endif
         (*mED_edit_func[menu_info->data0])(submenu, menu_info);
 
@@ -2155,7 +2259,6 @@ static void mED_KeyDraw_R_button(GRAPH* graph, mED_Ovl_c* editor_ovl) {
     CLOSE_DISP(graph);
 }
 
-extern Vtx kai_sousa2_v[];
 extern u8 testbutton[];
 
 static void mED_KeyDraw_keyboard(GRAPH* graph, mED_Ovl_c* editor_ovl) {
