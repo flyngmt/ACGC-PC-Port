@@ -8,12 +8,6 @@ static void mChoice_determimation_set(mChoice_c* choice) {
 }
 
 #ifdef MOUSE_INPUT
-    #define GET_BUTTON_PRESSED(b, m) (chkTrigger(b) || (mouse_active && (pc_mouse_button_pressed() & (m)) && hover_idx != -1))
-#else
-    #define GET_BUTTON_PRESSED(b, m) chkTrigger(b)
-#endif
-
-#ifdef MOUSE_INPUT
 static int mChoice_GetMouseHoverIdx(mChoice_c* choice, f32 mx, f32 my) {
     // Calculate the offset applied by mChoice_SetMatrix
     f32 offset_x = (choice->center_x - 160.0f);
@@ -38,8 +32,7 @@ static int mChoice_GetMouseHoverIdx(mChoice_c* choice, f32 mx, f32 my) {
         f32 line_bottom = line_top + 16.0f;
         
         if (local_my >= line_top && local_my < line_bottom) {
-            // Horizontal check (Assuming ~8 units per character)
-            f32 text_w = (f32)choice->data.string_lens[i] * 8.0f;
+            f32 text_w = mFont_GetStringWidth(choice->data.strings[i], choice->data.string_lens[i], TRUE);
             if (local_mx >= tx && local_mx < (tx + text_w)) {
                 return i;
             }
@@ -51,13 +44,14 @@ static int mChoice_GetMouseHoverIdx(mChoice_c* choice, f32 mx, f32 my) {
 
 static int mChoice_Main_Normal_SetChoice(mChoice_c* choice, GAME* game) {
     int res = FALSE;
+    u32 trigger = getTrigger();
 
 #ifdef MOUSE_INPUT
     f32 mx, my;
     int inside_viewport = pc_mouse_get_ui_position(&mx, &my);
 
     int mouse_active = pc_mouse_update_owner(FALSE,
-        getTrigger() || getButton() || gamePT->mcon.adjusted_pY != 0.0f);
+        trigger || getButton() || gamePT->mcon.adjusted_pY != 0.0f);
     int hover_idx = inside_viewport ? mChoice_GetMouseHoverIdx(choice, mx, my) : -1;
     if (mouse_active && hover_idx != -1 && hover_idx != choice->selected_choice_idx) {
         choice->selected_choice_idx = hover_idx;
@@ -66,12 +60,22 @@ static int mChoice_Main_Normal_SetChoice(mChoice_c* choice, GAME* game) {
         choice->choice_automove_type = mChoice_AUTOMOVE_STOPPED;
         choice->choice_automove_timer = 0.0f;
     }
+
+    if (mouse_active && inside_viewport) {
+        u32 pressed = pc_mouse_button_pressed();
+        if (hover_idx != -1 && (pressed & PC_MOUSE_BUTTON_LEFT)) {
+            trigger |= BUTTON_A;
+        }
+        if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+            trigger |= BUTTON_B;
+        }
+    }
 #endif
 
-    if (GET_BUTTON_PRESSED(BUTTON_A, 1 << 0)) {
+    if (trigger & BUTTON_A) {
         mChoice_determimation_set(choice);
         res = TRUE;
-    } else if (choice->no_b_flag && GET_BUTTON_PRESSED(BUTTON_B, 1 << 2)) {
+    } else if (choice->no_b_flag && (trigger & BUTTON_B)) {
         choice->selected_choice_idx = choice->data.choice_num - 1;
         mChoice_determimation_set(choice);
         res = TRUE;
