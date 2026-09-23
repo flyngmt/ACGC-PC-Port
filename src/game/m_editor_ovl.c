@@ -340,6 +340,7 @@ extern Vtx kai_sousa2_v[];
 
 #ifdef MOUSE_INPUT
 extern Vtx kai_sousa_v[];
+static void mED_mouse_place_cursor(Submenu* submenu, f32 mouse_x, f32 mouse_y);
 
 static u32 mED_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 trigger) {
     /* Quad offsets used by the control display lists in kai_sousa.c. */
@@ -418,7 +419,10 @@ static u32 mED_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 tr
             } else if (fabsf(mouse_y) > 2.0f) {
                 return trigger | (mouse_y < 0.0f ? BUTTON_DDOWN : BUTTON_DUP);
             }
+            return trigger;
         }
+        mED_mouse_place_cursor(submenu, mouse_x + 160.0f + menu_info->position[0],
+                              120.0f - mouse_y - menu_info->position[1]);
     }
 
     return trigger;
@@ -1547,11 +1551,31 @@ static void mED_edit_func_letter_footer(Submenu* submenu, mSM_MenuInfo_c* menu_i
     }
 }
 
-static void mED_move_letter_table(mED_Ovl_c* editor_ovl, mBD_Ovl_c* board_ovl, Submenu* submenu) {
+static void mED_select_letter_field(mED_Ovl_c* editor_ovl, mBD_Ovl_c* board_ovl,
+                                   mSM_MenuInfo_c* menu_info, int field) {
     static s16 letter_table_col[mBD_FIELD_NUM] = { MAIL_HEADER_LEN, MAIL_BODY_LEN / mBD_BODY_LINE_NUM,
                                                    MAIL_FOOTER_LEN };
     static s16 letter_table_width[mBD_FIELD_NUM] = { 112, 192, 192 };
 
+    board_ovl->field = field;
+    board_ovl->header_pos = mBD_HEADER_POS_PRE_NAME;
+    editor_ovl->input_length = letter_table_col[field];
+    editor_ovl->line_width = letter_table_width[field];
+    menu_info->data3 = letter_table_width[field];
+    editor_ovl->cursor_idx = 0;
+    editor_ovl->now_str_len = board_ovl->lengths[field];
+    editor_ovl->max_line_no = field == mBD_FIELD_BODY ? mBD_BODY_LINE_NUM : 1;
+
+    if (field == mBD_FIELD_BODY) {
+        editor_ovl->input_str = board_ovl->mail.content.body;
+    } else if (field == mBD_FIELD_HEADER) {
+        editor_ovl->input_str = board_ovl->mail.content.header;
+    } else {
+        editor_ovl->input_str = board_ovl->mail.content.footer;
+    }
+}
+
+static void mED_move_letter_table(mED_Ovl_c* editor_ovl, mBD_Ovl_c* board_ovl, Submenu* submenu) {
     u8 field = board_ovl->field;
     Submenu_Overlay_c* overlay = submenu->overlay;
     mSM_MenuInfo_c* menu_info = &overlay->menu_info[mSM_OVL_EDITOR];
@@ -1577,38 +1601,97 @@ static void mED_move_letter_table(mED_Ovl_c* editor_ovl, mBD_Ovl_c* board_ovl, S
     }
 
     editor_ovl->command_processed = TRUE;
-    board_ovl->field = next_field;
-    board_ovl->header_pos = mBD_HEADER_POS_PRE_NAME;
-    editor_ovl->input_length = letter_table_col[next_field];
-    editor_ovl->line_width = letter_table_width[next_field];
-    menu_info->data3 = letter_table_width[next_field];
-
-    if (next_field == mBD_FIELD_BODY) {
-        editor_ovl->max_line_no = mBD_BODY_LINE_NUM;
-        editor_ovl->input_str = board_ovl->mail.content.body;
-
-        if (upper == TRUE) {
-            editor_ovl->cursor_idx = -1;
-        } else {
-            editor_ovl->cursor_idx = 0;
-        }
-    } else {
-        editor_ovl->max_line_no = 1;
-        editor_ovl->cursor_idx = 0;
-
-        if (next_field == mBD_FIELD_HEADER) {
-            editor_ovl->input_str = board_ovl->mail.content.header;
-        } else {
-            editor_ovl->input_str = board_ovl->mail.content.footer;
-        }
-    }
-
-    editor_ovl->now_str_len = board_ovl->lengths[next_field];
-
-    if (editor_ovl->cursor_idx == -1) {
+    mED_select_letter_field(editor_ovl, board_ovl, menu_info, next_field);
+    if (next_field == mBD_FIELD_BODY && upper == TRUE) {
         editor_ovl->cursor_idx = editor_ovl->now_str_len;
     }
 }
+
+#ifdef MOUSE_INPUT
+static void mED_mouse_place_cursor(Submenu* submenu, f32 mouse_x, f32 mouse_y) {
+    Submenu_Overlay_c* overlay = submenu->overlay;
+    mSM_MenuInfo_c* menu_info = &overlay->menu_info[mSM_OVL_EDITOR];
+    mED_Ovl_c* editor_ovl = overlay->editor_ovl;
+    mBD_Ovl_c* board_ovl = NULL;
+    int old_cursor = editor_ovl->cursor_idx;
+    int old_field = 0;
+    int old_header_pos = 0;
+    int on_name = FALSE;
+    f32 x, y;
+
+    if (mouse_y < 0.0f || mouse_y >= 120.0f - menu_info->position[1]) {
+        return;
+    }
+
+    if (menu_info->data0 == mED_TYPE_BOARD) {
+        mSM_MenuInfo_c* board_menu = &overlay->menu_info[mSM_OVL_BOARD];
+        int field;
+
+        x = mouse_x - (64.0f + board_menu->position[0]);
+        y = mouse_y - (36.0f - board_menu->position[1]);
+        if (x < 0.0f || x > mBD_MAX_WIDTH) {
+            return;
+        }
+        if (y >= 0.0f && y < 16.0f) {
+            field = mBD_FIELD_HEADER;
+        } else if (y >= 28.0f && y < 28.0f + mBD_BODY_LINE_NUM * 16.0f) {
+            field = mBD_FIELD_BODY;
+            y -= 28.0f;
+        } else if (y >= 136.0f && y < 152.0f) {
+            field = mBD_FIELD_FOOTER;
+            y -= 136.0f;
+        } else {
+            return;
+        }
+
+        board_ovl = overlay->board_ovl;
+        old_field = board_ovl->field;
+        old_header_pos = board_ovl->header_pos;
+        mED_select_letter_field(editor_ovl, board_ovl, menu_info, field);
+        if (field == mBD_FIELD_HEADER && board_menu->data0 != mSM_BD_OPEN_WRITE_ISLAND) {
+            int split = board_ovl->mail.content.header_back_start;
+            int prefix_width = mFont_GetStringWidth(editor_ovl->input_str, split, TRUE);
+
+            if (x >= prefix_width && x < prefix_width + 80.0f) {
+                board_ovl->header_pos = mBD_HEADER_POS_ON_NAME;
+                editor_ovl->cursor_idx = split;
+                on_name = TRUE;
+            } else if (x >= prefix_width + 80.0f) {
+                board_ovl->header_pos = mBD_HEADER_POS_POST_NAME;
+                x -= 80.0f;
+            }
+        } else if (field == mBD_FIELD_FOOTER) {
+            x -= mBD_MAX_WIDTH - mFont_GetStringWidth(editor_ovl->input_str, editor_ovl->now_str_len, TRUE);
+        }
+    } else if (menu_info->data0 == mED_TYPE_NOTICE) {
+        mSM_MenuInfo_c* notice_menu = &overlay->menu_info[mSM_OVL_NOTICE];
+
+        x = mouse_x - (63.0f + notice_menu->position[0]);
+        y = mouse_y - (63.0f - notice_menu->position[1]);
+        if (x < 0.0f || x > editor_ovl->line_width || y < 0.0f || y >= editor_ovl->max_line_no * 16.0f) {
+            return;
+        }
+    } else {
+        return;
+    }
+
+    if (!on_name) {
+        editor_ovl->_24 = (int)(y / 16.0f);
+        editor_ovl->_26 = x > 0.0f ? (int)(x + 0.5f) : 0;
+        mED_set_idxcol_inLineWidth(editor_ovl);
+    }
+    mED_get_col_line_width(menu_info, editor_ovl, &editor_ovl->_22, &editor_ovl->_24, &editor_ovl->_26,
+                          editor_ovl->cursor_idx);
+    mED_check_line_over(editor_ovl);
+    editor_ovl->exchange_code = mED_get_exchange_code(editor_ovl);
+    editor_ovl->cursol_opacity_step = 0;
+    editor_ovl->cursol_opacity_accum = 0.0f;
+    if (old_cursor != editor_ovl->cursor_idx ||
+        (board_ovl != NULL && (old_field != board_ovl->field || old_header_pos != board_ovl->header_pos))) {
+        sAdo_SysTrgStart(NA_SE_35);
+    }
+}
+#endif
 
 typedef void (*mED_BASE_FUNC)(Submenu*, mSM_MenuInfo_c*);
 
