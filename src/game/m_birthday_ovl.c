@@ -3,8 +3,12 @@
 #include "m_common_data.h"
 #include "m_font.h"
 #include "sys_matrix.h"
+#ifdef MOUSE_INPUT
+#include "pc_mouse_input.h"
+#endif
 
 static mBR_Ovl_c birthday_ovl_data;
+static u8 mBR_ok_str[2] = "OK";
 
 static void mBR_window_close(Submenu* submenu, mSM_MenuInfo_c* menu_info, mBR_Ovl_c* birthday_ovl) {
   u16* data_p = birthday_ovl->birthday_data;
@@ -19,12 +23,72 @@ static void mBR_move_Move(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
   (*submenu->overlay->move_Move_proc)(submenu, menu_info);
 }
 
+#ifdef MOUSE_INPUT
+extern Vtx bir_win_v[];
+
+static u32 mBR_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 trigger) {
+  mBR_Ovl_c* birthday_ovl = submenu->overlay->birthday_ovl;
+  f32 mouse_x, mouse_y;
+  u32 pressed;
+  s32 wheel;
+  int idx = -1;
+
+  if (submenu->current_menu_type != mSM_OVL_BIRTHDAY ||
+      !pc_mouse_update_owner(FALSE, trigger || getButton() || gamePT->mcon.move_pR > 0.5f) ||
+      !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+    return trigger;
+  }
+
+  mouse_x -= menu_info->position[0];
+  mouse_y += menu_info->position[1];
+  if (mSM_mouse_over_quad(bir_win_v, mouse_x - 160.0f, 120.0f - mouse_y, 2.0f)) {
+    idx = mBR_Ovl_IDX_MONTH;
+  } else if (mouse_y >= 122.0f && mouse_y < 142.0f) {
+    u8 day_str[2];
+    f32 width;
+
+    mFont_UnintToString(day_str, sizeof(day_str), birthday_ovl->birthday_data[mBR_Ovl_IDX_DAY], 2, FALSE, TRUE, TRUE);
+    width = mFont_GetStringWidth(day_str, sizeof(day_str), TRUE);
+    if (mouse_x >= 169.0f && mouse_x < 173.0f + width) {
+      idx = mBR_Ovl_IDX_DAY;
+    } else if (mouse_x >= 196.0f && mouse_x < 200.0f + mFont_GetStringWidth(mBR_ok_str, sizeof(mBR_ok_str), TRUE)) {
+      idx = mBR_Ovl_IDX_OK;
+    }
+  }
+
+  if (idx == -1) {
+    return trigger;
+  }
+  if (birthday_ovl->idx != idx) {
+    birthday_ovl->idx = idx;
+    sAdo_SysTrgStart(NA_SE_CURSOL);
+  }
+
+  pressed = pc_mouse_button_pressed();
+  wheel = pc_mouse_scroll_wheel();
+  if (idx == mBR_Ovl_IDX_OK) {
+    return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+  }
+  if (wheel > 0 || (pressed & PC_MOUSE_BUTTON_LEFT)) {
+    return trigger | BUTTON_CUP;
+  }
+  if (wheel < 0 || (pressed & PC_MOUSE_BUTTON_RIGHT)) {
+    return trigger | BUTTON_CDOWN;
+  }
+  return trigger;
+}
+#endif
+
 static void mBR_move_Play(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
   static lbRTC_time_c work_time = { 0, 0, 0, 1, lbRTC_SUNDAY, lbRTC_JANUARY, 2000 };
   mBR_Ovl_c* birthday_ovl = submenu->overlay->birthday_ovl;
   int* idx_p = &birthday_ovl->idx;
   u16* data_p = birthday_ovl->birthday_data;
   u32 trigger = submenu->overlay->menu_control.trigger;
+
+#ifdef MOUSE_INPUT
+  trigger = mBR_mouse_trigger(submenu, menu_info, trigger);
+#endif
 
   if ((trigger & (BUTTON_B | BUTTON_CLEFT))) {
     if (*idx_p != 0) {
@@ -128,7 +192,6 @@ extern u8 tim_win_december_tex_rgb_i4[];
 
 static void mBR_set_dl(Submenu* submenu, mSM_MenuInfo_c* menu_info, GAME* game) {
   static u8 chr_table[21] = "When's your birthday?";
-  static u8 close_table[2] = "OK";
   static u8* month_tex[lbRTC_MONTHS_MAX] = {
     tim_win_january_tex_rgb_i4,
     tim_win_february_tex_rgb_i4,
@@ -216,7 +279,7 @@ static void mBR_set_dl(Submenu* submenu, mSM_MenuInfo_c* menu_info, GAME* game) 
   color_p = color_type[birthday_ovl->idx != mBR_Ovl_IDX_OK];
   mFont_SetLineStrings(
     game,
-    close_table, sizeof(close_table),
+    mBR_ok_str, sizeof(mBR_ok_str),
     x + 198.0f, -y + 124.0f,
     color_p[0], color_p[1], color_p[2], 255,
     FALSE,
