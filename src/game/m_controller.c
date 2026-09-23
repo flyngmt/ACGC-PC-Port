@@ -119,7 +119,7 @@ static void mCon_update_mouse_action(void) {
     mouse_inventory_hold_frames = 0.0f;
   } else if (mouse_inventory_hold_frames >= 0.0f) {
     mouse_inventory_hold_frames += gamePT->graph->dt_num_60fps_frames;
-    if (mouse_inventory_hold_frames >= 30.0f) {
+    if (mouse_inventory_hold_frames >= 12.0f) {
       mouse_inventory_triggered = TRUE;
       mouse_inventory_hold_frames = -1.0f;
       mouse_action_held = FALSE;
