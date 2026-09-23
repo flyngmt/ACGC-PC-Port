@@ -8,6 +8,12 @@
 #include "sys_matrix.h"
 #include "m_font.h"
 #include "m_bgm.h"
+#ifdef MOUSE_INPUT
+#include "pc_mouse_input.h"
+#endif
+
+#define mMS_NOTE_SPACING_X 21.0f
+#define mMS_NOTE_SPACING_Y 50.0f
 
 static mMS_Ovl_c mscore_ovl_data;
 
@@ -124,6 +130,99 @@ static u8 mMS_str_title[13] = "Are you sure?";
 static u8 mMS_str_ok[3] = "Yes";
 static u8 mMS_str_cancel[2] = "No";
 
+static void mMS_note_position(int idx, f32* x, f32* y) {
+    *x = -91.0f + (idx % 8) * mMS_NOTE_SPACING_X + (idx / 8) * 20.0f;
+    *y = 64.0f - (idx / 8) * mMS_NOTE_SPACING_Y;
+}
+
+#ifdef MOUSE_INPUT
+extern Vtx onp_hyouji2_v[];
+extern Vtx onp_win_v[];
+extern Vtx onp_carde_v[];
+
+static u32 mMS_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 trigger) {
+    /* Control quads from onp_hyouji2.c and onp_win.c. */
+    static const struct {
+        Vtx* vertices;
+        u32 trigger;
+    } controls[] = {
+        { &onp_hyouji2_v[0], BUTTON_Y }, { &onp_hyouji2_v[4], BUTTON_X },
+        { &onp_hyouji2_v[8], BUTTON_X }, { &onp_hyouji2_v[12], BUTTON_Y },
+        { &onp_hyouji2_v[16], BUTTON_X }, { &onp_hyouji2_v[20], BUTTON_Y },
+        { &onp_hyouji2_v[24], BUTTON_START }, { &onp_win_v[142], BUTTON_START },
+        { &onp_carde_v[0], BUTTON_R }, { &onp_carde_v[4], BUTTON_R },
+        { &onp_carde_v[8], BUTTON_R }, { &onp_carde_v[12], BUTTON_R }
+    };
+    mMS_Ovl_c* mscore_ovl = submenu->overlay->mscore_ovl;
+    f32 mouse_x, mouse_y;
+    u32 pressed;
+    int i;
+
+    if (submenu->current_menu_type != mSM_OVL_MSCORE ||
+        !pc_mouse_update_owner(FALSE, trigger || getButton() || gamePT->mcon.move_pR > 0.5f) ||
+        !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+        return trigger;
+    }
+
+    mouse_x -= menu_info->position[0];
+    mouse_y += menu_info->position[1];
+    pressed = pc_mouse_button_pressed();
+    if (menu_info->proc_status == mSM_OVL_PROC_OBEY) {
+        if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+            return trigger | BUTTON_B;
+        }
+        for (i = 0; i < 2; i++) {
+            u8* str = i == 0 ? mMS_str_ok : mMS_str_cancel;
+            int len = i == 0 ? sizeof(mMS_str_ok) : sizeof(mMS_str_cancel);
+            f32 y = 142.0f + i * 16.0f;
+            f32 width = mFont_GetStringWidth(str, len, TRUE) * 0.875f;
+
+            if (mouse_x >= 121.0f && mouse_x < 121.0f + width && mouse_y >= y && mouse_y < y + 16.0f) {
+                if (mscore_ovl->menu_idx != i) {
+                    mscore_ovl->menu_idx = i;
+                    sAdo_SysTrgStart(NA_SE_CURSOL);
+                }
+                return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+            }
+        }
+        return trigger;
+    }
+
+    for (i = 0; i < ARRAY_COUNT(controls); i++) {
+        if (mSM_mouse_over_quad(controls[i].vertices, mouse_x - 160.0f, 120.0f - mouse_y, 0.0f)) {
+            if (controls[i].trigger == BUTTON_START) {
+                mscore_ovl->cursor_idx = 16;
+            }
+            if (pressed & PC_MOUSE_BUTTON_LEFT) {
+                return trigger | controls[i].trigger;
+            }
+            return trigger | ((pressed & PC_MOUSE_BUTTON_RIGHT) ? BUTTON_START : 0);
+        }
+    }
+
+    for (i = 0; i < 16; i++) {
+        f32 x, y;
+
+        mMS_note_position(i, &x, &y);
+        x += 160.0f - mMS_NOTE_SPACING_X * 0.5f;
+        y = 120.0f - y;
+        if (mouse_x >= x && mouse_x < x + mMS_NOTE_SPACING_X && mouse_y >= y && mouse_y < y + mMS_NOTE_SPACING_Y) {
+            s32 wheel = pc_mouse_scroll_wheel();
+
+            mscore_ovl->cursor_idx = i;
+            if (wheel > 0 || (pressed & PC_MOUSE_BUTTON_LEFT)) {
+                trigger |= BUTTON_CUP;
+            } else if (wheel < 0 || (pressed & PC_MOUSE_BUTTON_RIGHT)) {
+                trigger |= BUTTON_CDOWN;
+            }
+            return trigger;
+        }
+    }
+
+    return trigger | ((pressed & PC_MOUSE_BUTTON_RIGHT) ? BUTTON_START : 0);
+}
+#endif
+
 static void mMS_move_Move(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     submenu->overlay->move_Move_proc(submenu, menu_info);
 }
@@ -148,6 +247,7 @@ static void mMS_move_Play(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
         0, // off
     };
     int note_idx;
+    int previous_note_idx;
     mMS_Ovl_c* mscore_ovl = submenu->overlay->mscore_ovl;
     u32 trigger;
     u8* note_p;
@@ -181,6 +281,10 @@ static void mMS_move_Play(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
         mscore_ovl->cursor_idx = 0;
     }
 
+    previous_note_idx = mscore_ovl->cursor_idx;
+#ifdef MOUSE_INPUT
+    trigger = mMS_mouse_trigger(submenu, menu_info, trigger);
+#endif
     note_idx = mscore_ovl->cursor_idx;
     if (note_idx < 16) {
         note_p = &mscore_ovl->melody[note_idx];
@@ -238,12 +342,13 @@ static void mMS_move_Play(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
         }
     }
 
-    if (note_idx != mscore_ovl->cursor_idx) {
+    if (previous_note_idx != mscore_ovl->cursor_idx) {
         mscore_ovl->anim_frame = 0;
         if (mscore_ovl->cursor_idx != 16) {
             u8 note = mscore_ovl->melody[mscore_ovl->cursor_idx];
 
-            if (note != 14 && note != 15) {
+            if (note != 14 && note != 15 &&
+                (note_idx == previous_note_idx || !(trigger & (BUTTON_CUP | BUTTON_CDOWN)))) {
                 sAdo_SysTrgStart(single_se[note]);
             }
         } else {
@@ -291,6 +396,9 @@ static void mMS_move_Obey(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
             menu_info->proc_status = mSM_OVL_PROC_PLAY;
         }
     } else {
+#ifdef MOUSE_INPUT
+        trigger = mMS_mouse_trigger(submenu, menu_info, trigger);
+#endif
         if ((trigger & BUTTON_A) != 0) {
             if (mscore_ovl->menu_idx == 0) {
                 int i;
@@ -457,11 +565,12 @@ static void mMS_set_dl(Submenu* submenu, mSM_MenuInfo_c* menu_info, GAME* game) 
 
     gSPDisplayList(POLY_OPA_DISP++, onp_hyouji_waku_mode);
 
-    base_x = (-105.0f + pos_x + 2.0f) + 12.0f;
-    base_y = 64.0f + pos_y;
     scale = 1.0f + (1.0f - cosf_table((f32)mscore_ovl->anim_frame * ((f32)M_PI / 9.0f))) * 0.075f;
 
     for (i = 0; i < 16; i++) {
+        mMS_note_position(i, &base_x, &base_y);
+        base_x += pos_x;
+        base_y += pos_y;
         note_moji_p = &note_moji[mscore_ovl->melody[i]];
         Matrix_scale(16.0f, 16.0f, 1.0f, MTX_LOAD);
         Matrix_translate(base_x, base_y + note_moji_p->ofs_y, 0.0f, MTX_MULT);
@@ -476,20 +585,14 @@ static void mMS_set_dl(Submenu* submenu, mSM_MenuInfo_c* menu_info, GAME* game) 
         gSPSegment(POLY_OPA_DISP++, ANIME_1_TXT_SEG, note_moji_p->frame->tex[i == play_idx]);
         gSPMatrix(POLY_OPA_DISP++, _Matrix_to_Mtx_new(graph), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
         gSPDisplayList(POLY_OPA_DISP++, note_moji_p->frame->model);
-
-        if (i == 7) {
-            base_x = 12.0f + (-105.0f + pos_x + 22.0f);
-            base_y += -50.0f;
-        } else {
-            base_x += 21.0f;
-        }
     }
 
     gSPDisplayList(POLY_OPA_DISP++, onp_hyouji_moji_mode);
 
-    base_x = (-105.0f + pos_x + 2.0f) + 12.0f;
-    base_y = 64.0f + pos_y;
     for (i = 0; i < 16; i++) {
+        mMS_note_position(i, &base_x, &base_y);
+        base_x += pos_x;
+        base_y += pos_y;
         if (i != play_idx) {
             note_moji_p = &note_moji[mscore_ovl->melody[i]];
             Matrix_scale(16.0f, 16.0f, 1.0f, MTX_LOAD);
@@ -507,13 +610,6 @@ static void mMS_set_dl(Submenu* submenu, mSM_MenuInfo_c* menu_info, GAME* game) 
             gSPSegment(POLY_OPA_DISP++, ANIME_2_TXT_SEG, note_moji_p->tex);
             gSPMatrix(POLY_OPA_DISP++, _Matrix_to_Mtx_new(graph), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gSPDisplayList(POLY_OPA_DISP++, onp_hyouji_moji1T_model);
-        }
-
-        if (i == 7) {
-            base_x = 12.0f + (-105.0f + pos_x + 22.0f);
-            base_y += -50.0f;
-        } else {
-            base_x += 21.0f;
         }
     }
 
