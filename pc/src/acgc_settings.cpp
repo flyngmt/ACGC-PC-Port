@@ -22,6 +22,7 @@ constexpr borealis::Log Log{"acgc::config"};
 
 extern "C" {
 void pc_audio_set_master_volume(int volume);
+int mEv_CheckFirstIntro(void);
 
 PCSettings g_pc_settings = {
     1280, 960, 0, 1, 60, 1, 0, 0, 0, 1, 1, 100, 12, 12,
@@ -274,7 +275,8 @@ void apply_settings_bridge(bool refreshGameplay)
     g_pc_settings.master_volume = current.audio.masterVolume.value();
     g_pc_settings.stick_deadzone = current.input.stickDeadzone.value();
     g_pc_settings.cstick_deadzone = current.input.cstickDeadzone.value();
-    g_mPlib_wade_disabled = g_pc_settings.borderless_acres;
+    // Keep the introduction's acre restriction when unrelated settings are applied. Otherwise softlocks the intro.
+    g_mPlib_wade_disabled = g_pc_settings.borderless_acres && !mEv_CheckFirstIntro();
     if (refreshGameplay && g_mPlib_wade_disabled && !borderlessWasEnabled) {
         aBC_RequestNearbyRefresh();
     }

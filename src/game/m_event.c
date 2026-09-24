@@ -9,6 +9,9 @@
 #include "m_play.h"
 #include "m_scene_table.h"
 #include "m_soncho.h"
+#ifdef TARGET_PC
+#include "pc_settings.h"
+#endif
 
 enum {
     mEv_INIT_NO_RENEWAL,
@@ -208,10 +211,6 @@ extern void mEv_UnSetFirstJob() {
     }
 }
 
-#ifdef TARGET_PC
-static int l_wade_disabled_bak = FALSE;
-#endif
-
 extern void mEv_SetFirstIntro() {
     u32 player_no = Common_Get(player_no);
 
@@ -221,7 +220,6 @@ extern void mEv_SetFirstIntro() {
 
 #ifdef TARGET_PC
         /* The scripted introduction expects normal acre transitions. */
-        l_wade_disabled_bak = g_mPlib_wade_disabled;
         g_mPlib_wade_disabled = FALSE;
 #endif
         mEv_EventON(ev);
@@ -252,7 +250,7 @@ extern void mEv_UnSetFirstIntro() {
         ev += player_no;
 #ifdef TARGET_PC
         if (mEv_CheckFirstIntro()) {
-            g_mPlib_wade_disabled = l_wade_disabled_bak;
+            g_mPlib_wade_disabled = g_pc_settings.borderless_acres;
         }
 #endif
         mEv_EventOFF(ev);
