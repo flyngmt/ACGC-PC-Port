@@ -63,8 +63,10 @@ static void aID_walk_one_unit(INTRO_DEMO_ACTOR* intro_demo, GAME_PLAY* play) {
 
     if (player != NULL) {
         if (player->actor_class.world.position.z >= aID_OFF_UT_Z_POS) {
-            /* Reached target position */
-            aID_setupAction(intro_demo, play, aID_ACT_GO_OUT_OF_STATION);
+            // Prevent softlocking by making sure we request controls again
+            if (mPlib_request_main_wait_type3(&play->game)) {
+                aID_setupAction(intro_demo, play, aID_ACT_GO_OUT_OF_STATION);
+            }
         } else {
             /* Walk to A-3 @ 5Z, 7.5X */
             mPlib_Set_goal_player_demo_walk(aID_OFF_UT_X_POS, aID_OFF_UT_Z_POS, 2.5f);
@@ -239,7 +241,6 @@ static void aID_walk_one_unit_init(INTRO_DEMO_ACTOR* intro_demo, GAME_PLAY* play
 }
 
 static void aID_go_out_of_station_init(INTRO_DEMO_ACTOR* intro_demo, GAME_PLAY* play) {
-    mPlib_request_main_wait_type3(&play->game);
     Camera2_request_main_normal(play, 0, 9);
 }
 
