@@ -474,6 +474,7 @@ install(TARGETS acgc
     LIBRARY DESTINATION bin
     RUNTIME DESTINATION bin
 )
+aurora_install_runtime_dlls(acgc "\${CMAKE_INSTALL_PREFIX}/bin")
 if (NOT ANDROID)
     install(DIRECTORY "${PC_ROOT}/res/" DESTINATION bin/res)
 endif ()
