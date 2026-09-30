@@ -124,6 +124,7 @@ static int mouse_pad_hide_reports;
 
 static void game_update_mouse_pointer_owner(GAME* this) {
     const int mouse_active = pc_mouse_active();
+    int pad_active = FALSE;
 
     for (int i = 0; i < MAXCONTROLLERS; i++) {
         pad_t* pad = &this->pads[i];
@@ -152,10 +153,11 @@ static void game_update_mouse_pointer_owner(GAME* this) {
                          i, pad->on.button, pad->now.button, pad->now.stick_x, pad->now.stick_y,
                          mouse_pad_reference_x[i], mouse_pad_reference_y[i]);
             }
-            pc_mouse_hide_pointer();
+            pad_active = TRUE;
             break;
         }
     }
+    pc_mouse_set_pad_active(pad_active);
 }
 #endif
 

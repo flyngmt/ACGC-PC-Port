@@ -8167,8 +8167,7 @@ static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
         return;
     }
 
-    tag_ovl->mouse_active = pc_mouse_update_owner(tag_ovl->mouse_active,
-        submenu->overlay->menu_control.trigger || getButton() || gamePT->mcon.move_pR > 0.5f);
+    tag_ovl->mouse_active = pc_mouse_update_owner(tag_ovl->mouse_active, pc_mouse_pad_active());
     u32 mouse_pressed = pc_mouse_button_pressed();
     s32 mouse_wheel = pc_mouse_scroll_wheel();
     s32 mouse_moved = pc_mouse_moved();

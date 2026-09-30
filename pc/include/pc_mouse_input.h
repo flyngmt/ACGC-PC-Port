@@ -45,6 +45,9 @@ void pc_mouse_get_delta(s32 *dx, s32 *dy);
 int pc_mouse_moved(void);
 int pc_mouse_active(void);
 int pc_mouse_update_owner(int mouse_active, int controller_active);
+// Whether pad input should take the pointer this frame
+void pc_mouse_set_pad_active(int active);
+int pc_mouse_pad_active(void);
 void pc_mouse_hide_pointer(void);
 int pc_mouse_pointer_visible(void);
 void pc_mouse_sync_system_cursor(void);
@@ -74,6 +77,8 @@ static inline void pc_mouse_get_position(s32 *x, s32 *y) {
 static inline void pc_mouse_get_delta(s32 *dx, s32 *dy) { pc_mouse_get_position(dx, dy); }
 static inline int pc_mouse_moved(void) { return 0; }
 static inline int pc_mouse_active(void) { return 0; }
+static inline void pc_mouse_set_pad_active(int active) { (void)active; }
+static inline int pc_mouse_pad_active(void) { return 0; }
 static inline void pc_mouse_hide_pointer(void) {}
 static inline int pc_mouse_pointer_visible(void) { return 0; }
 static inline void pc_mouse_sync_system_cursor(void) {}

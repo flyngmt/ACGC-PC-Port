@@ -50,8 +50,7 @@ static int mChoice_Main_Normal_SetChoice(mChoice_c* choice, GAME* game) {
     f32 mx, my;
     int inside_viewport = pc_mouse_get_ui_position(&mx, &my);
 
-    int mouse_active = pc_mouse_update_owner(FALSE,
-        trigger || getButton() || gamePT->mcon.adjusted_pY != 0.0f);
+    int mouse_active = pc_mouse_update_owner(FALSE, pc_mouse_pad_active());
     int hover_idx = inside_viewport ? mChoice_GetMouseHoverIdx(choice, mx, my) : -1;
     if (mouse_active && hover_idx != -1 && hover_idx != choice->selected_choice_idx) {
         choice->selected_choice_idx = hover_idx;

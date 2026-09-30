@@ -912,8 +912,7 @@ static void mMP_mouse_move(Submenu* submenu, mSM_MenuInfo_c* menu) {
     int bx, bz;
 
     if (submenu->current_menu_type != mSM_OVL_MAP ||
-        !pc_mouse_update_owner(FALSE, submenu->overlay->menu_control.trigger || getButton() ||
-                                      gamePT->mcon.move_pR > 0.5f) ||
+        !pc_mouse_update_owner(FALSE, pc_mouse_pad_active()) ||
         !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
         return;
     }

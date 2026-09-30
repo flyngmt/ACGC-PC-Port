@@ -2534,8 +2534,7 @@ void mDE_move_Play(Submenu* submenu, mSM_MenuInfo_c* info) {
     design_ovl->centered_x = centered_x;
     design_ovl->centered_y = centered_y;
 
-    design_ovl->mouse_active = pc_mouse_update_owner(design_ovl->mouse_active,
-        trigger || getButton() || gamePT->mcon.move_pR >= 0.1f);
+    design_ovl->mouse_active = pc_mouse_update_owner(design_ovl->mouse_active, pc_mouse_pad_active());
     if (!inside_viewport) {
         design_ovl->mouse_tool_active = 0;
     }

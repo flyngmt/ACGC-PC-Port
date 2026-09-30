@@ -33,6 +33,7 @@ static Uint64 g_mouse_pointer_last_activity = 0;
 static int g_mouse_pointer_active = 0;
 static int g_mouse_keyboard_activity = 0;
 static int g_mouse_system_cursor_hidden = 0;
+static int g_mouse_pad_active = 0;
 
 extern int g_pc_paused;
 
@@ -62,6 +63,17 @@ static int pc_mouse_window_active(void) {
 
 void pc_mouse_hide_pointer(void) {
     g_mouse_pointer_active = 0;
+}
+
+void pc_mouse_set_pad_active(int active) {
+    g_mouse_pad_active = active;
+    if (active) {
+        pc_mouse_hide_pointer();
+    }
+}
+
+int pc_mouse_pad_active(void) {
+    return g_mouse_pad_active;
 }
 
 int pc_mouse_pointer_visible(void) {
@@ -189,6 +201,7 @@ void pc_mouse_shutdown(void) {
     g_mouse_pointer_active = 0;
     g_mouse_pointer_last_activity = 0;
     g_mouse_keyboard_activity = 0;
+    g_mouse_pad_active = 0;
     g_mouse_wheel_delta = 0;
     g_pending_mouse_wheel_delta = 0;
     g_pending_mouse_pressed = g_pending_mouse_released = 0;
