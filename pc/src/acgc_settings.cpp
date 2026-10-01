@@ -176,6 +176,8 @@ UserSettings::Audio::Audio()
 UserSettings::Input::Input()
     : stickDeadzone("input.stickDeadzone", 12)
     , cstickDeadzone("input.cstickDeadzone", 12)
+    , autoAssignController("input.autoAssignController", true)
+    , singlePortMigrated("input.singlePortMigrated", false)
 {
 }
 
@@ -223,6 +225,8 @@ void register_settings()
     config::register_var(current.audio.masterVolume);
     config::register_var(current.input.stickDeadzone);
     config::register_var(current.input.cstickDeadzone);
+    config::register_var(current.input.autoAssignController);
+    config::register_var(current.input.singlePortMigrated);
 }
 
 SettingsLoadResult load_settings(const std::filesystem::path& userDirectory,
@@ -301,6 +305,8 @@ void apply_runtime_settings(bool refreshGameplay)
 
     constexpr int kAxisMaximum = 32767;
     for (u32 port = 0; port < PAD_MAX_CONTROLLERS; ++port) {
+        u32 buttonCount = 0;
+        PADGetButtonMappings(port, &buttonCount);
         PADDeadZones* deadZones = PADGetDeadZones(port);
         if (deadZones == nullptr) {
             continue;

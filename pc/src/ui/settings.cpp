@@ -4,7 +4,6 @@
 #include "acgc/settings.hpp"
 #include "acgc/texture_replacements.hpp"
 #include "acgc/ui/bool_button.hpp"
-#include "acgc/ui/controller_config.hpp"
 #include "acgc/ui/modal.hpp"
 #include "acgc/ui/number_button.hpp"
 #include "acgc/ui/pane.hpp"
@@ -669,49 +668,6 @@ SettingsWindow::SettingsWindow()
         add_bool(left, right, current.enhancements.pillarboxNes,
                  localization::get("settings.gameplay.nes_aspect"),
                  localization::get("settings.gameplay.nes_aspect_help"));
-    });
-
-    add_tab(localization::get("settings.tabs.controller"), [this](Rml::Element* content) {
-        auto& current = settings();
-        auto& left = add_child<Pane>(content, Pane::Type::Controlled);
-        auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
-
-        left.add_section(localization::get("settings.controller.configuration_section"));
-        left.register_control(
-            left.add_button(localization::get("settings.controller.configure")).on_pressed([this] {
-                push(std::make_unique<ControllerConfigWindow>());
-            }),
-            right, [](Pane& pane) {
-                pane.add_text(localization::get("settings.controller.configure_help"));
-            });
-
-        left.add_section(localization::get("settings.controller.dead_zones_section"));
-        left.register_control(
-            left.add_child<NumberButton>(NumberButton::Props{
-                .key = localization::get("settings.controller.control_stick_deadzone"),
-                .getValue = [&current] { return current.input.stickDeadzone.value(); },
-                .setValue = [&current](int value) {
-                    current.input.stickDeadzone.set_value(value);
-                    persist();
-                },
-                .isModified = [&current] { return modified(current.input.stickDeadzone); },
-                .min = 0, .max = 40, .step = 2,
-                .suffix = "%",
-            }),
-            right, [](Pane& pane) { pane.add_text(localization::get("settings.controller.control_stick_deadzone_help")); });
-        left.register_control(
-            left.add_child<NumberButton>(NumberButton::Props{
-                .key = localization::get("settings.controller.c_stick_deadzone"),
-                .getValue = [&current] { return current.input.cstickDeadzone.value(); },
-                .setValue = [&current](int value) {
-                    current.input.cstickDeadzone.set_value(value);
-                    persist();
-                },
-                .isModified = [&current] { return modified(current.input.cstickDeadzone); },
-                .min = 0, .max = 40, .step = 2,
-                .suffix = "%",
-            }),
-            right, [](Pane& pane) { pane.add_text(localization::get("settings.controller.c_stick_deadzone_help")); });
     });
 }
 

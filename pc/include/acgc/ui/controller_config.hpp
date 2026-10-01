@@ -1,6 +1,7 @@
 #pragma once
 
 #include "window.hpp"
+#include <SDL3/SDL_joystick.h>
 #include <dolphin/pad.h>
 
 namespace acgc::ui {
@@ -19,9 +20,13 @@ private:
 		Triggers,
 		Sticks,
 		Rumble,
+		KeyboardButtons,
+		KeyboardTriggers,
+		KeyboardSticks,
 	};
 
-	void build_port_tab(Rml::Element* content, int port);
+	static bool is_keyboard_page(Page page);
+	void build_tab(Rml::Element* content);
 	void render_page(class Pane& pane, int port, Page page);
 	void refresh_controller_page();
 	void poll_pending_binding();
@@ -39,6 +44,7 @@ private:
 	Page mPage                              = Page::Controller;
 	Pane* mRightPane                        = nullptr;
 	int mActivePort                         = 0;
+	SDL_JoystickID mPortController          = 0;
 	int mPendingPort                        = -1;
 	bool mPendingBindingArmed               = false;
 	bool mSuppressNavigationUntilNeutral    = false;

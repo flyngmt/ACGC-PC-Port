@@ -61,6 +61,8 @@ struct UserSettings {
     struct Input {
         ConfigVar<int> stickDeadzone;
         ConfigVar<int> cstickDeadzone;
+        ConfigVar<bool> autoAssignController;
+        ConfigVar<bool> singlePortMigrated;
 
         Input();
     } input;

@@ -204,6 +204,7 @@ list(FILTER GAME_CXX_SOURCES EXCLUDE REGEX ".*/jsyswrapper_main\\.cpp$")
 # =============================================================================
 set(PC_SOURCES
     ${PC_ROOT}/src/acgc_config.cpp
+    ${PC_ROOT}/src/acgc_controller_ports.cpp
     ${PC_ROOT}/src/acgc_data.cpp
     ${PC_ROOT}/src/acgc_disc.cpp
     ${PC_ROOT}/src/acgc_game_input_block.cpp

@@ -5,6 +5,7 @@
 #include "number_button.hpp"
 #include "pane.hpp"
 #include "acgc/ui/localization.hpp"
+#include "ui.hpp"
 
 #include <SDL3/SDL_gamepad.h>
 #include <SDL3/SDL_keyboard.h>
@@ -15,15 +16,13 @@
 #include <vector>
 
 #include "acgc/config.hpp"
+#include "acgc/controller_ports.hpp"
+#include "acgc/settings.hpp"
 
 namespace acgc::ui {
 namespace {
 
-bool keyboard_active(int port)
-{
-	u32 count = 0;
-	return PADGetKeyButtonBindings(static_cast<u32>(port), &count) != nullptr;
-}
+constexpr int kPort = PAD_CHAN0;
 
 Rml::String current_controller_name(int port)
 {
@@ -31,8 +30,8 @@ Rml::String current_controller_name(int port)
 	if (name != nullptr) {
 		return name;
 	}
-	return keyboard_active(port) ? localization::get("controller.device.keyboard")
-	                             : localization::get("controller.device.none");
+	return controller_ports::auto_assign() ? localization::get("controller.device.waiting")
+	                                       : localization::get("controller.device.none");
 }
 
 Rml::String controller_index_name(u32 index)
@@ -51,6 +50,12 @@ SDL_Gamepad* gamepad_for_port(int port)
 		return nullptr;
 	}
 	return PADGetSDLGamepadForIndex(static_cast<u32>(index));
+}
+
+SDL_JoystickID controller_id_for_port(int port)
+{
+	SDL_Gamepad* gamepad = gamepad_for_port(port);
+	return gamepad != nullptr ? SDL_GetGamepadID(gamepad) : 0;
 }
 
 struct SpecificButtonName {
@@ -115,14 +120,64 @@ const std::vector<ButtonNames> kGamepadButtonNames = {
 };
 // clang-format on
 
+Rml::String stick_name(SDL_GamepadType type, bool right)
+{
+	if (type == SDL_GAMEPAD_TYPE_GAMECUBE) {
+		return localization::get(right ? "controller.input.c_stick" : "controller.input.control_stick");
+	}
+	return localization::get(right ? "controller.input.right_stick" : "controller.input.left_stick");
+}
+
+Rml::String trigger_name(SDL_GamepadType type, bool right)
+{
+	switch (type) {
+	case SDL_GAMEPAD_TYPE_PS3:
+	case SDL_GAMEPAD_TYPE_PS4:
+	case SDL_GAMEPAD_TYPE_PS5:
+		return right ? "R2" : "L2";
+	case SDL_GAMEPAD_TYPE_XBOX360:
+	case SDL_GAMEPAD_TYPE_XBOXONE:
+		return right ? "RT" : "LT";
+	case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
+		return right ? "ZR" : "ZL";
+	case SDL_GAMEPAD_TYPE_GAMECUBE:
+		return right ? "R" : "L";
+	default:
+		return localization::get(right ? "controller.input.right_trigger" : "controller.input.left_trigger");
+	}
+}
+
+Rml::String stick_direction(SDL_GamepadType type, bool right, const char* direction)
+{
+	return localization::format("controller.input.stick_direction", stick_name(type, right), localization::get(direction));
+}
+
+Rml::String native_axis_label(SDL_Gamepad* gamepad, PADSignedNativeAxis axis)
+{
+	const SDL_GamepadType type = gamepad != nullptr ? SDL_GetGamepadType(gamepad) : SDL_GAMEPAD_TYPE_UNKNOWN;
+	const bool positive        = axis.sign == AXIS_SIGN_POSITIVE;
+	switch (static_cast<SDL_GamepadAxis>(axis.nativeAxis)) {
+	case SDL_GAMEPAD_AXIS_LEFTX:
+		return stick_direction(type, false, positive ? "controller.input.right" : "controller.input.left");
+	case SDL_GAMEPAD_AXIS_LEFTY:
+		return stick_direction(type, false, positive ? "controller.input.down" : "controller.input.up");
+	case SDL_GAMEPAD_AXIS_RIGHTX:
+		return stick_direction(type, true, positive ? "controller.input.right" : "controller.input.left");
+	case SDL_GAMEPAD_AXIS_RIGHTY:
+		return stick_direction(type, true, positive ? "controller.input.down" : "controller.input.up");
+	case SDL_GAMEPAD_AXIS_LEFT_TRIGGER:
+		return trigger_name(type, false);
+	case SDL_GAMEPAD_AXIS_RIGHT_TRIGGER:
+		return trigger_name(type, true);
+	default:
+		return PADGetNativeAxisName(axis);
+	}
+}
+
 Rml::String native_axis_name(const PADAxisMapping& mapping, SDL_Gamepad* gamepad)
 {
 	if (mapping.nativeAxis.nativeAxis != -1) {
-		Rml::String value = PADGetNativeAxisName(mapping.nativeAxis);
-		if (mapping.padAxis != PAD_AXIS_TRIGGER_L && mapping.padAxis != PAD_AXIS_TRIGGER_R) {
-			value += mapping.nativeAxis.sign == AXIS_SIGN_POSITIVE ? "+" : "-";
-		}
-		return value;
+		return native_axis_label(gamepad, mapping.nativeAxis);
 	}
 
 	if (mapping.nativeButton != -1) {
@@ -274,14 +329,12 @@ ControllerConfigWindow::ControllerConfigWindow()
 		}
 	}
 
-	for (int port = PAD_CHAN0; port < PAD_CHANMAX; ++port) {
-		add_tab(localization::format("controller.port", port + 1), [this, port](Rml::Element* content) {
-			if (mPendingPort != -1 && mPendingPort != port) {
-				cancel_pending_binding();
-			}
-			build_port_tab(content, port);
-		});
-	}
+	add_tab(localization::get("menu.controls"), [this](Rml::Element* content) { build_tab(content); });
+}
+
+bool ControllerConfigWindow::is_keyboard_page(Page page)
+{
+	return page == Page::KeyboardButtons || page == Page::KeyboardTriggers || page == Page::KeyboardSticks;
 }
 
 void ControllerConfigWindow::hide(bool close)
@@ -294,17 +347,25 @@ void ControllerConfigWindow::hide(bool close)
 
 void ControllerConfigWindow::update()
 {
+	if (const SDL_JoystickID controller = controller_id_for_port(kPort); controller != mPortController) {
+		mPortController = controller;
+		if (mPage != Page::Controller) {
+			refresh_controller_page();
+		}
+	}
 	poll_pending_binding();
 	Window::update();
 }
 
-void ControllerConfigWindow::build_port_tab(Rml::Element* content, int port)
+void ControllerConfigWindow::build_tab(Rml::Element* content)
 {
+	const int port = kPort;
 	stop_rumble_test();
 	auto& leftPane  = add_child<Pane>(content, Pane::Type::Controlled);
 	auto& rightPane = add_child<Pane>(content, Pane::Type::Uncontrolled);
 	mRightPane      = &rightPane;
 	mActivePort     = port;
+	mPortController = controller_id_for_port(port);
 
 	auto addPageButton = [this, &leftPane, &rightPane, port](Page page, Rml::String key, auto getValue, auto isDisabled) {
 		leftPane.register_control(leftPane.add_select_button({
@@ -313,42 +374,26 @@ void ControllerConfigWindow::build_port_tab(Rml::Element* content, int port)
 		                              .isDisabled = std::move(isDisabled),
 		                          }),
 		                          rightPane, [this, port, page](Pane& pane) {
+			                          if (is_keyboard_page(page) != is_keyboard_page(mPage)) {
+				                          cancel_pending_binding();
+			                          }
 			                          mPage = page;
 			                          render_page(pane, port, page);
 		                          });
 	};
+	auto pageValue   = [] { return Rml::String(">"); };
+	auto notDisabled = [] { return false; };
 
+	leftPane.add_section(localization::get("controller.section.controller"));
 	addPageButton(Page::Controller, localization::get("controller.page.device"),
-	              [port] { return current_controller_name(port); }, [] { return false; });
-	addPageButton(Page::Buttons, localization::get("controller.page.buttons"),
-	              [] { return Rml::String(">"); }, [] { return false; });
-	addPageButton(Page::Triggers, localization::get("controller.page.triggers"),
-	              [] { return Rml::String(">"); }, [] { return false; });
-	addPageButton(Page::Sticks, localization::get("controller.page.sticks"),
-	              [] { return Rml::String(">"); }, [] { return false; });
-	addPageButton(
-	    Page::Rumble, localization::get("controller.page.rumble"), [] { return Rml::String(">"); },
-	    [port] { return !PADSupportsRumbleIntensity(static_cast<u32>(port)); });
+	              [port] { return current_controller_name(port); }, notDisabled);
+	addPageButton(Page::Buttons, localization::get("controller.page.buttons"), pageValue, notDisabled);
+	addPageButton(Page::Triggers, localization::get("controller.page.triggers"), pageValue, notDisabled);
+	addPageButton(Page::Sticks, localization::get("controller.page.sticks"), pageValue, notDisabled);
+	addPageButton(Page::Rumble, localization::get("controller.page.rumble"), pageValue,
+	              [port] { return !PADSupportsRumbleIntensity(static_cast<u32>(port)); });
 
 	leftPane.add_section(localization::get("controller.options.section"));
-	leftPane.register_control(leftPane.add_child<BoolButton>(BoolButton::Props {
-	                              .key = localization::get("controller.options.enable_dead_zones"),
-	                              .getValue =
-	                                  [port] {
-		                                  PADDeadZones* deadZones = PADGetDeadZones(port);
-		                                  return deadZones != nullptr && deadZones->useDeadzones;
-	                                  },
-	                              .setValue =
-	                                  [port](bool value) {
-		                                  if (PADDeadZones* deadZones = PADGetDeadZones(port)) {
-			                                  deadZones->useDeadzones = value;
-			                                  PADSerializeMappings();
-		                                  }
-	                                  },
-	                              .isDisabled = [port] { return PADGetDeadZones(port) == nullptr; },
-	                          }),
-	                          rightPane,
-	                          [](Pane& pane) { pane.add_text(localization::get("controller.options.enable_dead_zones_help")); });
 	leftPane.register_control(leftPane.add_child<BoolButton>(BoolButton::Props {
 	                              .key = localization::get("controller.options.emulate_triggers"),
 	                              .getValue =
@@ -367,7 +412,7 @@ void ControllerConfigWindow::build_port_tab(Rml::Element* content, int port)
 	                          }),
 	                          rightPane,
 	                          [](Pane& pane) { pane.add_text(localization::get("controller.options.emulate_triggers_help")); });
-	leftPane.register_control(leftPane.add_button(localization::get("controller.options.restore_defaults")).on_pressed([this, port] {
+	leftPane.register_control(leftPane.add_button(localization::get("controller.options.restore_defaults")).on_pressed([port] {
 		play_menu_sound(kSoundClick);
 		PADRestoreDefaultMapping(port);
 	}),
@@ -375,65 +420,75 @@ void ControllerConfigWindow::build_port_tab(Rml::Element* content, int port)
 		                          pane.clear();
 		                          pane.add_text(localization::get("controller.options.restore_defaults_help"));
 	                          });
+
+	if (SDL_HasKeyboard()) {
+		leftPane.add_section(localization::get("controller.section.keyboard"));
+		addPageButton(Page::KeyboardButtons, localization::get("controller.page.buttons"), pageValue, notDisabled);
+		addPageButton(Page::KeyboardTriggers, localization::get("controller.page.triggers"), pageValue, notDisabled);
+		addPageButton(Page::KeyboardSticks, localization::get("controller.page.sticks"), pageValue, notDisabled);
+	} else if (is_keyboard_page(mPage)) {
+		mPage = Page::Controller;
+	}
 	render_page(rightPane, port, mPage);
 }
 
 void ControllerConfigWindow::render_page(Pane& pane, int port, Page page)
 {
 	pane.clear();
+	const bool keyboard = is_keyboard_page(page);
 
 	switch (page) {
 	case Page::Controller:
 	{
 		pane.add_button({
-		                    .text       = localization::get("controller.device.none"),
-		                    .isSelected = [port] { return PADGetIndexForPort(port) < 0 && !keyboard_active(port); },
+		                    .text       = localization::get("controller.device.automatic"),
+		                    .isSelected = [port] { return PADGetIndexForPort(port) < 0 && controller_ports::auto_assign(); },
 		                })
-		    .on_pressed([this, port] {
+		    .on_pressed([this] {
 			    play_menu_sound(kSoundClick);
 			    cancel_pending_binding();
-			    PADClearPort(port);
-			    PADSetKeyboardActive(static_cast<u32>(port), FALSE);
-			    PADSerializeMappings();
-			    refresh_controller_page();
+			    controller_ports::select_automatic();
 		    });
 
-		pane.add_button({
-		                    .text       = localization::get("controller.device.keyboard"),
-		                    .isSelected = [port] { return keyboard_active(port); },
-		                })
-		    .on_pressed([this, port] {
-			    play_menu_sound(kSoundClick);
-			    cancel_pending_binding();
-			    PADClearPort(port);
-			    PADSetKeyboardActive(static_cast<u32>(port), TRUE);
-			    PADSerializeMappings();
-		    });
-
-		const u32 controllerCount = PADCount();
-		if (controllerCount == 0) {
-			pane.add_text(localization::get("controller.device.none_detected"));
-			break;
+		const bool hasKeyboard = SDL_HasKeyboard();
+		if (hasKeyboard) {
+			pane.add_button({
+			                    .text       = localization::get("controller.device.none"),
+			                    .isSelected = [port] { return PADGetIndexForPort(port) < 0 && !controller_ports::auto_assign(); },
+			                })
+			    .on_pressed([this] {
+				    play_menu_sound(kSoundClick);
+				    cancel_pending_binding();
+				    controller_ports::select_none();
+			    });
 		}
 
+		const u32 controllerCount = PADCount();
 		for (u32 i = 0; i < controllerCount; ++i) {
 			pane.add_button({
 			                    .text       = controller_index_name(i),
 			                    .isSelected = [port, i] { return PADGetIndexForPort(port) == static_cast<s32>(i); },
 			                })
-			    .on_pressed([this, port, i] {
+			    .on_pressed([this, i] {
 				    play_menu_sound(kSoundClick);
 				    cancel_pending_binding();
-				    PADSetKeyboardActive(static_cast<u32>(port), FALSE);
-				    PADSetPortForIndex(i, port);
-				    PADSerializeMappings();
+				    controller_ports::select_controller(i);
 			    });
+		}
+
+		if (controllerCount == 0) {
+			pane.add_text(localization::get("controller.device.none_detected"));
+		}
+		pane.add_text(localization::get("controller.device.automatic_help"));
+		if (hasKeyboard) {
+			pane.add_text(localization::get("controller.device.keyboard_help"));
 		}
 		break;
 	}
 	case Page::Buttons:
+	case Page::KeyboardButtons:
 	{
-		if (keyboard_active(port)) {
+		if (keyboard) {
 			auto addKeyButton = [&](PADButton button) {
 				pane.add_select_button({
 				                           .key = PADGetButtonName(button),
@@ -542,8 +597,9 @@ void ControllerConfigWindow::render_page(Pane& pane, int port, Page page)
 		break;
 	}
 	case Page::Triggers:
+	case Page::KeyboardTriggers:
 	{
-		if (keyboard_active(port)) {
+		if (keyboard) {
 			auto addKeyButton = [&](PADButton button) {
 				pane.add_select_button({
 				                           .key = PADGetButtonName(button),
@@ -713,8 +769,9 @@ void ControllerConfigWindow::render_page(Pane& pane, int port, Page page)
 		break;
 	}
 	case Page::Sticks:
+	case Page::KeyboardSticks:
 	{
-		if (keyboard_active(port)) {
+		if (keyboard) {
 			auto addKeyAxis = [&](PADAxis axis) {
 				pane.add_select_button({
 				                           .key = PADGetAxisDirectionLabel(axis),
@@ -763,12 +820,11 @@ void ControllerConfigWindow::render_page(Pane& pane, int port, Page page)
 		PADAxisMapping* axes = PADGetAxisMappings(port, &axisCount);
 		if (axes == nullptr) {
 			pane.add_text(localization::get("controller.device.none_selected"));
-			break;
 		}
 
 		SDL_Gamepad* gamepad = gamepad_for_port(port);
 		auto addAxis         = [&](PADAxis axis) {
-            if (axis >= axisCount) {
+            if (axes == nullptr || axis >= axisCount) {
                 return;
             }
             PADAxisMapping& mapping = axes[axis];
@@ -791,50 +847,36 @@ void ControllerConfigWindow::render_page(Pane& pane, int port, Page page)
                 });
 		};
 
+		auto addDeadzone = [&pane](config::ConfigVar<int>& deadzone) {
+			pane.add_child<NumberButton>(NumberButton::Props {
+			    .key      = localization::get("controller.deadzone"),
+			    .getValue = [&deadzone] { return deadzone.value(); },
+			    .setValue =
+			        [&deadzone](int value) {
+				        deadzone.set_value(value);
+				        apply_runtime_settings(false);
+				        save_settings();
+			        },
+			    .min    = 0,
+			    .max    = 40,
+			    .step   = 2,
+			    .suffix = "%",
+			});
+		};
+
 		pane.add_section(localization::get("controller.section.control_stick"));
 		addAxis(PAD_AXIS_LEFT_Y_POS);
 		addAxis(PAD_AXIS_LEFT_Y_NEG);
 		addAxis(PAD_AXIS_LEFT_X_NEG);
 		addAxis(PAD_AXIS_LEFT_X_POS);
-		if (PADDeadZones* deadZones = PADGetDeadZones(port)) {
-			pane.add_child<NumberButton>(NumberButton::Props {
-			    .key      = localization::get("controller.deadzone"),
-			    .getValue = [deadZones] { return deadzone_raw_to_percent(deadZones->stickDeadZone); },
-			    .setValue =
-			        [deadZones](int value) {
-				        deadZones->stickDeadZone = percent_to_raw(value);
-				        PADSerializeMappings();
-			        },
-			    .isDisabled = [deadZones] { return !deadZones->useDeadzones; },
-			    .min        = 0,
-			    .max        = 100,
-			    .step       = 1,
-			    .suffix     = "%",
-			});
-		}
+		addDeadzone(settings().input.stickDeadzone);
 
 		pane.add_section(localization::get("controller.section.c_stick"));
 		addAxis(PAD_AXIS_RIGHT_Y_POS);
 		addAxis(PAD_AXIS_RIGHT_Y_NEG);
 		addAxis(PAD_AXIS_RIGHT_X_NEG);
 		addAxis(PAD_AXIS_RIGHT_X_POS);
-		if (PADDeadZones* deadZones = PADGetDeadZones(port)) {
-			pane.add_child<NumberButton>(NumberButton::Props {
-			    .key      = localization::get("controller.deadzone"),
-			    .getValue = [deadZones] { return deadzone_raw_to_percent(deadZones->substickDeadZone); },
-			    .setValue =
-			        [deadZones](int value) {
-				        deadZones->substickDeadZone = percent_to_raw(value);
-				        PADSerializeMappings();
-			        },
-			    .isDisabled = [deadZones] { return !deadZones->useDeadzones; },
-			    .min        = 0,
-			    .max        = 100,
-			    .step       = 1,
-			    .suffix     = "%",
-			});
-		}
-
+		addDeadzone(settings().input.cstickDeadzone);
 		break;
 	}
 	case Page::Rumble:
@@ -931,10 +973,14 @@ void ControllerConfigWindow::render_page(Pane& pane, int port, Page page)
 
 void ControllerConfigWindow::refresh_controller_page()
 {
-	if (!visible() || mPage != Page::Controller || mRightPane == nullptr) {
+	if (!visible() || mRightPane == nullptr || is_keyboard_page(mPage)) {
 		return;
 	}
-	render_page(*mRightPane, mActivePort, Page::Controller);
+	if (mPendingButtonMapping != nullptr || mPendingAxisMapping != nullptr) {
+		cancel_pending_binding();
+	}
+	stop_rumble_test();
+	render_page(*mRightPane, mActivePort, mPage);
 }
 
 void ControllerConfigWindow::poll_pending_binding()

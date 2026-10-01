@@ -2,6 +2,7 @@
 
 #include "acgc/app_info.hpp"
 #include "acgc/settings.hpp"
+#include "acgc/ui/controller_config.hpp"
 #include "acgc/ui/modal.hpp"
 #include "acgc/ui/settings.hpp"
 #include "acgc/ui/localization.hpp"
@@ -653,9 +654,13 @@ Prelaunch::Prelaunch()
             [this] { push(std::make_unique<SettingsWindow>()); });
         apply_intro_animation(mMenuButtons.back()->root(), "delay-2");
 
+        mMenuButtons.push_back(std::make_unique<Button>(menuList, localization::get("menu.controls")));
+        mMenuButtons.back()->on_pressed([this] { push(std::make_unique<ControllerConfigWindow>()); });
+        apply_intro_animation(mMenuButtons.back()->root(), "delay-3");
+
         mMenuButtons.push_back(std::make_unique<Button>(menuList, localization::get("common.quit")));
         mMenuButtons.back()->on_pressed([] { prelaunch_state().quitRequested = true; });
-        apply_intro_animation(mMenuButtons.back()->root(), "delay-3");
+        apply_intro_animation(mMenuButtons.back()->root(), "delay-4");
     }
 
     mDiscStatus = mDocument->GetElementById("disc-status");

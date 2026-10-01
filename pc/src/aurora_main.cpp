@@ -16,6 +16,7 @@
 #include "pc_mouse_input.h"
 #include "aurora_debug.h"
 #include "acgc/app_info.hpp"
+#include "acgc/controller_ports.hpp"
 #include "acgc/data.hpp"
 #include "acgc/disc.hpp"
 #include "acgc/legacy_input.hpp"
@@ -147,7 +148,10 @@ bool ac_aurora_begin_frame() {
         } else if (event->type == AURORA_PAUSED || event->type == AURORA_UNPAUSED) {
             pc_mouse_cancel();
         } else if (event->type == AURORA_CONTROLLER_ADDED) {
+            acgc::controller_ports::enforce_single_port();
             acgc::apply_runtime_settings(false);
+        } else if (event->type == AURORA_CONTROLLER_REMOVED) {
+            acgc::controller_ports::enforce_single_port();
         }
         ++event;
     }
@@ -156,6 +160,7 @@ bool ac_aurora_begin_frame() {
         return false;
     }
 
+    acgc::controller_ports::update();
     update_render_size();
     pc_mouse_sync_system_cursor();
     s_frame_started = aurora_begin_frame();
@@ -517,10 +522,14 @@ bool run_prelaunch()
                 }
                 acgc::ui::handle_event(event->sdl);
             } else if (event->type == AURORA_CONTROLLER_ADDED) {
+                acgc::controller_ports::enforce_single_port();
                 acgc::apply_runtime_settings(false);
+            } else if (event->type == AURORA_CONTROLLER_REMOVED) {
+                acgc::controller_ports::enforce_single_port();
             }
             ++event;
         }
+        acgc::controller_ports::update();
         if (state.quitRequested || paused || !aurora_begin_frame()) {
             continue;
         }
@@ -656,6 +665,7 @@ int main(int argc, char* argv[]) {
     update_render_size();
     PADSetSpec(PAD_SPEC_5);
     PADInit();
+    acgc::controller_ports::initialize();
     acgc::apply_legacy_keyboard_input();
     configure_default_keyboard_input();
     acgc::apply_runtime_settings(false);

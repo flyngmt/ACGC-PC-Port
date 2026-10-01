@@ -39,7 +39,7 @@ MenuBar::MenuBar()
     });
     mTabBar->add_tab(localization::get("common.settings"),
                      [this] { push(std::make_unique<SettingsWindow>()); });
-    mTabBar->add_tab(localization::get("menu.controllers"),
+    mTabBar->add_tab(localization::get("menu.controls"),
                      [this] { push(std::make_unique<ControllerConfigWindow>()); });
     mTabBar->add_tab(localization::get("common.quit"), [this] {
         mTabBar->set_active_tab(-1);
