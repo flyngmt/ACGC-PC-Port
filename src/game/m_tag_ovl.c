@@ -8151,6 +8151,16 @@ static void mTG_get_mouse_slot_pos(Submenu* submenu, f32* pos, int table, int id
     f32 ofs = mTG_set_hand_pos_offset(submenu, table);
     pos[0] = pos_x + ofs;
     pos[1] = pos_y;
+
+    if (!mTG_check_hand_condition(submenu)) {
+        f32 base_pos[2];
+        f32 carry_pos[2];
+
+        mTG_set_hand_pos(submenu, base_pos, table, idx);
+        mHD_mouse_hand_pos_get(submenu, carry_pos, table, idx);
+        pos[0] += carry_pos[0] - base_pos[0];
+        pos[1] += carry_pos[1] - base_pos[1];
+    }
 }
 
 static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {

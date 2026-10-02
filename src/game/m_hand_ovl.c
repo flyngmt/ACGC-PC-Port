@@ -1083,6 +1083,10 @@ static void mHD_hand_ovl_draw(Submenu* submenu, GAME* game) {
 }
 
 #ifdef MOUSE_INPUT
+void mHD_mouse_hand_pos_get(Submenu* submenu, f32* pos, int table_type, int table_idx) {
+    mHD_hand_pos_get(submenu, pos, table_type, table_idx, submenu->overlay->hand_ovl);
+}
+
 void mHD_mouse_pointer_get_offset(f32* x, f32* y) {
     f32 offset[2];
     mHD_get_hand_draw_offset(offset, mHD_hand_offsetX_table[mHD_ACTION_SASU],
