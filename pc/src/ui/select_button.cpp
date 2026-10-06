@@ -24,7 +24,26 @@ SelectButton::SelectButton(Rml::Element* parent, Props props)
 	mValueElem      = append(mRoot, "value");
 	mValueLabelElem = mValueElem;
 	update_props(std::move(props));
-	on_nav_command([this](Rml::Event&, NavCommand cmd) { return handle_nav_command(cmd); });
+	on_nav_command([this](Rml::Event& event, NavCommand cmd) {
+		if (event.GetId() == Rml::EventId::Click) {
+			cmd = click_command();
+		}
+		return handle_nav_command(cmd);
+	});
+}
+
+NavCommand SelectButton::click_command() const
+{
+	auto* hover = mRoot->GetContext()->GetHoverElement();
+	for (auto* arrow : { mLeftArrowElem, mRightArrowElem }) {
+		if (arrow != nullptr && arrow->Contains(hover)) {
+			if (arrow->IsClassSet("unavailable")) {
+				return NavCommand::None;
+			}
+			return arrow == mLeftArrowElem ? NavCommand::Left : NavCommand::Right;
+		}
+	}
+	return NavCommand::Confirm;
 }
 
 bool SelectButton::modified() const
@@ -39,23 +58,17 @@ void SelectButton::set_adjustable()
 	}
 	mRoot->SetClass("adjustable", true);
 	mValueElem->SetInnerRML("");
-	auto add_arrow = [this](NavCommand cmd, const char* glyph) {
+	auto add_arrow = [this](const char* glyph) {
 		auto* arrow = append(mValueElem, "span");
 		arrow->SetClass("adjust-arrow", true);
 		arrow->SetInnerRML(glyph);
-		Component::listen(arrow, Rml::EventId::Click, [this, arrow, cmd](Rml::Event& event) {
-			if (!disabled() && !arrow->IsClassSet("unavailable")) {
-				handle_nav_command(cmd);
-			}
-			event.StopPropagation();
-		});
 		return arrow;
 	};
 	// Arrow_left and arrow_right
-	mLeftArrowElem  = add_arrow(NavCommand::Left, "&#xe5de;");
+	mLeftArrowElem  = add_arrow("&#xe5de;");
 	mValueLabelElem = append(mValueElem, "span");
 	mValueLabelElem->SetClass("value-label", true);
-	mRightArrowElem = add_arrow(NavCommand::Right, "&#xe5df;");
+	mRightArrowElem = add_arrow("&#xe5df;");
 	update_value_label();
 }
 

@@ -33,6 +33,7 @@ protected:
 	void update_value_label();
 	void update_props(Props props);
 	virtual bool handle_nav_command(NavCommand cmd);
+	NavCommand click_command() const;
 
 	Props mProps;
 	Rml::Element* mKeyElem        = nullptr;
