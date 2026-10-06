@@ -7270,6 +7270,14 @@ static void mTG_drop_item(Submenu* submenu, mSM_MenuInfo_c* menu_info, mTG_tag_c
     u32 money;
     int idx;
 
+#ifdef MOUSE_INPUT
+    if (mMl_check_not_used_mail(&hand_ovl->info.mail) != TRUE && tag->table != mTG_TABLE_MAIL &&
+        tag->table != mTG_TABLE_MBOX && tag->table != mTG_TABLE_CPMAIL) {
+        sAdo_SysTrgStart(MONO(NA_SE_A));
+        return;
+    }
+#endif
+
     switch (tag->table) {
         case mTG_TABLE_MAIL:
         case mTG_TABLE_MBOX:
