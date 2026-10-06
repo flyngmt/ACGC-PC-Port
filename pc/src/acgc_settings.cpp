@@ -25,7 +25,7 @@ void pc_audio_set_master_volume(int volume);
 int mEv_CheckFirstIntro(void);
 
 PCSettings g_pc_settings = {
-    1280, 960, 0, 1, 60, 1, 0, 0, 0, 1, 1, 100, 12, 12,
+    1280, 960, 0, 1, 60, 0, 0, 0, 1, 1, 100, 12, 12,
 };
 }
 
@@ -61,8 +61,6 @@ bool set_legacy_value(std::string_view key, int value)
     else if (key == "fullscreen" && value >= 0 && value <= 2) current.video.windowMode.set_value(value);
     else if (key == "vsync" && (value == 0 || value == 1)) current.video.vsync.set_value(value != 0);
     else if (key == "max_fps" && value >= 0 && value <= 1000) current.video.maxFrameRate.set_value(value);
-    else if (key == "msaa" && (value == 0 || value == 1 || value == 2 || value == 4 || value == 8))
-        current.video.msaa.set_value(value == 0 ? 1 : value);
     else if (key == "preload_textures" && value >= 0 && value <= 2) current.enhancements.preloadTextures.set_value(value);
     else if (key == "disable_resetti" && (value == 0 || value == 1)) current.enhancements.disableResetti.set_value(value != 0);
     else if (key == "disable_shop_visitor_req" && (value == 0 || value == 1))
@@ -129,8 +127,6 @@ void sanitize_settings()
     const int uiScale = current.video.uiScale.value();
     current.video.uiScale.set_value(uiScale == 0 ? 0 : std::clamp(uiScale, 50, 200));
     current.video.maxFrameRate.set_value(std::clamp(current.video.maxFrameRate.value(), 0, 1000));
-    const int msaa = current.video.msaa.value();
-    current.video.msaa.set_value(msaa == 2 || msaa == 4 || msaa == 8 ? msaa : 1);
     current.enhancements.preloadTextures.set_value(std::clamp(current.enhancements.preloadTextures.value(), 0, 2));
     current.audio.masterVolume.set_value(std::clamp(current.audio.masterVolume.value(), 0, 100));
     current.input.stickDeadzone.set_value(std::clamp(current.input.stickDeadzone.value(), 0, 40));
@@ -155,7 +151,6 @@ UserSettings::Video::Video()
     , uiScale("video.uiScale", 0)
     , vsync("video.vsync", true)
     , maxFrameRate("video.maxFrameRate", 60)
-    , msaa("video.msaa", 1)
 {
 }
 
@@ -216,7 +211,6 @@ void register_settings()
     config::register_var(current.video.uiScale);
     config::register_var(current.video.vsync);
     config::register_var(current.video.maxFrameRate);
-    config::register_var(current.video.msaa);
     config::register_var(current.enhancements.preloadTextures);
     config::register_var(current.enhancements.disableResetti);
     config::register_var(current.enhancements.disableShopVisitorRequirement);
@@ -270,7 +264,6 @@ void apply_settings_bridge(bool refreshGameplay)
     g_pc_settings.fullscreen = current.video.windowMode.value();
     g_pc_settings.vsync = current.video.vsync.value() ? 1 : 0;
     g_pc_settings.max_fps = current.video.maxFrameRate.value();
-    g_pc_settings.msaa = current.video.msaa.value() == 1 ? 0 : current.video.msaa.value();
     g_pc_settings.preload_textures = current.enhancements.preloadTextures.value();
     g_pc_settings.disable_resetti = current.enhancements.disableResetti.value() ? 1 : 0;
     g_pc_settings.disable_shop_visitor_req = current.enhancements.disableShopVisitorRequirement.value() ? 1 : 0;

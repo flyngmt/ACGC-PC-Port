@@ -37,7 +37,6 @@ struct UserSettings {
         ConfigVar<int> uiScale;
         ConfigVar<bool> vsync;
         ConfigVar<int> maxFrameRate;
-        ConfigVar<int> msaa;
 
         Video();
     } video;

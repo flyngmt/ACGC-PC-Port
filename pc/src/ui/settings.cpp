@@ -67,12 +67,6 @@ void add_bool(Pane& left, Pane& right, ConfigVar<bool>& variable, Rml::String la
     add_bool(left, right, variable, std::move(label), std::move(help), [](bool) {});
 }
 
-Rml::String msaa_label(int samples)
-{
-    return samples <= 1 ? localization::get("common.off")
-                        : std::to_string(samples) + "x";
-}
-
 constexpr std::array kUiScales = {50, 75, 0, 125, 150, 175, 200};
 
 Rml::String ui_scale_label(int percent)
@@ -577,25 +571,6 @@ SettingsWindow::SettingsWindow()
                 .suffix = " FPS",
             }),
             right, [](Pane& pane) { pane.add_text(localization::get("settings.video.frame_limit_help")); });
-
-        left.register_control(
-            left.add_select_button({
-                .key = localization::get("settings.video.msaa"),
-                .getValue = [&current] { return msaa_label(current.video.msaa.value()); },
-                .isModified = [&current] { return modified(current.video.msaa); },
-            }),
-            right, [&current](Pane& pane) {
-                for (int samples : std::array{1, 2, 4, 8}) {
-                    pane.add_button(ControlledButton::Props{
-                        .text = msaa_label(samples),
-                        .isSelected = [&current, samples] { return current.video.msaa.value() == samples; },
-                    }).on_pressed([&current, samples] {
-                        current.video.msaa.set_value(samples);
-                        save_settings();
-                    });
-                }
-                pane.add_text(localization::get("settings.video.msaa_help"));
-            });
 
         left.add_section(localization::get("settings.video.textures_section"));
         left.register_control(

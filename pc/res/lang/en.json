@@ -173,8 +173,6 @@
   "settings.video.frame_limit_help": "Set to 0 to remove the frame limit.",
   "settings.video.fullscreen": "Fullscreen",
   "settings.video.fullscreen_help": "Enable borderless fullscreen mode.",
-  "settings.video.msaa": "Multisample Antialiasing",
-  "settings.video.msaa_help": "Restart the game to apply MSAA changes.",
   "settings.video.performance_section": "Performance",
   "settings.video.renderer": "Renderer",
   "settings.video.renderer.automatic": "Automatic",

@@ -643,7 +643,6 @@ int main(int argc, char* argv[]) {
     config.windowWidth = windowDimensions.width;
     config.windowHeight = windowDimensions.height;
     config.startFullscreen = settings.video.windowMode.value() != 0;
-    config.msaa = static_cast<uint32_t>(settings.video.msaa.value());
     // Match Dusklight's 64-bit JSystem host policy. Native pointers enlarge
     // heap metadata and many decompiled runtime objects beyond GC-era sizes.
     config.mem1Size = 256 * 1024 * 1024;
