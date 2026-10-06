@@ -45,6 +45,7 @@ void BaseStringButton::start_editing()
 		mInputElem->SetAttribute("maxlength", mMaxLength);
 	}
 	mRoot->AppendChild(std::move(elemPtr));
+	mRootFocusVisible = mRoot->IsPseudoClassSet("focus-visible");
 
 	// Hide value element
 	mValueElem->SetProperty(Rml::PropertyId::Visibility, Rml::Style::Visibility::Hidden);
@@ -140,7 +141,7 @@ void BaseStringButton::stop_editing(bool commit, bool refocusRoot)
 
 	set_selected(false);
 	if (refocusRoot) {
-		mRoot->Focus(true);
+		mRoot->Focus(mRootFocusVisible);
 	}
 }
 

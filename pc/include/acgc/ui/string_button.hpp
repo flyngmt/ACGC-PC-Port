@@ -37,6 +37,7 @@ private:
 	bool mPendingStopEditing     = false;
 	bool mPendingCommit          = true;
 	bool mPendingRefocusRoot     = false;
+	bool mRootFocusVisible       = false;
 };
 
 class StringButton : public BaseStringButton {

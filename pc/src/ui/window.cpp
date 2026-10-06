@@ -300,6 +300,10 @@ bool Window::handle_content_nav(Rml::Event& event, NavCommand cmd) noexcept
 		// End of content, avoid looping
 		return true;
 	} else if (cmd == NavCommand::Cancel) {
+		if (!event.GetTargetElement()->IsPseudoClassSet("focus-visible")) {
+			request_close();
+			return true;
+		}
 		int currentComponent = -1;
 		for (int i = 0; i < mContentComponents.size(); ++i) {
 			if (mContentComponents[i]->contains(event.GetTargetElement())) {

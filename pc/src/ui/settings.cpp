@@ -210,6 +210,12 @@ public:
                 mState->custom = true;
             }
         });
+        listen(mRoot, Rml::EventId::Keydown, [this](Rml::Event& event) {
+            if (map_nav_event(event) == NavCommand::Cancel && mSelect->IsSelectBoxVisible()) {
+                mSelect->CancelSelectBox();
+                event.StopPropagation();
+            }
+        });
     }
 
 private:
