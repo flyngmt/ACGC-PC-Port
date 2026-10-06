@@ -5,6 +5,7 @@
 #include "pc_mouse_input.h"
 #include "pc_platform.h"
 
+#include <aurora/gfx.h>
 #include <dolphin/gx.h>
 #include <dolphin/gx/GXAurora.h>
 #include <dolphin/mtx.h>
@@ -18,6 +19,7 @@ struct CursorFrame {
     std::vector<u8> data;
     GXTexObj texture{};
     bool ready = false;
+    bool complete = false;
 };
 CursorFrame s_frames[AURORA_MOUSE_CURSOR_FRAME_COUNT];
 int s_renderWidth = 0;
@@ -38,7 +40,7 @@ int aurora_mouse_cursor_needs_capture(int frame) {
         // Align to RGBA8 tiles and stay within the display-list scissor range.
         s_textureSize = std::clamp((pixels + 3) & ~3, AURORA_MOUSE_CURSOR_VIEW_SIZE, 1020);
     }
-    return !s_frames[frame].ready;
+    return !s_frames[frame].complete;
 }
 
 int aurora_mouse_cursor_texture_size(void) {
@@ -48,6 +50,7 @@ int aurora_mouse_cursor_texture_size(void) {
 void aurora_mouse_cursor_invalidate(void) {
     for (auto& frame : s_frames) {
         frame.ready = false;
+        frame.complete = false;
     }
 }
 
@@ -79,7 +82,9 @@ void aurora_mouse_cursor_capture_end(int frame) {
                  GX_TF_RGBA8, GX_CLAMP, GX_CLAMP, GX_FALSE);
     GXInitTexObjLOD(&cached.texture, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
     mHD_mouse_pointer_get_offset(&s_offsetX, &s_offsetY);
+    AuroraGXSync();
     cached.ready = true;
+    cached.complete = aurora_get_stats()->queuedPipelines == 0;
 }
 
 void aurora_mouse_cursor_draw(int frame) {
