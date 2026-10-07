@@ -25,7 +25,7 @@ void pc_audio_set_master_volume(int volume);
 int mEv_CheckFirstIntro(void);
 
 PCSettings g_pc_settings = {
-    1280, 960, 0, 1, 60, 0, 0, 0, 1, 1, 100, 12, 12, 0,
+    1280, 960, 0, 1, 60, 0, 0, 0, 1, 1, 100, 12, 12, 1,
 };
 }
 
@@ -160,7 +160,7 @@ UserSettings::Enhancements::Enhancements()
     , disableShopVisitorRequirement("gameplay.disableShopVisitorRequirement", false)
     , borderlessAcres("gameplay.borderlessAcres", true)
     , pillarboxNes("gameplay.pillarboxNes", true)
-    , fastText("gameplay.fastText", false)
+    , fastText("gameplay.fastText", true)
 {
 }
 
