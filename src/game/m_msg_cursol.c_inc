@@ -1108,7 +1108,8 @@ static int mMsg_Main_Cursol_ControlCursol(mMsg_Window_c* msg_p) {
 #ifdef PC_ENHANCEMENTS
   /* B latches fast text for the rest of the message; L/R or DPAD also speed it up */
   if ((msg_p->status_flags & mMsg_STATUS_FLAG_CURSOL_JUST) == 0 &&
-      ((mMsg_get_trigger() & BUTTON_B) || chkButton(BUTTON_L) || chkButton(BUTTON_R) ||
+      ((g_pc_settings.fast_text && !mEv_IsTitleDemo()) ||
+       (mMsg_get_trigger() & BUTTON_B) || chkButton(BUTTON_L) || chkButton(BUTTON_R) ||
        chkButton(BUTTON_DDOWN) || chkButton(BUTTON_DUP) || chkButton(BUTTON_DLEFT) || chkButton(BUTTON_DRIGHT))) {
     msg_p->status_flags |= mMsg_STATUS_FLAG_FAST_TEXT;
   }

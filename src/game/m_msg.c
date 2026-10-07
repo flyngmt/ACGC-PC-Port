@@ -12,6 +12,7 @@
 #include "sys_matrix.h"
 #ifdef TARGET_PC
 #include "pc_bswap.h"
+#include "pc_settings.h"
 #endif
 #ifdef MOUSE_INPUT
 #include "pc_mouse_input.h"

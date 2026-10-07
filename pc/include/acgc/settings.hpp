@@ -47,6 +47,7 @@ struct UserSettings {
         ConfigVar<bool> disableShopVisitorRequirement;
         ConfigVar<bool> borderlessAcres;
         ConfigVar<bool> pillarboxNes;
+        ConfigVar<bool> fastText;
 
         Enhancements();
     } enhancements;

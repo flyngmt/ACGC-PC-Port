@@ -25,7 +25,7 @@ void pc_audio_set_master_volume(int volume);
 int mEv_CheckFirstIntro(void);
 
 PCSettings g_pc_settings = {
-    1280, 960, 0, 1, 60, 0, 0, 0, 1, 1, 100, 12, 12,
+    1280, 960, 0, 1, 60, 0, 0, 0, 1, 1, 100, 12, 12, 0,
 };
 }
 
@@ -160,6 +160,7 @@ UserSettings::Enhancements::Enhancements()
     , disableShopVisitorRequirement("gameplay.disableShopVisitorRequirement", false)
     , borderlessAcres("gameplay.borderlessAcres", true)
     , pillarboxNes("gameplay.pillarboxNes", true)
+    , fastText("gameplay.fastText", false)
 {
 }
 
@@ -216,6 +217,7 @@ void register_settings()
     config::register_var(current.enhancements.disableShopVisitorRequirement);
     config::register_var(current.enhancements.borderlessAcres);
     config::register_var(current.enhancements.pillarboxNes);
+    config::register_var(current.enhancements.fastText);
     config::register_var(current.audio.masterVolume);
     config::register_var(current.input.stickDeadzone);
     config::register_var(current.input.cstickDeadzone);
@@ -269,6 +271,7 @@ void apply_settings_bridge(bool refreshGameplay)
     g_pc_settings.disable_shop_visitor_req = current.enhancements.disableShopVisitorRequirement.value() ? 1 : 0;
     g_pc_settings.borderless_acres = current.enhancements.borderlessAcres.value() ? 1 : 0;
     g_pc_settings.nes_aspect = current.enhancements.pillarboxNes.value() ? 1 : 0;
+    g_pc_settings.fast_text = current.enhancements.fastText.value() ? 1 : 0;
     g_pc_settings.master_volume = current.audio.masterVolume.value();
     g_pc_settings.stick_deadzone = current.input.stickDeadzone.value();
     g_pc_settings.cstick_deadzone = current.input.cstickDeadzone.value();

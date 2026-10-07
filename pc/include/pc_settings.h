@@ -19,6 +19,7 @@ typedef struct {
     int master_volume;    /* Applied at the PC audio output, 0-100 (default 100) */
     int stick_deadzone;   /* Gamepad main stick deadzone, percent 0-40 (default 12) */
     int cstick_deadzone;  /* Gamepad C-stick deadzone, percent 0-40 (default 12) */
+    int fast_text;        /* 0=normal (B latches fast text per message), 1=always fast text */
 } PCSettings;
 
 extern PCSettings g_pc_settings;
