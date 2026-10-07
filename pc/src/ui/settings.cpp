@@ -646,6 +646,9 @@ SettingsWindow::SettingsWindow()
                  localization::get("settings.gameplay.borderless_acres"),
                  localization::get("settings.gameplay.borderless_acres_help"),
                  [](bool) { apply_runtime_settings(true); });
+        add_bool(left, right, current.enhancements.fastText,
+                 localization::get("settings.gameplay.fast_text"),
+                 localization::get("settings.gameplay.fast_text_help"));
         add_bool(left, right, current.enhancements.pillarboxNes,
                  localization::get("settings.gameplay.nes_aspect"),
                  localization::get("settings.gameplay.nes_aspect_help"));

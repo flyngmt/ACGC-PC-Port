@@ -151,6 +151,8 @@
   "settings.data.section": "Data",
   "settings.gameplay.borderless_acres": "Borderless Acres",
   "settings.gameplay.borderless_acres_help": "Move freely across acre boundaries.",
+  "settings.gameplay.fast_text": "Always Fast Text",
+  "settings.gameplay.fast_text_help": "Show all dialogue at fast speed, as if B were pressed.",
   "settings.gameplay.nes_aspect": "NES 4:3 Aspect",
   "settings.gameplay.nes_aspect_help": "Display NES games in their original 4:3 aspect ratio.",
   "settings.gameplay.original_section": "Original Experience",
