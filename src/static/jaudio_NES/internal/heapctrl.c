@@ -4,6 +4,7 @@
 
 #include "dolphin/os/OSMessage.h"
 #include "dolphin/ar.h"
+#include "dolphin/arq.h"
 #include "dolphin/os/OSCache.h"
 
 #define DMABUFFER_SIZE (0x10000)

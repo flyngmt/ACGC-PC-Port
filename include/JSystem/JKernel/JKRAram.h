@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "dolphin/ar.h"
+#include "dolphin/arq.h"
 #include "dolphin/os/OSMessage.h"
 #include "JSystem/JKernel/JKRDisposer.h"
 #include "JSystem/JKernel/JKREnum.h"

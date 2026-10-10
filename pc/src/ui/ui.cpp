@@ -125,6 +125,7 @@ bool initialize() noexcept
     }
 
     localization::load();
+    input::register_input_layer();
     sInitialized = true;
     push_document(std::make_unique<MenuBar>(), false);
     push_document(std::make_unique<Overlay>());
@@ -138,6 +139,7 @@ void shutdown() noexcept
     sPassiveDocuments.clear();
     sScopedStyles.clear();
     localization::shutdown();
+    input::unregister_input_layer();
     input::reset_input_state();
     input::release_input_block();
     g_pc_paused = 0;

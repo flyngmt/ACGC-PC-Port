@@ -11,6 +11,7 @@
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_misc.h>
 #include <borealis/file_select.hpp>
+#include <borealis/io.hpp>
 #include <borealis/log.hpp>
 #include <borealis/update.hpp>
 #include <borealis/version.h>
@@ -132,37 +133,7 @@ struct DiscVerificationTask {
 std::unique_ptr<DiscVerificationTask> sDiscVerificationTask;
 bool sDiscVerificationModalPushed = false;
 
-struct UpdateCheckTask {
-    UpdateCheckTask()
-    {
-        worker = std::thread([this] {
-            result = borealis::update::check_latest_github_release(
-                AppInfo,
-                {
-                    .currentVersion = BOREALIS_APP_DESCRIBE,
-                    .includePrereleases = true,
-                });
-            done.store(true, std::memory_order_release);
-        });
-    }
-
-    ~UpdateCheckTask() { join(); }
-
-    void join()
-    {
-        if (worker.joinable()) {
-            worker.join();
-        }
-    }
-
-    [[nodiscard]] bool finished() const { return done.load(std::memory_order_acquire); }
-
-    borealis::update::Result result;
-    std::atomic_bool done = false;
-    std::thread worker;
-};
-
-std::unique_ptr<UpdateCheckTask> sUpdateCheckTask;
+borealis::Task<borealis::update::Result> sUpdateCheckTask;
 std::optional<borealis::update::Result> sUpdateCheckResult;
 PrelaunchState sPrelaunchState;
 
@@ -239,21 +210,32 @@ std::optional<DiscVerificationResult> take_finished_disc_verification()
 
 void begin_update_check()
 {
-    if (!settings().backend.checkForUpdates.value() || sUpdateCheckTask != nullptr ||
+    if (!settings().backend.checkForUpdates.value() || sUpdateCheckTask ||
         sUpdateCheckResult.has_value()) {
         return;
     }
-    sUpdateCheckTask = std::make_unique<UpdateCheckTask>();
+    sUpdateCheckTask = borealis::update::check_latest_github_release(
+        AppInfo,
+        {
+            .currentVersion = BOREALIS_APP_DESCRIBE,
+            .includePrereleases = true,
+        });
 }
 
 std::optional<borealis::update::Result> take_finished_update_check()
 {
-    if (sUpdateCheckTask == nullptr || !sUpdateCheckTask->finished()) {
+    if (!sUpdateCheckTask.ready()) {
         return std::nullopt;
     }
-    sUpdateCheckTask->join();
-    auto result = std::move(sUpdateCheckTask->result);
-    sUpdateCheckTask.reset();
+    std::optional<borealis::update::Result> result;
+    try {
+        result = sUpdateCheckTask.try_take();
+    } catch (const std::exception& e) {
+        result = borealis::update::Result{.message = e.what()};
+    } catch (...) {
+        result = borealis::update::Result{.message = "Unknown error"};
+    }
+    sUpdateCheckTask = {};
     return result;
 }
 
@@ -435,7 +417,7 @@ private:
         if (sDiscVerificationTask == nullptr || mCancelRequested) {
             return;
         }
-        std::string fileName = borealis::file_select::display_name(sDiscVerificationTask->path);
+        std::string fileName = borealis::io::display_name(sDiscVerificationTask->path);
         if (fileName.empty()) {
             fileName = sDiscVerificationTask->path;
         }
@@ -761,7 +743,7 @@ void Prelaunch::update()
         if (state.configuredDiscCanLaunch) {
             mDiscDetail->SetProperty(Rml::PropertyId::Display, Rml::Style::Display::Block);
             mDiscDetail->SetInnerRML(escape(localization::format("prelaunch.disc_detail",
-                borealis::file_select::display_name(state.configuredDiscPath),
+                borealis::io::display_name(state.configuredDiscPath),
                 state.configuredDiscInfo.gameId, state.configuredDiscInfo.revision)));
         } else {
             mDiscDetail->SetProperty(Rml::PropertyId::Display, Rml::Style::Display::None);
@@ -781,7 +763,7 @@ void Prelaunch::update()
             }
             sUpdateCheckResult = std::move(*result);
         }
-        if (sUpdateCheckTask != nullptr) {
+        if (sUpdateCheckTask) {
             mUpdateStatus->SetAttribute("state", "checking");
             mUpdateMessage->SetInnerRML(escape(localization::get("prelaunch.update.checking")));
         } else if (!sUpdateCheckResult.has_value() ||

@@ -697,7 +697,36 @@ void process_axis_direction(Rml::Context& context, const SDL_GamepadAxisEvent& e
 	emit_controller_key_press(context, key);
 }
 
+aurora::input::LayerId sRmlUiLayer = aurora::input::kInvalidLayerId;
+
+aurora::input::EventResult on_rmlui_layer_event(const aurora::input::InputEvent& event, void*)
+{
+	if (event.source.kind != aurora::input::InputSource::Kind::Controller) {
+		aurora::rmlui::process_input(event);
+	}
+	return aurora::input::EventResult::Pass;
+}
+
 } // namespace
+
+void register_input_layer() noexcept
+{
+	if (sRmlUiLayer != aurora::input::kInvalidLayerId) {
+		return;
+	}
+	sRmlUiLayer = aurora::input::register_layer({
+		.label    = "acgc.ui",
+		.priority = aurora::input::kRmlUiLayerPriority,
+		.onEvent  = on_rmlui_layer_event,
+	});
+}
+
+void unregister_input_layer() noexcept
+{
+	if (sRmlUiLayer != aurora::input::kInvalidLayerId) {
+		aurora::input::unregister_layer(std::exchange(sRmlUiLayer, aurora::input::kInvalidLayerId));
+	}
+}
 
 bool is_dispatching_controller_key() noexcept
 {
