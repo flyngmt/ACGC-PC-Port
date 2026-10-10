@@ -70,6 +70,7 @@ extern void mHD_hand_ovl_destruct(Submenu* submenu);
 #ifdef MOUSE_INPUT
 extern void mHD_mouse_pointer_begin_frame(void);
 extern void mHD_mouse_pointer_draw(GAME* game);
+extern void mHD_mouse_hand_pos_get(Submenu* submenu, f32* pos, int table_type, int table_idx);
 #endif
 
 #ifdef __cplusplus

@@ -12,6 +12,7 @@
 #include "m_demo.h"
 #include "m_skin_matrix.h"
 #include "pc_mouse_input.h"
+#include "m_hand_ovl_h.h"
 #endif
 
 /**
@@ -79,6 +80,7 @@ static int mouse_action_held;
 static int mouse_action_triggered;
 static f32 mouse_inventory_hold_frames = -1.0f;
 static int mouse_inventory_triggered;
+static int mouse_dash_held;
 
 static int mCon_mouse_gameplay_allowed(void) {
   GAME_PLAY* play;
@@ -164,6 +166,19 @@ static int mCon_mouse_ground_offset(GAME_PLAY* play, xyz_t* position, xyz_t* off
   return w + matrix->wx * offset->x + matrix->wz * offset->z > 0.0f;
 }
 
+static int mCon_mouse_dash_reached(int was_dashing) {
+  f32 mouse_x, mouse_y, ofs_x, ofs_y, radius, dx, dy;
+
+  if (!pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+    return FALSE;
+  }
+  mHD_mouse_pointer_get_offset(&ofs_x, &ofs_y);
+  radius = was_dashing ? 75.0f : 85.0f;
+  dx = mouse_x + ofs_x - 160.0f;
+  dy = mouse_y + ofs_y - 120.0f;
+  return dx * dx + dy * dy >= radius * radius;
+}
+
 static int mCon_mouse_move_allowed(int main_index) {
   return (main_index >= mPlayer_INDEX_WAIT && main_index <= mPlayer_INDEX_DASH) ||
          main_index == mPlayer_INDEX_READY_NET || main_index == mPlayer_INDEX_READY_WALK_NET;
@@ -175,7 +190,9 @@ static void mCon_mouse_move(GAME_PLAY* play, f32* stick_x, f32* stick_y) {
   xyz_t offset;
   f32 distance, strength;
   s16 angle;
+  int was_dashing = mouse_dash_held;
 
+  mouse_dash_held = FALSE;
   if (!(pc_mouse_button_held() & PC_MOUSE_BUTTON_LEFT) || !mCon_mouse_gameplay_allowed() ||
       player == NULL || mDemo_CheckDemo() || play->submenu.current_menu_type != mSM_OVL_NONE ||
       play->game.pads[0].now.button || *stick_x * *stick_x + *stick_y * *stick_y > STICK_MIN * STICK_MIN) {
@@ -207,6 +224,7 @@ static void mCon_mouse_move(GAME_PLAY* play, f32* stick_x, f32* stick_y) {
   if (distance <= 4.0f) {
     return;
   }
+  mouse_dash_held = mCon_mouse_dash_reached(was_dashing);
 
   strength = (distance - 4.0f) / 40.0f;
   if (strength > 1.0f) {
@@ -222,6 +240,14 @@ static void mCon_mouse_move(GAME_PLAY* play, f32* stick_x, f32* stick_y) {
 extern int mCon_mouse_action_pressed(void) {
 #ifdef MOUSE_INPUT
   return mouse_action_triggered && mCon_mouse_gameplay_allowed();
+#else
+  return FALSE;
+#endif
+}
+
+extern int mCon_mouse_dash_held(void) {
+#ifdef MOUSE_INPUT
+  return mouse_dash_held && mCon_mouse_gameplay_allowed();
 #else
   return FALSE;
 #endif

@@ -8135,7 +8135,8 @@ static mTG_table_mouse_data_c mTG_table_mouse_data[] = {
     { NULL, NULL, NULL, NULL }, // mTG_TABLE_CARD_NW (stub)
 };
 
-static void mTG_get_mouse_slot_pos(Submenu* submenu, f32* pos, int table, int idx, mTG_table_mouse_data_c* mouse_data) {
+static void mTG_get_mouse_slot_pos(Submenu* submenu, f32* pos, int table, int idx, mTG_table_mouse_data_c* mouse_data,
+                                   int follow_carry) {
     mTG_tag_data_table_c* data_p = &mTG_table_data[table];
     int col = idx % data_p->col_num;
     int row = idx / data_p->col_num;
@@ -8159,6 +8160,16 @@ static void mTG_get_mouse_slot_pos(Submenu* submenu, f32* pos, int table, int id
     f32 ofs = mTG_set_hand_pos_offset(submenu, table);
     pos[0] = pos_x + ofs;
     pos[1] = pos_y;
+
+    if (follow_carry && !mTG_check_hand_condition(submenu)) {
+        f32 base_pos[2];
+        f32 carry_pos[2];
+
+        mTG_set_hand_pos(submenu, base_pos, table, idx);
+        mHD_mouse_hand_pos_get(submenu, carry_pos, table, idx);
+        pos[0] += carry_pos[0] - base_pos[0];
+        pos[1] += carry_pos[1] - base_pos[1];
+    }
 }
 
 static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
@@ -8225,6 +8236,10 @@ static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
             int hit_table = -1;
             int hit_col = -1;
             int hit_row = -1;
+            int carry_table = -1;
+            int carry_col = -1;
+            int carry_row = -1;
+            int carrying = !mTG_check_hand_condition(submenu);
 
             int tables_to_check[7];
             int num_tables = 0;
@@ -8331,7 +8346,7 @@ static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
                 for (int row = 0; row < data_p->row_num; row++) {
                     for (int col = 0; col < data_p->col_num; col++) {
                         f32 slot_pos[2];
-                        mTG_get_mouse_slot_pos(submenu, slot_pos, table, row * data_p->col_num + col, mouse_data);
+                        mTG_get_mouse_slot_pos(submenu, slot_pos, table, row * data_p->col_num + col, mouse_data, TRUE);
                     
                         // Get hitbox sizes, default to 10, commonly used for item cells
                         f32 x_hitbox = 10.0f;
@@ -8352,9 +8367,23 @@ static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
                             hit_table = table;
                             hit_col = col;
                             hit_row = row;
+                        } else if (carrying) {
+                            mTG_get_mouse_slot_pos(submenu, slot_pos, table, row * data_p->col_num + col, mouse_data,
+                                                   FALSE);
+                            if (fabsf(hand_x - slot_pos[0]) <= x_hitbox && fabsf(hand_y - slot_pos[1]) <= y_hitbox) {
+                                carry_table = table;
+                                carry_col = col;
+                                carry_row = row;
+                            }
                         }
                     }
                 }
+            }
+
+            if (hit_table < 0) {
+                hit_table = carry_table;
+                hit_col = carry_col;
+                hit_row = carry_row;
             }
 
             if (hit_table >= 0) {

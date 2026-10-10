@@ -276,7 +276,7 @@ s32 keyboard_key_pressed()
 	const bool* keys = SDL_GetKeyboardState(&keyCount);
 	if (keys != nullptr) {
 		for (int i = 1; i < keyCount; ++i) {
-			if (i == SDL_SCANCODE_ESCAPE) {
+			if (i == SDL_SCANCODE_ESCAPE || i == SDL_SCANCODE_F1) {
 				continue;
 			}
 			if (keys[i]) {

@@ -3770,7 +3770,11 @@ extern void mPlib_Set_boat_angleZ(s16 angle_z) {
 }
 
 extern int mPlib_CheckButtonOnly_forDush(void) {
+#ifdef MOUSE_INPUT
+    return chkButton(BUTTON_B) || chkButton(BUTTON_L) || chkButton(BUTTON_R) || mCon_mouse_dash_held();
+#else
     return chkButton(BUTTON_B) || chkButton(BUTTON_L) || chkButton(BUTTON_R);
+#endif
 }
 
 extern int mPlib_Check_golden_item_get_demo_end(int gold_item_type) {
