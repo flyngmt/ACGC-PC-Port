@@ -33,6 +33,7 @@ int pc_gci_write(const char* path, const Save_t* save, const mCD_keep_mail_c* ma
                  const mCD_keep_original_c* original, const mCD_keep_diary_c* diary);
 
 int pc_gci_import(const char* source, const char* destination);
+int pc_gci_is_town_file(const char* path);
 
 #ifdef __cplusplus
 }

@@ -6,6 +6,7 @@
 #include "types.h"
 #include "PR/gbi.h"
 #include "pc_assets.h"
+#include "pc_bswap.h"
 #include <dolphin/dvd.h>
 
 extern int g_pc_verbose;
@@ -43,17 +44,13 @@ static void aurora_free_rel_data(void) {
     g_rel_data_is_aligned = 0;
 }
 
-static u32 aurora_read_be32(const u8* p) {
-    return ((u32)p[0] << 24) | ((u32)p[1] << 16) | ((u32)p[2] << 8) | p[3];
-}
-
 static u8* aurora_yaz0_decode(const u8* src, u32 src_size, u32* out_size) {
     u32 decoded_size, src_pos = 16, dst_pos = 0;
     u8* dst;
     int bit;
 
     if (src_size < 16 || memcmp(src, "Yaz0", 4) != 0) return NULL;
-    decoded_size = aurora_read_be32(src + 4);
+    decoded_size = pc_load_be32(src + 4);
     dst = (u8*)malloc(decoded_size);
     if (dst == NULL) return NULL;
 

@@ -133,6 +133,11 @@ bool initialize() noexcept
     return true;
 }
 
+bool initialized() noexcept
+{
+    return sInitialized && aurora::rmlui::is_initialized() && aurora::rmlui::get_context() != nullptr;
+}
+
 void shutdown() noexcept
 {
     sDocumentStack.clear();

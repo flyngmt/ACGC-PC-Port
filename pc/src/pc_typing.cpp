@@ -8,6 +8,7 @@
 
 #include <array>
 #include <cstddef>
+#include <cstring>
 #include <deque>
 
 namespace {
@@ -232,6 +233,41 @@ int pc_typing_queue_pop(int* output)
     *output = s_queue.front();
     s_queue.pop_front();
     return 1;
+}
+
+int pc_typing_game_code_to_utf8(int code, char* output, int output_size)
+{
+    static const auto table = [] {
+        std::array<std::array<char, 3>, 256> result{};
+        for (int codepoint = 0xFF; codepoint >= 0x20; --codepoint) {
+            if (codepoint > 0x7E && codepoint < 0xA1) {
+                continue;
+            }
+            char encoded[3] = {};
+            if (codepoint < 0x80) {
+                encoded[0] = static_cast<char>(codepoint);
+            } else {
+                encoded[0] = static_cast<char>(0xC0 | (codepoint >> 6));
+                encoded[1] = static_cast<char>(0x80 | (codepoint & 0x3F));
+            }
+            std::size_t consumed = 0;
+            const int game_code = utf8_to_game_code(encoded, consumed);
+            if (game_code >= 0 && game_code < 256) {
+                std::memcpy(result[game_code].data(), encoded, sizeof(encoded));
+            }
+        }
+        return result;
+    }();
+
+    if (output == nullptr || output_size <= 0 || code < 0 || code >= 256 || table[code][0] == '\0') {
+        return 0;
+    }
+    const std::size_t length = std::strlen(table[code].data());
+    if (length + 1 > static_cast<std::size_t>(output_size)) {
+        return 0;
+    }
+    std::memcpy(output, table[code].data(), length + 1);
+    return static_cast<int>(length);
 }
 
 } // extern "C"

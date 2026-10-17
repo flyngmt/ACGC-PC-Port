@@ -186,10 +186,56 @@ static void aSTM_cardproc(NPC_STATION_MASTER_ACTOR* master, GAME_PLAY* play) {
     }
 }
 
+#ifdef TARGET_PC
+static int aSTM_begin_town_select(void) {
+    if (pc_card_b_refresh_towns() == 0) {
+        return FALSE;
+    }
+
+    if (pc_card_b_town_count() == 1) {
+        pc_card_b_select_town(0);
+        return FALSE;
+    }
+
+    if (!pc_town_select_open()) {
+        OSReport("[PC] Station: town picker unavailable; ending conversation\n");
+    }
+    return TRUE;
+}
+
+static void aSTM_select_town(NPC_STATION_MASTER_ACTOR* master, GAME_PLAY* play) {
+    mMsg_Window_c* msg_p = mMsg_Get_base_window_p();
+    int index = -1;
+    int result = pc_town_select_poll(&index);
+
+    if (result == PC_TOWN_SELECT_PENDING) {
+        return;
+    }
+
+    if (result == PC_TOWN_SELECT_CHOSEN && pc_card_b_select_town(index)) {
+        mMsg_Unset_LockContinue(msg_p);
+        aSTC_clip_change_talk_proc((ACTOR*)master, aSTM_TALK_CHK_LEAVE_TALK2);
+        return;
+    }
+
+    mMsg_Set_CancelNormalContinue(msg_p);
+    mMsg_Set_ForceNext(msg_p);
+    mMsg_Unset_LockContinue(msg_p);
+    aSTC_clip_change_talk_proc((ACTOR*)master, aSTM_TALK_END_WAIT);
+}
+#endif
+
 static void aSTM_chk_leave_talk(NPC_STATION_MASTER_ACTOR* master, GAME_PLAY* play) {
     if (mMsg_CHECK_MAINNORMALCONTINUE() == TRUE) {
         switch (mChoice_GET_CHOSENUM()) {
             case mChoice_CHOICE0:
+#ifdef TARGET_PC
+                if (aSTM_begin_town_select()) {
+                    mMsg_SET_LOCKCONTINUE();
+                    aSTC_clip_change_talk_proc((ACTOR*)master, aSTM_TALK_SELECT_TOWN);
+                    break;
+                }
+#endif
                 aSTC_clip_change_talk_proc((ACTOR*)master, aSTM_TALK_CHK_LEAVE_TALK2);
                 break;
             case mChoice_CHOICE1:
@@ -501,6 +547,9 @@ static int aSTC_clip_change_talk_proc(ACTOR* actorx, int talk_act) {
         &aSTM_repairid_after,
         &aSTM_cardproc,
         (aSTM_TALK_PROC)&none_proc1,
+#ifdef TARGET_PC
+        &aSTM_select_town,
+#endif
     };
     // clang-format on
 

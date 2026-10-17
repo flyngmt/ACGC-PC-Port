@@ -18,6 +18,9 @@
 #include "m_string.h"
 #include "m_card.h"
 #include "m_cpak.h"
+#ifdef TARGET_PC
+#include "pc_town_select.h"
+#endif
 
 enum {
     aSTA_ACTION_WAIT,

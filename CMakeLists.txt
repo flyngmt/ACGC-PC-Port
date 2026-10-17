@@ -236,6 +236,7 @@ set(PC_SOURCES
     ${PC_ROOT}/src/ui/settings.cpp
     ${PC_ROOT}/src/ui/string_button.cpp
     ${PC_ROOT}/src/ui/tab_bar.cpp
+    ${PC_ROOT}/src/ui/town_select.cpp
     ${PC_ROOT}/src/ui/ui.cpp
     ${PC_ROOT}/src/ui/window.cpp
     ${PC_ROOT}/src/pc_audio.c

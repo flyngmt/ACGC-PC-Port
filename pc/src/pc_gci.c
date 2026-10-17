@@ -1,4 +1,6 @@
 #include "pc_gci.h"
+#include "pc_bswap.h"
+#include "pc_gci_dir.h"
 #include "pc_platform.h"
 #include "pc_save_bswap.h"
 #include "m_flashrom.h"
@@ -45,6 +47,7 @@ _Static_assert(sizeof(mCD_keep_diary_c) == 0xBA20, "mCD_keep_diary_c disk layout
 _Static_assert(OTHERS_SIZE == 0x26000, "GCI auxiliary block layout changed");
 _Static_assert(GCI_SAVE_MAIN_OFFSET == 0x26000, "GCI main save offset changed");
 _Static_assert(GCI_SAVE_BACK_OFFSET == 0x4C000, "GCI backup save offset changed");
+_Static_assert(GCI_SECTOR_SIZE == PC_GCI_BLOCK_SIZE, "GCI block size mismatch");
 
 static FILE* pc_fopen(const char* path, const char* mode) {
 #ifdef _MSC_VER
@@ -55,26 +58,72 @@ static FILE* pc_fopen(const char* path, const char* mode) {
 #endif
 }
 
-static void put_be32(u8* dst, u32 val) {
-    dst[0] = (u8)(val >> 24);
-    dst[1] = (u8)(val >> 16);
-    dst[2] = (u8)(val >> 8);
-    dst[3] = (u8)(val);
+void pc_gci_init_dir(CARDDir* dir, const char* file_name, u32 data_size, u32 icon_addr, u16 icon_format,
+                     u16 icon_speed, u32 comment_addr) {
+    size_t name_length = strlen(file_name);
+
+    if (name_length > sizeof(dir->fileName)) name_length = sizeof(dir->fileName);
+    memset(dir, 0, sizeof(*dir));
+    memcpy(dir->gameName, "GAFE", sizeof(dir->gameName));
+    memcpy(dir->company, "01", sizeof(dir->company));
+    dir->_padding0 = 0xFF;
+    dir->bannerFormat = CARD_STAT_BANNER_NONE;
+    memcpy(dir->fileName, file_name, name_length);
+    pc_store_be32(&dir->time, (u32)(time(NULL) - 946684800LL));
+    pc_store_be32(&dir->iconAddr, icon_addr);
+    pc_store_be16(&dir->iconFormat, icon_format);
+    pc_store_be16(&dir->iconSpeed, icon_speed);
+    dir->permission = CARD_ATTR_PUBLIC;
+    dir->copyTimes = 0;
+    pc_store_be16(&dir->startBlock, 5);
+    pc_store_be16(&dir->length, (u16)(data_size / PC_GCI_BLOCK_SIZE));
+    memset(dir->_padding1, 0xFF, sizeof(dir->_padding1));
+    pc_store_be32(&dir->commentAddr, comment_addr);
 }
 
-static void put_be16(u8* dst, u16 val) {
-    dst[0] = (u8)(val >> 8);
-    dst[1] = (u8)(val);
+int pc_gci_dir_has_name(const CARDDir* dir, const char* file_name) {
+    size_t length = strlen(file_name);
+    return memcmp(dir->gameName, "GAF", 3) == 0 && length < sizeof(dir->fileName) &&
+           memcmp(dir->fileName, file_name, length + 1) == 0;
 }
 
-static u16 get_be16(const void* source) {
-    const u8* bytes = (const u8*)source;
-    return ((u16)bytes[0] << 8) | bytes[1];
-}
+int pc_gci_data_offset(const CARDDir* dir, u32* offset) {
+    u32 icon_addr = pc_load_be32(&dir->iconAddr);
+    u32 banner_format = dir->bannerFormat & CARD_STAT_BANNER_MASK;
+    u32 icon_format = pc_load_be16(&dir->iconFormat);
+    unsigned long long position = icon_addr;
+    int icon_tlut = FALSE;
+    int i;
 
-static u32 get_be32(const void* source) {
-    const u8* bytes = (const u8*)source;
-    return ((u32)bytes[0] << 24) | ((u32)bytes[1] << 16) | ((u32)bytes[2] << 8) | bytes[3];
+    if (icon_addr == 0xFFFFFFFF) {
+        position = 0;
+        banner_format = CARD_STAT_BANNER_NONE;
+        icon_format = 0;
+    }
+    if (banner_format == CARD_STAT_BANNER_C8) {
+        position += CARD_BANNER_WIDTH * CARD_BANNER_HEIGHT + 256 * 2;
+    } else if (banner_format == CARD_STAT_BANNER_RGB5A3) {
+        position += 2 * CARD_BANNER_WIDTH * CARD_BANNER_HEIGHT;
+    }
+    for (i = 0; i < CARD_ICON_MAX; i++) {
+        switch ((icon_format >> (i * 2)) & CARD_STAT_ICON_MASK) {
+            case CARD_STAT_ICON_C8:
+                position += CARD_ICON_WIDTH * CARD_ICON_HEIGHT;
+                icon_tlut = TRUE;
+                break;
+            case CARD_STAT_ICON_RGB5A3:
+                position += 2 * CARD_ICON_WIDTH * CARD_ICON_HEIGHT;
+                break;
+        }
+    }
+    if (icon_tlut) {
+        position += 256 * 2;
+    }
+    if ((position == 0 && pc_load_be32(&dir->commentAddr) == 0xFFFFFFFF) || position > 0xFFFFFFFFull) {
+        return FALSE;
+    }
+    *offset = (u32)position;
+    return TRUE;
 }
 
 static u16 pc_checksum_be(const u8* data, u32 size, u16 old_checksum) {
@@ -84,7 +133,7 @@ static u16 pc_checksum_be(const u8* data, u32 size, u16 old_checksum) {
     u16 raw;
 
     for (i = 0; i < num_u16; i++) {
-        u16 val = get_be16(data + i * 2);
+        u16 val = pc_load_be16(data + i * 2);
         sum += val;
     }
 
@@ -192,12 +241,12 @@ int pc_gci_write(const char* gci_path, const Save_t* save, const mCD_keep_mail_c
             memcpy(blk, mail, sz);
             pc_save_bswap_keep_mail((mCD_keep_mail_c*)blk, PC_BSWAP_TO_BE);
 
-            put_be16(blk + 2, land_id);
+            pc_store_be16(blk + 2, land_id);
             /* Recompute BE checksum over the bswapped block so Dolphin's
              * mFRm_ReturnCheckSum validates. */
             blk[0] = 0;
             blk[1] = 0;
-            put_be16(blk, pc_checksum_be(blk, sz, 0));
+            pc_store_be16(blk, pc_checksum_be(blk, sz, 0));
         }
         offset += mCD_KEEP_MAIL_SIZE;
 
@@ -209,7 +258,7 @@ int pc_gci_write(const char* gci_path, const Save_t* save, const mCD_keep_mail_c
             pc_save_bswap_keep_original((mCD_keep_original_c*)blk, PC_BSWAP_TO_BE);
             blk[0] = 0;
             blk[1] = 0;
-            put_be16(blk, pc_checksum_be(blk, sz, 0));
+            pc_store_be16(blk, pc_checksum_be(blk, sz, 0));
         }
         offset += mCD_KEEP_ORIGINAL_SIZE;
 
@@ -221,7 +270,7 @@ int pc_gci_write(const char* gci_path, const Save_t* save, const mCD_keep_mail_c
             pc_save_bswap_keep_diary((mCD_keep_diary_c*)blk, PC_BSWAP_TO_BE);
             blk[0] = 0;
             blk[1] = 0;
-            put_be16(blk, pc_checksum_be(blk, sz, 0));
+            pc_store_be16(blk, pc_checksum_be(blk, sz, 0));
         }
     }
 
@@ -235,28 +284,11 @@ int pc_gci_write(const char* gci_path, const Save_t* save, const mCD_keep_mail_c
         chk_ptr[1] = 0;
     }
     checksum = pc_checksum_be((const u8*)save_copy, sizeof(Save_t), 0);
-    put_be16((u8*)&save_copy->save_check.checksum, checksum);
+    pc_store_be16((u8*)&save_copy->save_check.checksum, checksum);
 
     memcpy(file_data + GCI_SAVE_BACK_OFFSET, file_data + GCI_SAVE_MAIN_OFFSET, sizeof(Save));
 
-    memset(&dir_hdr, 0, sizeof(dir_hdr));
-    memcpy(dir_hdr.gameName, "GAFE", 4);
-    memcpy(dir_hdr.company, "01", 2);
-    dir_hdr.bannerFormat = 0;
-    memcpy(dir_hdr.fileName, "DobutsunomoriP_MURA", sizeof("DobutsunomoriP_MURA") - 1);
-    {
-        time_t unix_now = time(NULL);
-        u32 gc_secs = (u32)(unix_now - 946684800LL);
-        put_be32((u8*)&dir_hdr.time, gc_secs);
-    }
-    put_be32((u8*)&dir_hdr.iconAddr, 0xFFFFFFFF);
-    put_be16((u8*)&dir_hdr.iconFormat, 0);
-    put_be16((u8*)&dir_hdr.iconSpeed, 0);
-    dir_hdr.permission = 0x04;
-    dir_hdr.copyTimes = 0;
-    put_be16((u8*)&dir_hdr.startBlock, 5);
-    put_be16((u8*)&dir_hdr.length, (u16)(GCI_FILE_DATA_SIZE / GCI_SECTOR_SIZE));
-    put_be32((u8*)&dir_hdr.commentAddr, 0);
+    pc_gci_init_dir(&dir_hdr, PC_GCI_TOWN_FILE_NAME, GCI_FILE_DATA_SIZE, 0xFFFFFFFF, 0, 0, 0);
 
     if (!pc_gci_preserve_pending(gci_path, tmp_path, preserved_path)) {
         free(file_data);
@@ -310,10 +342,10 @@ static Save_t* pc_gci_select_copy(u8* file_data) {
     int copy;
     for (copy = 0; copy < 2; copy++) {
         Save_t* save = (Save_t*)(file_data + GCI_SAVE_MAIN_OFFSET + copy * sizeof(Save));
-        u32 version = get_be32(&save->save_check.version);
-        u16 land_id = get_be16(&save->land_info.id);
-        u16 check_id = get_be16(&save->save_check.land_id);
-        if ((version == 5 || version == mFRm_VERSION) && get_be32(&save->save_check.code) == mFRm_SAVE_ID &&
+        u32 version = pc_load_be32(&save->save_check.version);
+        u16 land_id = pc_load_be16(&save->land_info.id);
+        u16 check_id = pc_load_be16(&save->save_check.land_id);
+        if ((version == 5 || version == mFRm_VERSION) && pc_load_be32(&save->save_check.code) == mFRm_SAVE_ID &&
             mLd_CHECK_LAND_ID(check_id) && check_id == land_id &&
             pc_checksum_be((const u8*)save, sizeof(Save), 0) == 0) {
             if (copy != 0) OSReport("[PC] GCI: main invalid, using embedded backup\n");
@@ -331,7 +363,7 @@ static int pc_gci_aux_offsets(const u8* data, u16 land_id, u32 offsets[mCD_ARAM_
         [mCD_ARAM_DATA_DIARY] = mCD_KEEP_DIARY_SIZE,
     };
     u32 start = ALIGN_NEXT(sizeof(MemcardHeader_c) + 32, 32);
-    u16 first_land_id = get_be16(data + start + offsetof(mCD_keep_mail_c, landid));
+    u16 first_land_id = pc_load_be16(data + start + offsetof(mCD_keep_mail_c, landid));
     int prefer_legacy = first_land_id != land_id;
     int attempt, i;
     for (attempt = 0; attempt < 2; attempt++) {
@@ -369,9 +401,8 @@ static pc_save_result pc_gci_read_image(const char* path, pc_gci_image* image) {
         fclose(fp);
         return result;
     }
-    if (memcmp(header.gameName, "GAF", 3) != 0 ||
-        memcmp(header.fileName, "DobutsunomoriP_MURA", sizeof("DobutsunomoriP_MURA")) != 0 ||
-        get_be16(&header.length) != GCI_FILE_DATA_SIZE / GCI_SECTOR_SIZE) {
+    if (!pc_gci_dir_has_name(&header, PC_GCI_TOWN_FILE_NAME) ||
+        pc_load_be16(&header.length) != GCI_FILE_DATA_SIZE / GCI_SECTOR_SIZE) {
         fclose(fp);
         return PC_SAVE_INVALID;
     }
@@ -392,7 +423,7 @@ static pc_save_result pc_gci_read_image(const char* path, pc_gci_image* image) {
         free(data);
         return PC_SAVE_INVALID;
     }
-    if (!pc_gci_aux_offsets(data, get_be16(&save->land_info.id), offsets)) {
+    if (!pc_gci_aux_offsets(data, pc_load_be16(&save->land_info.id), offsets)) {
         free(data);
         return PC_SAVE_INVALID;
     }
@@ -464,25 +495,29 @@ void pc_gci_free(pc_gci_image* image) {
     memset(image, 0, sizeof(*image));
 }
 
+static int pc_gci_read_dir(const char* path, CARDDir* header) {
+    FILE* fp = pc_fopen(path, "rb");
+    int read;
+
+    if (fp == NULL) return FALSE;
+    read = fread(header, GCI_HEADER_SIZE, 1, fp) == 1;
+    fclose(fp);
+    return read;
+}
+
 static int pc_gci_is_gci_file(const char* path) {
-    FILE* fp;
-    u8 game_name[4];
+    CARDDir header;
     struct stat st;
 
     if (stat(path, &st) != 0 || st.st_size < (long)(GCI_HEADER_SIZE + GCI_FILE_DATA_SIZE)) {
         return FALSE;
     }
+    return pc_gci_read_dir(path, &header) && memcmp(header.gameName, "GAF", 3) == 0;
+}
 
-    fp = pc_fopen(path, "rb");
-    if (fp == NULL) {
-        return FALSE;
-    }
-    if (fread(game_name, sizeof(game_name), 1, fp) != 1) {
-        fclose(fp);
-        return FALSE;
-    }
-    fclose(fp);
-    return memcmp(game_name, "GAF", 3) == 0;
+int pc_gci_is_town_file(const char* path) {
+    CARDDir header;
+    return pc_gci_read_dir(path, &header) && pc_gci_dir_has_name(&header, PC_GCI_TOWN_FILE_NAME);
 }
 
 /* Stage imports to avoid partial destinations; retain the source for recovery. */
