@@ -80,6 +80,10 @@ extern uint8_t inValReads[8];
 /* Audio output to game engine */
 extern void AIInitDMA(uintptr_t addr, uint32_t size);
 
+extern void* JC_JUTVideo_getManager(void);
+extern unsigned int JC_JUTVideo_getFbWidth(void* manager);
+extern unsigned int JC_JUTVideo_getEfbHeight(void* manager);
+
 static int fixnes_initialized = 0;
 
 /* fixNES writes a linear BGR565 framebuffer (COL_TEX_BSWAP). Aurora's PC
@@ -426,8 +430,17 @@ void pc_fixnes_render_frame(uint16_t *fb) {
         GXInitTexObjData(&fixnes_tex_obj, fixnes_gx_texture);
     }
 
-    GXSetScissor(0, 0, PC_GC_WIDTH, PC_GC_HEIGHT);
-    pc_widescreen_set_viewport(0.0f, 0.0f, (float)PC_GC_WIDTH, (float)PC_GC_HEIGHT, 0.0f, 1.0f);
+    {
+        void* video = JC_JUTVideo_getManager();
+        unsigned int width = video != NULL ? JC_JUTVideo_getFbWidth(video) : 0;
+        unsigned int height = video != NULL ? JC_JUTVideo_getEfbHeight(video) : 0;
+        if (width == 0 || height == 0) {
+            width = PC_GC_WIDTH;
+            height = PC_GC_HEIGHT;
+        }
+        GXSetScissor(0, 0, width, height);
+        GXSetViewport(0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f);
+    }
     GXSetClipMode(GX_CLIP_ENABLE);
     GXSetColorUpdate(GX_TRUE);
     GXSetCullMode(GX_CULL_NONE);
