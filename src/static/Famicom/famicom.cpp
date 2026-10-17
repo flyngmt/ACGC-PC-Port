@@ -2721,6 +2721,10 @@ static void famicom_key_convert() {
             input &= ~(JUTGamePad::A | JUTGamePad::B);
         }
 
+#ifdef TARGET_PC
+        input &= ~(JUTGamePad::X | JUTGamePad::Y);
+#endif
+
         input =
           (((input >>  2) & 3) << 26) // DPad up & down
         | (((input >>  0) & 1) << 25) // DPad left (0x02000000)
