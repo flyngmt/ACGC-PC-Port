@@ -198,8 +198,7 @@
   "settings.video.vsync_help": "Match the game's frame timing to your display's refresh rate.",
   "settings.video.window_size": "Window Size",
 
-  "town_select.entry": "{} ({})",
-  "town_select.entry_damaged": "{} (damaged)",
+  "town_select.damaged": "Damaged town data",
   "town_select.prompt": "Which town would you like to visit?",
   "town_select.title": "All Aboard!"
 }

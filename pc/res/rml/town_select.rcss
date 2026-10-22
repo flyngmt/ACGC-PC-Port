@@ -1,0 +1,35 @@
+window.town-select .modal-dialog {
+    min-width: 480dp;
+}
+
+.town-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8dp;
+    width: 100%;
+    max-height: 344dp;
+    overflow: hidden auto;
+}
+
+.town-list button {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+    gap: 2dp;
+    padding: 10dp 22dp;
+    text-align: left;
+}
+
+.town-name {
+    font-family: "ACGC Heading";
+    font-weight: bold;
+    font-size: 20dp;
+}
+
+.town-file {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 15dp;
+    color: rgba(79, 73, 61, 64%);
+}

@@ -61,7 +61,8 @@ window-background {
 }
 
 window > tab-bar,
-window > content {
+window > content,
+window > .modal-dialog {
     position: relative;
     z-index: 1;
 }
@@ -416,6 +417,10 @@ icon.question-mark {
     decorator: text("&#xeb8b;" center center);
 }
 
+icon.train {
+    decorator: text("&#xe570;" center center);
+}
+
 progress {
     display: block;
     width: 100%;
@@ -462,7 +467,7 @@ window.modal.danger {
     border-color: #ef942c;
 }
 
-window.modal.quit {
+window.modal.light {
     color: #655b47;
     background-color: rgba(255, 251, 231, 96%);
     border-color: #f5e7bd;
@@ -516,16 +521,16 @@ window.modal.danger .modal-header icon {
     color: #ffd65a;
 }
 
-window.modal.quit .modal-title {
+window.modal.light .modal-title {
     color: #655b47;
 }
 
-window.modal.quit .modal-header icon {
+window.modal.light .modal-header icon {
     color: #d97821;
     background-color: rgba(243, 228, 185, 72%);
 }
 
-window.modal.quit .modal-header icon.warning {
+window.modal.light .modal-header icon.warning {
     decorator: text("&#xe002;" center 46%);
 }
 
@@ -540,7 +545,7 @@ window.modal.quit .modal-header icon.warning {
     font-weight: normal;
 }
 
-window.modal.quit .modal-body {
+window.modal.light .modal-body {
     color: #655b47;
 }
 

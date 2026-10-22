@@ -45,25 +45,33 @@ Rml::String window_document_source(const std::vector<Rml::String>& styleSheets)
 	                   links);
 }
 
-Rml::String small_document_source(const std::vector<Rml::String>& styleSheets)
+Rml::String small_document_source(const WindowSmall::Props& props)
 {
 	Rml::String links;
-	for (const auto& sheet : styleSheets) {
+	for (const auto& sheet : props.styleSheets) {
 		links += fmt::format("    <link type=\"text/rcss\" href=\"{}\" />\n", sheet);
 	}
+	if (props.scrollingBackground) {
+		links += "    <link type=\"text/rcss\" href=\"res/rml/scrolling_background.rcss\" />\n";
+	}
+	const char* background = props.scrollingBackground ? R"RML(
+        <window-background>
+            <scrolling-pattern id="window-background-pattern" />
+        </window-background>)RML"
+	                                                   : "";
 	return fmt::format(R"RML(
 <rml>
 <head>
     <link type="text/rcss" href="res/rml/window.rcss" />
 {}</head>
 <body>
-    <window id="window" class="small">
+    <window id="window" class="small">{}
         <div id="dialog"/>
     </window>
 </body>
 </rml>
 )RML",
-	                   links);
+	                   links, background);
 }
 
 } // namespace
@@ -354,9 +362,10 @@ bool Window::handle_content_nav(Rml::Event& event, NavCommand cmd) noexcept
 }
 
 WindowSmall::WindowSmall(const Props& props)
-    : Document(small_document_source(props.styleSheets), false, DocumentScope::Window)
+    : Document(small_document_source(props), false, DocumentScope::Window)
     , mRoot(mDocument->GetElementById("window"))
     , mDialog(mDocument->GetElementById("dialog"))
+    , mScrollingBackground(mDocument->GetElementById("window-background-pattern"))
 {
 	listen(mRoot, Rml::EventId::Transitionend, [this](Rml::Event& event) {
 		if (event.GetTargetElement() == mRoot && !mRoot->HasAttribute("open") && Document::visible()) {
@@ -404,6 +413,12 @@ void WindowSmall::show()
 {
 	Document::show();
 	mRoot->SetAttribute("open", "");
+}
+
+void WindowSmall::update()
+{
+	mScrollingBackground.update(mDocument != nullptr ? mDocument->GetContext() : nullptr);
+	Document::update();
 }
 
 void WindowSmall::hide(bool close)

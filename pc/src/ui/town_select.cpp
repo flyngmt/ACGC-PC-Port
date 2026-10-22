@@ -23,24 +23,10 @@ int sResult              = PC_TOWN_SELECT_CANCELLED;
 int sIndex               = -1;
 TownSelectModal* sActive = nullptr;
 
-const Rml::String kTownSelectStyles = R"RCSS(
-.town-list {
-	display: flex;
-	flex-direction: column;
-	gap: 10dp;
-	max-height: 360dp;
-	overflow-y: auto;
-}
-
-.town-list button {
-	text-align: left;
-}
-)RCSS";
-
-Rml::String town_label(const pc_card_town_entry& town)
+Rml::String town_name(const pc_card_town_entry& town)
 {
 	if (!town.usable) {
-		return localization::format("town_select.entry_damaged", town.file);
+		return localization::get("town_select.damaged");
 	}
 
 	int length = PC_CARD_TOWN_NAME_SIZE;
@@ -56,29 +42,32 @@ Rml::String town_label(const pc_card_town_entry& town)
 			result += '?';
 		}
 	}
-	if (result.empty()) {
-		result = localization::get("common.unknown");
-	}
-	return localization::format("town_select.entry", result, town.file);
+	return result.empty() ? localization::get("common.unknown") : result;
 }
 
 class TownSelectModal final : public WindowSmall {
 public:
 	explicit TownSelectModal(int count)
-	    : WindowSmall({ .windowClass = "modal", .dialogClass = "modal-dialog" })
+	    : WindowSmall({
+	          .windowClass         = "modal",
+	          .dialogClass         = "modal-dialog",
+	          .styleSheets         = { "res/rml/town_select.rcss" },
+	          .scrollingBackground = true,
+	      })
 	{
-		set_document_styles(kTownSelectStyles);
+		mRoot->SetClass("light", true);
+		mRoot->SetClass("town-select", true);
 
 		auto* header = append(mDialog, "div");
 		header->SetClass("modal-header", true);
 		auto* title = append(header, "div");
 		title->SetClass("modal-title", true);
 		title->SetInnerRML(escape(localization::get("town_select.title")));
+		append(header, "icon")->SetClass("train", true);
 
 		auto* body = append(mDialog, "div");
 		body->SetClass("modal-body", true);
-		auto* prompt = append(body, "div");
-		prompt->SetInnerRML(escape(localization::get("town_select.prompt")));
+		body->SetInnerRML(escape(localization::get("town_select.prompt")));
 
 		auto* list = append(mDialog, "div");
 		list->SetClass("town-list", true);
@@ -87,7 +76,13 @@ public:
 			if (town == nullptr) {
 				continue;
 			}
-			auto button = std::make_unique<Button>(list, town_label(*town));
+			auto button = std::make_unique<Button>(list, Rml::String { });
+			auto* name  = append(button->root(), "div");
+			name->SetClass("town-name", true);
+			name->SetInnerRML(escape(town_name(*town)));
+			auto* file = append(button->root(), "div");
+			file->SetClass("town-file", true);
+			file->SetInnerRML(escape(town->file));
 			button->set_disabled(!town->usable);
 			button->on_pressed([this, i] {
 				if (SDL_GetTicks() - mOpenedAt >= kConfirmDelayMs) {
@@ -104,9 +99,9 @@ public:
 		cancel->on_pressed([this] { finish(PC_TOWN_SELECT_CANCELLED, -1); });
 		mButtons.push_back(std::move(cancel));
 
-		sResult = PC_TOWN_SELECT_PENDING;
-		sIndex  = -1;
-		sActive = this;
+		sResult   = PC_TOWN_SELECT_PENDING;
+		sIndex    = -1;
+		sActive   = this;
 		mOpenedAt = SDL_GetTicks();
 		play_menu_sound(kSoundWindowOpen);
 	}
