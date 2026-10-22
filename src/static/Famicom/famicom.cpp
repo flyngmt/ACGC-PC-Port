@@ -322,13 +322,14 @@ static const PcNesGciIcon& pc_nes_gci_icon() {
     const bool c8 = img->mTextureFormat == ResTIMG_FORMAT_C8;
     const size_t pixels = static_cast<size_t>(img->mSizeX) * img->mSizeY * (c8 ? 1 : 2);
     const size_t palette = static_cast<size_t>(img->mPaletteEntryCount) * sizeof(u16);
-    const bool valid_palette = c8 ? img->mPaletteFormat != ResTIMG_NO_PALETTE && palette <= 256 * sizeof(u16) &&
+    const bool valid_palette = c8 ? img->mPaletteFormat != ResTIMG_NO_PALETTE && palette > 0 &&
+                                        palette <= 256 * sizeof(u16) && img->mPaletteOffset >= sizeof(ResTIMG) &&
                                         img->mPaletteOffset <= res_size && palette <= res_size - img->mPaletteOffset
                                   : img->mPaletteFormat == ResTIMG_NO_PALETTE;
     if ((c8 || img->mTextureFormat == GX_TF_RGB5A3) && valid_palette && img->mSizeX == CARD_ICON_WIDTH &&
         img->mSizeY % CARD_ICON_HEIGHT == 0 && img->mSizeY >= CARD_ICON_HEIGHT &&
-        img->mSizeY <= CARD_ICON_HEIGHT * CARD_ICON_MAX && img->mImageDataOffset <= res_size &&
-        pixels <= res_size - img->mImageDataOffset) {
+        img->mSizeY <= CARD_ICON_HEIGHT * CARD_ICON_MAX && img->mImageDataOffset >= sizeof(ResTIMG) &&
+        img->mImageDataOffset <= res_size && pixels <= res_size - img->mImageDataOffset) {
         size_t size = 0;
         icon.data.resize(CARD_ICON_MAX * CARD_ICON_WIDTH * CARD_ICON_HEIGHT * sizeof(u16) + 256 * sizeof(u16));
         SetupResIcon(img, icon.data.data(), icon.data.size(), &size, &icon.format, &icon.speed);
