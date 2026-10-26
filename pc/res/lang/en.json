@@ -193,7 +193,7 @@
   "settings.video.textures_section": "Textures",
   "settings.video.theme.day": "Day",
   "settings.video.theme.dynamic": "Dynamic",
-  "settings.video.theme.help": "Choose the menu colors. Dynamic switches to night from 8 PM to 6 AM.",
+  "settings.video.theme.help": "Choose the menu theme. Dynamic switches to night from 8 PM to 6 AM.",
   "settings.video.theme.label": "Theme",
   "settings.video.theme.night": "Night",
   "settings.video.ui_scale.automatic": "Automatic",
