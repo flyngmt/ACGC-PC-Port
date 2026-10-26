@@ -1,7 +1,7 @@
 /* pc_m_card.c - memory card manager: GCI save/load, village generation, ARAM data blocks
  *
  * Card A (save/card_a/) = player's home town
- * Card B (save/card_b/) = second town for visiting (drop any AC GCI file there)
+ * Card B (save/card_b/) = towns for visiting (drop any AC GCI files there; Porter lists them)
  */
 #include "m_card.h"
 #include "m_start_data_init.h"
@@ -27,6 +27,7 @@
 #include "pc_gci.h"
 #include "pc_platform.h"
 #include "pc_settings.h"
+#include "pc_town_select.h"
 #include "m_cockroach.h"
 #include "m_all_grow_ovl.h"
 #include "m_home.h"
@@ -86,6 +87,18 @@ static union {
 
 static int l_mcd_keep_startCond = 0;
 static char l_card_b_gci_path[PC_GCI_PATH_MAX] = {0};
+
+typedef struct {
+    char path[PC_GCI_PATH_MAX];
+    pc_card_town_entry entry;
+} pc_card_town;
+
+_Static_assert(PC_CARD_TOWN_NAME_SIZE == LAND_NAME_SIZE, "town name size mismatch");
+
+static pc_card_town l_card_b_towns[PC_CARD_TOWN_MAX];
+static int l_card_b_town_count = 0;
+static int l_card_b_usable_count = 0;
+static int l_card_b_town_selected = FALSE;
 
 extern void mTM_rtcTime_limit_check(void);
 extern void mEv_ClearEventInfo(void);
@@ -392,35 +405,62 @@ static void pc_save_migrate_legacy(void) {
     }
 }
 
-static int pc_card_find_town(int channel, char* path, int path_size) {
+typedef int (*pc_card_town_proc)(const char* path, void* arg);
+
+static void pc_card_scan_towns(int channel, int import_legacy, pc_card_town_proc proc, void* arg) {
     const char* relative_dir = channel == mCD_SLOT_B ? "save/card_b" : "save/card_a";
     char active_dir[PC_GCI_PATH_MAX];
     char exe_dir[PC_GCI_PATH_MAX] = {0};
     char filename[PC_GCI_PATH_MAX];
+    char path[PC_GCI_PATH_MAX];
     char source[PC_GCI_PATH_MAX];
     const char* directories[] = { active_dir, relative_dir, exe_dir };
+    const int directory_count = import_legacy ? ARRAY_COUNT(directories) : 1;
     int i, length;
+    int found = 0;
 
-    path[0] = '\0';
-    if (!pc_platform_user_path(relative_dir, active_dir, sizeof(active_dir))) return FALSE;
+    if (!pc_platform_user_path(relative_dir, active_dir, sizeof(active_dir))) return;
     if (!pc_platform_base_path(relative_dir, exe_dir, sizeof(exe_dir))) exe_dir[0] = '\0';
 
-    for (i = 0; i < ARRAY_COUNT(directories); i++) {
+    for (i = 0; i < directory_count && found == 0; i++) {
         if (directories[i][0] == '\0') continue;
         filename[0] = '\0';
         while (pc_platform_next_gci(directories[i], filename, sizeof(filename))) {
-            length = snprintf(path, path_size, "%s/%s", active_dir, filename);
-            if (length < 0 || length >= path_size) continue;
-            if (i == 0) return TRUE;
-
-            length = snprintf(source, sizeof(source), "%s/%s", directories[i], filename);
-            if (length < 0 || length >= (int)sizeof(source)) continue;
-            pc_ensure_save_dirs();
-            if (pc_gci_import(source, path)) return TRUE;
+            length = snprintf(path, sizeof(path), "%s/%s", active_dir, filename);
+            if (length < 0 || length >= (int)sizeof(path)) continue;
+            if (i == 0) {
+                if (!pc_gci_is_town_file(path)) continue;
+            } else {
+                length = snprintf(source, sizeof(source), "%s/%s", directories[i], filename);
+                if (length < 0 || length >= (int)sizeof(source)) continue;
+                if (!pc_gci_is_town_file(source)) continue;
+                pc_ensure_save_dirs();
+                if (!pc_gci_import(source, path)) continue;
+            }
+            found++;
+            if (proc(path, arg)) return;
         }
     }
-    path[0] = '\0';
+}
+
+typedef struct {
+    char* path;
+    int path_size;
+} pc_card_path_buffer;
+
+static int pc_card_take_first_town(const char* path, void* arg) {
+    pc_card_path_buffer* buffer = (pc_card_path_buffer*)arg;
+    int length = snprintf(buffer->path, buffer->path_size, "%s", path);
+    if (length >= 0 && length < buffer->path_size) return TRUE;
+    buffer->path[0] = '\0';
     return FALSE;
+}
+
+static int pc_card_find_town(int channel, char* path, int path_size) {
+    pc_card_path_buffer buffer = { path, path_size };
+    path[0] = '\0';
+    pc_card_scan_towns(channel, TRUE, pc_card_take_first_town, &buffer);
+    return path[0] != '\0';
 }
 
 static pc_save_result pc_save_scan_gci_dir(void) {
@@ -475,6 +515,127 @@ static int pc_card_b_find_town(void) {
     return FALSE;
 }
 
+static pc_save_result pc_read_gci_land_info(const char* path, mLd_land_info_c* out) {
+    pc_gci_image image;
+    pc_save_result result = pc_save_read_image(path, &image);
+    if (result != PC_SAVE_LOADED) return result;
+    memcpy(out, &image.save->land_info, sizeof(*out));
+    pc_gci_free(&image);
+    return PC_SAVE_LOADED;
+}
+
+static int pc_card_b_collect_town(const char* path, void* arg) {
+    pc_card_town* town;
+    const char* separator;
+    mLd_land_info_c land_info;
+    pc_save_result result;
+    int usable = TRUE;
+    int length;
+    (void)arg;
+
+    if (l_card_b_town_count >= PC_CARD_TOWN_MAX) {
+        OSReport("[PC] Card B: town list full (%d), ignoring '%s'\n", PC_CARD_TOWN_MAX, path);
+        return TRUE;
+    }
+    result = pc_read_gci_land_info(path, &land_info);
+    if (result != PC_SAVE_LOADED) {
+        OSReport("[PC] Card B: '%s' is unreadable (result %d)\n", path, result);
+        usable = FALSE;
+    } else if (!mLd_CheckId(land_info.id)) {
+        OSReport("[PC] Card B: '%s' has an invalid land id 0x%04X\n", path, land_info.id);
+        usable = FALSE;
+    } else if (mLd_CheckThisLand(land_info.name, land_info.id)) {
+        OSReport("[PC] Card B: skipping '%s' (current town)\n", path);
+        return FALSE;
+    }
+
+    town = &l_card_b_towns[l_card_b_town_count];
+    length = snprintf(town->path, sizeof(town->path), "%s", path);
+    if (length < 0 || length >= (int)sizeof(town->path)) return FALSE;
+    separator = strrchr(town->path, '/');
+    town->entry.file = separator != NULL ? separator + 1 : town->path;
+    if (usable) {
+        memcpy(town->entry.name, land_info.name, sizeof(town->entry.name));
+        l_card_b_usable_count++;
+    } else {
+        memset(town->entry.name, 0, sizeof(town->entry.name));
+    }
+    town->entry.usable = usable;
+    l_card_b_town_count++;
+    return FALSE;
+}
+
+int pc_card_b_refresh_towns(void) {
+    l_card_b_town_count = 0;
+    l_card_b_usable_count = 0;
+    l_card_b_town_selected = FALSE;
+    if (!pc_save_paths_init() || mLd_PlayerManKindCheck()) return 0;
+    pc_card_scan_towns(mCD_SLOT_B, TRUE, pc_card_b_collect_town, NULL);
+    OSReport("[PC] Card B: %d visitable town(s), %d damaged\n", l_card_b_usable_count,
+             l_card_b_town_count - l_card_b_usable_count);
+    return l_card_b_usable_count;
+}
+
+int pc_card_b_town_count(void) {
+    return l_card_b_town_count;
+}
+
+const pc_card_town_entry* pc_card_b_town(int index) {
+    if (index < 0 || index >= l_card_b_town_count) return NULL;
+    return &l_card_b_towns[index].entry;
+}
+
+static int pc_card_count_town(const char* path, void* arg) {
+    (void)path;
+    ++*(int*)arg;
+    return FALSE;
+}
+
+int pc_card_b_scan_town_files(void) {
+    int count = 0;
+    if (!pc_save_paths_init()) return 0;
+    pc_card_scan_towns(mCD_SLOT_B, FALSE, pc_card_count_town, &count);
+    return count;
+}
+
+int pc_card_b_town_base(char* output, int output_size) {
+    const char* separator = strrchr(l_card_b_gci_path, '/');
+    const char* extension = strrchr(l_card_b_gci_path, '.');
+    int length;
+
+    if (output == NULL || output_size <= 0 || l_card_b_gci_path[0] == '\0') return FALSE;
+    if (extension == NULL || (separator != NULL && extension < separator)) {
+        length = (int)strlen(l_card_b_gci_path);
+    } else {
+        length = (int)(extension - l_card_b_gci_path);
+    }
+    if (length <= 0 || (separator != NULL && length <= (int)(separator - l_card_b_gci_path) + 1) ||
+        length >= output_size) {
+        return FALSE;
+    }
+    memcpy(output, l_card_b_gci_path, length);
+    output[length] = '\0';
+    return TRUE;
+}
+
+int pc_card_b_is_legacy_town(void) {
+    char first[PC_GCI_PATH_MAX];
+    pc_card_path_buffer buffer = { first, sizeof(first) };
+    first[0] = '\0';
+    if (l_card_b_gci_path[0] == '\0') return FALSE;
+    pc_card_scan_towns(mCD_SLOT_B, FALSE, pc_card_take_first_town, &buffer);
+    return first[0] != '\0' && strcmp(first, l_card_b_gci_path) == 0;
+}
+
+int pc_card_b_select_town(int index) {
+    const pc_card_town_entry* town = pc_card_b_town(index);
+    if (town == NULL || !town->usable || mLd_PlayerManKindCheck()) return FALSE;
+    memcpy(l_card_b_gci_path, l_card_b_towns[index].path, sizeof(l_card_b_gci_path));
+    l_card_b_town_selected = TRUE;
+    OSReport("[PC] Card B: selected destination '%s'\n", l_card_b_gci_path);
+    return TRUE;
+}
+
 /* --- Memory card API implementation --- */
 
 void mCD_init_card(void) {
@@ -489,6 +650,9 @@ void mCD_InitAll(void) {
     l_keepSave_set = FALSE;
     l_mcd_keep_startCond = 0;
     l_card_b_gci_path[0] = '\0';
+    l_card_b_town_count = 0;
+    l_card_b_usable_count = 0;
+    l_card_b_town_selected = FALSE;
 }
 
 static int pc_start_write(void) {
@@ -608,15 +772,6 @@ int mCD_SaveHome_bg(int param_1, int* chan) {
 
 /* --- Travel / Station functions --- */
 
-static pc_save_result pc_read_gci_land_info(const char* path, mLd_land_info_c* out) {
-    pc_gci_image image;
-    pc_save_result result = pc_save_read_image(path, &image);
-    if (result != PC_SAVE_LOADED) return result;
-    memcpy(out, &image.save->land_info, sizeof(*out));
-    pc_gci_free(&image);
-    return PC_SAVE_LOADED;
-}
-
 int mCD_CheckStation_bg(s32* chan) {
     int is_foreigner = mLd_PlayerManKindCheck();
     int slot = is_foreigner ? mCD_SLOT_A : mCD_SLOT_B;
@@ -624,7 +779,7 @@ int mCD_CheckStation_bg(s32* chan) {
     mLd_land_info_c land_info;
 
     if (chan) *chan = slot;
-    if (!is_foreigner && !pc_card_b_find_town()) {
+    if (!is_foreigner && !l_card_b_town_selected && !pc_card_b_find_town()) {
         OSReport("[PC] CheckStation: no destination town on Card B\n");
         return mCD_TRANS_ERR_NO_TOWN_DATA;
     }
@@ -842,6 +997,7 @@ void mCD_toNextLand(void) {
 
     memset(&l_keepSave, 0, sizeof(Save));
     l_keepSave_set = FALSE;
+    l_card_b_town_selected = FALSE;
 
     mCD_save_data_main_to_aram(&l_keepMail, l_aram_alloc_size_table[mCD_ARAM_DATA_MAIL], mCD_ARAM_DATA_MAIL);
     mCD_save_data_main_to_aram(&l_keepOriginal, l_aram_alloc_size_table[mCD_ARAM_DATA_ORIGINAL], mCD_ARAM_DATA_ORIGINAL);

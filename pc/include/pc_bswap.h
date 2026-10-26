@@ -13,6 +13,30 @@
 #define pc_bswap64(x) __builtin_bswap64(x)
 #endif
 
+#include <string.h>
+
+static inline unsigned short pc_load_be16(const void* src) {
+    unsigned short value;
+    memcpy(&value, src, sizeof(value));
+    return pc_bswap16(value);
+}
+
+static inline unsigned int pc_load_be32(const void* src) {
+    unsigned int value;
+    memcpy(&value, src, sizeof(value));
+    return pc_bswap32(value);
+}
+
+static inline void pc_store_be16(void* dst, unsigned short value) {
+    value = pc_bswap16(value);
+    memcpy(dst, &value, sizeof(value));
+}
+
+static inline void pc_store_be32(void* dst, unsigned int value) {
+    value = pc_bswap32(value);
+    memcpy(dst, &value, sizeof(value));
+}
+
 static inline void pc_bswap16_array(void* ptr, int count) {
     unsigned short* arr = (unsigned short*)ptr;
     int i;

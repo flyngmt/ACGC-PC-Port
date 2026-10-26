@@ -25,6 +25,9 @@ enum {
     aSTM_TALK_REPAIRID_AFTER,
     aSTM_TALK_CARDPROC,
     aSTM_TALK_END_WAIT,
+#ifdef TARGET_PC
+    aSTM_TALK_SELECT_TOWN,
+#endif
 
     aSTM_TALK_NUM
 };

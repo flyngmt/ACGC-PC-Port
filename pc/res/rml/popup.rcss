@@ -14,7 +14,6 @@ body {
     font-family: "ACGC Body";
     font-weight: normal;
     font-size: 18dp;
-    color: #655b47;
 }
 
 button {
@@ -31,11 +30,11 @@ popup {
     height: 72dp;
     margin-top: 18dp;
     overflow: hidden;
-    color: #655b47;
-    background-color: #fffbe7;
-    border: 4dp #f5e7bd;
+    color: var(--text);
+    background-color: var(--surface);
+    border: 4dp var(--surface-border);
     border-radius: 36dp;
-    box-shadow: 0 10dp 28dp 2dp rgba(54, 45, 29, 42%);
+    box-shadow: 0 10dp 28dp 2dp var(--shadow);
     filter: opacity(0);
     transform: translateY(-104dp);
     transition: filter transform 0.18s cubic-in-out;

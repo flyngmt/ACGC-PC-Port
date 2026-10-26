@@ -4,6 +4,7 @@
 #include "dolphin/os.h"
 #include "dolphin/dvd.h"
 #include "dolphin/ar.h"
+#include "dolphin/arq.h"
 #include "string.h"
 #include "dolphin/os/OSTime.h"
 

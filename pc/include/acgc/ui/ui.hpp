@@ -53,6 +53,7 @@ struct Insets {
 };
 
 bool initialize() noexcept;
+bool initialized() noexcept;
 void shutdown() noexcept;
 void handle_event(const SDL_Event& event) noexcept;
 void update() noexcept;

@@ -19,6 +19,12 @@ enum class DiscVerificationState : std::uint8_t {
     HashMismatch,
 };
 
+enum class InterfaceTheme : std::uint8_t {
+    Dynamic = 0,
+    Day,
+    Night,
+};
+
 struct UserSettings {
     struct Backend {
         ConfigVar<std::string> discPath;
@@ -35,6 +41,7 @@ struct UserSettings {
         ConfigVar<int> windowHeight;
         ConfigVar<int> windowMode;
         ConfigVar<int> uiScale;
+        ConfigVar<InterfaceTheme> theme;
         ConfigVar<bool> vsync;
         ConfigVar<int> maxFrameRate;
 

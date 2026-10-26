@@ -81,13 +81,15 @@ public:
 		Rml::String windowClass;
 		Rml::String dialogClass;
 		std::vector<Rml::String> styleSheets;
-		bool movable = false;
+		bool movable             = false;
+		bool scrollingBackground = false;
 	};
 
 	explicit WindowSmall(const Props& props);
 
 	void show() override;
 	void hide(bool close) override;
+	void update() override;
 	bool visible() const override;
 
 protected:
@@ -95,6 +97,7 @@ protected:
 	Rml::Element* mDialog = nullptr;
 
 private:
+	ScrollingBackground mScrollingBackground;
 	Rml::Vector2f mDragStartMouse;
 	Rml::Vector2f mDragStartPosition;
 };

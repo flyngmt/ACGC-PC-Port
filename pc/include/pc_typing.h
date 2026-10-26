@@ -26,6 +26,7 @@ void pc_typing_set_editor_active(int active);
 int pc_typing_is_editor_active(void);
 int pc_typing_is_active(void);
 int pc_typing_queue_pop(int* output);
+int pc_typing_game_code_to_utf8(int code, char* output, int output_size);
 
 #ifdef __cplusplus
 }

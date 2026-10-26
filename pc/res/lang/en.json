@@ -191,10 +191,19 @@
   "settings.video.texture_pack_loaded": "{} textures loaded",
   "settings.video.texture_pack_reload": "Reload Texture Pack",
   "settings.video.textures_section": "Textures",
+  "settings.video.theme.day": "Day",
+  "settings.video.theme.dynamic": "Dynamic",
+  "settings.video.theme.help": "Choose the menu theme. Dynamic switches to night from 8 PM to 6 AM.",
+  "settings.video.theme.label": "Theme",
+  "settings.video.theme.night": "Night",
   "settings.video.ui_scale.automatic": "Automatic",
   "settings.video.ui_scale.help": "Adjust the size of the interface. Automatic follows your display's scaling.",
   "settings.video.ui_scale.label": "UI Scale",
   "settings.video.vsync": "Vertical Sync",
   "settings.video.vsync_help": "Match the game's frame timing to your display's refresh rate.",
-  "settings.video.window_size": "Window Size"
+  "settings.video.window_size": "Window Size",
+
+  "town_select.damaged": "Damaged town data",
+  "town_select.prompt": "Which town would you like to visit?",
+  "town_select.title": "All Aboard!"
 }

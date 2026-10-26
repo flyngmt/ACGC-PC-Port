@@ -5,6 +5,7 @@
 #include "acgc/ui/menu_bar.hpp"
 #include "acgc/ui/overlay.hpp"
 #include "acgc/ui/localization.hpp"
+#include "acgc/ui/theme.hpp"
 
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_video.h>
@@ -125,6 +126,7 @@ bool initialize() noexcept
     }
 
     localization::load();
+    input::register_input_layer();
     sInitialized = true;
     push_document(std::make_unique<MenuBar>(), false);
     push_document(std::make_unique<Overlay>());
@@ -132,12 +134,19 @@ bool initialize() noexcept
     return true;
 }
 
+bool initialized() noexcept
+{
+    return sInitialized && aurora::rmlui::is_initialized() && aurora::rmlui::get_context() != nullptr;
+}
+
 void shutdown() noexcept
 {
     sDocumentStack.clear();
     sPassiveDocuments.clear();
     sScopedStyles.clear();
+    theme::detach();
     localization::shutdown();
+    input::unregister_input_layer();
     input::reset_input_state();
     input::release_input_block();
     g_pc_paused = 0;
@@ -205,6 +214,7 @@ void update() noexcept
         }
     }
 
+    theme::update();
     input::sync_input_block();
     sync_pause_state();
 }

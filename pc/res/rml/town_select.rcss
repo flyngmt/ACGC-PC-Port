@@ -1,0 +1,46 @@
+window.town-select .modal-dialog {
+    display: block;
+    min-width: 480dp;
+}
+
+window.town-select .modal-header,
+window.town-select .modal-body,
+window.town-select .town-list {
+    margin-bottom: 22dp;
+}
+
+.town-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8dp;
+    width: 100%;
+    max-height: 40vh;
+    overflow: hidden auto;
+}
+
+.town-list button {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+    gap: 2dp;
+    padding: 10dp 22dp;
+    text-align: left;
+}
+
+.town-name {
+    font-family: "ACGC Heading";
+    font-weight: bold;
+    font-size: 20dp;
+}
+
+.town-file {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 15dp;
+    opacity: 0.68;
+}
+
+.town-list button:disabled .town-file {
+    opacity: 0.24;
+}

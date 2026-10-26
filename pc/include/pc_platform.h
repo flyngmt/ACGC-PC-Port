@@ -94,6 +94,7 @@ int  pc_platform_user_path(const char* relative_path, char* output, size_t outpu
 /* Resolve a relative path below the executable directory (SDL_GetBasePath).
  * Used to import data from pre-Aurora installations regardless of CWD. */
 int  pc_platform_base_path(const char* relative_path, char* output, size_t output_size);
+int  pc_clock_minutes(void);
 
 /* EXE image range for seg2k0 pointer disambiguation (vs N64 segment addresses) */
 extern unsigned int pc_image_base;

@@ -6,6 +6,8 @@ union SDL_Event;
 
 namespace acgc::ui::input {
 
+void register_input_layer() noexcept;
+void unregister_input_layer() noexcept;
 void handle_event(const SDL_Event& event) noexcept;
 void update_input() noexcept;
 void reset_input_state() noexcept;

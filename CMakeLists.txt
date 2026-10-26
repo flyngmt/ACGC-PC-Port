@@ -236,9 +236,13 @@ set(PC_SOURCES
     ${PC_ROOT}/src/ui/settings.cpp
     ${PC_ROOT}/src/ui/string_button.cpp
     ${PC_ROOT}/src/ui/tab_bar.cpp
+    ${PC_ROOT}/src/ui/theme.cpp
+    ${PC_ROOT}/src/ui/theme_mirror.cpp
+    ${PC_ROOT}/src/ui/town_select.cpp
     ${PC_ROOT}/src/ui/ui.cpp
     ${PC_ROOT}/src/ui/window.cpp
     ${PC_ROOT}/src/pc_audio.c
+    ${PC_ROOT}/src/pc_clock.c
     ${PC_ROOT}/src/pc_gci.c
     ${PC_ROOT}/src/pc_m_card.c
     ${PC_ROOT}/src/pc_model_viewer.c

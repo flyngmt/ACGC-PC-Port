@@ -23,6 +23,7 @@
 #include "acgc/settings.hpp"
 #include "acgc/texture_replacements.hpp"
 #include "acgc/ui/prelaunch.hpp"
+#include "acgc/ui/theme.hpp"
 #include "acgc/ui/ui.hpp"
 #include "m_kankyo.h"
 #include "borealis/aurora_log.h"
@@ -53,6 +54,7 @@ int boot_main(int argc, const char** argv);
 void pc_audio_shutdown();
 void pc_audio_mq_shutdown();
 void pc_emu64_tlut_frame_drained();
+extern int g_pc_nes_active;
 int g_pc_running = 1;
 int g_pc_verbose = 0;
 int g_pc_frame_limit_override = -1;
@@ -254,14 +256,16 @@ int parse_rain_intensity(const char* text) {
 void apply_frame_limit() {
     using clock = std::chrono::steady_clock;
     static clock::time_point next_frame{};
+    constexpr int kNesFrameRate = 60;
 
-    if (g_pc_frame_limit_override <= 0) {
+    const int limit = g_pc_nes_active ? kNesFrameRate : g_pc_frame_limit_override;
+    if (limit <= 0) {
         next_frame = {};
         return;
     }
 
     ZoneScopedN("Frame limiter");
-    const auto interval = std::chrono::nanoseconds(1'000'000'000LL / g_pc_frame_limit_override);
+    const auto interval = std::chrono::nanoseconds(1'000'000'000LL / limit);
     const auto now = clock::now();
     if (next_frame == clock::time_point{} || now > next_frame + interval * 4) {
         next_frame = now;
@@ -534,7 +538,8 @@ bool run_prelaunch()
             continue;
         }
         update_render_size();
-        GXSetCopyClear({243, 228, 185, 255}, 0xFFFFFF);
+        const auto background = acgc::ui::theme::background();
+        GXSetCopyClear({background.red, background.green, background.blue, background.alpha}, 0xFFFFFF);
         acgc::ui::update();
         ac_debug_imgui_draw();
         aurora_end_frame();

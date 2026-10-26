@@ -1,6 +1,7 @@
 #include "document.hpp"
 
 #include "aurora/rmlui.hpp"
+#include "theme.hpp"
 #include "ui.hpp"
 
 #include <algorithm>
@@ -14,6 +15,7 @@ Rml::ElementDocument* load_document(const Rml::String& source)
 	if (context == nullptr) {
 		return nullptr;
 	}
+	theme::attach(context);
 	return context->LoadDocumentFromMemory(source);
 }
 

@@ -117,6 +117,10 @@ void sanitize_settings()
         verification > static_cast<int>(DiscVerificationState::HashMismatch)) {
         current.backend.discVerification.set_value(DiscVerificationState::Unknown);
     }
+    const auto theme = static_cast<int>(current.video.theme.value());
+    if (theme < static_cast<int>(InterfaceTheme::Dynamic) || theme > static_cast<int>(InterfaceTheme::Night)) {
+        current.video.theme.set_value(InterfaceTheme::Dynamic);
+    }
     const auto renderers = available_renderer_backends();
     if (std::find(renderers.begin(), renderers.end(), current.video.renderer.value()) == renderers.end()) {
         current.video.renderer.set_value(BACKEND_AUTO);
@@ -149,6 +153,7 @@ UserSettings::Video::Video()
     , windowHeight("video.windowHeight", 960)
     , windowMode("video.windowMode", 0)
     , uiScale("video.uiScale", 0)
+    , theme("video.theme", InterfaceTheme::Dynamic)
     , vsync("video.vsync", true)
     , maxFrameRate("video.maxFrameRate", 60)
 {
@@ -210,6 +215,7 @@ void register_settings()
     config::register_var(current.video.windowHeight);
     config::register_var(current.video.windowMode);
     config::register_var(current.video.uiScale);
+    config::register_var(current.video.theme);
     config::register_var(current.video.vsync);
     config::register_var(current.video.maxFrameRate);
     config::register_var(current.enhancements.preloadTextures);
