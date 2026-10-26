@@ -192,7 +192,7 @@ button {
     font-weight: normal;
     color: var(--text);
     background-color: var(--control);
-    border-radius: 22dp;
+    border-radius: 18dp;
     transition: background-color 0.1s linear-in-out, transform 0.08s linear-in-out;
     cursor: pointer;
     focus: auto;
