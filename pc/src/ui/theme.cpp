@@ -76,8 +76,6 @@ const std::array kPalette = {
 
 bool sStarted          = false;
 bool sNight            = false;
-bool sDebugInverted    = false;
-bool sDebugArmed       = false;
 Uint64 sSweepStart     = 0;
 Uint64 sLastUpdate     = 0;
 Uint64 sFinishedAt     = 0;
@@ -247,7 +245,6 @@ void switch_palette(bool night)
 {
 	const bool changed = night != sNight;
 	sSweepStart        = 0;
-	sDebugArmed        = false;
 	sNight             = night;
 	if (changed && sContext != nullptr) {
 		apply_palette(*sContext->GetRootElement(), sNight);
@@ -266,8 +263,8 @@ void advance()
 	const InterfaceTheme theme = settings().video.theme.value();
 	const bool dynamic         = theme == InterfaceTheme::Dynamic;
 	const int minutes          = dynamic ? pc_clock_minutes() : 0;
-	const bool night           = (dynamic ? night_at(minutes) : theme == InterfaceTheme::Night) != sDebugInverted;
-	const bool grace           = sDebugArmed || (dynamic && in_grace(minutes));
+	const bool night           = dynamic ? night_at(minutes) : theme == InterfaceTheme::Night;
+	const bool grace           = dynamic && in_grace(minutes);
 	if (!sStarted) {
 		sStarted = true;
 		settle(grace ? !night : night);
@@ -281,7 +278,7 @@ void advance()
 		settle(sNight);
 	}
 	if (night == sNight) {
-		if (sSweepStart != 0 || sDebugArmed) {
+		if (sSweepStart != 0) {
 			settle(night);
 		}
 		return;
@@ -343,12 +340,6 @@ void update() noexcept
 {
 	advance();
 	sShown = shown_documents(live_documents());
-}
-
-void debug_toggle() noexcept
-{
-	sDebugInverted = !sDebugInverted;
-	sDebugArmed    = true;
 }
 
 Rml::Colourb background() noexcept

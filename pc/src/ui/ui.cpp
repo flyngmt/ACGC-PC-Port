@@ -6,7 +6,6 @@
 #include "acgc/ui/overlay.hpp"
 #include "acgc/ui/localization.hpp"
 #include "acgc/ui/theme.hpp"
-#include "pc_typing.h"
 
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_video.h>
@@ -164,9 +163,6 @@ void handle_event(const SDL_Event& event) noexcept
     if (event.type == SDL_EVENT_KEY_DOWN && !event.key.repeat) {
         const bool openWithEscape =
             event.key.key == SDLK_ESCAPE && !any_document_visible() && !sWasPausingGame;
-        if (event.key.key == SDLK_P && !pc_typing_is_active()) {
-            theme::debug_toggle();
-        }
         if (openWithEscape || event.key.key == SDLK_F1) {
             if (auto* context = aurora::rmlui::get_context()) {
                 context->ProcessKeyDown(kMenuKey, 0);
