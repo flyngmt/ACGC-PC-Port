@@ -12,7 +12,6 @@ body {
     font-family: "ACGC Body";
     font-weight: normal;
     font-size: 18dp;
-    color: #655b47;
 }
 
 typing-status {
@@ -23,11 +22,11 @@ typing-status {
     left: 50%;
     padding: 0.5em 0.72em;
     gap: 0.5em;
-    color: #655b47;
-    background-color: rgba(255, 251, 231, 94%);
-    border: 4dp #f5e7bd;
+    color: var(--text);
+    background-color: var(--surface);
+    border: 4dp var(--surface-border);
     border-radius: 1.5em;
-    box-shadow: 0 0.42em 1.17em 0.08em rgba(54, 45, 29, 34%);
+    box-shadow: 0 0.42em 1.17em 0.08em var(--shadow-soft);
     filter: opacity(0);
     transform: translateY(-0.67em);
     transition: filter transform 0.18s cubic-in-out;
@@ -41,17 +40,17 @@ typing-status[open] {
 typing-status label {
     font-family: "ACGC Heading";
     font-weight: bold;
-    color: #655b47;
+    color: var(--text);
 }
 
 typing-status key {
     padding: 0.17em 0.5em;
     border-radius: 0.67em;
-    background-color: #ffe27a;
+    background-color: var(--highlight);
     font-family: "ACGC Heading";
     font-weight: bold;
     font-size: 0.83em;
-    color: #65543c;
+    color: var(--text-strong);
 }
 
 typing-status state {
@@ -59,17 +58,17 @@ typing-status state {
     padding: 0.17em 0.5em;
     border-radius: 0.67em;
     text-align: center;
-    color: #74684f;
-    background-color: #f8edcf;
+    color: var(--text-muted);
+    background-color: var(--surface-raised);
     font-weight: bold;
     transition: color background-color 0.14s linear-in-out;
 }
 
 typing-status[active] {
-    border-color: #89d2c2;
+    border-color: var(--positive-soft);
 }
 
 typing-status[active] state {
-    color: #fffdf3;
-    background-color: #198d79;
+    color: var(--text-on-accent);
+    background-color: var(--positive);
 }

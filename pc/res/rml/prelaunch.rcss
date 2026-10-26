@@ -10,7 +10,6 @@ body {
     font-family: "ACGC Body";
     font-weight: normal;
     font-size: 18dp;
-    color: #655b47;
     filter: opacity(0);
     transition: filter 0.35s linear-in-out;
     z-index: -1;
@@ -21,7 +20,7 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background-color: #f3e4b9;
+    background-color: var(--background);
 }
 
 body[open] {
@@ -83,8 +82,8 @@ hero img {
     font-family: "ACGC Heading";
     font-weight: bold;
     font-size: 19dp;
-    color: #655b47;
-    background-color: rgba(255, 255, 255, 62%);
+    color: var(--text);
+    background-color: var(--control-strong);
     border-radius: 27dp;
     transition: background-color color transform 0.1s linear-in-out;
     cursor: pointer;
@@ -93,13 +92,14 @@ hero img {
 
 #menu-list button:hover,
 #menu-list button:focus-visible {
-    color: #5f4e32;
-    background-color: #ffe27a;
+    color: var(--text-strong);
+    background-color: var(--highlight);
     transform: scale(1.04);
 }
 
 #menu-list button:active {
-    background-color: #ffc742;
+    color: var(--text-strong);
+    background-color: var(--pressed);
     transform: scale(0.98);
 }
 
@@ -113,7 +113,7 @@ version-info {
     gap: 4dp;
     min-height: 54dp;
     padding: 12dp 18dp;
-    background-color: rgba(255, 255, 255, 58%);
+    background-color: var(--control-strong);
     border-radius: 27dp;
     font-size: 16dp;
 }
@@ -146,7 +146,7 @@ version-info {
 }
 
 #disc-status[status=good] {
-    color: #198d79;
+    color: var(--positive);
 }
 
 #disc-status[status=good] icon {
@@ -154,7 +154,7 @@ version-info {
 }
 
 #disc-status[status=bad] {
-    color: #9a7350;
+    color: var(--status-bad);
 }
 
 #disc-status[status=bad] icon {
@@ -162,7 +162,7 @@ version-info {
 }
 
 #disc-status[status=verifying] {
-    color: #247c9a;
+    color: var(--status-info);
 }
 
 #disc-status[status=verifying] icon {
@@ -170,7 +170,7 @@ version-info {
 }
 
 #disc-status[status=mismatch] {
-    color: #d97821;
+    color: var(--warning);
 }
 
 #disc-status[status=mismatch] icon {
@@ -178,7 +178,7 @@ version-info {
 }
 
 .detail {
-    color: rgba(101, 91, 71, 70%);
+    color: var(--text-faint);
     font-size: 14dp;
 }
 
@@ -192,7 +192,7 @@ version-info {
     align-items: center;
     justify-content: flex-end;
     gap: 8dp;
-    color: rgba(101, 91, 71, 70%);
+    color: var(--text-faint);
     font-size: 14dp;
 }
 
@@ -209,8 +209,8 @@ version-info {
     display: none;
     margin: 0;
     padding: 2dp 8dp;
-    color: #fffdf3;
-    background-color: #e98424;
+    color: var(--text-on-accent);
+    background-color: var(--accent);
     border-radius: 12dp;
     font-family: "ACGC Body";
     font-weight: normal;
@@ -227,7 +227,7 @@ version-info {
 
 #update-download:hover,
 #update-download:focus-visible {
-    background-color: #f5a33b;
+    background-color: var(--accent-bright);
 }
 
 #update-download icon {

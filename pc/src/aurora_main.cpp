@@ -23,6 +23,7 @@
 #include "acgc/settings.hpp"
 #include "acgc/texture_replacements.hpp"
 #include "acgc/ui/prelaunch.hpp"
+#include "acgc/ui/theme.hpp"
 #include "acgc/ui/ui.hpp"
 #include "m_kankyo.h"
 #include "borealis/aurora_log.h"
@@ -537,7 +538,8 @@ bool run_prelaunch()
             continue;
         }
         update_render_size();
-        GXSetCopyClear({243, 228, 185, 255}, 0xFFFFFF);
+        const auto background = acgc::ui::theme::background();
+        GXSetCopyClear({background.red, background.green, background.blue, background.alpha}, 0xFFFFFF);
         acgc::ui::update();
         ac_debug_imgui_draw();
         aurora_end_frame();

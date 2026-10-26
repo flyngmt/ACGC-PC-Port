@@ -1,5 +1,12 @@
 window.town-select .modal-dialog {
+    display: block;
     min-width: 480dp;
+}
+
+window.town-select .modal-header,
+window.town-select .modal-body,
+window.town-select .town-list {
+    margin-bottom: 22dp;
 }
 
 .town-list {
@@ -7,7 +14,7 @@ window.town-select .modal-dialog {
     flex-direction: column;
     gap: 8dp;
     width: 100%;
-    max-height: 344dp;
+    max-height: 40vh;
     overflow: hidden auto;
 }
 
@@ -31,5 +38,9 @@ window.town-select .modal-dialog {
     white-space: nowrap;
     text-overflow: ellipsis;
     font-size: 15dp;
-    color: rgba(79, 73, 61, 64%);
+    opacity: 0.68;
+}
+
+.town-list button:disabled .town-file {
+    opacity: 0.24;
 }

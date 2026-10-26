@@ -21,7 +21,7 @@ tab-bar tab {
     padding: 0 20dp;
     line-height: 56dp;
     white-space: nowrap;
-    color: #74684f;
+    color: var(--text-muted);
     background-color: rgba(255, 226, 122, 0%);
     border-radius: 24dp;
     transition: background-color 0.1s linear-in-out, transform 0.08s linear-in-out;
@@ -34,18 +34,18 @@ tab-bar tab {
 
 tab-bar tab:focus-visible,
 tab-bar tab:hover {
-    color: #65543c;
-    background-color: #ffe27a;
+    color: var(--text-strong);
+    background-color: var(--highlight);
 }
 
 tab-bar tab:selected {
-    color: #fffdf3;
-    background-color: #e98424;
+    color: var(--text-on-accent);
+    background-color: var(--accent);
 }
 
 tab-bar tab:active {
-    color: #65543c;
-    background-color: #ffc742;
+    color: var(--text-strong);
+    background-color: var(--pressed);
     transform: scale(0.97);
 }
 
@@ -68,8 +68,8 @@ window > close {
     font-family: "Material Symbols Rounded";
     font-weight: normal;
     font-size: 24dp;
-    color: #fffdf3;
-    background-color: #e98424;
+    color: var(--text-on-accent);
+    background-color: var(--accent);
     border-radius: 24dp;
     decorator: text("&#xe5cd;" center center);
     transition: background-color 0.1s linear-in-out, transform 0.08s linear-in-out;
@@ -81,12 +81,12 @@ tab-bar[closable] close:hover,
 tab-bar[closable] close:focus-visible,
 window > close:hover,
 window > close:focus-visible {
-    background-color: #ffc742;
+    background-color: var(--pressed);
 }
 
 tab-bar[closable] close:active,
 window > close:active {
-    background-color: #ef942c;
+    background-color: var(--accent-bright);
     transform: scale(0.94);
 }
 

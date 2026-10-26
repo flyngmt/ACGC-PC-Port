@@ -11,7 +11,6 @@ body {
     font-weight: normal;
     font-style: normal;
     font-size: 16dp;
-    color: #655b47;
 }
 
 b {
@@ -28,10 +27,10 @@ window {
     max-height: 768dp;
     margin: auto;
     overflow: hidden;
-    background-color: #fffbe7;
-    border: 4dp #f5e7bd;
+    background-color: var(--surface);
+    border: 4dp var(--surface-border);
     border-radius: 36dp;
-    box-shadow: 0 14dp 36dp 2dp rgba(54, 45, 29, 42%);
+    box-shadow: 0 14dp 36dp 2dp var(--shadow);
     filter: opacity(0);
     transform: scale(0.96);
     transform-origin: center;
@@ -82,8 +81,8 @@ window tab-bar {
     flex: 0 0 72dp;
     height: 72dp;
     padding: 4dp 8dp;
-    background-color: rgba(248, 237, 207, 84%);
-    border-bottom: 2dp #ead9ad;
+    background-color: var(--surface-raised);
+    border-bottom: 2dp var(--divider);
 }
 
 window content {
@@ -108,8 +107,8 @@ window content pane {
 }
 
 window content pane:last-of-type {
-    background-color: rgba(255, 243, 210, 84%);
-    border-left: 2dp #efe1ba;
+    background-color: var(--surface-sunken);
+    border-left: 2dp var(--divider);
 }
 
 window content pane > * {
@@ -124,7 +123,7 @@ window content pane:last-of-type > div {
 .data-folder-current {
     display: block;
     font-size: 16dp;
-    color: rgba(101, 91, 71, 68%);
+    color: var(--text-faint);
 }
 
 window content pane > spacer {
@@ -147,21 +146,21 @@ scrollbarvertical sliderarrowinc {
 
 scrollbarvertical slidertrack {
     width: 10dp;
-    background-color: rgba(212, 185, 125, 25%);
+    background-color: var(--scroll-track);
     border-radius: 5dp;
 }
 
 scrollbarvertical sliderbar {
     width: 10dp;
     min-height: 28dp;
-    background-color: rgba(211, 139, 46, 55%);
+    background-color: var(--scroll-thumb);
     border-radius: 5dp;
     transition: background-color 0.14s linear-in-out;
 }
 
 scrollbarvertical sliderbar:hover,
 scrollbarvertical sliderbar:active {
-    background-color: #ef942c;
+    background-color: var(--accent-bright);
 }
 
 scrollbarhorizontal,
@@ -177,7 +176,7 @@ scrollbarhorizontal sliderbar {
     font-family: "ACGC Heading";
     font-weight: bold;
     font-size: 20dp;
-    color: #d97821;
+    color: var(--heading);
     letter-spacing: 0.5dp;
 }
 
@@ -191,8 +190,8 @@ button {
     font-family: "ACGC Body";
     font-size: 19dp;
     font-weight: normal;
-    color: #655b47;
-    background-color: rgba(255, 255, 255, 52%);
+    color: var(--text);
+    background-color: var(--control);
     border-radius: 22dp;
     transition: background-color 0.1s linear-in-out, transform 0.08s linear-in-out;
     cursor: pointer;
@@ -201,16 +200,18 @@ button {
 
 button:not(:disabled):hover,
 button:not(:disabled):focus-visible {
-    background-color: #ffe27a;
+    color: var(--text-strong);
+    background-color: var(--highlight);
 }
 
 button:not(:disabled):selected {
-    color: #fffdf3;
-    background-color: #e98424;
+    color: var(--text-on-accent);
+    background-color: var(--accent);
 }
 
 button:not(:disabled):active {
-    background-color: #ffc742;
+    color: var(--text-strong);
+    background-color: var(--pressed);
     transform: scale(0.98);
 }
 
@@ -228,8 +229,8 @@ select.dropdown {
     display: block;
     width: 100%;
     height: 48dp;
-    color: #655b47;
-    background-color: rgba(255, 255, 255, 52%);
+    color: var(--text);
+    background-color: var(--control);
     border-radius: 22dp;
     cursor: pointer;
     focus: auto;
@@ -254,7 +255,7 @@ select.dropdown selectvalue {
 select.dropdown selectarrow {
     width: 48dp;
     height: 48dp;
-    color: #74684f;
+    color: var(--text-muted);
     font-family: "Material Symbols Rounded";
     font-size: 24dp;
     decorator: text("&#xe5cf;" center center);
@@ -262,11 +263,19 @@ select.dropdown selectarrow {
 
 select.dropdown:hover,
 select.dropdown:focus-visible {
-    background-color: #ffe27a;
+    color: var(--text-strong);
+    background-color: var(--highlight);
 }
 
 select.dropdown:active {
-    background-color: #ffc742;
+    color: var(--text-strong);
+    background-color: var(--pressed);
+}
+
+select.dropdown:hover selectarrow,
+select.dropdown:focus-visible selectarrow,
+select.dropdown:active selectarrow {
+    color: var(--text-strong);
 }
 
 select.dropdown selectbox {
@@ -274,11 +283,11 @@ select.dropdown selectbox {
     max-height: 360dp;
     margin-top: 4dp;
     padding: 6dp;
-    color: #655b47;
-    background-color: #fffbe7;
-    border: 2dp #ead9ad;
+    color: var(--text);
+    background-color: var(--surface);
+    border: 2dp var(--divider);
     border-radius: 18dp;
-    box-shadow: 0 8dp 20dp 2dp rgba(54, 45, 29, 32%);
+    box-shadow: 0 8dp 20dp 2dp var(--shadow-soft);
 }
 
 select.dropdown selectbox option {
@@ -288,12 +297,13 @@ select.dropdown selectbox option {
 }
 
 select.dropdown selectbox option:hover {
-    background-color: #ffe27a;
+    color: var(--text-strong);
+    background-color: var(--highlight);
 }
 
 select.dropdown selectbox option:checked {
-    color: #fffdf3;
-    background-color: #e98424;
+    color: var(--text-on-accent);
+    background-color: var(--accent);
 }
 
 select-button {
@@ -302,8 +312,8 @@ select-button {
     gap: 10dp;
     min-height: 48dp;
     padding: 9dp 16dp;
-    color: #655b47;
-    background-color: rgba(255, 255, 255, 52%);
+    color: var(--text);
+    background-color: var(--control);
     border-radius: 22dp;
     transition: background-color 0.1s linear-in-out, transform 0.08s linear-in-out;
     cursor: pointer;
@@ -312,16 +322,26 @@ select-button {
 
 select-button:not(:disabled):hover,
 select-button:not(:disabled):focus-visible {
-    background-color: #ffe27a;
+    color: var(--text-strong);
+    background-color: var(--highlight);
 }
 
 select-button:not(:disabled):selected {
-    background-color: #ffd25a;
+    color: var(--text-strong);
+    background-color: var(--selected);
 }
 
 select-button:not(:disabled):active {
-    background-color: #ffc742;
+    color: var(--text-strong);
+    background-color: var(--pressed);
     transform: scale(0.99);
+}
+
+select-button:not(:disabled):hover value:not(.modified),
+select-button:not(:disabled):focus-visible value:not(.modified),
+select-button:not(:disabled):selected value:not(.modified),
+select-button:not(:disabled):active value:not(.modified) {
+    color: var(--text-strong);
 }
 
 select-button:disabled {
@@ -334,7 +354,6 @@ select-button key {
     font-family: "ACGC Heading";
     font-weight: bold;
     font-size: 17dp;
-    color: #655b47;
 }
 
 select-button value {
@@ -345,12 +364,12 @@ select-button value {
     text-overflow: ellipsis;
     text-align: right;
     font-size: 19dp;
-    color: #74684f;
+    color: var(--text-muted);
 }
 
 select-button value.modified {
     font-weight: bold;
-    color: #009c9b;
+    color: var(--modified);
 }
 
 select-button.adjustable value {
@@ -384,7 +403,6 @@ select-button input {
     text-align: right;
     font-family: "ACGC Body";
     font-size: 19dp;
-    color: #655b47;
     background-color: transparent;
 }
 
@@ -468,10 +486,10 @@ window.modal.danger {
 }
 
 window.modal.light {
-    color: #655b47;
-    background-color: rgba(255, 251, 231, 96%);
-    border-color: #f5e7bd;
-    box-shadow: 0 14dp 36dp 2dp rgba(54, 45, 29, 42%);
+    color: var(--text);
+    background-color: var(--surface);
+    border-color: var(--surface-border);
+    box-shadow: 0 14dp 36dp 2dp var(--shadow);
 }
 
 .modal-dialog {
@@ -522,15 +540,16 @@ window.modal.danger .modal-header icon {
 }
 
 window.modal.light .modal-title {
-    color: #655b47;
+    color: var(--text);
 }
 
 window.modal.light .modal-header icon {
-    color: #d97821;
-    background-color: rgba(243, 228, 185, 72%);
+    color: var(--heading);
+    background-color: var(--surface-raised);
 }
 
 window.modal.light .modal-header icon.warning {
+    color: var(--warning);
     decorator: text("&#xe002;" center 46%);
 }
 
@@ -546,7 +565,7 @@ window.modal.light .modal-header icon.warning {
 }
 
 window.modal.light .modal-body {
-    color: #655b47;
+    color: var(--text);
 }
 
 .modal-body span.tip {
@@ -580,4 +599,21 @@ window.modal button:not(:disabled):selected,
 window.modal button:not(:disabled):active {
     color: #4f493d;
     background-color: #ffc429;
+}
+
+window.modal.light button {
+    color: var(--modal-button-text);
+    background-color: var(--modal-button);
+}
+
+window.modal.light button:not(:disabled):hover,
+window.modal.light button:not(:disabled):focus-visible {
+    color: var(--modal-button-text-strong);
+    background-color: var(--modal-button-hover);
+}
+
+window.modal.light button:not(:disabled):selected,
+window.modal.light button:not(:disabled):active {
+    color: var(--modal-button-text-strong);
+    background-color: var(--modal-button-active);
 }
