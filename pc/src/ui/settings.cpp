@@ -69,10 +69,25 @@ void add_bool(Pane& left, Pane& right, ConfigVar<bool>& variable, Rml::String la
 
 constexpr std::array kUiScales = {50, 75, 0, 125, 150, 175, 200};
 
+constexpr std::array kThemes = {InterfaceTheme::Dynamic, InterfaceTheme::Day, InterfaceTheme::Night};
+
 Rml::String ui_scale_label(int percent)
 {
     return percent == 0 ? localization::get("settings.video.ui_scale.automatic")
                         : std::to_string(percent) + "%";
+}
+
+Rml::String theme_label(InterfaceTheme theme)
+{
+    switch (theme) {
+    case InterfaceTheme::Day:
+        return localization::get("settings.video.theme.day");
+    case InterfaceTheme::Night:
+        return localization::get("settings.video.theme.night");
+    case InterfaceTheme::Dynamic:
+        break;
+    }
+    return localization::get("settings.video.theme.dynamic");
 }
 
 Rml::String renderer_label(AuroraBackend renderer)
@@ -550,6 +565,25 @@ SettingsWindow::SettingsWindow()
                     }).on_pressed([&current, percent] {
                         current.video.uiScale.set_value(percent);
                         persist();
+                    });
+                }
+            });
+
+        left.register_control(
+            left.add_select_button({
+                .key = localization::get("settings.video.theme.label"),
+                .getValue = [&current] { return theme_label(current.video.theme.value()); },
+                .isModified = [&current] { return modified(current.video.theme); },
+            }),
+            right, [&current](Pane& pane) {
+                pane.add_text(localization::get("settings.video.theme.help"));
+                for (const InterfaceTheme theme : kThemes) {
+                    pane.add_button(ControlledButton::Props{
+                        .text = theme_label(theme),
+                        .isSelected = [&current, theme] { return current.video.theme.value() == theme; },
+                    }).on_pressed([&current, theme] {
+                        current.video.theme.set_value(theme);
+                        save_settings();
                     });
                 }
             });

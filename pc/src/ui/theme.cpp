@@ -1,5 +1,6 @@
 #include "acgc/ui/theme.hpp"
 
+#include "acgc/settings.hpp"
 #include "acgc/ui/theme_mirror.hpp"
 #include "acgc/ui/ui.hpp"
 #include "pc_platform.h"
@@ -27,7 +28,7 @@ struct Token {
 	Rml::Colourb night;
 };
 
-constexpr int kNightStartMinutes = 21 * 60;
+constexpr int kNightStartMinutes = 20 * 60;
 constexpr int kDayStartMinutes   = 6 * 60;
 constexpr int kGraceMinutes      = 5;
 constexpr Uint64 kStallMs        = 250;
@@ -262,9 +263,11 @@ void settle(bool night)
 
 void advance()
 {
-	const int minutes = pc_clock_minutes();
-	const bool night  = night_at(minutes) != sDebugInverted;
-	const bool grace  = sDebugArmed || in_grace(minutes);
+	const InterfaceTheme theme = settings().video.theme.value();
+	const bool dynamic         = theme == InterfaceTheme::Dynamic;
+	const int minutes          = dynamic ? pc_clock_minutes() : 0;
+	const bool night           = (dynamic ? night_at(minutes) : theme == InterfaceTheme::Night) != sDebugInverted;
+	const bool grace           = sDebugArmed || (dynamic && in_grace(minutes));
 	if (!sStarted) {
 		sStarted = true;
 		settle(grace ? !night : night);
