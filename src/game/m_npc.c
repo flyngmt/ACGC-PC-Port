@@ -3657,6 +3657,42 @@ extern void mNpc_GetRemoveAnimal(Animal_c* transferring_animal, int moving_out) 
     }
 }
 
+#ifdef TARGET_PC
+extern void mNpc_CopyRemoveAnimal(Animal_c* transferring_animal) {
+    u8 remove_idx = Save_Get(remove_animal_idx);
+
+    if (mLd_PlayerManKindCheck() == FALSE && remove_idx < ANIMAL_NUM_MAX &&
+        mNpc_CheckFreeAnimalInfo(Save_GetPointer(animals[remove_idx])) == FALSE) {
+        mNpc_CopyAnimalInfo(transferring_animal, Save_GetPointer(animals[remove_idx]));
+        transferring_animal->removing = FALSE;
+    }
+}
+
+extern void mNpc_FinishRemoveAnimal(Animal_c* transferring_animal) {
+    Animal_c* animal;
+    int idx;
+
+    if (mLd_PlayerManKindCheck() == FALSE && mNpc_CheckFreeAnimalInfo(transferring_animal) == FALSE) {
+        idx = mNpc_SearchAnimalinfo(Save_Get(animals), transferring_animal->id.npc_id, ANIMAL_NUM_MAX);
+
+        if (idx != -1) {
+            if (transferring_animal->removing == TRUE) {
+                animal = Save_GetPointer(animals[idx]);
+                mNpc_DestroyHouse(&animal->home_info);
+                mNpc_ClearAnimalInfo(animal);
+                mNpc_SubNowNpcMax(Save_GetPointer(now_npc_max));
+
+                if (Save_Get(remove_animal_idx) == idx) {
+                    Save_Set(remove_animal_idx, 0xFF);
+                }
+            } else {
+                mNpc_ClearAnimalInfo(transferring_animal);
+            }
+        }
+    }
+}
+#endif
+
 static int mNpc_CheckBuildHouse(int bx, int bz, u8 ut_x, u8 ut_z) {
     int res = FALSE;
 

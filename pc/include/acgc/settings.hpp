@@ -55,6 +55,7 @@ struct UserSettings {
         ConfigVar<bool> borderlessAcres;
         ConfigVar<bool> pillarboxNes;
         ConfigVar<bool> fastText;
+        ConfigVar<bool> reduceTravelMoveOut;
 
         Enhancements();
     } enhancements;

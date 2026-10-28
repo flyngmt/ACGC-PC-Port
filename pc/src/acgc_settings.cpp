@@ -166,6 +166,7 @@ UserSettings::Enhancements::Enhancements()
     , borderlessAcres("gameplay.borderlessAcres", true)
     , pillarboxNes("gameplay.pillarboxNes", true)
     , fastText("gameplay.fastText", true)
+    , reduceTravelMoveOut("gameplay.reduceTravelMoveOut", false)
 {
 }
 
@@ -224,6 +225,7 @@ void register_settings()
     config::register_var(current.enhancements.borderlessAcres);
     config::register_var(current.enhancements.pillarboxNes);
     config::register_var(current.enhancements.fastText);
+    config::register_var(current.enhancements.reduceTravelMoveOut);
     config::register_var(current.audio.masterVolume);
     config::register_var(current.input.stickDeadzone);
     config::register_var(current.input.cstickDeadzone);
@@ -278,6 +280,7 @@ void apply_settings_bridge(bool refreshGameplay)
     g_pc_settings.borderless_acres = current.enhancements.borderlessAcres.value() ? 1 : 0;
     g_pc_settings.nes_aspect = current.enhancements.pillarboxNes.value() ? 1 : 0;
     g_pc_settings.fast_text = current.enhancements.fastText.value() ? 1 : 0;
+    g_pc_settings.reduce_travel_move_out = current.enhancements.reduceTravelMoveOut.value() ? 1 : 0;
     g_pc_settings.master_volume = current.audio.masterVolume.value();
     g_pc_settings.stick_deadzone = current.input.stickDeadzone.value();
     g_pc_settings.cstick_deadzone = current.input.cstickDeadzone.value();

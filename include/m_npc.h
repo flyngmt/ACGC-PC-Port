@@ -413,6 +413,10 @@ extern void mNpc_FirstClearGoodbyMail();
 extern void mNpc_SendRegisteredGoodbyMail();
 extern void mNpc_GetRemoveAnimal(Animal_c* transferring_animal, int moving_out);
 extern void mNpc_SetReturnAnimal(Animal_c* return_animal);
+#ifdef TARGET_PC
+extern void mNpc_CopyRemoveAnimal(Animal_c* transferring_animal);
+extern void mNpc_FinishRemoveAnimal(Animal_c* transferring_animal);
+#endif
 extern void mNpc_AddActor_inBlock(mFM_move_actor_c* move_actor_list, u8 bx, u8 bz);
 extern void mNpc_LoadNpcNameString(u8* dst, u8 name_id);
 extern void mNpc_GetNpcWorldNameTableNo(u8* dst, mActor_name_t npc_id);

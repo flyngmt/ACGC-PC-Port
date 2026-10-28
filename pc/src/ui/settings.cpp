@@ -710,6 +710,10 @@ SettingsWindow::SettingsWindow()
             }),
             right, [](Pane& pane) { pane.add_text(localization::get("settings.gameplay.single_player_shop_help")); });
 
+        add_bool(left, right, current.enhancements.reduceTravelMoveOut,
+                 localization::get("settings.gameplay.reduce_travel_move_out"),
+                 localization::get("settings.gameplay.reduce_travel_move_out_help"));
+
         add_bool(left, right, current.enhancements.borderlessAcres,
                  localization::get("settings.gameplay.borderless_acres"),
                  localization::get("settings.gameplay.borderless_acres_help"),

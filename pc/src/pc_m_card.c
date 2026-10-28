@@ -682,10 +682,16 @@ static int pc_start_resident(void) {
     return pc_start_persist();
 }
 
-static int pc_start_return_home(int player_no) {
+static void pc_start_load_passport(int player_no) {
     Private_c* foreigner = mPr_GetForeignerP();
     mPr_CopyPrivateInfo(foreigner, &l_mcd_foreigner_file.file.priv);
+    memcpy(mNpc_GetInAnimalP(), &l_mcd_foreigner_file.file.remove_animal, sizeof(Animal_c));
     mPr_LoadPak_and_SetPrivateInfo2(foreigner, (u8)player_no);
+    mFM_SetBlockKindLoadCombi();
+    mNpc_FinishRemoveAnimal(mNpc_GetInAnimalP());
+}
+
+static int pc_start_return_home(void) {
     mHm_SetNowHome();
     if (Common_Get(player_no) != mPr_FOREIGNER && Now_Private != NULL) {
         pc_set_reset_code(Now_Private);
@@ -720,6 +726,11 @@ int mCD_InitGameStart_bg(int player_no, int card_private_idx, int start_cond, s3
         if (start_cond != mCD_START_COND_0 && start_cond != mCD_START_COND_2) return mCD_TRANS_ERR_IOERROR;
         mode = mSDI_INIT_MODE_NEW;
     }
+    if (start_cond == mCD_START_COND_INCOMING_FOREIGNER) {
+        memcpy(mNpc_GetInAnimalP(), &l_mcd_foreigner_file.file.remove_animal, sizeof(Animal_c));
+    } else if (start_cond == mCD_START_COND_OUTGOING_FOREIGNER) {
+        pc_start_load_passport(player_no);
+    }
     if (!mSDI_StartDataInit(gamePT, player_no, mode)) return mCD_TRANS_ERR_IOERROR;
     l_mcd_keep_startCond = start_cond;
     pc_save_ready = TRUE;
@@ -728,7 +739,7 @@ int mCD_InitGameStart_bg(int player_no, int card_private_idx, int start_cond, s3
         case mCD_START_COND_1:
             return pc_start_resident();
         case mCD_START_COND_OUTGOING_FOREIGNER:
-            return pc_start_return_home(player_no);
+            return pc_start_return_home();
         case mCD_START_COND_INCOMING_FOREIGNER:
             Common_Set(now_private, &l_mcd_foreigner_file.file.priv);
             Common_Set(player_no, mPr_FOREIGNER);
@@ -827,7 +838,9 @@ int mCD_SaveStation_NextLand_bg(s32* chan) {
         {
             Private_c* current_priv = Now_Private;
             if (current_priv) {
+                mNpc_GetRemoveAnimal(mNpc_GetInAnimalP(), TRUE);
                 mPr_CopyPrivateInfo(&l_mcd_foreigner_file.file.priv, current_priv);
+                memcpy(&l_mcd_foreigner_file.file.remove_animal, mNpc_GetInAnimalP(), sizeof(Animal_c));
                 l_mcd_foreigner_file.file.checksum = 0;
                 l_mcd_foreigner_file.file.checksum =
                     mFRm_GetFlatCheckSum((u16*)&l_mcd_foreigner_file.file,
@@ -876,7 +889,11 @@ int mCD_SaveStation_NextLand_bg(s32* chan) {
         if (current_priv) {
             mPr_CopyPrivateInfo(&l_mcd_foreigner_file.file.priv, current_priv);
         }
-        memset(&l_mcd_foreigner_file.file.remove_animal, 0, sizeof(Animal_c));
+        mNpc_ClearInAnimal();
+        if (!g_pc_settings.reduce_travel_move_out || RANDOM(10) == 0) {
+            mNpc_CopyRemoveAnimal(mNpc_GetInAnimalP());
+        }
+        memcpy(&l_mcd_foreigner_file.file.remove_animal, mNpc_GetInAnimalP(), sizeof(Animal_c));
         l_mcd_foreigner_file.file.copy_protect = (u16)Common_Get(copy_protect);
         l_mcd_foreigner_file.file.checksum = 0;
         l_mcd_foreigner_file.file.checksum =
@@ -896,6 +913,7 @@ int mCD_SaveStation_NextLand_bg(s32* chan) {
             Now_Private->exists = l_mcd_foreigner_file.file.priv.exists;
             Now_Private->reset_code = l_mcd_foreigner_file.file.priv.reset_code;
         }
+        mNpc_ClearInAnimal();
         l_keepSave_set = FALSE;
         OSReport("[PC] SaveStation_NextLand: failed to save home town\n");
         return mCD_TRANS_ERR_IOERROR;
