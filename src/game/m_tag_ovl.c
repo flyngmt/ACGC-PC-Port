@@ -8201,7 +8201,8 @@ static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     /* Placement uses the selected slot when the hand animation finishes. */
     if (hand_ovl->info.wait_timer > 0 || hand_ovl->info.act == mHD_ACTION_CLOSE ||
         hand_ovl->info.act == mHD_ACTION_CLOSE2 || hand_ovl->info.act == mHD_ACTION_OPEN ||
-        submenu->overlay->segment.player_anime_timer > 0) {
+        submenu->overlay->segment.player_anime_timer > 0 ||
+        (submenu->overlay->inventory_ovl != NULL && submenu->overlay->inventory_ovl->remove_timer > 0)) {
         return;
     }
 
