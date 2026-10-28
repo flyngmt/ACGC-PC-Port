@@ -329,11 +329,6 @@ extern lbRTC_day_t lbRTC_GetDaysByMonth(lbRTC_year_t year, lbRTC_month_t month) 
   return days_month[year_type][month];
 }
 
-typedef union {
-  int raw;
-  lbRTC_ymd_c ymd;
-} ymd_u;
-
 /**
  * @brief Compare two dates to determine if they are equal, lesser, or greater.
  *
@@ -353,26 +348,16 @@ extern int lbRTC_IsEqualDate(
   lbRTC_year_t y0, lbRTC_month_t m0, lbRTC_day_t d0,
   lbRTC_year_t y1, lbRTC_month_t m1, lbRTC_day_t d1
 ) {
-  ymd_u ymd0, ymd1;
-  int res;
-
-  ymd0.ymd.year = y0;
-  ymd0.ymd.month = m0;
-  ymd0.ymd.day = d0;
-    
-  ymd1.ymd.year = y1;
-  ymd1.ymd.month = m1;
-  ymd1.ymd.day = d1;
-
-  res = ymd0.raw - ymd1.raw;
-  if (res == 0) {
-    return lbRTC_EQUAL;
+  if (y0 != y1) {
+    return y0 < y1 ? lbRTC_LESS : lbRTC_OVER;
   }
-
-  if (res < 0) {
-    return lbRTC_LESS;
+  if (m0 != m1) {
+    return m0 < m1 ? lbRTC_LESS : lbRTC_OVER;
   }
-  return lbRTC_OVER;
+  if (d0 != d1) {
+    return d0 < d1 ? lbRTC_LESS : lbRTC_OVER;
+  }
+  return lbRTC_EQUAL;
 }
 
 /**
