@@ -519,8 +519,15 @@ void adjustOSArena() {
   OSReport("ARENA %08x-%08x" VT_RST "\n", arenalo, arenahi);
 
 #ifdef TARGET_PC
-  /* Use pointer arithmetic instead of u32 casts (which truncate on 64-bit) */
-  bzero(arenalo, (size_t)((u8*)arenahi - (u8*)arenalo));
+  {
+    static BOOL arena_is_fresh_host_allocation = TRUE;
+
+    /* Use pointer arithmetic instead of u32 casts (which truncate on 64-bit) */
+    if (!arena_is_fresh_host_allocation) {
+      bzero(arenalo, (size_t)((u8*)arenahi - (u8*)arenalo));
+    }
+    arena_is_fresh_host_allocation = FALSE;
+  }
 #else
   bzero(arenalo, ((u32)arenahi - (u32)arenalo));
 #endif
