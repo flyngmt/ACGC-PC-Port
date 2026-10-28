@@ -190,7 +190,7 @@ void aWeatherRain_draw(aWeather_Priv* priv, GAME* game) {
     if (priv->work[0] == 1) {
         graph = play->game.graph;
 
-        disp = disp >> 1;
+        disp = CLAMP(disp >> 1, 0, 3);
 
         Matrix_translate(pos.x, pos.y, pos.z, MTX_LOAD);
         Matrix_mult(&play->billboard_matrix, MTX_MULT);
