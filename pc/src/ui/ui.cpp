@@ -72,9 +72,10 @@ void restyle_scope(DocumentScope scope)
 bool load_ui_fonts()
 {
     const std::string bodyPath = borealis::io::fs_path_to_string(
-        resource_path("fonts/FOT-SeuratPro-B.otf"));
-    const std::string headingPath = borealis::io::fs_path_to_string(
-        resource_path("fonts/FOT-RodinBokutohPro-EB.otf"));
+        resource_path("fonts/OpenSans-SemiBold.ttf"));
+    const std::string bodyBoldPath = borealis::io::fs_path_to_string(
+        resource_path("fonts/OpenSans-Bold.ttf"));
+    const std::string headingPath = bodyBoldPath;
     const std::string symbolsPath = borealis::io::fs_path_to_string(
         resource_path("fonts/MaterialSymbolsRounded-Regular.ttf"));
 
@@ -82,7 +83,7 @@ bool load_ui_fonts()
         bodyPath, "ACGC Body", Rml::Style::FontStyle::Normal,
         Rml::Style::FontWeight::Normal, true);
     const bool bodyBoldLoaded = Rml::LoadFontFace(
-        bodyPath, "ACGC Body", Rml::Style::FontStyle::Normal,
+        bodyBoldPath, "ACGC Body", Rml::Style::FontStyle::Normal,
         Rml::Style::FontWeight::Bold, false);
     const bool headingLoaded = Rml::LoadFontFace(
         headingPath, "ACGC Heading", Rml::Style::FontStyle::Normal,
