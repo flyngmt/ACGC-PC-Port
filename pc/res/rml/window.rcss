@@ -568,6 +568,21 @@ window.modal.light .modal-body {
     color: var(--text);
 }
 
+.modal-url {
+    display: block;
+    width: 100%;
+    margin-top: 6dp;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 17dp;
+    color: rgba(226, 244, 249, 72%);
+}
+
+window.modal.light .modal-url {
+    color: var(--text-muted);
+}
+
 .modal-body span.tip {
     font-size: 15dp;
     color: rgba(226, 244, 249, 72%);

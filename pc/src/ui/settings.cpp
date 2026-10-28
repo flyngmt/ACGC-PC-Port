@@ -16,6 +16,7 @@
 
 #include <SDL3/SDL_dialog.h>
 #include <SDL3/SDL_init.h>
+#include <SDL3/SDL_misc.h>
 #include <SDL3/SDL_video.h>
 
 #include <algorithm>
@@ -350,6 +351,36 @@ void show_data_folder_error_modal(std::string_view message)
     }
 }
 
+constexpr const char* kTexturePackUrl = "https://forums.dolphin-emu.org/Thread-animal-crossing-hd-texture-pack-version-25-october-11th-2026";
+
+void show_open_url_modal(const char* url)
+{
+    auto dismiss = [](Modal& modal) { modal.pop(); };
+    push_document(std::make_unique<Modal>(Modal::Props{
+        .title = escape(localization::get("settings.open_url.title")),
+        .bodyRml = escape(localization::get("settings.open_url.body")) + "<div class=\"modal-url\">" +
+                   escape(url) + "</div>",
+        .actions = {
+            ModalAction{
+                .label = localization::get("common.cancel"),
+                .onPressed = dismiss,
+            },
+            ModalAction{
+                .label = localization::get("settings.open_url.open"),
+                .onPressed = [url](Modal& modal) {
+                    modal.pop();
+                    SDL_OpenURL(url);
+                },
+            },
+        },
+        .onDismiss = dismiss,
+        .variant = "light",
+    }));
+    if (auto* doc = top_document()) {
+        doc->focus();
+    }
+}
+
 void apply_data_folder_selection(void* userdata)
 {
     std::unique_ptr<std::string> selection(static_cast<std::string*>(userdata));
@@ -622,6 +653,9 @@ SettingsWindow::SettingsWindow()
                 pane.add_text(localization::format(
                     "settings.video.texture_pack_help",
                     borealis::io::fs_path_to_string(texture_replacements::directory())));
+                pane.add_button(localization::get("settings.video.texture_pack_get")).on_pressed([] {
+                    show_open_url_modal(kTexturePackUrl);
+                });
             });
     });
 
