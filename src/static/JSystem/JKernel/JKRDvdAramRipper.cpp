@@ -264,8 +264,7 @@ int decompSZS_subroutine(u8* src, u32 dmaAddr) {
     if (src[0] != 'Y' || src[1] != 'a' || src[2] != 'z' || src[3] != '0')
         return -1;
 
-    SYaz0Header* header = (SYaz0Header*)src;
-    endPtr = dmaAddr + (header->length - fileOffset);
+    endPtr = dmaAddr + (JKRDecompExpandSize(src) - fileOffset);
     if (endPtr > dmaAddr + maxDest)
         endPtr = dmaAddr + maxDest;
 

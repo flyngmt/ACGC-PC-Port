@@ -28,10 +28,18 @@ typedef struct s_xz_s {
 } s_xz;
 
 typedef struct {
+#ifdef TARGET_PC
+  /* rgba8888's numeric value is 0xRRGGBBAA on either host. */
+  u32 a:8;
+  u32 b:8;
+  u32 g:8;
+  u32 r:8;
+#else
   u32 r:8;
   u32 g:8;
   u32 b:8;
   u32 a:8;
+#endif
 } rgba8888_t;
 
 typedef union {

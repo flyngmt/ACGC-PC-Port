@@ -257,8 +257,7 @@ static int decompSZS_subroutine(u8* src, u8* dest) {
         return -1;
     }
 
-    SZPHeader* header = (SZPHeader*)src;
-    endPtr = dest + (header->decompSize - fileOffset);
+    endPtr = dest + (JKRDecompExpandSize(src) - fileOffset);
     if (endPtr > dest + maxDest) {
         endPtr = dest + maxDest;
     }

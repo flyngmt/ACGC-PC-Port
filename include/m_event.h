@@ -629,8 +629,13 @@ typedef struct event_common_save_data {
     u16 bridge_day; // last date suspension bridge event was active
     union {
         struct {
+#ifdef TARGET_PC
+            u8 locations_used : 7;
+            u8 used_all_locations : 1;
+#else
             u8 used_all_locations : 1; // set to true when tortimer has cycled through all possible bridge locations?
             u8 locations_used : 7;     // index of river acre w/ possible bridge location currently at
+#endif
         };
 
         u8 raw;

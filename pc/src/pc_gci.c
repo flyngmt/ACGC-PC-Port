@@ -221,7 +221,7 @@ int pc_gci_write(const char* gci_path, const Save_t* save, const mCD_keep_mail_c
 
     others_ptr = file_data + GCI_OTHERS_OFFSET;
     {
-        const char* title = "DobutsunomoriP (AC PC Port)";
+        const char* title = "DobutsunomoriP (AC PC Port v1.0.0)";
         u8* comment = others_ptr;
         memset(comment, 0, CARD_COMMENT_SIZE);
         memcpy(comment, title, strlen(title));
@@ -435,7 +435,12 @@ static pc_save_result pc_gci_read_image(const char* path, pc_gci_image* image) {
         free(data);
         return PC_SAVE_INVALID;
     }
-    pc_save_bswap(save, PC_BSWAP_FROM_BE);
+    if (memcmp(data + GCI_OTHERS_OFFSET, "DobutsunomoriP (AC PC Port)",
+               sizeof("DobutsunomoriP (AC PC Port)")) == 0) {
+        pc_save_bswap_from_legacy_pc(save);
+    } else {
+        pc_save_bswap(save, PC_BSWAP_FROM_BE);
+    }
     if (save->save_check.version == 5) {
         save->saved_auto_nwrite_time = save->save_check.time;
     }

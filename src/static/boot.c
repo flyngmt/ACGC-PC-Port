@@ -38,25 +38,6 @@ extern Gfx cal_win_nen_before[5];
 extern Gfx des_win_before[4];
 extern Gfx des_win_suuji_before[5];
 
-/* u8[] arrays used as TLUT palettes via gsDPLoadTLUT_Dolphin.
-   These contain raw BE byte pairs from ROM .inc files. On LE, pairs must
-   be swapped so the texture decoder reads correct u16 RGB5A3 values.
-   (u16[] palette arrays don't need this — C literals are native-endian.) */
-extern u8 tim_win_newtokei_tex[];
-extern u8 utPal_mike[];
-extern u8 utPal_mouth[];
-extern u8 int_iid_funediary[];
-extern u8 int_iid_mdiary[];
-extern u8 int_iid_newdiary[];
-extern u8 int_iid_olddiary[];
-extern u8 int_ike_jny_syon01_tex[];
-extern u8 int_ike_jny_tower01[];
-extern u8 int_noga_sprinkler[];
-extern u8 int_yos_kflag_pat[];
-extern u8 obj_item_omikuji[];
-extern u8 rom_museum4_step_pal2[];
-extern u8 int_iid_diary[];  /* static in original, non-static on PC */
-
 static void pc_convert_raw_display_lists(void) {
     struct { Gfx* data; int count; } lists[] = {
         { cal_win_nen_before, ARRAY_COUNT(cal_win_nen_before) },
@@ -74,31 +55,6 @@ static void pc_convert_raw_display_lists(void) {
             command.words.w1 = pc_bswap32(command.words.w1);
             lists[i].data[j] = command;
         }
-    }
-}
-
-/* Swap byte pairs in u8[] arrays that are used as TLUT palettes.
-   All are 16 entries (32 bytes). int_iid_diary is static, handled in its file. */
-static void pc_bswap_u8_tlut_palettes(void) {
-    u8* palettes[] = {
-        tim_win_newtokei_tex,
-        utPal_mike,
-        utPal_mouth,
-        int_iid_funediary,
-        int_iid_mdiary,
-        int_iid_newdiary,
-        int_iid_olddiary,
-        int_ike_jny_syon01_tex,
-        int_ike_jny_tower01,
-        int_noga_sprinkler,
-        int_yos_kflag_pat,
-        obj_item_omikuji,
-        rom_museum4_step_pal2,
-        int_iid_diary,
-    };
-    int i;
-    for (i = 0; i < 14; i++) {
-        pc_bswap16_array((u16*)palettes[i], 16);
     }
 }
 
@@ -796,7 +752,6 @@ int main(int argc, const char** argv) {
 #ifdef TARGET_PC
   pc_convert_raw_display_lists();
   mFM_InitActableEndian();
-  pc_bswap_u8_tlut_palettes();
   pc_bswap_house_pos_list();
   OSReport("[PC] boot: entering HotStartEntry loop (entry=%p)...\n", (void*)HotStartEntry);
 #endif
