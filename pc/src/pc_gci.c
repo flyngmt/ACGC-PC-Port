@@ -32,7 +32,7 @@ static const char* const pc_gci_rotation_suffixes[] = {
 #define GCI_SECTOR_SIZE      mCD_MEMCARD_SECTORSIZE
 
 _Static_assert(sizeof(mNW_original_design_c) == 0x220, "mNW_original_design_c disk layout changed");
-_Static_assert(offsetof(mQst_base_c, time_limit) == 0x04, "mQst_base_c.time_limit disk offset changed");
+_Static_assert(offsetof(mQst_base_c, time_limit) == 0x02, "mQst_base_c.time_limit disk offset changed");
 _Static_assert(sizeof(mQst_base_c) == 0x0C, "mQst_base_c disk layout changed");
 _Static_assert(sizeof(mQst_delivery_c) == 0x28, "mQst_delivery_c disk layout changed");
 _Static_assert(sizeof(mQst_errand_c) == 0x58, "mQst_errand_c disk layout changed");
@@ -435,6 +435,7 @@ static pc_save_result pc_gci_read_image(const char* path, pc_gci_image* image) {
         free(data);
         return PC_SAVE_INVALID;
     }
+    pc_save_relocate_quest_time_limits(save);
     if (memcmp(data + GCI_OTHERS_OFFSET, "DobutsunomoriP (AC PC Port)",
                sizeof("DobutsunomoriP (AC PC Port)")) == 0) {
         pc_save_bswap_from_legacy_pc(save);

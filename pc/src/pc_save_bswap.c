@@ -220,10 +220,10 @@ static void swap_Mail_array(Mail_c* mail, u32 count) {
     for (i = 0; i < count; i++) swap_Mail(&mail[i]);
 }
 
-/* mQst_base_c two-byte bitfield within a four-byte storage unit: direction-aware repack.
+/* mQst_base_c two-byte bitfield: direction-aware repack.
  * BE: quest_type[15:14], quest_kind[13:8], time_limit_enabled[7], progress[6:3], give_reward[2], unused[1:0]
  * LE: quest_type[1:0], quest_kind[7:2], time_limit_enabled[8], progress[12:9], give_reward[13], unused[15:14].
- * Bytes 2-3 are padding and must be left untouched for an exact round trip. */
+ * The deadline starts at byte 2; bytes 10-11 are trailing padding. */
 static void swap_mQst_base(mQst_base_c* qb, pc_bswap_dir_t dir) {
     u8* b = (u8*)qb;
     u32 raw;
@@ -1030,9 +1030,49 @@ void pc_save_bswap(Save_t* save, pc_bswap_dir_t dir) {
 
 /* Only files carrying the old PC title use the historical layout. Decode it
  * exactly so upgrading preserves the existing town's native gameplay state.
- * Subsequent writes always use the corrected GameCube layout and v2 title. */
+ * Subsequent writes always use the corrected GameCube layout. */
 void pc_save_bswap_from_legacy_pc(Save_t* save) {
     pc_save_bswap_impl(save, PC_BSWAP_FROM_BE, TRUE);
+}
+
+static int be_time_state(const u8* t) {
+    u32 year = ((u32)t[6] << 8) | t[7];
+    int i;
+
+    for (i = 0; i < 8 && t[i] == 0; i++) {}
+    if (i == 8) return 0;
+    /* Quest day limits can extend past December of the last playable year. */
+    if (t[0] < 60 && t[1] < 60 && t[2] < 24 && t[3] >= 1 && t[3] <= 31 && t[4] < 7 &&
+        t[5] >= 1 && t[5] <= 12 && year >= lbRTC_YEAR_MIN && year <= lbRTC_YEAR_MAX + 1) {
+        return 1;
+    }
+    return -1;
+}
+
+static void relocate_quest_time_limit(mQst_base_c* qb) {
+    u8* b = (u8*)qb;
+    if (be_time_state(b + 2) < 0 && be_time_state(b + 4) > 0) {
+        memmove(b + 2, b + 4, sizeof(lbRTC_time_c));
+        b[10] = 0;
+        b[11] = 0;
+    }
+}
+
+void pc_save_relocate_quest_time_limits(Save_t* save) {
+    int p, i;
+
+    for (p = 0; p < PLAYER_NUM; p++) {
+        for (i = 0; i < mPr_DELIVERY_QUEST_NUM; i++) {
+            relocate_quest_time_limit(&save->private_data[p].deliveries[i].base);
+        }
+        for (i = 0; i < mPr_ERRAND_QUEST_NUM; i++) {
+            relocate_quest_time_limit(&save->private_data[p].errands[i].base);
+        }
+    }
+    for (i = 0; i < ANIMAL_NUM_MAX; i++) {
+        relocate_quest_time_limit(&save->animals[i].contest_quest.base);
+    }
+    relocate_quest_time_limit(&save->island.animal.contest_quest.base);
 }
 
 /* ARAM block swaps for the "Others" section of the GCI file */
