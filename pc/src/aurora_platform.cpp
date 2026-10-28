@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -170,6 +171,60 @@ void* run_void_thread(void* raw_start) {
     std::unique_ptr<VoidThreadStart> start(static_cast<VoidThreadStart*>(raw_start));
     start->entry(start->argument);
     return nullptr;
+}
+
+struct PendingAlarm {
+    OSAlarm* alarm;
+    OSAlarmHandler handler;
+    AlarmData* data;
+    uint64_t generation;
+};
+
+struct AlarmScheduler {
+    std::mutex mutex;
+    std::condition_variable changed;
+    std::multimap<std::chrono::steady_clock::time_point, PendingAlarm> pending;
+};
+
+void run_alarm_scheduler(AlarmScheduler* scheduler) {
+    std::unique_lock lock(scheduler->mutex);
+    for (;;) {
+        if (scheduler->pending.empty()) {
+            scheduler->changed.wait(lock);
+            continue;
+        }
+        const auto next = scheduler->pending.begin();
+        if (std::chrono::steady_clock::now() < next->first) {
+            scheduler->changed.wait_until(lock, next->first);
+            continue;
+        }
+        const PendingAlarm due = next->second;
+        scheduler->pending.erase(next);
+        lock.unlock();
+        if (due.data->generation.load() == due.generation && due.handler != nullptr) {
+            due.handler(due.alarm, nullptr);
+        }
+        lock.lock();
+    }
+}
+
+AlarmScheduler& alarm_scheduler() {
+    static auto* scheduler = [] {
+        auto* created = new AlarmScheduler;
+        std::thread(run_alarm_scheduler, created).detach();
+        return created;
+    }();
+    return *scheduler;
+}
+
+void remove_pending_alarm(AlarmScheduler& scheduler, OSAlarm* alarm) {
+    for (auto it = scheduler.pending.begin(); it != scheduler.pending.end();) {
+        if (it->second.alarm == alarm) {
+            it = scheduler.pending.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }
 
 } // namespace
@@ -464,18 +519,21 @@ void OSSetAlarm(OSAlarm* alarm, OSTime ticks, OSAlarmHandler handler) {
     const uint64_t generation = ++data.generation;
     const auto duration = std::chrono::nanoseconds(
         static_cast<int64_t>((static_cast<long double>(ticks) * 1'000'000'000.0L) / OS_TIMER_CLOCK));
-    std::thread([alarm, handler, &data, generation, duration] {
-        if (duration.count() > 0) {
-            std::this_thread::sleep_for(duration);
-        }
-        if (data.generation.load() == generation && handler != nullptr) {
-            handler(alarm, nullptr);
-        }
-    }).detach();
+    const auto deadline = std::chrono::steady_clock::now() + duration;
+    AlarmScheduler& scheduler = alarm_scheduler();
+    {
+        std::lock_guard lock(scheduler.mutex);
+        remove_pending_alarm(scheduler, alarm);
+        scheduler.pending.emplace(deadline, PendingAlarm{ alarm, handler, &data, generation });
+    }
+    scheduler.changed.notify_one();
 }
 
 void OSCancelAlarm(OSAlarm* alarm) {
     ++alarm_data(alarm).generation;
+    AlarmScheduler& scheduler = alarm_scheduler();
+    std::lock_guard lock(scheduler.mutex);
+    remove_pending_alarm(scheduler, alarm);
 }
 
 void DCFlushRange(void*, u32) {

@@ -36,11 +36,15 @@ void waitForTick(u32, u16);
 void diagnoseGpHang();
 
 inline void JFWDrawDoneAlarm() {
+#ifdef TARGET_PC
+    GXDrawDone();
+#else
     OSAlarm alarm;
     OSCreateAlarm(&alarm);
     OSSetAlarm(&alarm, (OS_TIMER_CLOCK), JFWGXAbortAlarmHandler);
     GXDrawDone();
     OSCancelAlarm(&alarm);
+#endif
 }
 
 void JFWDisplay::ctor_subroutine(const GXRenderModeObj* rmode, bool enableAlpha) {
