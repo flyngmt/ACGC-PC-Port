@@ -3043,6 +3043,14 @@ static void aMR_SetNowPosition(xyz_t* now_pos, xyz_t pos) {
     }
 }
 
+#ifdef TARGET_PC
+static int aMR_FtrMovePastHalf(MY_ROOM_ACTOR* my_room) {
+    cKF_FrameControl_c* fc = &my_room->keyframe.frame_control;
+
+    return fc->current_frame >= (fc->start_frame + fc->end_frame) * 0.5f;
+}
+#endif
+
 static int aMR_JudgePlayerAction(xyz_t* out_pos0, xyz_t* out_pos1, int ftrID) {
     static xyz_t pos0 = { 0.0f, 0.0f, 0.0f };
     ACTOR* actorx = aMR_CLIP->my_room_actor_p;
@@ -3095,8 +3103,20 @@ static int aMR_JudgePlayerAction(xyz_t* out_pos0, xyz_t* out_pos1, int ftrID) {
                     case 2:
                         aMR_SetNowPosition(out_pos0, my_room->nice_pos);
                         aMR_SetNowPosition(out_pos1, my_room->nice_pos);
+#ifdef TARGET_PC
+                        if (ftr_state == aFTR_STATE_PUSH && aMR_FtrMovePastHalf(my_room)) {
+                            return 1;
+                        }
+#endif
                         return 2;
                     case 3:
+#ifdef TARGET_PC
+                        if (ftr_state == aFTR_STATE_PULL && aMR_FtrMovePastHalf(my_room)) {
+                            aMR_SetNowPosition(out_pos0, my_room->nice_pos);
+                            aMR_SetNowPosition(out_pos1, my_room->nice_pos);
+                            return 1;
+                        }
+#endif
                         aMR_SetNowPosition(out_pos0, my_room->pull_target_pos0);
                         aMR_SetNowPosition(out_pos1, my_room->pull_target_pos1);
                         return 3;
