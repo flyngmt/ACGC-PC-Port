@@ -311,7 +311,7 @@ enum class ParseOutcome { Run, Exit, Failed };
  * "--rain=light", not "--rain light".
  */
 ParseOutcome parse_command_line(int argc, char* argv[], CommandLine* out) {
-    cxxopts::Options options{"AnimalCrossing", "PC port of Animal Crossing"};
+    cxxopts::Options options{"Nookery", "PC port of Animal Crossing"};
     borealis::cli::add_standard_options(options, {.console = false});
     options.add_options()
         ("h,help", "Show this help")

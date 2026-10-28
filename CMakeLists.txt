@@ -447,7 +447,7 @@ set_target_properties(acgc PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 if (NOT ANDROID)
-    set_target_properties(acgc PROPERTIES OUTPUT_NAME "AnimalCrossing")
+    set_target_properties(acgc PROPERTIES OUTPUT_NAME "Nookery")
 endif ()
 
 include(extern/aurora/cmake/AuroraCopyRuntimeDLLs.cmake)

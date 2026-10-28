@@ -88,6 +88,7 @@ borealis::data::Manager& manager() {
                     .useDocumentsOnIOS = true,
                     .useExecutableDirectoryOnWindows = true,
                 },
+            .legacyApps = {{.orgName = {}, .appName = "Animal Crossing"}},
             .migration =
                 {
                     .directories = {"save", "texture_pack", "nes_roms"},

@@ -59,8 +59,8 @@ hero {
 }
 
 hero img {
-    width: 264dp;
-    height: 264dp;
+    width: 780dp;
+    height: 384dp;
 }
 
 #menu-list {
@@ -267,8 +267,8 @@ body.animate-in .intro-item {
     }
 
     hero img {
-        width: 190dp;
-        height: 190dp;
+        width: 570dp;
+        height: 281dp;
     }
 
     #menu-list button {

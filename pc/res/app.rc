@@ -18,11 +18,11 @@ BEGIN
     BEGIN
         BLOCK "040904B0"
         BEGIN
-            VALUE "FileDescription",  "Animal Crossing PC Port"
+            VALUE "FileDescription",  "Nookery"
             VALUE "FileVersion",      "0.9.3.0"
-            VALUE "InternalName",     "AnimalCrossing"
-            VALUE "OriginalFilename", "AnimalCrossing.exe"
-            VALUE "ProductName",      "Animal Crossing"
+            VALUE "InternalName",     "Nookery"
+            VALUE "OriginalFilename", "Nookery.exe"
+            VALUE "ProductName",      "Nookery"
             VALUE "ProductVersion",   "0.9.3.0"
         END
     END

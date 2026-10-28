@@ -21,7 +21,7 @@ typedef uint64_t Uint64;
 #define PC_GC_HEIGHT      480
 #define PC_SCREEN_WIDTH   PC_GC_WIDTH
 #define PC_SCREEN_HEIGHT  PC_GC_HEIGHT
-#define PC_WINDOW_TITLE   "Animal Crossing"
+#define PC_WINDOW_TITLE   "Nookery"
 
 #define PC_MAIN_MEMORY_SIZE   (24 * 1024 * 1024)
 #define PC_ARAM_SIZE          (16 * 1024 * 1024)
