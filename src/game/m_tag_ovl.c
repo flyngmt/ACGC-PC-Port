@@ -8436,7 +8436,14 @@ static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
                 scale * (submenu_tag->body_ofs[1] + submenu_tag->text_ofs[1]));
 
             int hovered_option = -1;
-            f32 option_height = 16.0f * scale_rate; 
+            f32 option_height = 16.0f * scale_rate;
+
+            if (submenu_tag->type == mTG_TYPE_CP_DELETE2 || submenu_tag->type == mTG_TYPE_TAG_PUT_CHK) {
+                tag_screen_y += 2.0f * option_height;
+            } else if (submenu_tag->type == mTG_TYPE_DUMP_MAIL || submenu_tag->type == mTG_TYPE_DUMP_ITEM ||
+                       submenu_tag->type == mTG_TYPE_DUMP_MAIL_MARK_CONF) {
+                tag_screen_y += option_height;
+            }
 
             for (int i = 0; i < tag_data->lines; i++) {
                 // Set top and bottom option hitbox
