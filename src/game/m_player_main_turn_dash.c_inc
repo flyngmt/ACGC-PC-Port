@@ -64,8 +64,12 @@ static void Player_actor_ObjCheck_Turn_dash(ACTOR* actor, GAME* game) {
     Player_actor_Excute_Corect_forStand(actor, game);
 }
 
-static void Player_actor_BGcheck_Turn_dash(ACTOR* actor) { 
-    Player_actor_BGcheck_common_type1(actor); 
+static void Player_actor_BGcheck_Turn_dash(ACTOR* actor) {
+    if (g_mPlib_wade_disabled && mEv_CheckTitleDemo() <= 0) {
+        Player_actor_BGcheck_common_type2(actor);
+    } else {
+        Player_actor_BGcheck_common_type1(actor);
+    }
 }
 
 static void Player_actor_request_proc_index_fromTurn_dash_common(ACTOR* actor, GAME* game, int is_stopped,

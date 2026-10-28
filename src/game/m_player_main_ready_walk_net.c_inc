@@ -123,7 +123,11 @@ static void Player_actor_ObjCheck_Ready_walk_net(ACTOR* actor, GAME* game) {
 }
 
 static void Player_actor_BGcheck_Ready_walk_net(ACTOR* actor) {
-    Player_actor_BGcheck_common_type1(actor);
+    if (g_mPlib_wade_disabled && mEv_CheckTitleDemo() <= 0) {
+        Player_actor_BGcheck_common_type2(actor);
+    } else {
+        Player_actor_BGcheck_common_type1(actor);
+    }
 }
 
 static void Player_actor_request_proc_index_fromReady_walk_net(ACTOR* actor, GAME* game) {
