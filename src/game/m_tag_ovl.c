@@ -8191,7 +8191,7 @@ static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
         return;
     }
 
-    tag_ovl->mouse_active = pointer->visible;
+    tag_ovl->mouse_active = pointer->owner == GAME_POINTER_MOUSE && (tag_ovl->mouse_active || pointer->active);
     u32 mouse_pressed = pointer->pressed;
     s32 mouse_wheel = pointer->scroll_steps_y;
     s32 mouse_moved = pointer->moved;

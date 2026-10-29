@@ -2555,7 +2555,8 @@ void mDE_move_Play(Submenu* submenu, mSM_MenuInfo_c* info) {
             design_ovl->_68C = 0;
         }
     }
-    design_ovl->mouse_active = pointer->visible;
+    design_ovl->mouse_active = inside_viewport && pointer->owner == GAME_POINTER_MOUSE &&
+                               (design_ovl->mouse_active || pointer->active);
     if (!inside_viewport) {
         design_ovl->mouse_tool_active = 0;
     }
