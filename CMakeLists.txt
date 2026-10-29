@@ -208,7 +208,6 @@ set(PC_SOURCES
     ${PC_ROOT}/src/acgc_controller_ports.cpp
     ${PC_ROOT}/src/acgc_data.cpp
     ${PC_ROOT}/src/acgc_disc.cpp
-    ${PC_ROOT}/src/acgc_game_input_block.cpp
     ${PC_ROOT}/src/acgc_input_profiles.cpp
     ${PC_ROOT}/src/acgc_legacy_input.cpp
     ${PC_ROOT}/src/acgc_settings.cpp
@@ -241,7 +240,9 @@ set(PC_SOURCES
     ${PC_ROOT}/src/pc_nes_fixnes.c
     ${PC_ROOT}/src/pc_assets.c
     ${PC_ROOT}/src/pc_emu64_geometry_cache.cpp
-    ${PC_ROOT}/src/pc_typing.cpp
+    ${PC_ROOT}/src/acgc_game_editor.cpp
+    ${PC_ROOT}/src/acgc_game_editor_host.cpp
+    ${PC_ROOT}/src/acgc_game_text.cpp
 )
 
 # =============================================================================

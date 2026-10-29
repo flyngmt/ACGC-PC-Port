@@ -17,7 +17,7 @@
 #include "m_lib.h"
 
 #ifdef TARGET_PC
-#include "pc_typing.h"
+#include "game_editor.h"
 #endif
 #ifdef MOUSE_INPUT
 #include "game_pointer.h"
@@ -1948,31 +1948,27 @@ static void mED_move_Move(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 typedef void (*mED_EDIT_FUNC)(Submenu*, mSM_MenuInfo_c*);
 
 #ifdef TARGET_PC
-static int mED_apply_pc_typing_command(mED_Ovl_c* editor_ovl) {
-    int typed;
+static int mED_apply_keyboard_command(mED_Ovl_c* editor_ovl) {
+    GameEditorEvent typed;
 
-    pc_typing_set_editor_active(TRUE);
-    if (!pc_typing_is_active() || !pc_typing_queue_pop(&typed)) {
+    acgc_editor_set_available(TRUE, editor_ovl->max_line_no > 1);
+    if (acgc_editor_drain(&typed, 1) == 0) {
         return FALSE;
     }
 
-    switch (typed) {
-        case PC_TYPING_CMD_BACKSPACE:
+    switch (typed.type) {
+        case GAME_EDITOR_BACKSPACE:
             editor_ovl->command = mED_COMMAND_BACKSPACE;
             break;
-        case PC_TYPING_CMD_LEFT:
-            editor_ovl->command = mED_COMMAND_CURSOL_LEFT;
+        case GAME_EDITOR_MOVE_CURSOR:
+            switch (typed.value.direction) {
+                case GAME_EDITOR_LEFT: editor_ovl->command = mED_COMMAND_CURSOL_LEFT; break;
+                case GAME_EDITOR_RIGHT: editor_ovl->command = mED_COMMAND_CURSOL_RIGHT; break;
+                case GAME_EDITOR_UP: editor_ovl->command = mED_COMMAND_CURSOL_UPPER; break;
+                case GAME_EDITOR_DOWN: editor_ovl->command = mED_COMMAND_CURSOL_LOWER; break;
+            }
             break;
-        case PC_TYPING_CMD_RIGHT:
-            editor_ovl->command = mED_COMMAND_CURSOL_RIGHT;
-            break;
-        case PC_TYPING_CMD_UP:
-            editor_ovl->command = mED_COMMAND_CURSOL_UPPER;
-            break;
-        case PC_TYPING_CMD_DOWN:
-            editor_ovl->command = mED_COMMAND_CURSOL_LOWER;
-            break;
-        case PC_TYPING_CMD_ENTER:
+        case GAME_EDITOR_SUBMIT:
             if (editor_ovl->max_line_no <= 1) {
                 editor_ovl->command = mED_COMMAND_END_EDIT;
             } else {
@@ -1980,8 +1976,8 @@ static int mED_apply_pc_typing_command(mED_Ovl_c* editor_ovl) {
                 editor_ovl->command = mED_COMMAND_OUTPUT_CODE;
             }
             break;
-        default:
-            editor_ovl->now_code = (u8)typed;
+        case GAME_EDITOR_INSERT_CHARACTER:
+            editor_ovl->now_code = typed.value.character;
             editor_ovl->command = mED_COMMAND_OUTPUT_CODE;
             break;
     }
@@ -2002,7 +1998,7 @@ static void mED_move_Play(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
     if (submenu->overlay->address_ovl != NULL &&
         submenu->overlay->menu_info[mSM_OVL_ADDRESS].next_proc_status == mSM_OVL_PROC_WAIT) {
 #ifdef TARGET_PC
-        pc_typing_set_editor_active(FALSE);
+        acgc_editor_set_available(FALSE, FALSE);
 #endif
         editor_ovl->stick_area = mED_STICK_AREA_CENTER;
         editor_ovl->command = mED_COMMAND_NONE;
@@ -2042,7 +2038,7 @@ static void mED_move_Play(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 #endif
 
 #ifdef TARGET_PC
-        if (!mED_apply_pc_typing_command(editor_ovl)) {
+        if (!mED_apply_keyboard_command(editor_ovl)) {
 #endif
             u32 trigger = getTrigger();
 
@@ -2079,7 +2075,7 @@ static void mED_move_Play(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 
 static void mED_move_Wait(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 #ifdef TARGET_PC
-    pc_typing_set_editor_active(FALSE);
+    acgc_editor_set_available(FALSE, FALSE);
 #endif
     if (submenu->menu_type != menu_info->next_menu_type) {
         menu_info->proc_status = mSM_OVL_PROC_PLAY;
@@ -2088,7 +2084,7 @@ static void mED_move_Wait(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 
 static void mED_move_End(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 #ifdef TARGET_PC
-    pc_typing_set_editor_active(FALSE);
+    acgc_editor_set_available(FALSE, FALSE);
 #endif
     submenu->overlay->editor_ovl->_22 = 0;
     (*submenu->overlay->move_End_proc)(submenu, menu_info);
@@ -2760,6 +2756,9 @@ static void mED_cursol_draw(Submenu* submenu, GAME* game, f32 x, f32 y) {
     }
 
     a = ((17 - cursol_opacity_step) * 255) / 17;
+#ifdef TARGET_PC
+    acgc_editor_set_caret(x + 7.0f, y, 16.0f);
+#endif
     mFont_SetMarkChar(game, mFont_MARKTYPE_CURSOR, x, y, 195, 80, 80, a, FALSE, 1.0f, 1.0f, mFont_MODE_POLY);
 }
 
@@ -2821,7 +2820,7 @@ extern void mED_editor_ovl_destruct(Submenu* submenu) {
     Submenu_Overlay_c* overlay = submenu->overlay;
 
 #ifdef TARGET_PC
-    pc_typing_set_editor_active(FALSE);
+    acgc_editor_set_available(FALSE, FALSE);
 #endif
     overlay->editor_ovl = NULL;
 }

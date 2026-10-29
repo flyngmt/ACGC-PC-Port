@@ -101,6 +101,8 @@
   "menu.quit.title": "Quit Animal Crossing",
   "menu.quit.warning": "You may lose unsaved progress.",
 
+  "overlay.typing_unavailable": "Unavailable",
+  "overlay.typing_suspended": "Paused",
   "overlay.keyboard_typing": "Keyboard typing",
 
   "prelaunch.disc_detail": "{} • {} Rev {}",

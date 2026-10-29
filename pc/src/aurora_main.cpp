@@ -12,7 +12,7 @@
 
 #include "pc_assets.h"
 #include "pc_platform.h"
-#include "pc_typing.h"
+#include "acgc/game_editor.hpp"
 #include "acgc/game_pointer.hpp"
 #include "aurora_debug.h"
 #include "acgc/app_info.hpp"
@@ -102,9 +102,6 @@ bool ac_aurora_begin_frame() {
         if (event->type == AURORA_EXIT) {
             g_pc_running = 0;
         } else if (event->type == AURORA_SDL_EVENT) {
-            if (!borealis::ui::any_document_visible()) {
-                pc_typing_handle_event(&event->sdl);
-            }
             if (event->sdl.type == SDL_EVENT_KEY_DOWN && !event->sdl.key.repeat && event->sdl.key.key == SDLK_F2) {
                 pc_speedhack_toggle();
             }
@@ -112,9 +109,6 @@ bool ac_aurora_begin_frame() {
                 acgc::apply_ui_scale();
             }
             acgc::ui::handle_event(event->sdl);
-            if (borealis::ui::any_document_visible()) {
-                pc_typing_cancel();
-            }
             acgc::input::pointer_window_event(event->sdl);
         } else if (event->type == AURORA_PAUSED || event->type == AURORA_UNPAUSED) {
             acgc::input::game_pointer().cancel();
@@ -584,7 +578,7 @@ int main(int argc, char* argv[]) {
     config.logLevel = borealis::log::to_aurora_level(s_log_level);
     config.imGuiInitCallback = &ac_debug_imgui_init;
 
-    const AuroraInfo aurora_info = aurora_initialize(argc, argv, &config);
+    aurora_initialize(argc, argv, &config);
     AuroraSetViewportPolicy(AURORA_VIEWPORT_STRETCH);
     g_pc_window_w = windowDimensions.width;
     g_pc_window_h = windowDimensions.height;
@@ -645,7 +639,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    pc_typing_initialize(aurora_info.window);
+    acgc::input::game_editor().initialize([] { acgc::input::game_pointer().keyboard_activity(); });
     acgc::input::game_pointer().initialize();
     acgc::input::update_pointer_viewport();
     acgc::texture_replacements::reload();
@@ -654,7 +648,7 @@ int main(int argc, char* argv[]) {
 
     pc_audio_shutdown();
     pc_audio_mq_shutdown();
-    pc_typing_shutdown();
+    acgc::input::game_editor().shutdown();
     acgc::controller_ports::shutdown();
     acgc::input::game_pointer().shutdown();
     aurora_dvd_close();

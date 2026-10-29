@@ -1,6 +1,7 @@
 #pragma once
 
 #include <borealis/ui/document.hpp>
+#include "game_editor.h"
 
 namespace acgc::ui {
 
@@ -19,7 +20,7 @@ private:
     float mAppliedTop = -1.0f;
     float mAppliedLeft = -1.0f;
     bool mWasEditorActive = false;
-    bool mWasTypingActive = false;
+    GameEditorState mPreviousTypingState = GAME_EDITOR_OFF;
 };
 
 } // namespace acgc::ui

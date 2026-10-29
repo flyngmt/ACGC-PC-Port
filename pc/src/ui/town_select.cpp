@@ -5,7 +5,7 @@
 #include "acgc/ui/scrolling_background.hpp"
 
 #include "pc_town_select.h"
-#include "pc_typing.h"
+#include "acgc/game_text.hpp"
 
 #include <SDL3/SDL_timer.h>
 
@@ -37,12 +37,8 @@ Rml::String town_name(const pc_card_town_entry& town) {
     }
     Rml::String result;
     for (int i = 0; i < length; ++i) {
-        char encoded[4] = {};
-        if (pc_typing_game_code_to_utf8(town.name[i], encoded, sizeof(encoded)) > 0) {
-            result += encoded;
-        } else {
-            result += '?';
-        }
+        const auto encoded = text::encode(town.name[i]);
+        result += encoded.empty() ? "?" : encoded;
     }
     return result.empty() ? localization::get("common.unknown") : result;
 }

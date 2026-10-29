@@ -3,7 +3,7 @@
 
 #include "acgc/ui/localization.hpp"
 
-#include "pc_typing.h"
+#include "acgc/game_editor.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -53,8 +53,9 @@ void Overlay::show() {
 void Overlay::update() {
     update_layout();
 
-    const bool editorActive = pc_typing_is_editor_active() != 0;
-    const bool typingActive = pc_typing_is_active() != 0;
+    const bool editorActive = acgc::input::game_editor().available();
+    const auto typingState = acgc::input::game_editor().state();
+    const bool typingActive = typingState == GAME_EDITOR_ACTIVE;
 
     if (mTypingStatus != nullptr && editorActive != mWasEditorActive) {
         if (editorActive) {
@@ -65,17 +66,20 @@ void Overlay::update() {
         mWasEditorActive = editorActive;
     }
 
-    if (mTypingStatus != nullptr && typingActive != mWasTypingActive) {
+    if (mTypingStatus != nullptr && typingState != mPreviousTypingState) {
         if (typingActive) {
             mTypingStatus->SetAttribute("active", "");
         } else {
             mTypingStatus->RemoveAttribute("active");
         }
         if (mTypingState != nullptr) {
-            mTypingState->SetInnerRML(
-                escape(typingActive ? localization::get("common.on") : localization::get("common.off")));
+            const char* label = typingActive                           ? "common.on"
+                                : typingState == GAME_EDITOR_FAILED    ? "overlay.typing_unavailable"
+                                : typingState == GAME_EDITOR_SUSPENDED ? "overlay.typing_suspended"
+                                                                       : "common.off";
+            mTypingState->SetInnerRML(escape(localization::get(label)));
         }
-        mWasTypingActive = typingActive;
+        mPreviousTypingState = typingState;
     }
 }
 
