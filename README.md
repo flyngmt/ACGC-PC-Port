@@ -1,47 +1,29 @@
 # Animal Crossing PC Port
 
 A native PC port of Animal Crossing (GameCube), based on the
-[ac-decomp](https://github.com/ACreTeam/ac-decomp) decompilation. The original
-game code runs natively while [Aurora](https://github.com/dolphin-emu/aurora)
-provides the host window/event loop, WebGPU GX renderer, DVD, memory-card,
-input, audio, and other GameCube SDK services.
+[ac-decomp](https://github.com/ACreTeam/ac-decomp) decompilation.
 
 This repository contains no game assets. A legally obtained GAFE01 Rev 0 (USA)
 disc image is required; RVZ, ISO, and GCM images are accepted.
 
 ## Building and running
 
-Install CMake 3.25 or newer, Ninja, a C/C++20 compiler, and the platform
-dependencies required by Aurora. Clone the repository with its submodules,
-then configure and build one of the included presets:
+Install CMake 3.25 or newer, Ninja, and a C/C++20 toolchain.
+Clone the repository with its submodules, then configure and build one of the included presets:
 
 ```sh
 git clone --recurse-submodules https://github.com/flyngmt/ACGC-PC-Port.git
 cd ACGC-PC-Port
-cmake --preset debug
-cmake --build --preset debug
-./build/aurora/debug/bin/AnimalCrossing --disc /path/to/game.rvz
-```
-
-Use the `relwithdebinfo` preset in both CMake commands for an optimized build
-with debug information. The game reads its assets directly from the disc image;
-no extraction step is required.
-
-For a Tracy-enabled profiling build, enable the profiler when configuring the
-optimized preset:
-
-```sh
-cmake --preset relwithdebinfo -DTRACY_ENABLE=ON
+cmake --preset relwithdebinfo
 cmake --build --preset relwithdebinfo
+./build/aurora/relwithdebinfo/bin/AnimalCrossing --disc /path/to/game.rvz
 ```
 
-Tracy uses on-demand capture by default. The `--profile` command-line option is
-separate and opens the in-game performance diagnostics.
+Use the `debug` preset for unoptimized builds with debug info.
 
 ### Android
 
-The Android port uses Borealis' SDL activity and Android integration. With the
-Android SDK and NDK installed, build the arm64 native library and APK with:
+With the Android SDK and NDK installed, build the arm64 native library and APK with:
 
 ```sh
 export ANDROID_HOME="$HOME/Android/Sdk"
@@ -56,10 +38,6 @@ See [platforms/android/README.md](platforms/android/README.md) for prerequisites
 APK output paths, and launch-intent arguments.
 
 ## Controls
-
-Aurora persists controller and keyboard mappings. When no active keyboard
-mapping exists for port 0, the port imports a legacy `keybindings.ini` when
-present, otherwise it installs these defaults:
 
 ### Keyboard (defaults)
 
@@ -82,10 +60,7 @@ SDL3 game controllers are supported through Aurora, including hotplug and
 persisted mappings.
 
 Press F1 on a keyboard, Back/Select on a controller, or R + Start to open
-the Aurora-native host menu. A/B confirm and cancel, the D-pad or left stick
-navigates, and L/R changes tabs. The menu pauses gameplay, exposes live video,
-audio, gameplay, and dead-zone settings, and includes controller remapping for
-all four ports. F3 toggles the optional ImGui diagnostics.
+the port menu. F3 toggles debug diagnostics.
 
 ## Command Line Options
 
@@ -110,13 +85,11 @@ all four ports. F3 toggles the optional ImGui diagnostics.
 Options whose value is optional (`--profile`, `--model-viewer`, `--rain`) must attach
 it with `=`: `--rain=light`, not `--rain light`.
 
-Run `AnimalCrossing --help` for the authoritative option list. Logging defaults
-to a rotating `logs` directory below the per-user cache directory, with ten
-files and a combined 100 MiB retention limit.
+Run `AnimalCrossing --help` for the full option list.
 
 ## Data Folder
 
-The data folder holds saves, `config.json`, input mappings, `texture_pack/`,
+The data folder holds saves, `config.json`, `input.json`, `texture_pack/`,
 and `nes_roms/`. Its default location is:
 
 | Platform | Default data folder |
@@ -126,50 +99,29 @@ and `nes_roms/`. Its default location is:
 | Linux | `~/.local/share/Animal Crossing/` |
 | Android | The app's internal files directory, exposed through its system documents provider |
 
-Settings > Data can open the folder, move data to a custom folder, or reset it;
-recognized data files migrate to the new location on the next launch. The
-location is recorded in a `data_location.json` descriptor searched next to the
-executable first, then in the platform pref path. `--user-dir` overrides the
-data folder for a single session. Regenerable caches (`pipeline_cache.db`,
-`dawn_cache.db`, logs) always stay in the platform pref path.
-
-Host settings are persisted in `config.json` under the data folder.
-On first launch, an existing `settings.ini` and `keybindings.ini` are imported;
-canonical JSON and Aurora input mappings take precedence thereafter.
-
-## Current migration status
-
-RVZ boot, memory-card saves, audio, persisted host settings, legacy settings and
-input migration, keyboard/controller input and remapping, the RmlUi host menu,
-widescreen/live resize, frame limiting, model viewing, texture replacement,
-and Aurora ImGui diagnostics are active. The old
-SDL2/OpenGL backend has been removed.
-
-Dolphin-format DDS and PNG texture packs remain drop-in compatible. Place the
-pack's existing directory tree beneath `texture_pack/` in the working directory
-(for example, `texture_pack/GAF/`). Aurora indexes replacement filenames
-recursively at startup, loads image data on demand, and can re-index the folder
-from Settings > Video > Texture Pack. Legacy texture preload/cache settings are
-accepted for configuration compatibility; Aurora owns the replacement cache.
-
-Embedded NES games use the retained fixNES emulation/audio core and a cached
-Aurora GX linear-RGBA8 presenter. The Gameplay setting selects 4:3 pillarboxing
-or window stretch.
+Use Settings > Data to move game data to a custom folder.
 
 ## Save Data
 
-The home town lives at `save/card_a/DobutsunomoriP_MURA.gci` below the data
-folder, in the standard GCI-compatible format with atomic writes and rotating
-`.bak1`–`.bak3` backups; visited towns use `save/card_b/`. Saves from the
-pre-Aurora port (and Dolphin exports dropped into `save/card_a/`) are found
-automatically. Embedded NES common data is stored beside the active card slot
-as `DobutsunomoriP_F_SAVE.sav`, with atomic replacement and one `.bak1`
-fallback.
+The home town lives at `save/card_a/DobutsunomoriP_MURA.gci` in the data
+folder. Visited towns use `save/card_b/`.
 
 ## Credits
 
-This project would not be possible without the work of the [ACreTeam](https://github.com/ACreTeam) decompilation team. Their complete C decompilation of Animal Crossing is the foundation this port is built on.
+This project would not be possible without the work of the [ACreTeam](https://github.com/ACreTeam) decompilation team.
+Their complete C decompilation of Animal Crossing is the foundation this port is built on.
+
+Special thanks to the [Aurora](https://github.com/encounter/aurora) developers,
+[Dusklight](https://github.com/TwilitRealm/dusklight) for inspiration, and all
+[contributors](https://github.com/TwilitRealm/dusklight/graphs/contributors).
 
 ## FAQ
 
 See [FAQ](FAQ.md) for more info.
+
+<br/>
+<div align="center">
+    <a href="https://github.com/encounter/aurora">
+        <img src="assets/aurora-powered.png" alt="Powered by Aurora" width="800">
+    </a>
+</div>

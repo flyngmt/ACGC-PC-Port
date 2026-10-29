@@ -131,7 +131,6 @@ bool initialize() noexcept
     sInitialized = true;
     push_document(std::make_unique<MenuBar>(), false);
     push_document(std::make_unique<Overlay>());
-    Log.info("Aurora RmlUi host menu initialized");
     return true;
 }
 

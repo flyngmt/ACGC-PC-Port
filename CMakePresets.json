@@ -8,27 +8,27 @@
   "configurePresets": [
     {
       "name": "debug",
-      "displayName": "Animal Crossing (Aurora) Debug",
+      "displayName": "Animal Crossing Debug",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/aurora/${presetName}",
+      "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
       "name": "relwithdebinfo",
-      "displayName": "Animal Crossing (Aurora) RelWithDebInfo",
+      "displayName": "Animal Crossing RelWithDebInfo",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/aurora/${presetName}",
+      "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo"
       }
     },
     {
       "name": "windows-msvc-debug",
-      "displayName": "Animal Crossing (Aurora) Windows MSVC Debug",
+      "displayName": "Animal Crossing Windows MSVC Debug",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/aurora/${presetName}",
+      "binaryDir": "${sourceDir}/build/${presetName}",
       "architecture": {
         "value": "x64",
         "strategy": "external"
@@ -43,9 +43,9 @@
     },
     {
       "name": "windows-msvc-relwithdebinfo",
-      "displayName": "Animal Crossing (Aurora) Windows MSVC RelWithDebInfo",
+      "displayName": "Animal Crossing Windows MSVC RelWithDebInfo",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/aurora/${presetName}",
+      "binaryDir": "${sourceDir}/build/${presetName}",
       "architecture": {
         "value": "x64",
         "strategy": "external"

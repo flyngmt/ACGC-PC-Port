@@ -113,8 +113,6 @@ static void update_mouse_pad_buttons() {
 bool ac_aurora_begin_frame() {
     ZoneScoped;
 
-    /* Display-list markers may leave this in transition/UI mode. The legacy
-     * renderer reset it before every frame, before JSystem submits GX state. */
     g_pc_widescreen_stretch = 0;
     pc_emu64_frame_cmds = 0;
     pc_emu64_frame_noop_cmds = 0;
@@ -305,11 +303,6 @@ struct CommandLine {
 
 enum class ParseOutcome { Run, Exit, Failed };
 
-/**
- * Options taking an optional value (--profile, --model-viewer, --rain) use
- * cxxopts implicit values, so an explicit value must be attached with '=':
- * "--rain=light", not "--rain light".
- */
 ParseOutcome parse_command_line(int argc, char* argv[], CommandLine* out) {
     cxxopts::Options options{"Nookery", "PC port of Animal Crossing"};
     borealis::cli::add_standard_options(options, {.console = false});
@@ -338,7 +331,6 @@ ParseOutcome parse_command_line(int argc, char* argv[], CommandLine* out) {
             cxxopts::value<bool>()->default_value("false")->implicit_value("true"));
     options.parse_positional({"disc"});
     options.positional_help("[disc image]");
-    // argv is also handed to aurora and SDL, so unknown options must survive.
     options.allow_unrecognised_options();
 
     cxxopts::ParseResult parsed;
@@ -401,7 +393,6 @@ ParseOutcome parse_command_line(int argc, char* argv[], CommandLine* out) {
     }
 
     if (parsed.count("profile")) {
-        /* Aurora's live diagnostics replace the OpenGL console profiler. */
         g_pc_debug_ui_visible = 1;
     }
     s_uber_shader_requested = parsed["uber-shader"].as<bool>();
@@ -567,9 +558,8 @@ int main(int argc, char* argv[]) {
     borealis::log::Options log_options{
         .level = s_log_level,
         .fileDirectory = log_root / "logs",
-        .filePrefix = "animal-crossing",
+        .filePrefix = "acgc",
     };
-    // --log-dir, when given, replaces the derived directory outright.
     if (!s_log_directory.empty()) {
         log_options.fileDirectory = s_log_directory;
     }
@@ -585,7 +575,7 @@ int main(int argc, char* argv[]) {
     const std::string user_path = borealis::io::fs_path_to_string(data_paths.userPath);
     const std::string cache_path = borealis::io::fs_path_to_string(data_paths.cachePath);
 
-    std::vector<std::filesystem::path> legacy_settings{
+    std::vector legacy_settings{
         std::filesystem::path(user_path) / "settings.ini",
         std::filesystem::current_path() / "settings.ini",
     };
@@ -648,12 +638,8 @@ int main(int argc, char* argv[]) {
     config.windowWidth = windowDimensions.width;
     config.windowHeight = windowDimensions.height;
     config.startFullscreen = settings.video.windowMode.value() != 0;
-    // Match Dusklight's 64-bit JSystem host policy. Native pointers enlarge
-    // heap metadata and many decompiled runtime objects beyond GC-era sizes.
     config.mem1Size = 256 * 1024 * 1024;
     config.mem2Size = ARAM_DEFAULT_SIZE;
-    /* An explicit limit uses the software limiter so arbitrary rates and the
-     * legacy uncapped mode do not depend on the monitor's refresh rate. */
     config.vsync = s_frame_limit_explicit ? false : settings.video.vsync.value();
     config.pauseOnFocusLost = false;
     config.logCallback = borealis::log::aurora_callback();
@@ -661,8 +647,6 @@ int main(int argc, char* argv[]) {
     config.imGuiInitCallback = &ac_debug_imgui_init;
 
     const AuroraInfo aurora_info = aurora_initialize(argc, argv, &config);
-    /* Match Dusklight's unlocked-aspect path: Aurora owns a framebuffer with
-     * the window's aspect, while game-side GX wrappers preserve 4:3 content. */
     AuroraSetViewportPolicy(AURORA_VIEWPORT_STRETCH);
     g_pc_window_w = windowDimensions.width;
     g_pc_window_h = windowDimensions.height;
