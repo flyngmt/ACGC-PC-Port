@@ -6,7 +6,7 @@
 #include "m_font.h"
 #include "sys_matrix.h"
 #ifdef MOUSE_INPUT
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #endif
 
 static mAD_Ovl_c adrs_ovl_data;
@@ -81,7 +81,7 @@ static void mAD_cancel_edit(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 
 static int mAD_get_nextIdx(mAD_Ovl_c* adrs_ovl, int idx, int add) {
     int next_idx = idx;
-    
+
     if (adrs_ovl->page_count <= 1) {
         next_idx = -1;
     } else {
@@ -155,10 +155,10 @@ static void mAD_get_entry_position(int count, f32* x, f32* y) {
 
 #ifdef MOUSE_INPUT
 static u32 mAD_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 trigger) {
+    const GamePointerFrame* pointer = acgc_pointer_frame();
     mAD_Ovl_c* adrs_ovl = submenu->overlay->address_ovl;
     mBD_Ovl_c* board_ovl = submenu->overlay->board_ovl;
     Mail_nm_c* names;
-    f32 mouse_x, mouse_y;
     f32 x, y;
     u32 pressed;
     s32 wheel;
@@ -167,22 +167,21 @@ static u32 mAD_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 tr
 
     if ((submenu->current_menu_type != mSM_OVL_ADDRESS &&
          !(submenu->current_menu_type == mSM_OVL_EDITOR && menu_info->next_proc_status == mSM_OVL_PROC_WAIT)) ||
-        !pc_mouse_update_owner(FALSE, pc_mouse_pad_active()) ||
-        !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+        !pointer->visible || !pointer->inside) {
         return trigger;
     }
 
-    pressed = pc_mouse_button_pressed();
-    if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+    pressed = pointer->pressed;
+    if (pressed & GAME_POINTER_RIGHT) {
         return trigger | BUTTON_B;
     }
     if (adrs_ovl->proc_idx != mAD_PROC_SELECT) {
-        return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+        return trigger | ((pressed & GAME_POINTER_LEFT) ? BUTTON_A : 0);
     }
 
-    wheel = pc_mouse_scroll_wheel();
+    wheel = pointer->scroll_steps_y;
     if (wheel != 0) {
-        return trigger | (wheel > 0 ? BUTTON_CUP : BUTTON_CDOWN);
+        return trigger | (wheel < 0 ? BUTTON_CUP : BUTTON_CDOWN);
     }
 
     count = adrs_ovl->page_entry_count[adrs_ovl->curIdx];
@@ -198,12 +197,12 @@ static u32 mAD_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 tr
     for (i = 0; i < count; i++) {
         f32 width = mFont_GetStringWidth(names[i].personalID.player_name, PLAYER_NAME_LEN, TRUE) * 0.75f;
 
-        if (mouse_x >= x - 2.0f && mouse_x < x + width + 2.0f && mouse_y >= y && mouse_y < y + 12.0f) {
+        if (pointer->x >= x - 2.0f && pointer->x < x + width + 2.0f && pointer->y >= y && pointer->y < y + 12.0f) {
             if (adrs_ovl->selected_entry != i) {
                 adrs_ovl->selected_entry = i;
                 sAdo_SysTrgStart(NA_SE_CURSOL);
             }
-            return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+            return trigger | ((pressed & GAME_POINTER_LEFT) ? BUTTON_A : 0);
         }
         y += adrs_ovl->curIdx == mAD_PAGE_PLAYER && adrs_ovl->show_museum_address && i == count - 2 ? 24.0f : 12.0f;
     }
@@ -536,7 +535,7 @@ static void mAD_address_draw_init(Submenu* submenu) {
 
     for (i = 0; i < mAD_PAGE_NUM; i++) {
         count = submenu->overlay->address_ovl->page_entry_count[i] - 1;
-        
+
         if (count >= 0) {
             vtx_p = &lat_atena_v[i * 16];
 
@@ -550,7 +549,7 @@ static void mAD_address_draw_init(Submenu* submenu) {
             vtx_p[13].v.ob[1] = vtx_p[11].v.ob[1] - ofs;
             vtx_p[14].v.ob[1] = vtx_p[12].v.ob[1] - 17;
             vtx_p[15].v.ob[1] = vtx_p[13].v.ob[1] - 17;
-            
+
             vtx_p[0].v.ob[1] = vtx_p[4].v.ob[1] - ofs;
             vtx_p[2].v.ob[1] = vtx_p[5].v.ob[1] - ofs;
             vtx_p[1].v.ob[1] = vtx_p[0].v.ob[1] - 17;
@@ -581,7 +580,7 @@ static void mAD_set_first_tag(Submenu* submenu, GAME* game, GRAPH* graph, f32 po
 
     CLOSE_POLY_OPA_DISP(graph);
 
-    
+
     (*submenu->overlay->set_char_matrix_proc)(graph);
     if (submenu->overlay->address_ovl->proc_idx == mAD_PROC_REFUSE) {
         idx = 1;

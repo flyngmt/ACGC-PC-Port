@@ -26,7 +26,7 @@ extern int g_pc_model_viewer;
 #ifdef MOUSE_INPUT
 #include "dolphin/os.h"
 #include "m_hand_ovl.h"
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #endif
 
 GAME* gamePT = NULL;
@@ -116,51 +116,6 @@ extern void game_draw_last(GRAPH* graph) {
     CLOSE_DISP(graph);
 }
 
-#ifdef MOUSE_INPUT
-// Input only takes the pointer away when it changes, HOPEFULLY will fix it disappearing randomly on some setups.
-static s8 mouse_pad_reference_x[MAXCONTROLLERS]; // Using MAXCONTROLLERS in case we decide support more ports again, but likely overkill
-static s8 mouse_pad_reference_y[MAXCONTROLLERS];
-static int mouse_pad_hide_reports;
-
-static void game_update_mouse_pointer_owner(GAME* this) {
-    const int mouse_active = pc_mouse_active();
-    int pad_active = FALSE;
-
-    for (int i = 0; i < MAXCONTROLLERS; i++) {
-        pad_t* pad = &this->pads[i];
-        int stick_deflected;
-        int stick_moved;
-
-        if (pad->now.error != 0) {
-            continue;
-        }
-        stick_deflected = SQ(pad->now.stick_x) + SQ(pad->now.stick_y) > SQ(STICK_MIN);
-        if (!stick_deflected) {
-            mouse_pad_reference_x[i] = 0;
-            mouse_pad_reference_y[i] = 0;
-        } else if (mouse_active) {
-            mouse_pad_reference_x[i] = pad->now.stick_x;
-            mouse_pad_reference_y[i] = pad->now.stick_y;
-        }
-        stick_moved = stick_deflected &&
-                      SQ(pad->now.stick_x - mouse_pad_reference_x[i]) +
-                      SQ(pad->now.stick_y - mouse_pad_reference_y[i]) > SQ(STICK_MIN);
-        if (pad->on.button || stick_moved) {
-            // Should remove after it's confirmed that this fixes it for everyone
-            if (pc_mouse_pointer_visible() && mouse_pad_hide_reports < 5) {
-                mouse_pad_hide_reports++;
-                OSReport("Mouse pointer hidden by pad %d: pressed=0x%04X held=0x%04X stick=(%d,%d) reference=(%d,%d)\n",
-                         i, pad->on.button, pad->now.button, pad->now.stick_x, pad->now.stick_y,
-                         mouse_pad_reference_x[i], mouse_pad_reference_y[i]);
-            }
-            pad_active = TRUE;
-            break;
-        }
-    }
-    pc_mouse_set_pad_active(pad_active);
-}
-#endif
-
 extern void game_get_controller(GAME* this) {
     if (this->pad_initialized == TRUE) {
         padmgr_RequestPadData(this->pads, 1);
@@ -168,7 +123,8 @@ extern void game_get_controller(GAME* this) {
         padmgr_ClearPadData(this->pads);
     }
 #ifdef MOUSE_INPUT
-    game_update_mouse_pointer_owner(this);
+    extern u32 pc_frame_counter;
+    acgc_pointer_begin_tick(pc_frame_counter);
 #endif
 }
 

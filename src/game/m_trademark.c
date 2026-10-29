@@ -32,7 +32,7 @@
 #include "m_common_data.h"
 #include "m_play.h"
 #ifdef MOUSE_INPUT
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #endif
 
 static int mTR_first_flag = TRUE;
@@ -207,7 +207,7 @@ static void trademark_cancel(GAME_TRADEMARK* trademark) {
 
     int start_pressed = (gamePT->pads[0].on.button & BUTTON_START) != 0;
 #ifdef MOUSE_INPUT
-    start_pressed = start_pressed || (pc_mouse_button_pressed() & (PC_MOUSE_BUTTON_LEFT | PC_MOUSE_BUTTON_RIGHT));
+    start_pressed = start_pressed || (acgc_pointer_frame()->pressed & (GAME_POINTER_LEFT | GAME_POINTER_RIGHT));
 #endif
     if (!start_pressed) {
         return;

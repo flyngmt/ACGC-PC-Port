@@ -1117,7 +1117,7 @@ static int mMsg_Main_Cursol_ControlCursol(mMsg_Window_c* msg_p) {
   if ((msg_p->status_flags & mMsg_STATUS_FLAG_CURSOL_JUST) == 0) {
     int fast_text = chkButton(BUTTON_B);
 #ifdef MOUSE_INPUT
-    fast_text = fast_text || (!mEv_IsTitleDemo() && (pc_mouse_button_held() & PC_MOUSE_BUTTON_RIGHT));
+    fast_text = fast_text || (!mEv_IsTitleDemo() && (acgc_pointer_frame()->held & GAME_POINTER_RIGHT));
 #endif
     if (fast_text) {
       msg_p->status_flags |= mMsg_STATUS_FLAG_FAST_TEXT;

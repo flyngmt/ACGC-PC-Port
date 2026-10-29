@@ -22,7 +22,7 @@
 #include "libultra/libultra.h"
 #include "m_flashrom.h"
 #ifdef MOUSE_INPUT
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #endif
 
 #define G_CC_TITLE PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, PRIMITIVE, 0, TEXEL0, 0
@@ -179,7 +179,7 @@ static int aAL_wipe_end_check(GAME* game) {
 static int aAL_chk_start_key() {
   int res = (gamePT->pads[PAD0].on.button & (BUTTON_START | BUTTON_A)) != 0;
 #ifdef MOUSE_INPUT
-  res = res || (pc_mouse_button_pressed() & (PC_MOUSE_BUTTON_LEFT | PC_MOUSE_BUTTON_RIGHT));
+  res = res || (acgc_pointer_frame()->pressed & (GAME_POINTER_LEFT | GAME_POINTER_RIGHT));
 #endif
 
   return res;

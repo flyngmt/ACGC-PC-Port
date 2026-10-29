@@ -131,23 +131,7 @@ extern "C" {
 
 int g_pc_debug_ui_visible = 0;
 
-int ac_debug_imgui_wants_mouse(void)
-{
-    return ImGui::GetCurrentContext() != nullptr && ImGui::GetIO().WantCaptureMouse;
-}
 
-void ac_debug_imgui_set_game_cursor(int game_cursor)
-{
-    if (ImGui::GetCurrentContext() == nullptr) {
-        return;
-    }
-    auto& flags = ImGui::GetIO().ConfigFlags;
-    if (game_cursor) {
-        flags |= ImGuiConfigFlags_NoMouseCursorChange;
-    } else {
-        flags &= ~ImGuiConfigFlags_NoMouseCursorChange;
-    }
-}
 
 void ac_debug_imgui_init(const AuroraWindowSize*)
 {

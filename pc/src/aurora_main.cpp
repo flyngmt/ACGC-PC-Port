@@ -13,7 +13,7 @@
 #include "pc_assets.h"
 #include "pc_platform.h"
 #include "pc_typing.h"
-#include "pc_mouse_input.h"
+#include "acgc/game_pointer.hpp"
 #include "aurora_debug.h"
 #include "acgc/app_info.hpp"
 #include "acgc/controller_ports.hpp"
@@ -83,21 +83,6 @@ static void pc_speedhack_toggle() {
     }
 }
 
-#ifdef MOUSE_INPUT
-static void update_mouse_pad_buttons() {
-    u32 buttons = 0;
-    if (const auto bindings = aurora::pad::binding_set(0)) {
-        for (const auto& binding : bindings->bindings) {
-            if (const auto* mouse = binding.input.control.get_if<aurora::binding::PhysicalInput::MouseButton>();
-                mouse && mouse->button > 0 && mouse->button <= 32) {
-                buttons |= 1u << (mouse->button - 1);
-            }
-        }
-    }
-    pc_mouse_set_pad_buttons(buttons);
-}
-#endif
-
 bool ac_aurora_begin_frame() {
     ZoneScoped;
 
@@ -110,10 +95,8 @@ bool ac_aurora_begin_frame() {
     pc_emu64_frame_cull_visible = 0;
     pc_emu64_frame_cull_rejected = 0;
 
-    pc_mouse_set_blocked(PC_MOUSE_BLOCK_HOST_UI, borealis::ui::any_document_visible());
-    pc_mouse_set_blocked(PC_MOUSE_BLOCK_IMGUI, ac_debug_imgui_wants_mouse());
+    acgc::input::update_pointer_viewport();
     const AuroraEvent* event = aurora_update();
-    pc_mouse_set_blocked(PC_MOUSE_BLOCK_HOST_UI, borealis::ui::any_document_visible());
     update_render_size();
     while (event != nullptr && event->type != AURORA_NONE) {
         if (event->type == AURORA_EXIT) {
@@ -132,9 +115,9 @@ bool ac_aurora_begin_frame() {
             if (borealis::ui::any_document_visible()) {
                 pc_typing_cancel();
             }
-            pc_mouse_handle_event(&event->sdl);
+            acgc::input::pointer_window_event(event->sdl);
         } else if (event->type == AURORA_PAUSED || event->type == AURORA_UNPAUSED) {
-            pc_mouse_cancel();
+            acgc::input::game_pointer().cancel();
         } else if (event->type == AURORA_CONTROLLER_ADDED) {
             acgc::controller_ports::enforce_single_port();
             acgc::apply_runtime_settings(false);
@@ -150,14 +133,8 @@ bool ac_aurora_begin_frame() {
 
     acgc::controller_ports::update();
     update_render_size();
-    pc_mouse_sync_system_cursor();
     s_frame_started = aurora_begin_frame();
-    pc_mouse_set_blocked(PC_MOUSE_BLOCK_IMGUI, ac_debug_imgui_wants_mouse());
-    pc_mouse_set_blocked(PC_MOUSE_BLOCK_PAUSED, !s_frame_started || aurora_get_timescale() == 0.0f);
-#ifdef MOUSE_INPUT
-    update_mouse_pad_buttons();
-#endif
-    pc_mouse_update();
+    acgc::input::game_pointer().set_running(s_frame_started && aurora_get_timescale() != 0.0f);
     return s_frame_started;
 }
 
@@ -165,7 +142,6 @@ void ac_aurora_end_frame() {
     if (s_frame_started) {
         acgc::ui::update();
         ac_debug_imgui_draw();
-        pc_mouse_sync_system_cursor();
         aurora_end_frame();
         pc_emu64_tlut_frame_drained();
         s_frame_started = false;
@@ -670,7 +646,8 @@ int main(int argc, char* argv[]) {
     }
 
     pc_typing_initialize(aurora_info.window);
-    pc_mouse_initialize(aurora_info.window);
+    acgc::input::game_pointer().initialize();
+    acgc::input::update_pointer_viewport();
     acgc::texture_replacements::reload();
     ac_entry();
     const int result = boot_main(argc, const_cast<const char**>(argv));
@@ -679,7 +656,7 @@ int main(int argc, char* argv[]) {
     pc_audio_mq_shutdown();
     pc_typing_shutdown();
     acgc::controller_ports::shutdown();
-    pc_mouse_shutdown();
+    acgc::input::game_pointer().shutdown();
     aurora_dvd_close();
     acgc::texture_replacements::shutdown();
     acgc::ui::shutdown();

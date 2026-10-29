@@ -11,7 +11,7 @@
 #include "m_msg.h"
 #include "m_demo.h"
 #include "m_skin_matrix.h"
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #include "m_hand_ovl_h.h"
 #endif
 
@@ -85,7 +85,7 @@ static int mouse_dash_held;
 static int mCon_mouse_gameplay_allowed(void) {
   GAME_PLAY* play;
 
-  if (gamePT->exec != play_main || mEv_IsTitleDemo() || !pc_mouse_pointer_visible()) {
+  if (gamePT->exec != play_main || mEv_IsTitleDemo() || !acgc_pointer_frame()->visible) {
     return FALSE;
   }
   play = (GAME_PLAY*)gamePT;
@@ -106,9 +106,9 @@ static void mCon_update_mouse_action(void) {
     return;
   }
 
-  mouse_action_triggered = (pc_mouse_button_pressed() & PC_MOUSE_BUTTON_RIGHT) != 0;
-  mouse_action_held = mouse_action_triggered ||
-                     (mouse_action_held && (pc_mouse_button_held() & PC_MOUSE_BUTTON_RIGHT));
+  const GamePointerFrame* pointer = acgc_pointer_frame();
+  mouse_action_triggered = (pointer->pressed & GAME_POINTER_RIGHT) != 0;
+  mouse_action_held = mouse_action_triggered || (mouse_action_held && (pointer->held & GAME_POINTER_RIGHT));
 
   player = get_player_actor_withoutCheck(play);
   if (!mouse_action_held || player == NULL || player->item_kind >= 0 || mDemo_CheckDemo() ||
@@ -130,14 +130,16 @@ static void mCon_update_mouse_action(void) {
 }
 
 static int mCon_mouse_ground_offset(GAME_PLAY* play, xyz_t* position, xyz_t* offset) {
+  const GamePointerFrame* pointer = acgc_pointer_frame();
   MtxF* matrix = &play->projection_matrix;
   rect* screen = &play->view.screen;
   xyz_t projected;
   f32 mouse_x, mouse_y, w;
   f32 xx, xz, yx, yz, x, y, determinant;
 
-  if (!pc_mouse_get_ui_position(&mouse_x, &mouse_y) ||
-      screen->r <= screen->l || screen->bottom <= screen->top) {
+  mouse_x = pointer->x;
+  mouse_y = pointer->y;
+  if (!pointer->inside || screen->r <= screen->l || screen->bottom <= screen->top) {
     return FALSE;
   }
 
@@ -167,9 +169,12 @@ static int mCon_mouse_ground_offset(GAME_PLAY* play, xyz_t* position, xyz_t* off
 }
 
 static int mCon_mouse_dash_reached(int was_dashing) {
+  const GamePointerFrame* pointer = acgc_pointer_frame();
   f32 mouse_x, mouse_y, ofs_x, ofs_y, radius, dx, dy;
 
-  if (!pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+  mouse_x = pointer->x;
+  mouse_y = pointer->y;
+  if (!pointer->inside) {
     return FALSE;
   }
   mHD_mouse_pointer_get_offset(&ofs_x, &ofs_y);
@@ -185,6 +190,7 @@ static int mCon_mouse_move_allowed(int main_index) {
 }
 
 static void mCon_mouse_move(GAME_PLAY* play, f32* stick_x, f32* stick_y) {
+  const GamePointerFrame* pointer = acgc_pointer_frame();
   static int active;
   PLAYER_ACTOR* player = get_player_actor_withoutCheck(play);
   xyz_t offset;
@@ -193,14 +199,14 @@ static void mCon_mouse_move(GAME_PLAY* play, f32* stick_x, f32* stick_y) {
   int was_dashing = mouse_dash_held;
 
   mouse_dash_held = FALSE;
-  if (!(pc_mouse_button_held() & PC_MOUSE_BUTTON_LEFT) || !mCon_mouse_gameplay_allowed() ||
+  if (!(pointer->held & GAME_POINTER_LEFT) || !mCon_mouse_gameplay_allowed() ||
       player == NULL || mDemo_CheckDemo() || play->submenu.current_menu_type != mSM_OVL_NONE ||
       play->game.pads[0].now.button || *stick_x * *stick_x + *stick_y * *stick_y > STICK_MIN * STICK_MIN) {
     active = FALSE;
     return;
   }
 
-  if (pc_mouse_button_pressed() & PC_MOUSE_BUTTON_LEFT) {
+  if (pointer->pressed & GAME_POINTER_LEFT) {
     active = TRUE;
   }
   // Keep the hold while an action temporarily blocks movement. Otherwise it's very hard to escape the bees.

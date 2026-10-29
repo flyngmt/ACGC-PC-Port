@@ -2,7 +2,7 @@
 
 #ifdef MOUSE_INPUT
 #include "m_hand_ovl_h.h"
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #include "pc_platform.h"
 
 #include <aurora/gfx.h>
@@ -88,14 +88,14 @@ void aurora_mouse_cursor_capture_end(int frame) {
 }
 
 void aurora_mouse_cursor_draw(int frame) {
-    f32 x, y;
-    if (!s_frames[frame].ready || !pc_mouse_pointer_visible() || !pc_mouse_get_ui_position(&x, &y)) {
+    const GamePointerFrame* pointer = acgc_pointer_frame();
+    if (!s_frames[frame].ready || !pointer->visible || !pointer->inside) {
         return;
     }
 
     const f32 aspect = pc_widescreen_get_aspect_factor();
-    const f32 left = (1.0f - aspect) * 320.0f + (x + s_offsetX - 16.0f) * 2.0f * aspect;
-    const f32 top = (y + s_offsetY - 16.0f) * 2.0f;
+    const f32 left = (1.0f - aspect) * 320.0f + (pointer->x + s_offsetX - 16.0f) * 2.0f * aspect;
+    const f32 top = (pointer->y + s_offsetY - 16.0f) * 2.0f;
     const f32 right = left + kDrawSize * aspect;
     const f32 bottom = top + kDrawSize;
 

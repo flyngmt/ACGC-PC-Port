@@ -7,7 +7,7 @@
 #include "m_lib.h"
 #include "m_common_data.h"
 #ifdef MOUSE_INPUT
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #endif
 
 static int aNSM_sack_amount[MONEY_NUM] = { 100, 1000, 10000, 30000 };
@@ -123,20 +123,21 @@ static void mBN_move_Move(Submenu* submenu, mSM_MenuInfo_c* menu) {
 
 #ifdef MOUSE_INPUT
 static u32 mBN_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu, u32 trigger) {
+    const GamePointerFrame* pointer = acgc_pointer_frame();
     mBN_Ovl_c* bank_ovl = submenu->overlay->bank_ovl;
     f32 mouse_x, mouse_y;
     u32 pressed;
     s32 wheel;
     int selected = -1;
 
-    if (submenu->current_menu_type != mSM_OVL_BANK ||
-        !pc_mouse_update_owner(FALSE, pc_mouse_pad_active()) ||
-        !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+    mouse_x = pointer->x;
+    mouse_y = pointer->y;
+    if (submenu->current_menu_type != mSM_OVL_BANK || !pointer->visible || !pointer->inside) {
         return trigger;
     }
 
-    pressed = pc_mouse_button_pressed();
-    if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+    pressed = pointer->pressed;
+    if (pressed & GAME_POINTER_RIGHT) {
         return trigger | BUTTON_B;
     }
 
@@ -172,12 +173,12 @@ static u32 mBN_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu, u32 trigger
     }
 
     if (selected == mBN_CUSROL_OK) {
-        return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+        return trigger | ((pressed & GAME_POINTER_LEFT) ? BUTTON_A : 0);
     }
-    wheel = pc_mouse_scroll_wheel();
-    if (wheel > 0 || (pressed & PC_MOUSE_BUTTON_LEFT)) {
+    wheel = pointer->scroll_steps_y;
+    if (wheel < 0 || (pressed & GAME_POINTER_LEFT)) {
         trigger |= BUTTON_CUP;
-    } else if (wheel < 0) {
+    } else if (wheel > 0) {
         trigger |= BUTTON_CDOWN;
     }
     return trigger;

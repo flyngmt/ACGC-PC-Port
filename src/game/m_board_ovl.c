@@ -7,7 +7,7 @@
 #include "m_tag_ovl.h"
 #include "sys_matrix.h"
 #ifdef MOUSE_INPUT
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #endif
 
 static mBD_Ovl_c board_ovl_data;
@@ -831,12 +831,15 @@ static void mBD_move_Move(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 }
 
 static void mBD_move_Wait(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
+#ifdef MOUSE_INPUT
+    const GamePointerFrame* pointer = acgc_pointer_frame();
+#endif
     u32 trigger = getTrigger();
 
 #ifdef MOUSE_INPUT
     if (submenu->current_menu_type == mSM_OVL_BOARD &&
-        pc_mouse_update_owner(FALSE, pc_mouse_pad_active()) &&
-        (pc_mouse_button_pressed() & (PC_MOUSE_BUTTON_LEFT | PC_MOUSE_BUTTON_RIGHT))) {
+        pointer->visible &&
+        (pointer->pressed & (GAME_POINTER_LEFT | GAME_POINTER_RIGHT))) {
         trigger |= BUTTON_B;
     }
 #endif

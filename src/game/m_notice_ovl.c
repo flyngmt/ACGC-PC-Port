@@ -9,7 +9,7 @@
 #include "m_quest.h"
 #include "sys_matrix.h"
 #ifdef MOUSE_INPUT
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #endif
 #ifdef TARGET_PC
 #include <math.h>
@@ -161,6 +161,9 @@ static void mNT_roll_control2(mSM_MenuInfo_c* menu_info) {
 extern Vtx kei_hyouji_v[];
 
 static u32 mNT_mouse_trigger(Submenu* submenu, u32 trigger) {
+#ifdef MOUSE_INPUT
+    const GamePointerFrame* pointer = acgc_pointer_frame();
+#endif
     /* Quad offsets used by the control display lists in kei_hyouji.c. */
     static const struct {
         int first_vertex;
@@ -178,23 +181,25 @@ static u32 mNT_mouse_trigger(Submenu* submenu, u32 trigger) {
     s32 wheel;
     int i;
 
+    mouse_x = pointer->x;
+    mouse_y = pointer->y;
     if (submenu->current_menu_type != mSM_OVL_NOTICE ||
-        !pc_mouse_update_owner(FALSE, pc_mouse_pad_active()) ||
-        !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+        !pointer->visible ||
+        !pointer->inside) {
         return trigger;
     }
 
-    pressed = pc_mouse_button_pressed();
-    if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+    pressed = pointer->pressed;
+    if (pressed & GAME_POINTER_RIGHT) {
         return trigger | BUTTON_B;
     }
 
-    wheel = pc_mouse_scroll_wheel();
+    wheel = pointer->scroll_steps_y;
     if (wheel != 0) {
-        return trigger | (wheel > 0 ? BUTTON_CLEFT : BUTTON_CRIGHT);
+        return trigger | (wheel < 0 ? BUTTON_CLEFT : BUTTON_CRIGHT);
     }
 
-    if (pressed & PC_MOUSE_BUTTON_LEFT) {
+    if (pressed & GAME_POINTER_LEFT) {
         mouse_x -= 160.0f;
         mouse_y = 120.0f - mouse_y - submenu->overlay->notice_ovl->control_position;
         for (i = 0; i < ARRAY_COUNT(controls); i++) {

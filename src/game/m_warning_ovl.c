@@ -4,7 +4,7 @@
 #include "sys_matrix.h"
 #include "m_font.h"
 #ifdef MOUSE_INPUT
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #endif
 
 typedef struct warning_ovl_line_s {
@@ -271,6 +271,9 @@ static void mWR_move_Move(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 
 #ifdef MOUSE_INPUT
 static u32 mWR_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 trigger) {
+#ifdef MOUSE_INPUT
+    const GamePointerFrame* pointer = acgc_pointer_frame();
+#endif
   mWR_Ovl_c* warning_ovl = submenu->overlay->warning_ovl;
   mWR_data_c* data = &wr_win_data[menu_info->data0];
   f32 scale = warning_ovl->scale;
@@ -279,18 +282,20 @@ static u32 mWR_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 tr
   u32 pressed;
   int i;
 
+  mouse_x = pointer->x;
+  mouse_y = pointer->y;
   if (submenu->current_menu_type != mSM_OVL_WARNING ||
-      !pc_mouse_update_owner(FALSE, pc_mouse_pad_active()) ||
-      !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+      !pointer->visible ||
+      !pointer->inside) {
     return trigger;
   }
 
-  pressed = pc_mouse_button_pressed();
-  if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+  pressed = pointer->pressed;
+  if (pressed & GAME_POINTER_RIGHT) {
     return trigger | BUTTON_B;
   }
   if (menu_info->data0 != mWR_WARNING_MAILBOX) {
-    return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+    return trigger | ((pressed & GAME_POINTER_LEFT) ? BUTTON_A : 0);
   }
 
   x = 160.0f + menu_info->position[0] - data->scale_x * 120.0f * scale;
@@ -309,7 +314,7 @@ static u32 mWR_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 tr
           warning_ovl->selected = i - 3;
           sAdo_SysTrgStart(NA_SE_CURSOL);
         }
-        return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+        return trigger | ((pressed & GAME_POINTER_LEFT) ? BUTTON_A : 0);
       }
     }
   }

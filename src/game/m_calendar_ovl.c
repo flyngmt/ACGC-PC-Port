@@ -7,7 +7,7 @@
 #include "sys_matrix.h"
 #include "m_malloc.h"
 #ifdef MOUSE_INPUT
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #endif
 #ifdef TARGET_PC
 #include <math.h>
@@ -103,7 +103,7 @@ static u32 mCD_soncho_chk(lbRTC_year_t year, lbRTC_month_t month, lbRTC_day_t da
 
     if (Common_Get(player_no) != mPr_FOREIGNER) {
         mCD_player_calendar_c* calendar = &Save_Get(private_data[player_no]).calendar;
-        
+
         ret = mCD_sp_soncho_chk(year, month, day, calendar);
         if (!ret) {
             ret = calendar->event_days[month - 1] & (1 << (day - 1));
@@ -117,7 +117,7 @@ static int mCD_make_icon(lbRTC_year_t year, lbRTC_month_t month, lbRTC_day_t day
     lbRTC_time_c* rtc_time = Common_GetPointer(time.rtc_time);
     int delta_months = (rtc_time->year - year) * lbRTC_MONTHS_MAX + (rtc_time->month - month);
     int ret = 0;
-    
+
     if (delta_months >= 0 && delta_months < lbRTC_MONTHS_MAX) {
         if (mCD_soncho_chk(year, month, day, player_no)) {
             ret = 2;
@@ -222,7 +222,7 @@ static u8 mDC_get_calendar_day_position(mCD_Ovl_c* calendar, lbRTC_day_t day) {
         if (i > 37 || day == (entry->day_data[i] & 0x1F)) {
             break;
         }
-        
+
         i++;
     }
 
@@ -377,7 +377,7 @@ static void mCD_make_calendar_data_unfixed_day_event(mCD_month_entry_c* entry, l
 
     for (i = 0; i < ARRAY_COUNT(event_table); i++) {
         lbRTC_day_t day = mDC_weekly_to_day_data(&entry[event_table[i].month - 1], event_table[i].week, event_table[i].weekday);
-        
+
         day += event_table[i].days_after;
         mDC_set_event_day_data(entry, event_table[i].month, day, event_table[i].event, mCD_DAY_EVENT, 0);
     }
@@ -407,7 +407,7 @@ static void mCD_make_calendar_data_unfixed_day_event(mCD_month_entry_c* entry, l
     mDC_set_event_day_data(entry, lbRTC_SEPTEMBER, day, mSC_EVENT_FALL_SPORTS_FAIR, mCD_DAY_EVENT, 0);
 
     mDC_set_event_day_data(entry, lbRTC_JULY, (lbRTC_day_t)Save_Get(town_day), mSC_EVENT_TOWN_DAY, mCD_DAY_EVENT, 0);
-    
+
 #ifdef TARGET_PC
     if (!lbRk_TryHarvestMoonDay(&harvest_moon_day, year)) {
         return;
@@ -421,7 +421,7 @@ static void mCD_make_calendar_data_unfixed_day_event(mCD_month_entry_c* entry, l
 static void mCD_make_calendar_data_year(lbRTC_year_t year, mCD_month_entry_c* entry, int player_no) {
     mPr_birthday_c* birthday;
     int i;
-    
+
     mCD_make_calendar_data_month(entry, year, player_no);
     mCD_make_calendar_data_fixed_day_event(entry);
     mCD_make_calendar_data_unfixed_day_event(entry, year);
@@ -512,6 +512,7 @@ extern Vtx cal_hyouji_v[];
 extern Vtx cal_hyouji2_v[];
 
 static u32 mCD_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 trigger, int* day_idx) {
+    const GamePointerFrame* pointer = acgc_pointer_frame();
     mCD_Ovl_c* calendar = submenu->overlay->calendar_ovl;
     mCD_month_entry_c* entry = &calendar->month_entries[calendar->_1056];
     int selecting_month = calendar->move_proc_idx == mCD_MVPL_SELECT;
@@ -521,28 +522,29 @@ static u32 mCD_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 tr
     s32 wheel;
     int i;
 
+    mouse_x = pointer->x;
+    mouse_y = pointer->y;
     if (submenu->current_menu_type != mSM_OVL_CALENDAR ||
-        !pc_mouse_update_owner(FALSE, pc_mouse_pad_active()) ||
-        !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+        !pointer->visible || !pointer->inside) {
         return trigger;
     }
 
-    pressed = pc_mouse_button_pressed();
-    if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+    pressed = pointer->pressed;
+    if (pressed & GAME_POINTER_RIGHT) {
         return trigger | BUTTON_B;
     }
-    wheel = pc_mouse_scroll_wheel();
+    wheel = pointer->scroll_steps_y;
     if (wheel != 0) {
         if (selecting_month) {
-            calendar->_105C = wheel > 0 ? mCD_STICK_AREA_LEFT : mCD_STICK_AREA_RIGHT;
+            calendar->_105C = wheel < 0 ? mCD_STICK_AREA_LEFT : mCD_STICK_AREA_RIGHT;
             return trigger;
         }
-        return trigger | (wheel > 0 ? BUTTON_CUP : BUTTON_CDOWN);
+        return trigger | (wheel < 0 ? BUTTON_CUP : BUTTON_CDOWN);
     }
 
     x = mouse_x - 160.0f;
     y = 120.0f - mouse_y - (selecting_month ? calendar->_102C : calendar->_1030) + menu_info->position[1];
-    if (pressed & PC_MOUSE_BUTTON_LEFT) {
+    if (pressed & GAME_POINTER_LEFT) {
         if (selecting_month) {
             if (mSM_mouse_over_quad(&cal_hyouji_v[20], x, y, 2.0f)) {
                 calendar->_105C = mCD_STICK_AREA_LEFT;
@@ -574,14 +576,14 @@ static u32 mCD_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 tr
         if ((entry->day_data[i] & 0x1F) != 0 &&
             mSM_mouse_over_quad(&cal_win_v[128], x - (i % lbRTC_WEEK) * 32.0f,
                                y + (i / lbRTC_WEEK) * 20.0f, 0.0f)) {
-            if (!selecting_month || (pressed & PC_MOUSE_BUTTON_LEFT)) {
+            if (!selecting_month || (pressed & GAME_POINTER_LEFT)) {
                 *day_idx = i;
             }
-            return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+            return trigger | ((pressed & GAME_POINTER_LEFT) ? BUTTON_A : 0);
         }
     }
 
-    if (selecting_month && (pressed & PC_MOUSE_BUTTON_LEFT) &&
+    if (selecting_month && (pressed & GAME_POINTER_LEFT) &&
         mSM_mouse_over_quad(&cal_win_v[160], x, y, 2.0f)) {
         return trigger | BUTTON_CUP;
     }
@@ -906,7 +908,7 @@ static void mCD_calendar_ovl_move(Submenu* submenu) {
         mCD_move_End,
         // clang-format on
     };
-    
+
     mSM_MenuInfo_c* menu_info = &submenu->overlay->menu_info[mSM_OVL_CALENDAR];
 
     mCD_stick_area_check(submenu);

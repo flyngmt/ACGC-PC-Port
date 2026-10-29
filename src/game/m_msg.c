@@ -15,7 +15,7 @@
 #include "pc_settings.h"
 #endif
 #ifdef MOUSE_INPUT
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #endif
 
 static u32 Msg_table_rom_start = 0;
@@ -34,11 +34,11 @@ static u16 mMsg_get_trigger(void) {
     u16 buttons = getTrigger();
 #ifdef MOUSE_INPUT
     if (!mEv_IsTitleDemo()) {
-        u32 mouse_buttons = pc_mouse_button_pressed();
-        if (mouse_buttons & PC_MOUSE_BUTTON_LEFT) {
+        u32 mouse_buttons = acgc_pointer_frame()->pressed;
+        if (mouse_buttons & GAME_POINTER_LEFT) {
             buttons |= BUTTON_A;
         }
-        if (mouse_buttons & PC_MOUSE_BUTTON_RIGHT) {
+        if (mouse_buttons & GAME_POINTER_RIGHT) {
             buttons |= BUTTON_B;
         }
     }

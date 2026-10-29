@@ -9,7 +9,7 @@
 #include "m_cpwarning_ovl.h"
 #include "m_malloc.h"
 #ifdef MOUSE_INPUT
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #endif
 
 enum {
@@ -441,22 +441,27 @@ static void mDI_Play_editor_in(Submenu* submenu, mSM_MenuInfo_c* menu_info, mDI_
 extern Vtx dia_hyouji_v[];
 
 static u32 mDI_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 trigger) {
+#ifdef MOUSE_INPUT
+    const GamePointerFrame* pointer = acgc_pointer_frame();
+#endif
     mDI_Ovl_c* diary_ovl = submenu->overlay->diary_ovl;
     f32 mouse_x, mouse_y;
     u32 pressed;
     s32 wheel;
 
+    mouse_x = pointer->x;
+    mouse_y = pointer->y;
     if (submenu->current_menu_type != mSM_OVL_DIARY ||
-        !pc_mouse_update_owner(FALSE, pc_mouse_pad_active()) ||
-        !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+        !pointer->visible ||
+        !pointer->inside) {
         return trigger;
     }
 
-    pressed = pc_mouse_button_pressed();
-    if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+    pressed = pointer->pressed;
+    if (pressed & GAME_POINTER_RIGHT) {
         return trigger | BUTTON_B;
     }
-    if (pressed & PC_MOUSE_BUTTON_LEFT) {
+    if (pressed & GAME_POINTER_LEFT) {
         if (menu_info->data0 == 1) {
             return trigger | BUTTON_B;
         }
@@ -473,9 +478,9 @@ static u32 mDI_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 tr
         }
     }
 
-    wheel = pc_mouse_scroll_wheel();
+    wheel = pointer->scroll_steps_y;
     if (wheel != 0) {
-        u32 direction = wheel > 0 ? BUTTON_DUP : BUTTON_DDOWN;
+        u32 direction = wheel < 0 ? BUTTON_DUP : BUTTON_DDOWN;
         diary_ovl->trigger |= direction;
         diary_ovl->button |= direction;
     }

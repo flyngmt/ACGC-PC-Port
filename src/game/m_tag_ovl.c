@@ -1,7 +1,7 @@
 #include "m_tag_ovl.h"
 
 #ifdef TARGET_PC
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #endif
 
 #include "m_common_data.h"
@@ -8173,23 +8173,28 @@ static void mTG_get_mouse_slot_pos(Submenu* submenu, f32* pos, int table, int id
 }
 
 static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
+#ifdef MOUSE_INPUT
+    const GamePointerFrame* pointer = acgc_pointer_frame();
+#endif
     mTG_Ovl_c* tag_ovl = submenu->overlay->tag_ovl;
     mHD_Ovl_c* hand_ovl = submenu->overlay->hand_ovl;
     mTG_tag_c* tag = &tag_ovl->tags[tag_ovl->sel_tag_idx];
     int normal_inventory = menu_info->menu_type == mSM_OVL_INVENTORY && menu_info->data0 == mSM_IV_OPEN_NORMAL;
 
     f32 logical_mouse_x, logical_mouse_y;
-    if (!pc_mouse_get_ui_position(&logical_mouse_x, &logical_mouse_y)) {
+    logical_mouse_x = pointer->x;
+    logical_mouse_y = pointer->y;
+    if (!pointer->inside) {
         tag_ovl->mouse_active = 0;
         tag_ovl->hovered_table = tag_ovl->hovered_idx = -1;
         tag_ovl->hovered_col = tag_ovl->hovered_row = tag_ovl->hovered_option = -1;
         return;
     }
 
-    tag_ovl->mouse_active = pc_mouse_update_owner(tag_ovl->mouse_active, pc_mouse_pad_active());
-    u32 mouse_pressed = pc_mouse_button_pressed();
-    s32 mouse_wheel = pc_mouse_scroll_wheel();
-    s32 mouse_moved = pc_mouse_moved();
+    tag_ovl->mouse_active = pointer->visible;
+    u32 mouse_pressed = pointer->pressed;
+    s32 mouse_wheel = pointer->scroll_steps_y;
+    s32 mouse_moved = pointer->moved;
 
     tag_ovl->mouse_x = logical_mouse_x;
     tag_ovl->mouse_y = logical_mouse_y;
@@ -8212,7 +8217,7 @@ static void mTG_mouse_move_func(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
             mCL_Ovl_c* catalog_ovl = submenu->overlay->catalog_ovl;
             mCL_Menu_c* catalog_menu = &catalog_ovl->menu_data[catalog_ovl->page_order[0]];
 
-            if (mouse_wheel > 0) {  // Scroll up
+            if (mouse_wheel < 0) {  // Scroll up
                 if (catalog_menu->top_idx != 0) {
                     catalog_menu->top_idx--;
                     catalog_ovl->change_flag = TRUE;
@@ -9419,6 +9424,9 @@ static void mTG_draw_func(Submenu* submenu, GAME* game, int menu_type) {
 }
 
 extern void mTG_tag_ovl_construct(Submenu* submenu) {
+#ifdef MOUSE_INPUT
+    const GamePointerFrame* pointer = acgc_pointer_frame();
+#endif
     Submenu_Overlay_c* overlay_p = submenu->overlay;
     mSM_Control_c* menu_control = &overlay_p->menu_control;
     mTG_Ovl_c* tag_ovl_p;
@@ -9450,8 +9458,10 @@ extern void mTG_tag_ovl_construct(Submenu* submenu) {
 #ifdef MOUSE_INPUT
         tag_ovl_p->mouse_x = 160;
         tag_ovl_p->mouse_y = 120;
-        tag_ovl_p->mouse_active = pc_mouse_pointer_visible() &&
-            pc_mouse_get_ui_position(&tag_ovl_p->mouse_x, &tag_ovl_p->mouse_y);
+        tag_ovl_p->mouse_x = pointer->x;
+        tag_ovl_p->mouse_y = pointer->y;
+        tag_ovl_p->mouse_active = pointer->visible &&
+            pointer->inside;
         tag_ovl_p->hovered_table = -1;
         tag_ovl_p->hovered_idx = -1;
         tag_ovl_p->hovered_col = -1;

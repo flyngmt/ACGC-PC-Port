@@ -5,7 +5,7 @@
 #include "m_common_data.h"
 #include "m_font.h"
 #ifdef MOUSE_INPUT
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #endif
 
 static mCW_Ovl_c cpwarning_ovl_data;
@@ -49,6 +49,9 @@ static void mCW_move_Move(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 
 #ifdef MOUSE_INPUT
 static u32 mCW_mouse_trigger(Submenu* submenu, u32 trigger) {
+#ifdef MOUSE_INPUT
+    const GamePointerFrame* pointer = acgc_pointer_frame();
+#endif
     mCW_Ovl_c* cpwarning_ovl = submenu->overlay->cpwarning_ovl;
     f32 scale = cpwarning_ovl->scale;
     f32 mouse_x, mouse_y;
@@ -56,14 +59,16 @@ static u32 mCW_mouse_trigger(Submenu* submenu, u32 trigger) {
     u32 pressed;
     int i;
 
+    mouse_x = pointer->x;
+    mouse_y = pointer->y;
     if (submenu->current_menu_type != mSM_OVL_CPWARNING ||
-        !pc_mouse_update_owner(FALSE, pc_mouse_pad_active()) ||
-        !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+        !pointer->visible ||
+        !pointer->inside) {
         return trigger;
     }
 
-    pressed = pc_mouse_button_pressed();
-    if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+    pressed = pointer->pressed;
+    if (pressed & GAME_POINTER_RIGHT) {
         cpwarning_ovl->diary_edit_mode = 1;
         return trigger | BUTTON_A;
     }
@@ -79,7 +84,7 @@ static u32 mCW_mouse_trigger(Submenu* submenu, u32 trigger) {
                 cpwarning_ovl->diary_edit_mode = i;
                 sAdo_SysTrgStart(NA_SE_CURSOL);
             }
-            return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+            return trigger | ((pressed & GAME_POINTER_LEFT) ? BUTTON_A : 0);
         }
     }
     return trigger;

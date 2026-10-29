@@ -4,7 +4,7 @@
 #include "m_font.h"
 #include "sys_matrix.h"
 #ifdef MOUSE_INPUT
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #endif
 
 static mBR_Ovl_c birthday_ovl_data;
@@ -27,15 +27,17 @@ static void mBR_move_Move(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 extern Vtx bir_win_v[];
 
 static u32 mBR_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 trigger) {
+  const GamePointerFrame* pointer = acgc_pointer_frame();
   mBR_Ovl_c* birthday_ovl = submenu->overlay->birthday_ovl;
   f32 mouse_x, mouse_y;
   u32 pressed;
   s32 wheel;
   int idx = -1;
 
+  mouse_x = pointer->x;
+  mouse_y = pointer->y;
   if (submenu->current_menu_type != mSM_OVL_BIRTHDAY ||
-      !pc_mouse_update_owner(FALSE, pc_mouse_pad_active()) ||
-      !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+      !pointer->visible || !pointer->inside) {
     return trigger;
   }
 
@@ -64,15 +66,15 @@ static u32 mBR_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 tr
     sAdo_SysTrgStart(NA_SE_CURSOL);
   }
 
-  pressed = pc_mouse_button_pressed();
-  wheel = pc_mouse_scroll_wheel();
+  pressed = pointer->pressed;
+  wheel = pointer->scroll_steps_y;
   if (idx == mBR_Ovl_IDX_OK) {
-    return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+    return trigger | ((pressed & GAME_POINTER_LEFT) ? BUTTON_A : 0);
   }
-  if (wheel > 0 || (pressed & PC_MOUSE_BUTTON_LEFT)) {
+  if (wheel < 0 || (pressed & GAME_POINTER_LEFT)) {
     return trigger | BUTTON_CUP;
   }
-  if (wheel < 0 || (pressed & PC_MOUSE_BUTTON_RIGHT)) {
+  if (wheel > 0 || (pressed & GAME_POINTER_RIGHT)) {
     return trigger | BUTTON_CDOWN;
   }
   return trigger;
@@ -231,7 +233,7 @@ static void mBR_set_dl(Submenu* submenu, mSM_MenuInfo_c* menu_info, GAME* game) 
 
   gSPMatrix(gfx++, _Matrix_to_Mtx_new(graph), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
   gSPDisplayList(gfx++, birthday_win_mode);
-  
+
   tex_x = -submenu->overlay->menu_control.texture_pos[0] * 4.0f;
   tex_y = -submenu->overlay->menu_control.texture_pos[1] * 4.0f;
   s = (int)tex_x & 0xFF;
@@ -307,7 +309,7 @@ static void mBR_birthday_ovl_init(Submenu* submenu) {
   mBR_Ovl_c* birthday_ovl = submenu->overlay->birthday_ovl;
   (*submenu->overlay->move_chg_base_proc)(&submenu->overlay->menu_info[mSM_OVL_BIRTHDAY], mSM_MOVE_IN_TOP);
   submenu->overlay->menu_control.animation_flag = FALSE;
-  
+
   birthday_ovl->birthday_data[mBR_Ovl_IDX_MONTH] = lbRTC_JANUARY;
   birthday_ovl->birthday_data[mBR_Ovl_IDX_DAY] = 1;
   sAdo_SysTrgStart(0x17C);

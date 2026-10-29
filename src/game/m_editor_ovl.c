@@ -20,7 +20,7 @@
 #include "pc_typing.h"
 #endif
 #ifdef MOUSE_INPUT
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #include <math.h>
 #endif
 
@@ -343,6 +343,9 @@ extern Vtx kai_sousa_v[];
 static void mED_mouse_place_cursor(Submenu* submenu, f32 mouse_x, f32 mouse_y);
 
 static u32 mED_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 trigger) {
+#ifdef MOUSE_INPUT
+    const GamePointerFrame* pointer = acgc_pointer_frame();
+#endif
     /* Quad offsets used by the control display lists in kai_sousa.c. */
     static const struct {
         int first_vertex;
@@ -361,14 +364,16 @@ static u32 mED_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 tr
     u32 pressed;
     int i;
 
+    mouse_x = pointer->x;
+    mouse_y = pointer->y;
     if (submenu->current_menu_type != mSM_OVL_EDITOR ||
-        !pc_mouse_update_owner(FALSE, pc_mouse_pad_active()) ||
-        !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+        !pointer->visible ||
+        !pointer->inside) {
         return trigger;
     }
 
-    pressed = pc_mouse_button_pressed();
-    if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+    pressed = pointer->pressed;
+    if (pressed & GAME_POINTER_RIGHT) {
         return trigger | BUTTON_B;
     }
 
@@ -384,11 +389,11 @@ static u32 mED_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 tr
                 editor_ovl->select_row = row;
                 sAdo_SysTrgStart(0x411);
             }
-            return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+            return trigger | ((pressed & GAME_POINTER_LEFT) ? BUTTON_A : 0);
         }
     }
 
-    if (pressed & PC_MOUSE_BUTTON_LEFT) {
+    if (pressed & GAME_POINTER_LEFT) {
         for (i = 0; i < mED_INPUT_MODE_NUM; i++) {
             if (mSM_mouse_over_quad(&kai_sousa_v[12 + i * 4], mouse_x, mouse_y, 0.0f)) {
                 if (editor_ovl->input_mode != i) {
@@ -2049,11 +2054,6 @@ static void mED_move_Play(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
             mED_set_command(editor_ovl, trigger);
 #ifdef TARGET_PC
         }
-#ifdef MOUSE_INPUT
-        else {
-            pc_mouse_update_owner(FALSE, TRUE);
-        }
-#endif
 #endif
         (*mED_edit_func[menu_info->data0])(submenu, menu_info);
 

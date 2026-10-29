@@ -17,7 +17,7 @@
 #include "gfxalloc.h"
 #include "m_design_ovl.h"
 #include "m_play.h"
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #include "aurora_mouse_cursor.h"
 #include "pc_platform.h"
 
@@ -1001,7 +1001,7 @@ static void mHD_hand_ovl_draw(Submenu* submenu, GAME* game) {
 #ifdef MOUSE_INPUT
         mouse_pointer_menu_hand_drawn = TRUE;
         if (submenu->overlay->tag_ovl->mouse_active) {
-            draw_hand = pc_mouse_pointer_visible();
+            draw_hand = acgc_pointer_frame()->visible;
         }
 #endif
         f32 cos_x = cos_s(mHD_ROT_X);
@@ -1096,13 +1096,16 @@ void mHD_mouse_pointer_get_offset(f32* x, f32* y) {
 }
 
 void mHD_mouse_pointer_begin_frame(void) {
-    u32 pressed = pc_mouse_button_pressed();
-    int holding_left = (pc_mouse_button_held() & PC_MOUSE_BUTTON_LEFT) != 0;
+#ifdef MOUSE_INPUT
+    const GamePointerFrame* pointer = acgc_pointer_frame();
+#endif
+    u32 pressed = pointer->pressed;
+    int holding_left = (pointer->held & GAME_POINTER_LEFT) != 0;
 
     mouse_pointer_menu_hand_drawn = FALSE;
-    if (!pc_mouse_pointer_visible()) {
+    if (!pointer->visible) {
         mouse_pointer_animation_frame = 0.0f;
-    } else if ((pressed & PC_MOUSE_BUTTON_LEFT) || (!holding_left && (pressed & PC_MOUSE_BUTTON_RIGHT))) {
+    } else if ((pressed & GAME_POINTER_LEFT) || (!holding_left && (pressed & GAME_POINTER_RIGHT))) {
         mouse_pointer_animation_frame = 1.0f;
     } else if (mouse_pointer_animation_frame > 0.0f) {
         mouse_pointer_animation_frame += mHD_animeSpdTable[mHD_ACTION_SASU] * gamePT->graph->dt_num_60fps_frames;
@@ -1125,7 +1128,7 @@ void mHD_mouse_pointer_draw(GAME* game) {
     f32 animation_start = 1.0f;
     f32 animation_end = mouse_pointer_animation_hold_frame;
 
-    if (mouse_pointer_menu_hand_drawn || !pc_mouse_pointer_visible()) {
+    if (mouse_pointer_menu_hand_drawn || !acgc_pointer_frame()->visible) {
         return;
     }
 

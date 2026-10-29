@@ -9,7 +9,7 @@
 #include "m_font.h"
 #include "m_bgm.h"
 #ifdef MOUSE_INPUT
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #endif
 
 #define mMS_NOTE_SPACING_X 21.0f
@@ -141,6 +141,9 @@ extern Vtx onp_win_v[];
 extern Vtx onp_carde_v[];
 
 static u32 mMS_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 trigger) {
+#ifdef MOUSE_INPUT
+    const GamePointerFrame* pointer = acgc_pointer_frame();
+#endif
     /* Control quads from onp_hyouji2.c and onp_win.c. */
     static const struct {
         Vtx* vertices;
@@ -158,17 +161,19 @@ static u32 mMS_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 tr
     u32 pressed;
     int i;
 
+    mouse_x = pointer->x;
+    mouse_y = pointer->y;
     if (submenu->current_menu_type != mSM_OVL_MSCORE ||
-        !pc_mouse_update_owner(FALSE, pc_mouse_pad_active()) ||
-        !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+        !pointer->visible ||
+        !pointer->inside) {
         return trigger;
     }
 
     mouse_x -= menu_info->position[0];
     mouse_y += menu_info->position[1];
-    pressed = pc_mouse_button_pressed();
+    pressed = pointer->pressed;
     if (menu_info->proc_status == mSM_OVL_PROC_OBEY) {
-        if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+        if (pressed & GAME_POINTER_RIGHT) {
             return trigger | BUTTON_B;
         }
         for (i = 0; i < 2; i++) {
@@ -182,7 +187,7 @@ static u32 mMS_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 tr
                     mscore_ovl->menu_idx = i;
                     sAdo_SysTrgStart(NA_SE_CURSOL);
                 }
-                return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+                return trigger | ((pressed & GAME_POINTER_LEFT) ? BUTTON_A : 0);
             }
         }
         return trigger;
@@ -193,10 +198,10 @@ static u32 mMS_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 tr
             if (controls[i].trigger == BUTTON_START) {
                 mscore_ovl->cursor_idx = 16;
             }
-            if (pressed & PC_MOUSE_BUTTON_LEFT) {
+            if (pressed & GAME_POINTER_LEFT) {
                 return trigger | controls[i].trigger;
             }
-            return trigger | ((pressed & PC_MOUSE_BUTTON_RIGHT) ? BUTTON_START : 0);
+            return trigger | ((pressed & GAME_POINTER_RIGHT) ? BUTTON_START : 0);
         }
     }
 
@@ -207,19 +212,19 @@ static u32 mMS_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 tr
         x += 160.0f - mMS_NOTE_SPACING_X * 0.5f;
         y = 120.0f - y;
         if (mouse_x >= x && mouse_x < x + mMS_NOTE_SPACING_X && mouse_y >= y && mouse_y < y + mMS_NOTE_SPACING_Y) {
-            s32 wheel = pc_mouse_scroll_wheel();
+            s32 wheel = pointer->scroll_steps_y;
 
             mscore_ovl->cursor_idx = i;
-            if (wheel > 0 || (pressed & PC_MOUSE_BUTTON_LEFT)) {
+            if (wheel < 0 || (pressed & GAME_POINTER_LEFT)) {
                 trigger |= BUTTON_CUP;
-            } else if (wheel < 0 || (pressed & PC_MOUSE_BUTTON_RIGHT)) {
+            } else if (wheel > 0 || (pressed & GAME_POINTER_RIGHT)) {
                 trigger |= BUTTON_CDOWN;
             }
             return trigger;
         }
     }
 
-    return trigger | ((pressed & PC_MOUSE_BUTTON_RIGHT) ? BUTTON_START : 0);
+    return trigger | ((pressed & GAME_POINTER_RIGHT) ? BUTTON_START : 0);
 }
 #endif
 

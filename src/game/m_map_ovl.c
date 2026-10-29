@@ -12,7 +12,7 @@
 #include "m_malloc.h"
 #include "m_common_data.h"
 #ifdef MOUSE_INPUT
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #endif
 
 #define mMP_MAP_OFFSET_X 11.7f
@@ -907,17 +907,22 @@ static void mMP_close(Submenu* submenu, mSM_MenuInfo_c* menu) {
 
 #ifdef MOUSE_INPUT
 static void mMP_mouse_move(Submenu* submenu, mSM_MenuInfo_c* menu) {
+#ifdef MOUSE_INPUT
+    const GamePointerFrame* pointer = acgc_pointer_frame();
+#endif
     mMP_Ovl_c* map_ovl = submenu->overlay->map_ovl;
     f32 mouse_x, mouse_y;
     int bx, bz;
 
+    mouse_x = pointer->x;
+    mouse_y = pointer->y;
     if (submenu->current_menu_type != mSM_OVL_MAP ||
-        !pc_mouse_update_owner(FALSE, pc_mouse_pad_active()) ||
-        !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+        !pointer->visible ||
+        !pointer->inside) {
         return;
     }
 
-    if (pc_mouse_button_pressed() & PC_MOUSE_BUTTON_RIGHT) {
+    if (pointer->pressed & GAME_POINTER_RIGHT) {
         mMP_close(submenu, menu);
         return;
     }

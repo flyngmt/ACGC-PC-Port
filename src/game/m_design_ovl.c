@@ -1,7 +1,7 @@
 #include "m_design_ovl.h"
 
 #ifdef TARGET_PC
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #endif
 
 #include "m_debug.h"
@@ -1047,8 +1047,8 @@ void mDE_undo(mDE_Ovl_c* design_ovl) {
 }
 
 #ifdef MOUSE_INPUT
-    #define GET_BUTTON_PRESSED(b, m) (chkTrigger(b) || (design_ovl->mouse_active && (pc_mouse_button_pressed() & (m))))
-    #define GET_BUTTON_HELD(b, m) (chkButton(b) || (design_ovl->mouse_active && (pc_mouse_button_held() & (m))))
+    #define GET_BUTTON_PRESSED(b, m) (chkTrigger(b) || (design_ovl->mouse_active && (acgc_pointer_frame()->pressed & (m))))
+    #define GET_BUTTON_HELD(b, m) (chkButton(b) || (design_ovl->mouse_active && (acgc_pointer_frame()->held & (m))))
 #else
     #define GET_BUTTON_PRESSED(b, m) chkTrigger(b)
     #define GET_BUTTON_HELD(b, m) chkButton(b)
@@ -1108,7 +1108,7 @@ void mDE_main_pen_move(mDE_Ovl_c* design_ovl) {
         int dy = current_y - prev_y;
         int steps = ABS(dx) + ABS(dy);
 
-        if (steps > 1 && pc_mouse_button_held() & (1 << 0)) {
+        if (steps > 1 && acgc_pointer_frame()->held & (1 << 0)) {
             // Interpolate between previous and current positions then draw
             for (int step = 1; step <= steps; step++) {
                 int interp_x = prev_x + (dx * step) / steps;
@@ -1867,7 +1867,7 @@ void mDE_mode_main_mouse_move(mDE_Ovl_c* design_ovl) {
     }
 
     // Waku cursor orientation check    
-    if (pc_mouse_moved() && design_ovl->main_mode_act == mDE_MAIN_MODE_WAKU) {
+    if (acgc_pointer_frame()->moved && design_ovl->main_mode_act == mDE_MAIN_MODE_WAKU) {
         if (design_ovl->_69A && design_ovl->_699 != 9) {
             // Calculate orientation based on cursor position relative to start point
             if (design_ovl->cursor_x >= design_ovl->_678 && design_ovl->cursor_y <= design_ovl->_67C) {
@@ -2160,7 +2160,7 @@ void mDE_mode_pallet_mouse_move(mDE_Ovl_c* design_ovl) {
     }
 
     if (color_index >= 0 && color_index <= 15) {
-        u32 mouse_pressed = pc_mouse_button_pressed();
+        u32 mouse_pressed = acgc_pointer_frame()->pressed;
 
         if (design_ovl->_6A5 != color_index) {
             design_ovl->_6A5 = color_index;
@@ -2327,7 +2327,7 @@ void mDE_mode_tool_mouse_move(mDE_Ovl_c* design_ovl) {
 
     // Update tool selection based on mouse hover
     if (index_y != -1) {
-        u32 mouse_pressed = pc_mouse_button_pressed();
+        u32 mouse_pressed = acgc_pointer_frame()->pressed;
 
         design_ovl->mouse_tool_active = 1;
         if (design_ovl->mouse_tool_y != index_y || design_ovl->mouse_tool_x != index_x) {
@@ -2523,18 +2523,39 @@ void mDE_move_tool_decide(mDE_Ovl_c* design_ovl) {
 }
 
 void mDE_move_Play(Submenu* submenu, mSM_MenuInfo_c* info) {
+#ifdef MOUSE_INPUT
+    const GamePointerFrame* pointer = acgc_pointer_frame();
+#endif
     u32 trigger = submenu->overlay->menu_control.trigger;
     mDE_Ovl_c* design_ovl = submenu->overlay->design_ovl;
 
 #ifdef MOUSE_INPUT
     f32 ui_x, ui_y;
-    int inside_viewport = pc_mouse_get_ui_position(&ui_x, &ui_y);
+    ui_x = pointer->x;
+    ui_y = pointer->y;
+    int inside_viewport = pointer->inside;
     f32 centered_x = ui_x - 160.0f;
     f32 centered_y = 120.0f - ui_y;
     design_ovl->centered_x = centered_x;
     design_ovl->centered_y = centered_y;
 
-    design_ovl->mouse_active = pc_mouse_update_owner(design_ovl->mouse_active, pc_mouse_pad_active());
+    // A capture or viewport loss abandons a mouse stroke/shape. In particular,
+    // the next fresh click must not finish a shape started before cancellation.
+    if (pointer->cancelled && design_ovl->mouse_active) {
+        design_ovl->_6CC = 0;
+        design_ovl->prev_cursor_x = -1;
+        design_ovl->prev_cursor_y = -1;
+        design_ovl->mouse_tool_active = 0;
+        if (design_ovl->main_mode_act == mDE_MAIN_MODE_WAKU) {
+            design_ovl->_69A = 0;
+            design_ovl->_698 = 0;
+            design_ovl->_680 = 0;
+            design_ovl->_684 = 0;
+            design_ovl->_688 = 0;
+            design_ovl->_68C = 0;
+        }
+    }
+    design_ovl->mouse_active = pointer->visible;
     if (!inside_viewport) {
         design_ovl->mouse_tool_active = 0;
     }
@@ -2543,9 +2564,9 @@ void mDE_move_Play(Submenu* submenu, mSM_MenuInfo_c* info) {
     if (design_ovl->mouse_active) {
         design_ovl->move_pR = gamePT->mcon.move_pR;
         mDE_judge_stick_nuetral(design_ovl);
-        u32 mouse_held = pc_mouse_button_held();
+        u32 mouse_held = pointer->held;
         int holding_mouse = design_ovl->mode == mDE_MODE_MAIN &&
-            ((mouse_held & (PC_MOUSE_BUTTON_LEFT | PC_MOUSE_BUTTON_RIGHT)) ||
+            ((mouse_held & (GAME_POINTER_LEFT | GAME_POINTER_RIGHT)) ||
              (design_ovl->main_mode_act == mDE_MAIN_MODE_WAKU && design_ovl->_69A && design_ovl->_699 != 9));
 
         int new_mode = -1;

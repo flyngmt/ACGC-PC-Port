@@ -29,7 +29,7 @@
 #include "m_debug.h"
 
 #ifdef MOUSE_INPUT
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #endif
 
 static int l_skip_other_func_set_wade = FALSE;
@@ -1609,10 +1609,11 @@ static void Player_actor_main_Demo_get_golden_axe_wait(ACTOR*, GAME*);
         }
 
 #ifdef MOUSE_INPUT
-        if (mMsg_CHECK_MAINHIDE() && pc_mouse_pointer_visible()) {
-            int mouse_wheel = pc_mouse_scroll_wheel();
+        const GamePointerFrame* pointer = acgc_pointer_frame();
+        if (mMsg_CHECK_MAINHIDE() && pointer->visible) {
+            int mouse_wheel = pointer->scroll_steps_y;
             if (mouse_wheel != 0) {
-                TrySwitchToolSlot(game, mouse_wheel > 0 ? -1 : 1, TRUE);
+                TrySwitchToolSlot(game, mouse_wheel < 0 ? -1 : 1, TRUE);
             }
         }
 #endif

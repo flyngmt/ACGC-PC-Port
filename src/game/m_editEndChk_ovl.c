@@ -5,7 +5,7 @@
 #include "m_font.h"
 #include "sys_matrix.h"
 #ifdef MOUSE_INPUT
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #endif
 
 typedef struct editEndChk_win_data_s {
@@ -52,6 +52,9 @@ static mEE_str_c mEE_answer_strings[] = {
 
 #ifdef MOUSE_INPUT
 static u32 mEE_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 trigger) {
+#ifdef MOUSE_INPUT
+    const GamePointerFrame* pointer = acgc_pointer_frame();
+#endif
     mEE_Ovl_c* editEndChk_ovl = submenu->overlay->editEndChk_ovl;
     mEE_win_data_c* data = &win_data[menu_info->data0];
     f32 mouse_x, mouse_y;
@@ -59,18 +62,20 @@ static u32 mEE_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 tr
     f32 x, y;
     int i;
 
+    mouse_x = pointer->x;
+    mouse_y = pointer->y;
     if (submenu->current_menu_type != mSM_OVL_EDITENDCHK ||
-        !pc_mouse_update_owner(FALSE, pc_mouse_pad_active()) ||
-        !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+        !pointer->visible ||
+        !pointer->inside) {
         return trigger;
     }
 
-    pressed = pc_mouse_button_pressed();
-    if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+    pressed = pointer->pressed;
+    if (pressed & GAME_POINTER_RIGHT) {
         return trigger | BUTTON_B;
     }
     if (!editEndChk_ovl->moving_in) {
-        return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+        return trigger | ((pressed & GAME_POINTER_LEFT) ? BUTTON_A : 0);
     }
     if (editEndChk_ovl->scale < 1.0f) {
         return trigger;
@@ -86,7 +91,7 @@ static u32 mEE_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 tr
                 editEndChk_ovl->selected_answer = i;
                 sAdo_SysTrgStart(NA_SE_CURSOL);
             }
-            if (pressed & PC_MOUSE_BUTTON_LEFT) {
+            if (pressed & GAME_POINTER_LEFT) {
                 trigger |= BUTTON_A;
             }
             break;

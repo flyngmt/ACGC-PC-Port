@@ -47,12 +47,11 @@ static int mChoice_Main_Normal_SetChoice(mChoice_c* choice, GAME* game) {
     u32 trigger = getTrigger();
 
 #ifdef MOUSE_INPUT
-    f32 mx, my;
-    int inside_viewport = pc_mouse_get_ui_position(&mx, &my);
+    const GamePointerFrame* pointer = acgc_pointer_frame();
+    int inside_viewport = pointer->inside;
 
-    int mouse_active = pc_mouse_update_owner(FALSE, pc_mouse_pad_active());
-    int hover_idx = inside_viewport ? mChoice_GetMouseHoverIdx(choice, mx, my) : -1;
-    if (mouse_active && hover_idx != -1 && hover_idx != choice->selected_choice_idx) {
+    int hover_idx = inside_viewport ? mChoice_GetMouseHoverIdx(choice, pointer->x, pointer->y) : -1;
+    if (pointer->visible && hover_idx != -1 && hover_idx != choice->selected_choice_idx) {
         choice->selected_choice_idx = hover_idx;
         mChoice_sound_CURSOL(); 
         
@@ -60,12 +59,12 @@ static int mChoice_Main_Normal_SetChoice(mChoice_c* choice, GAME* game) {
         choice->choice_automove_timer = 0.0f;
     }
 
-    if (mouse_active && inside_viewport) {
-        u32 pressed = pc_mouse_button_pressed();
-        if (hover_idx != -1 && (pressed & PC_MOUSE_BUTTON_LEFT)) {
+    if (pointer->visible && inside_viewport) {
+        u32 pressed = pointer->pressed;
+        if (hover_idx != -1 && (pressed & GAME_POINTER_LEFT)) {
             trigger |= BUTTON_A;
         }
-        if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+        if (pressed & GAME_POINTER_RIGHT) {
             trigger |= BUTTON_B;
         }
     }

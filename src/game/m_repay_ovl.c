@@ -6,7 +6,7 @@
 #include "m_player_lib.h"
 #include "sys_matrix.h"
 #ifdef MOUSE_INPUT
-#include "pc_mouse_input.h"
+#include "game_pointer.h"
 #endif
 
 static mRP_Ovl_c rp_ovl_data;
@@ -59,20 +59,25 @@ static void mRP_move_Move(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
 
 #ifdef MOUSE_INPUT
 static u32 mRP_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 trigger) {
+#ifdef MOUSE_INPUT
+    const GamePointerFrame* pointer = acgc_pointer_frame();
+#endif
   mRP_Ovl_c* repay_ovl = submenu->overlay->repay_ovl;
   f32 mouse_x, mouse_y;
   u32 pressed;
   s32 wheel;
   int selected = -1;
 
+  mouse_x = pointer->x;
+  mouse_y = pointer->y;
   if (submenu->current_menu_type != mSM_OVL_REPAY ||
-      !pc_mouse_update_owner(FALSE, pc_mouse_pad_active()) ||
-      !pc_mouse_get_ui_position(&mouse_x, &mouse_y)) {
+      !pointer->visible ||
+      !pointer->inside) {
     return trigger;
   }
 
-  pressed = pc_mouse_button_pressed();
-  if (pressed & PC_MOUSE_BUTTON_RIGHT) {
+  pressed = pointer->pressed;
+  if (pressed & GAME_POINTER_RIGHT) {
     return trigger | BUTTON_B;
   }
 
@@ -108,12 +113,12 @@ static u32 mRP_mouse_trigger(Submenu* submenu, mSM_MenuInfo_c* menu_info, u32 tr
   }
 
   if (selected == mRP_CURSOR_OK) {
-    return trigger | ((pressed & PC_MOUSE_BUTTON_LEFT) ? BUTTON_A : 0);
+    return trigger | ((pressed & GAME_POINTER_LEFT) ? BUTTON_A : 0);
   }
-  wheel = pc_mouse_scroll_wheel();
-  if (wheel > 0 || (pressed & PC_MOUSE_BUTTON_LEFT)) {
+  wheel = pointer->scroll_steps_y;
+  if (wheel < 0 || (pressed & GAME_POINTER_LEFT)) {
     trigger |= BUTTON_CUP;
-  } else if (wheel < 0) {
+  } else if (wheel > 0) {
     trigger |= BUTTON_CDOWN;
   }
   return trigger;
