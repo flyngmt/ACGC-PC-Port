@@ -220,6 +220,7 @@ set(PC_SOURCES
     ${PC_ROOT}/src/ui/controller_config.cpp
     ${PC_ROOT}/src/ui/localization.cpp
     ${PC_ROOT}/src/ui/menu_bar.cpp
+    ${PC_ROOT}/src/ui/number_button.cpp
     ${PC_ROOT}/src/ui/overlay.cpp
     ${PC_ROOT}/src/ui/prelaunch.cpp
     ${PC_ROOT}/src/ui/scrolling_background.cpp

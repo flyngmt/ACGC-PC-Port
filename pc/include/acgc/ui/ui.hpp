@@ -22,5 +22,6 @@ bool initialized() noexcept;
 void shutdown() noexcept;
 void handle_event(const SDL_Event& event) noexcept;
 void update() noexcept;
+bool dispatching_controller_input() noexcept;
 
 } // namespace acgc::ui

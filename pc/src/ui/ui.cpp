@@ -24,6 +24,7 @@ namespace {
 bool sInitialized = false;
 bool sWasPausingGame = false;
 float sDisplayScale = 0.0f;
+bool sControllerInput = false;
 aurora::input::LayerId sMenuLayer = aurora::input::kInvalidLayerId;
 
 bool load_ui_fonts() {
@@ -63,6 +64,7 @@ void sync_pause_state() {
 }
 
 aurora::input::EventResult menu_event(const aurora::input::InputEvent& event, void*) {
+    sControllerInput = event.source.kind == aurora::input::InputSource::Kind::Controller;
     const auto* key = event.payload.get_if<aurora::input::InputEvent::KeyChanged>();
     if (key && key->scancode == SDL_SCANCODE_ESCAPE && key->pressed && !key->repeat && !any_document_visible() &&
         !sWasPausingGame) {
@@ -133,5 +135,9 @@ void update() noexcept {
     borealis::ui::update();
     theme::update();
     sync_pause_state();
+}
+
+bool dispatching_controller_input() noexcept {
+    return sControllerInput;
 }
 } // namespace acgc::ui

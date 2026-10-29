@@ -6,7 +6,7 @@
 #include <borealis/ui/component.hpp>
 #include <borealis/ui/group_button.hpp>
 #include <borealis/ui/modal.hpp>
-#include <borealis/ui/number_button.hpp>
+#include "acgc/ui/number_button.hpp"
 #include <borealis/ui/pane.hpp>
 #include "acgc/ui/localization.hpp"
 #include "acgc/input_profiles.hpp"

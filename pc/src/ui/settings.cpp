@@ -10,7 +10,7 @@
 #include <borealis/ui/config.hpp>
 #include <borealis/ui/dropdown_button.hpp>
 #include <borealis/ui/modal.hpp>
-#include <borealis/ui/number_button.hpp>
+#include "acgc/ui/number_button.hpp"
 #include <borealis/ui/pane.hpp>
 #include "acgc/ui/localization.hpp"
 
