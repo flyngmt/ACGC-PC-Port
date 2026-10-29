@@ -2,6 +2,7 @@
 #include <dolphin/mtx.h>
 
 #include "pc_platform.h"
+#include "pc_settings.h"
 
 #include <cstring>
 
@@ -19,6 +20,16 @@ float pc_widescreen_get_aspect_factor(void)
         return 1.0f;
     }
     return gcAspect / renderAspect;
+}
+
+float pc_widescreen_get_hud_edge_offset(void)
+{
+    if (!g_pc_settings.hud_at_edges) {
+        return 0.0f;
+    }
+
+    const float halfFontWidth = static_cast<float>(PC_GC_WIDTH) * 0.25f;
+    return halfFontWidth * (1.0f / pc_widescreen_get_aspect_factor() - 1.0f);
 }
 
 void pc_widescreen_set_projection(const void* mtx, u32 type)

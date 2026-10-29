@@ -18,6 +18,9 @@
 #include "audio.h"
 #include "m_scene_table.h"
 #include "m_private.h"
+#ifdef TARGET_PC
+#include "pc_platform.h"
+#endif
 
 extern int Camera2_InDoorCheck(void);
 
@@ -362,6 +365,9 @@ static void navigate_camera_draw(GAME_PLAY* play) {
         }
 
         Matrix_scale(16.0f, 16.0f, 16.0f, MTX_LOAD);
+#ifdef TARGET_PC
+        Matrix_translate(pc_widescreen_get_hud_edge_offset(), 0.0f, 0.0f, MTX_MULT);
+#endif
 
         font_gfx = NOW_FONT_DISP;
         gSPMatrix(font_gfx++, _Matrix_to_Mtx_new(g), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
@@ -529,6 +535,9 @@ static void mWt_mybell_confirmation_draw(GAME_PLAY* play) {
     GRAPH* g = play->game.graph;
     N64Mtx* font_mtx;
     Gfx* font_gfx;
+#ifdef TARGET_PC
+    f32 edge_x = pc_widescreen_get_hud_edge_offset();
+#endif
 
     font_mtx = GRAPH_ALLOC_TYPE(g, N64Mtx, 1);
 
@@ -543,6 +552,9 @@ static void mWt_mybell_confirmation_draw(GAME_PLAY* play) {
         }
 
         Matrix_scale(16.0f, 16.0f, 16.0f, MTX_LOAD);
+#ifdef TARGET_PC
+        Matrix_translate(edge_x, 0.0f, 0.0f, MTX_MULT);
+#endif
 
         font_gfx = NOW_FONT_DISP;
         gSPMatrix(font_gfx++, _Matrix_to_Mtx_new(g), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
@@ -575,8 +587,13 @@ static void mWt_mybell_confirmation_draw(GAME_PLAY* play) {
             mFont_UnintToString(bell_str, 7, S_mybell_conf.all_money, 6, TRUE, FALSE, TRUE);
             len = mMl_strlen(bell_str, 7, CHAR_SPACE);
 
+#ifdef TARGET_PC
+            mFont_SetLineStrings(game, bell_str, 7, edge_x + 260.0f - (mFont_GetStringWidth(bell_str, len, TRUE) * 0.75f),
+                                 48.0f, 255, 245, 0, a, FALSE, TRUE, 0.75f, 0.75f, mFont_MODE_FONT);
+#else
             mFont_SetLineStrings(game, bell_str, 7, 260.0f - (mFont_GetStringWidth(bell_str, len, TRUE) * 0.75f), 48.0f,
                                  255, 245, 0, a, FALSE, TRUE, 0.75f, 0.75f, mFont_MODE_FONT);
+#endif
         }
     }
 }

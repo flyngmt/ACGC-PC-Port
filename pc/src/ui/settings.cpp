@@ -522,6 +522,8 @@ SettingsWindow::SettingsWindow()
         add_bool(left, right, current.video.vsync, localization::get("settings.video.vsync"),
                  localization::get("settings.video.vsync_help"),
                  [](bool value) { aurora_enable_vsync(value); });
+        add_bool(left, right, current.video.hudAtEdges, localization::get("settings.video.hud_at_edges"),
+                 localization::get("settings.video.hud_at_edges_help"));
 
         left.register_control(
             left.add_select_button({

@@ -7,6 +7,9 @@
 #include "sys_matrix.h"
 #include "m_font.h"
 #include "m_common_data.h"
+#ifdef TARGET_PC
+#include "pc_platform.h"
+#endif
 
 static Banti_c banti;
 
@@ -77,7 +80,11 @@ static void banti_chk_disp_left(GAME_PLAY* play) {
     Game_play_Projection_Trans(play, &get_player_actor_withoutCheck(play)->actor_class.world.position,
                                &player_pos_screen);
 
+#ifdef TARGET_PC
+    if (player_pos_screen.x >= 180.0f + pc_widescreen_get_hud_edge_offset() && player_pos_screen.y >= 150.0f) {
+#else
     if (player_pos_screen.x >= 180.0f && player_pos_screen.y >= 150.0f) {
+#endif
         if (banti.move_left == FALSE) {
             banti.move_left = TRUE;
             banti.move_timer = 0.0f;
@@ -564,6 +571,14 @@ extern void banti_draw(GAME_PLAY* play) {
         if (banti.disp_left == TRUE) {
             Matrix_translate(-184.0f, 0.0f, 0.0f, MTX_MULT);
         }
+
+#ifdef TARGET_PC
+        {
+            f32 edge_x = pc_widescreen_get_hud_edge_offset();
+
+            Matrix_translate(banti.disp_left == TRUE ? -edge_x : edge_x, 0.0f, 0.0f, MTX_MULT);
+        }
+#endif
 
         {
             Gfx** gfx_pp;

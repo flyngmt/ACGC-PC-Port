@@ -21,6 +21,7 @@ typedef struct {
     int cstick_deadzone;  /* Gamepad C-stick deadzone, percent 0-40 (default 12) */
     int fast_text;        /* 0=normal (B latches fast text per message), 1=always fast text */
     int reduce_travel_move_out; /* 0=moving villager always follows a traveler, 1=only 10% of the time */
+    int hud_at_edges;     /* 0=corner HUD stays in the centered 4:3 area, 1=anchored to widescreen edges */
 } PCSettings;
 
 extern PCSettings g_pc_settings;

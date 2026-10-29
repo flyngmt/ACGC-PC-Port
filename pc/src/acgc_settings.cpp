@@ -156,6 +156,7 @@ UserSettings::Video::Video()
     , theme("video.theme", InterfaceTheme::Dynamic)
     , vsync("video.vsync", true)
     , maxFrameRate("video.maxFrameRate", 60)
+    , hudAtEdges("video.hudAtEdges", false)
 {
 }
 
@@ -219,6 +220,7 @@ void register_settings()
     config::register_var(current.video.theme);
     config::register_var(current.video.vsync);
     config::register_var(current.video.maxFrameRate);
+    config::register_var(current.video.hudAtEdges);
     config::register_var(current.enhancements.preloadTextures);
     config::register_var(current.enhancements.disableResetti);
     config::register_var(current.enhancements.disableShopVisitorRequirement);
@@ -274,6 +276,7 @@ void apply_settings_bridge(bool refreshGameplay)
     g_pc_settings.fullscreen = current.video.windowMode.value();
     g_pc_settings.vsync = current.video.vsync.value() ? 1 : 0;
     g_pc_settings.max_fps = current.video.maxFrameRate.value();
+    g_pc_settings.hud_at_edges = current.video.hudAtEdges.value() ? 1 : 0;
     g_pc_settings.preload_textures = current.enhancements.preloadTextures.value();
     g_pc_settings.disable_resetti = current.enhancements.disableResetti.value() ? 1 : 0;
     g_pc_settings.disable_shop_visitor_req = current.enhancements.disableShopVisitorRequirement.value() ? 1 : 0;

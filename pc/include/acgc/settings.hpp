@@ -44,6 +44,7 @@ struct UserSettings {
         ConfigVar<InterfaceTheme> theme;
         ConfigVar<bool> vsync;
         ConfigVar<int> maxFrameRate;
+        ConfigVar<bool> hudAtEdges;
 
         Video();
     } video;

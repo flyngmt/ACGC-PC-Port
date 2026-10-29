@@ -69,6 +69,7 @@ float pc_widescreen_get_aspect_factor(void);
 void pc_widescreen_set_projection(const void* mtx, u32 type);
 void pc_widescreen_set_viewport(float left, float top, float width, float height,
                                 float nearz, float farz);
+float pc_widescreen_get_hud_edge_offset(void);
 
 /* --- Widescreen mode (3-state) ---
  * 0 = hor+ (default): full-window viewport, FOV-corrected projection. Resets each frame.

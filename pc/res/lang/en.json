@@ -180,6 +180,8 @@
   "settings.video.frame_limit_help": "Set to 0 to remove the frame limit.",
   "settings.video.fullscreen": "Fullscreen",
   "settings.video.fullscreen_help": "Enable borderless fullscreen mode.",
+  "settings.video.hud_at_edges": "HUD at Screen Edges",
+  "settings.video.hud_at_edges_help": "On widescreen displays, move the clock, bell counter, and camera guide to the screen edges instead of the 4:3 area.",
   "settings.video.performance_section": "Performance",
   "settings.video.renderer": "Renderer",
   "settings.video.renderer.automatic": "Automatic",
