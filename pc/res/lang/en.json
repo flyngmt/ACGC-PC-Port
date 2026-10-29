@@ -70,6 +70,8 @@
   "controller.input.triangle": "Triangle",
   "controller.input.up": "Up",
   "controller.input.view": "View",
+  "controller.options.background_input": "Allow Background Input",
+  "controller.options.background_input_help": "Allow inputs even when the game window is not focused.",
   "controller.options.emulate_triggers": "Emulate Triggers",
   "controller.options.emulate_triggers_help": "Treat analog trigger movement as L and R button presses.",
   "controller.options.restore_defaults": "Restore Default Controls",

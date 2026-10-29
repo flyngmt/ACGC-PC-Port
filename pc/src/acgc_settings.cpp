@@ -246,7 +246,8 @@ UserSettings::Input::Input(borealis::config::Registry& registry)
     : stickDeadzone(registry, "input.stickDeadzone", 12, { .min = 0, .max = 40 }),
       cstickDeadzone(registry, "input.cstickDeadzone", 12, { .min = 0, .max = 40 }),
       autoAssignController(registry, "input.autoAssignController", true),
-      singlePortMigrated(registry, "input.singlePortMigrated", false)
+      singlePortMigrated(registry, "input.singlePortMigrated", false),
+      allowBackgroundInput(registry, "input.allowBackgroundInput", true)
 {
 }
 
@@ -388,6 +389,9 @@ void observe_runtime_settings()
     }));
     s_runtimeConnections.push_back(current.input.stickDeadzone.on_change(apply_controller_settings));
     s_runtimeConnections.push_back(current.input.cstickDeadzone.on_change(apply_controller_settings));
+    s_runtimeConnections.push_back(current.input.allowBackgroundInput.on_change([](bool value) {
+        aurora_set_background_input(value);
+    }));
     apply_runtime_settings(false);
 }
 

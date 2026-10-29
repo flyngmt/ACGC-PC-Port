@@ -92,6 +92,7 @@ struct UserSettings {
         borealis::config::Var<int> cstickDeadzone;
         borealis::config::Var<bool> autoAssignController;
         borealis::config::Var<bool> singlePortMigrated;
+        borealis::config::Var<bool> allowBackgroundInput;
 
         explicit Input(borealis::config::Registry& registry);
     } input;

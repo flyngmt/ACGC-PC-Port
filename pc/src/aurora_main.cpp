@@ -570,6 +570,7 @@ int main(int argc, char* argv[]) {
     config.mem2Size = ARAM_DEFAULT_SIZE;
     config.vsync = s_frame_limit_explicit ? false : settings.video.vsync.get();
     config.pauseOnFocusLost = false;
+    config.allowJoystickBackgroundEvents = settings.input.allowBackgroundInput.get();
     config.logCallback = borealis::log::aurora_callback();
     config.logLevel = borealis::log::to_aurora_level(s_log_level);
     config.imGuiInitCallback = &ac_debug_imgui_init;
