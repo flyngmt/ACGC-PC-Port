@@ -126,6 +126,7 @@ bool ac_aurora_begin_frame() {
     }
 
     acgc::controller_ports::update();
+    acgc::update_settings();
     update_render_size();
     s_frame_started = aurora_begin_frame();
     acgc::input::game_pointer().set_running(s_frame_started && aurora_get_timescale() != 0.0f);
@@ -174,12 +175,8 @@ struct PortLogGuard {
 };
 
 struct SettingsGuard {
-    bool saveOnExit = false;
-
-    ~SettingsGuard() {
-        if (saveOnExit) {
-            acgc::save_settings();
-        }
+    ~SettingsGuard()
+    {
         acgc::shutdown_settings();
     }
 };
@@ -456,6 +453,7 @@ bool run_prelaunch()
             ++event;
         }
         acgc::controller_ports::update();
+        acgc::update_settings();
         if (state.quitRequested || paused || !aurora_begin_frame()) {
             continue;
         }
@@ -514,9 +512,7 @@ int main(int argc, char* argv[]) {
         legacy_settings.emplace_back(std::filesystem::path(base_path) / "settings.ini");
     }
     const auto settings_result = acgc::load_settings(user_path, legacy_settings);
-    SettingsGuard settings_guard{
-        .saveOnExit = settings_result.canonicalResult != acgc::config::LoadResult::Invalid,
-    };
+    SettingsGuard settings_guard;
     if (settings_result.importedLegacy) {
         ConfigLog.info("Legacy settings migration completed");
     }
@@ -533,11 +529,11 @@ int main(int argc, char* argv[]) {
 
     const auto& settings = acgc::settings();
     if (!s_window_size_explicit) {
-        windowDimensions.width = settings.video.windowWidth.value();
-        windowDimensions.height = settings.video.windowHeight.value();
+        windowDimensions.width = settings.video.windowWidth.get();
+        windowDimensions.height = settings.video.windowHeight.get();
     }
     if (!s_frame_limit_explicit) {
-        g_pc_frame_limit_override = settings.video.maxFrameRate.value();
+        g_pc_frame_limit_override = settings.video.maxFrameRate.get();
     }
 
     if (s_uber_shader_requested) {
@@ -564,15 +560,15 @@ int main(int argc, char* argv[]) {
     config.appName = acgc::AppInfo.appName.data();
     config.userPath = user_path.empty() ? nullptr : user_path.c_str();
     config.cachePath = cache_path.empty() ? nullptr : cache_path.c_str();
-    config.desiredBackend = settings.video.renderer.value();
+    config.desiredBackend = settings.video.renderer.get();
     config.windowPosX = -1;
     config.windowPosY = -1;
     config.windowWidth = windowDimensions.width;
     config.windowHeight = windowDimensions.height;
-    config.startFullscreen = settings.video.windowMode.value() != 0;
+    config.startFullscreen = settings.video.windowMode.get() != 0;
     config.mem1Size = 256 * 1024 * 1024;
     config.mem2Size = ARAM_DEFAULT_SIZE;
-    config.vsync = s_frame_limit_explicit ? false : settings.video.vsync.value();
+    config.vsync = s_frame_limit_explicit ? false : settings.video.vsync.get();
     config.pauseOnFocusLost = false;
     config.logCallback = borealis::log::aurora_callback();
     config.logLevel = borealis::log::to_aurora_level(s_log_level);
@@ -587,7 +583,7 @@ int main(int argc, char* argv[]) {
     PADInit();
     acgc::controller_ports::initialize();
     acgc::apply_legacy_keyboard_input();
-    acgc::apply_runtime_settings(false);
+    acgc::observe_runtime_settings();
     if (!acgc::ui::initialize()) {
         UiLog.error("Could not initialize the Aurora host menu");
         aurora_shutdown();
@@ -609,7 +605,7 @@ int main(int argc, char* argv[]) {
     if (!launch) {
         acgc::ui::ensure_prelaunch_initialized();
         auto& state = acgc::ui::prelaunch_state();
-        if (settings.backend.skipPrelaunch.value() && state.configuredDiscCanLaunch) {
+        if (settings.backend.skipPrelaunch.get() && state.configuredDiscCanLaunch) {
             discPath = state.configuredDiscPath;
             launch = true;
         } else if (run_prelaunch()) {

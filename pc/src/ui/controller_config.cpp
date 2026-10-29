@@ -1,4 +1,5 @@
 #include "acgc/ui/controller_config.hpp"
+#include <borealis/ui/config.hpp>
 #include "acgc/ui/scrolling_background.hpp"
 #include <borealis/ui/bool_button.hpp>
 #include <borealis/ui/button.hpp>
@@ -401,17 +402,10 @@ void ControllerConfigWindow::build_device(Rml::Element* content) {
 
     options.add_section(tr("controller.page.sticks"));
     const auto deadzone = [&](const char* label, auto& setting) {
-        options.add_child<NumberButton>(NumberButton::Props{ .key = tr(label),
-                                                             .getValue = [&setting] { return setting.value(); },
-                                                             .setValue =
-                                                                 [&setting](int value) {
-                                                                     setting.set_value(value);
-                                                                     apply_runtime_settings(false);
-                                                                     save_settings();
-                                                                 },
-                                                             .min = 0,
-                                                             .max = 40,
-                                                             .suffix = "%" });
+        options.add_child<NumberButton>(bind(setting, {
+                                                          .key = tr(label),
+                                                          .suffix = "%",
+                                                      }));
     };
     deadzone("controller.section.control_stick", settings().input.stickDeadzone);
     deadzone("controller.section.c_stick", settings().input.cstickDeadzone);

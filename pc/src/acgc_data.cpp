@@ -79,6 +79,24 @@ bool operation_succeeded(const borealis::data::Status& status) {
 
 } // namespace
 
+borealis::data::MigrationRules migration_rules() {
+    return {
+        .directories = { "save", "texture_pack", "nes_roms" },
+        .files = {
+            "config.json",
+            "config.json.bad",
+            "settings.ini",
+            "keybindings.ini",
+            "controller_ports.dat",
+            "gamecontrollerdb.txt",
+            "imgui.ini",
+            "keyboard_bindings.dat",
+            "input.json",
+        },
+        .extensions = { ".controller", ".gci" },
+    };
+}
+
 borealis::data::Manager& manager() {
     static borealis::data::Manager instance{
         AppInfo,
@@ -89,22 +107,7 @@ borealis::data::Manager& manager() {
                     .useExecutableDirectoryOnWindows = true,
                 },
             .legacyApps = {{.orgName = {}, .appName = "Animal Crossing"}},
-            .migration =
-                {
-                    .directories = {"save", "texture_pack", "nes_roms"},
-                    .files =
-                        {
-                            "config.json",
-                            "settings.ini",
-                            "keybindings.ini",
-                            "controller_ports.dat",
-                            "gamecontrollerdb.txt",
-                            "imgui.ini",
-                            "keyboard_bindings.dat",
-                            "input.json",
-                        },
-                    .extensions = {".controller", ".gci"},
-                },
+            .migration = migration_rules(),
         },
     };
     return instance;
@@ -158,6 +161,21 @@ bool is_data_path_restart_pending() {
 
 std::string abbreviated_path_string(const std::filesystem::path& path) {
     return manager().abbreviated_path_string(path);
+}
+
+extern "C" int pc_platform_user_path(const char* relativePath, char* output, size_t outputSize) {
+    if (relativePath == nullptr || output == nullptr || outputSize == 0) {
+        return 0;
+    }
+
+    const auto path = manager().active_data_path() / std::filesystem::path(relativePath);
+    const auto utf8 = path.u8string();
+    if (utf8.size() + 1 > outputSize) {
+        return 0;
+    }
+    std::memcpy(output, utf8.data(), utf8.size());
+    output[utf8.size()] = '\0';
+    return 1;
 }
 
 extern "C" int pc_platform_base_path(const char* relativePath, char* output, size_t outputSize) {

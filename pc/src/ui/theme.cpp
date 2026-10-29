@@ -277,7 +277,7 @@ void settle(bool night)
 
 void advance()
 {
-	const InterfaceTheme theme = settings().video.theme.value();
+	const InterfaceTheme theme = settings().video.theme.get();
 	const bool dynamic         = theme == InterfaceTheme::Dynamic;
 	const int minutes          = dynamic ? pc_clock_minutes() : 0;
 	const bool night           = dynamic ? night_at(minutes) : theme == InterfaceTheme::Night;

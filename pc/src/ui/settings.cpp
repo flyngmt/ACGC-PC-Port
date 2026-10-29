@@ -7,6 +7,7 @@
 #include "acgc/settings.hpp"
 #include "acgc/texture_replacements.hpp"
 #include <borealis/ui/bool_button.hpp>
+#include <borealis/ui/config.hpp>
 #include <borealis/ui/dropdown_button.hpp>
 #include <borealis/ui/modal.hpp>
 #include <borealis/ui/number_button.hpp>
@@ -32,61 +33,23 @@
 #include <utility>
 #include <vector>
 
-extern "C" int g_pc_frame_limit_override;
-
 namespace acgc::ui {
 using namespace borealis::ui;
 
 namespace {
 
-template <typename T> bool modified(const ConfigVar<T>& variable) {
-    return variable.value() != variable.default_value();
-}
-
-void persist(bool refreshGameplay = false) {
-    apply_runtime_settings(refreshGameplay);
-    save_settings();
-}
-
-template <typename Callback>
-void add_bool(Pane& left, Pane& right, ConfigVar<bool>& variable, Rml::String label, Rml::String help,
-              Callback onChange) {
-    left.register_control(left.add_child<BoolButton>(BoolButton::Props{
-                              .key = std::move(label),
-                              .getValue = [&variable] { return variable.value(); },
-                              .setValue =
-                                  [&variable, onChange = std::move(onChange)](bool value) {
-                                      variable.set_value(value);
-                                      onChange(value);
-                                      persist();
-                                  },
-                              .isModified = [&variable] { return modified(variable); },
-                          }),
+void add_bool(Pane& left, Pane& right, borealis::config::Var<bool>& variable, Rml::String label, Rml::String help) {
+    left.register_control(left.add_child<BoolButton>(bind(variable,
+                                                          {
+                                                              .key = std::move(label),
+                                                          })),
                           right, [help = std::move(help)](Pane& pane) { pane.add_text(help); });
-}
-
-void add_bool(Pane& left, Pane& right, ConfigVar<bool>& variable, Rml::String label, Rml::String help) {
-    add_bool(left, right, variable, std::move(label), std::move(help), [](bool) {});
 }
 
 constexpr std::array kUiScales = { 50, 75, 0, 125, 150, 175, 200 };
 
-constexpr std::array kThemes = { InterfaceTheme::Dynamic, InterfaceTheme::Day, InterfaceTheme::Night };
-
 Rml::String ui_scale_label(int percent) {
     return percent == 0 ? localization::get("settings.video.ui_scale.automatic") : std::to_string(percent) + "%";
-}
-
-Rml::String theme_label(InterfaceTheme theme) {
-    switch (theme) {
-        case InterfaceTheme::Day:
-            return localization::get("settings.video.theme.day");
-        case InterfaceTheme::Night:
-            return localization::get("settings.video.theme.night");
-        case InterfaceTheme::Dynamic:
-            break;
-    }
-    return localization::get("settings.video.theme.dynamic");
 }
 
 Rml::String renderer_label(AuroraBackend renderer) {
@@ -452,11 +415,11 @@ SettingsWindow::SettingsWindow()
     auto& video = settings().video;
     const bool currentIsPreset =
         std::any_of(resolutionPresets.begin(), resolutionPresets.end(), [&video](const ResolutionPreset& preset) {
-            return same_resolution(preset, video.windowWidth.value(), video.windowHeight.value());
+            return same_resolution(preset, video.windowWidth.get(), video.windowHeight.get());
         });
     auto resolutionState = std::make_shared<ResolutionEditorState>(ResolutionEditorState{
-        .width = video.windowWidth.value(),
-        .height = video.windowHeight.value(),
+        .width = video.windowWidth.get(),
+        .height = video.windowHeight.get(),
         .custom = !currentIsPreset,
     });
     const auto rendererBackends = available_renderer_backends();
@@ -471,114 +434,105 @@ SettingsWindow::SettingsWindow()
         left.register_control(
             left.add_select_button({
                 .key = localization::get("settings.video.renderer"),
-                .getValue = [&current] { return renderer_label(current.video.renderer.value()); },
-                .isModified = [&current] { return modified(current.video.renderer); },
+                .getValue = [&current] { return renderer_label(current.video.renderer.get()); },
+                .isModified = [&current] { return current.video.renderer.modified(); },
             }),
             right, [&current, rendererBackends](Pane& pane) {
                 for (const AuroraBackend renderer : rendererBackends) {
                     pane
                         .add_button(ControlledButton::Props{
                             .text = renderer_label(renderer),
-                            .isSelected = [&current, renderer] { return current.video.renderer.value() == renderer; },
+                            .isSelected = [&current, renderer] { return current.video.renderer.get() == renderer; },
                         })
-                        .on_pressed([&current, renderer] {
-                            current.video.renderer.set_value(renderer);
-                            save_settings();
-                        });
+                        .on_pressed([&current, renderer] { current.video.renderer.set(renderer); });
                 }
                 pane.add_text(localization::get("settings.video.renderer_help"));
             });
 
         left.register_control(left.add_child<BoolButton>(BoolButton::Props{
                                   .key = localization::get("settings.video.fullscreen"),
-                                  .getValue = [&current] { return current.video.windowMode.value() != 0; },
-                                  .setValue =
-                                      [&current](bool value) {
-                                          current.video.windowMode.set_value(value ? 1 : 0);
-                                          aurora::window::set_fullscreen(value);
-                                          persist();
-                                      },
-                                  .isModified = [&current] { return modified(current.video.windowMode); },
+                                  .getValue = [&current] { return current.video.windowMode.get() != 0; },
+                                  .setValue = [&current](bool value) { current.video.windowMode.set(value ? 1 : 0); },
+                                  .isModified = [&current] { return current.video.windowMode.modified(); },
                               }),
                               right,
                               [](Pane& pane) { pane.add_text(localization::get("settings.video.fullscreen_help")); });
 
         add_bool(left, right, current.video.vsync, localization::get("settings.video.vsync"),
-                 localization::get("settings.video.vsync_help"), [](bool value) { aurora_enable_vsync(value); });
+                 localization::get("settings.video.vsync_help"));
         add_bool(left, right, current.video.hudAtEdges, localization::get("settings.video.hud_at_edges"),
                  localization::get("settings.video.hud_at_edges_help"));
 
-        left.register_control(
-            left.add_select_button({
-                .key = localization::get("settings.video.window_size"),
-                .getValue =
-                    [&current, resolutionState] {
-                        Rml::String value =
-                            std::to_string(resolutionState->width) + " x " + std::to_string(resolutionState->height);
-                        if (resolutionState->width != current.video.windowWidth.value() ||
-                            resolutionState->height != current.video.windowHeight.value()) {
-                            value += localization::get("settings.video.resolution.pending_suffix");
-                        }
-                        return value;
-                    },
-                .isDisabled = [&current] { return current.video.windowMode.value() != 0; },
-                .isModified =
-                    [&current] { return modified(current.video.windowWidth) || modified(current.video.windowHeight); },
-            }),
-            right, [&current, resolutionPresets, resolutionState](Pane& pane) {
-                pane.add_section(localization::get("settings.video.resolution.section"));
-                pane.add_child<ResolutionDropdown>(resolutionPresets, resolutionState);
-                auto& widthField = pane.add_child<ConditionalNumberButton>(
-                    NumberButton::Props{
-                        .key = localization::get("settings.video.resolution.width"),
-                        .getValue = [resolutionState] { return resolutionState->width; },
-                        .setValue = [resolutionState](int value) { resolutionState->width = value; },
-                        .isDisabled = [resolutionState] { return !resolutionState->custom; },
-                        .isModified =
-                            [&current, resolutionState] {
-                                return resolutionState->custom &&
-                                       resolutionState->width != current.video.windowWidth.value();
-                            },
-                        .min = 320,
-                        .max = 7680,
-                        .step = 16,
-                        .suffix = " px",
-                    },
-                    [resolutionState] { return resolutionState->custom; });
-                auto& heightField = pane.add_child<ConditionalNumberButton>(
-                    NumberButton::Props{
-                        .key = localization::get("settings.video.resolution.height"),
-                        .getValue = [resolutionState] { return resolutionState->height; },
-                        .setValue = [resolutionState](int value) { resolutionState->height = value; },
-                        .isDisabled = [resolutionState] { return !resolutionState->custom; },
-                        .isModified =
-                            [&current, resolutionState] {
-                                return resolutionState->custom &&
-                                       resolutionState->height != current.video.windowHeight.value();
-                            },
-                        .min = 240,
-                        .max = 4320,
-                        .step = 16,
-                        .suffix = " px",
-                    },
-                    [resolutionState] { return resolutionState->custom; });
-                pane.add_button(localization::get("common.apply"))
-                    .on_pressed([&current, resolutionState, &widthField, &heightField] {
-                        widthField.commit_pending_edit();
-                        heightField.commit_pending_edit();
-                        current.video.windowWidth.set_value(resolutionState->width);
-                        current.video.windowHeight.set_value(resolutionState->height);
-                        aurora::window::set_window_size(resolutionState->width, resolutionState->height);
-                        persist();
-                    });
-                pane.add_text(localization::get("settings.video.resolution.help"));
-            });
+        left.register_control(left.add_select_button({
+                                  .key = localization::get("settings.video.window_size"),
+                                  .getValue =
+                                      [&current, resolutionState] {
+                                          Rml::String value = std::to_string(resolutionState->width) + " x " +
+                                                              std::to_string(resolutionState->height);
+                                          if (resolutionState->width != current.video.windowWidth.get() ||
+                                              resolutionState->height != current.video.windowHeight.get()) {
+                                              value += localization::get("settings.video.resolution.pending_suffix");
+                                          }
+                                          return value;
+                                      },
+                                  .isDisabled = [&current] { return current.video.windowMode.get() != 0; },
+                                  .isModified =
+                                      [&current] {
+                                          return current.video.windowWidth.modified() ||
+                                                 current.video.windowHeight.modified();
+                                      },
+                              }),
+                              right, [&current, resolutionPresets, resolutionState](Pane& pane) {
+                                  pane.add_section(localization::get("settings.video.resolution.section"));
+                                  pane.add_child<ResolutionDropdown>(resolutionPresets, resolutionState);
+                                  auto& widthField = pane.add_child<ConditionalNumberButton>(
+                                      NumberButton::Props{
+                                          .key = localization::get("settings.video.resolution.width"),
+                                          .getValue = [resolutionState] { return resolutionState->width; },
+                                          .setValue = [resolutionState](int value) { resolutionState->width = value; },
+                                          .isDisabled = [resolutionState] { return !resolutionState->custom; },
+                                          .isModified =
+                                              [&current, resolutionState] {
+                                                  return resolutionState->custom &&
+                                                         resolutionState->width != current.video.windowWidth.get();
+                                              },
+                                          .min = 320,
+                                          .max = 7680,
+                                          .step = 16,
+                                          .suffix = " px",
+                                      },
+                                      [resolutionState] { return resolutionState->custom; });
+                                  auto& heightField = pane.add_child<ConditionalNumberButton>(
+                                      NumberButton::Props{
+                                          .key = localization::get("settings.video.resolution.height"),
+                                          .getValue = [resolutionState] { return resolutionState->height; },
+                                          .setValue = [resolutionState](int value) { resolutionState->height = value; },
+                                          .isDisabled = [resolutionState] { return !resolutionState->custom; },
+                                          .isModified =
+                                              [&current, resolutionState] {
+                                                  return resolutionState->custom &&
+                                                         resolutionState->height != current.video.windowHeight.get();
+                                              },
+                                          .min = 240,
+                                          .max = 4320,
+                                          .step = 16,
+                                          .suffix = " px",
+                                      },
+                                      [resolutionState] { return resolutionState->custom; });
+                                  pane.add_button(localization::get("common.apply"))
+                                      .on_pressed([resolutionState, &widthField, &heightField] {
+                                          widthField.commit_pending_edit();
+                                          heightField.commit_pending_edit();
+                                          set_window_size(resolutionState->width, resolutionState->height);
+                                      });
+                                  pane.add_text(localization::get("settings.video.resolution.help"));
+                              });
 
         left.register_control(
             left.add_select_button({
                 .key = localization::get("settings.video.ui_scale.label"),
-                .getValue = [&current] { return ui_scale_label(current.video.uiScale.value()); },
-                .isModified = [&current] { return modified(current.video.uiScale); },
+                .getValue = [&current] { return ui_scale_label(current.video.uiScale.get()); },
+                .isModified = [&current] { return current.video.uiScale.modified(); },
             }),
             right, [&current](Pane& pane) {
                 pane.add_text(localization::get("settings.video.ui_scale.help"));
@@ -586,54 +540,35 @@ SettingsWindow::SettingsWindow()
                     pane
                         .add_button(ControlledButton::Props{
                             .text = ui_scale_label(percent),
-                            .isSelected = [&current, percent] { return current.video.uiScale.value() == percent; },
+                            .isSelected = [&current, percent] { return current.video.uiScale.get() == percent; },
                         })
-                        .on_pressed([&current, percent] {
-                            current.video.uiScale.set_value(percent);
-                            persist();
-                        });
+                        .on_pressed([&current, percent] { current.video.uiScale.set(percent); });
                 }
             });
 
         left.register_control(
-            left.add_select_button({
+            left.add_child<DropdownButton>(bind_dropdown(current.video.theme, {
                 .key = localization::get("settings.video.theme.label"),
-                .getValue = [&current] { return theme_label(current.video.theme.value()); },
-                .isModified = [&current] { return modified(current.video.theme); },
-            }),
-            right, [&current](Pane& pane) {
+                .options = {
+                    { localization::get("settings.video.theme.dynamic") },
+                    { localization::get("settings.video.theme.day") },
+                    { localization::get("settings.video.theme.night") },
+                },
+            })),
+            right, [](Pane& pane) {
                 pane.add_text(localization::get("settings.video.theme.help"));
-                for (const InterfaceTheme theme : kThemes) {
-                    pane
-                        .add_button(ControlledButton::Props{
-                            .text = theme_label(theme),
-                            .isSelected = [&current, theme] { return current.video.theme.value() == theme; },
-                        })
-                        .on_pressed([&current, theme] {
-                            current.video.theme.set_value(theme);
-                            save_settings();
-                        });
-                }
             });
 
         left.add_section(localization::get("settings.video.performance_section"));
-        left.register_control(left.add_child<NumberButton>(NumberButton::Props{
-                                  .key = localization::get("settings.video.frame_limit"),
-                                  .getValue = [&current] { return current.video.maxFrameRate.value(); },
-                                  .setValue =
-                                      [&current](int value) {
-                                          current.video.maxFrameRate.set_value(value);
-                                          g_pc_frame_limit_override = value;
-                                          persist();
-                                      },
-                                  .isModified = [&current] { return modified(current.video.maxFrameRate); },
-                                  .min = 0,
-                                  .max = 480,
-                                  .step = 5,
-                                  .suffix = " FPS",
-                              }),
-                              right,
-                              [](Pane& pane) { pane.add_text(localization::get("settings.video.frame_limit_help")); });
+        left.register_control(
+            left.add_child<NumberButton>(bind(current.video.maxFrameRate,
+                                              {
+                                                  .key = localization::get("settings.video.frame_limit"),
+                                                  .setValue = set_frame_limit,
+                                                  .step = 5,
+                                                  .suffix = " FPS",
+                                              })),
+            right, [](Pane& pane) { pane.add_text(localization::get("settings.video.frame_limit_help")); });
 
         left.add_section(localization::get("settings.video.textures_section"));
         left.register_control(
@@ -663,20 +598,12 @@ SettingsWindow::SettingsWindow()
         auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
         left.add_section(localization::get("settings.audio.volume_section"));
         left.register_control(
-            left.add_child<NumberButton>(NumberButton::Props{
-                .key = localization::get("settings.audio.master_volume"),
-                .getValue = [&current] { return current.audio.masterVolume.value(); },
-                .setValue =
-                    [&current](int value) {
-                        current.audio.masterVolume.set_value(value);
-                        persist();
-                    },
-                .isModified = [&current] { return modified(current.audio.masterVolume); },
-                .min = 0,
-                .max = 100,
-                .step = 5,
-                .suffix = "%",
-            }),
+            left.add_child<NumberButton>(bind(current.audio.masterVolume,
+                                              {
+                                                  .key = localization::get("settings.audio.master_volume"),
+                                                  .step = 5,
+                                                  .suffix = "%",
+                                              })),
             right, [](Pane& pane) { pane.add_text(localization::get("settings.audio.master_volume_help")); });
     });
 
@@ -686,40 +613,28 @@ SettingsWindow::SettingsWindow()
         auto& right = add_child<Pane>(content, Pane::Type::Uncontrolled);
 
         left.add_section(localization::get("settings.gameplay.original_section"));
-        left.register_control(left.add_child<BoolButton>(BoolButton::Props{
-                                  .key = localization::get("settings.gameplay.resetti"),
-                                  .getValue = [&current] { return !current.enhancements.disableResetti.value(); },
-                                  .setValue =
-                                      [&current](bool value) {
-                                          current.enhancements.disableResetti.set_value(!value);
-                                          persist(true);
-                                      },
-                                  .isModified = [&current] { return modified(current.enhancements.disableResetti); },
-                              }),
-                              right,
-                              [](Pane& pane) { pane.add_text(localization::get("settings.gameplay.resetti_help")); });
+        left.register_control(
+            left.add_child<BoolButton>(
+                bind(current.enhancements.disableResetti,
+                     {
+                         .key = localization::get("settings.gameplay.resetti"),
+                         .getValue = [&current] { return !current.enhancements.disableResetti.get(); },
+                         .setValue = [&current](bool value) { current.enhancements.disableResetti.set(!value); },
+                     })),
+            right, [](Pane& pane) { pane.add_text(localization::get("settings.gameplay.resetti_help")); });
 
         left.add_section(localization::get("settings.gameplay.qol_section"));
-        left.register_control(
-            left.add_child<BoolButton>(BoolButton::Props{
-                .key = localization::get("settings.gameplay.single_player_shop"),
-                .getValue = [&current] { return current.enhancements.disableShopVisitorRequirement.value(); },
-                .setValue =
-                    [&current](bool value) {
-                        current.enhancements.disableShopVisitorRequirement.set_value(value);
-                        persist(true);
-                    },
-                .isModified = [&current] { return modified(current.enhancements.disableShopVisitorRequirement); },
-            }),
-            right, [](Pane& pane) { pane.add_text(localization::get("settings.gameplay.single_player_shop_help")); });
+        add_bool(left, right, current.enhancements.disableShopVisitorRequirement,
+                 localization::get("settings.gameplay.single_player_shop"),
+                 localization::get("settings.gameplay.single_player_shop_help"));
 
         add_bool(left, right, current.enhancements.reduceTravelMoveOut,
                  localization::get("settings.gameplay.reduce_travel_move_out"),
                  localization::get("settings.gameplay.reduce_travel_move_out_help"));
 
-        add_bool(
-            left, right, current.enhancements.borderlessAcres, localization::get("settings.gameplay.borderless_acres"),
-            localization::get("settings.gameplay.borderless_acres_help"), [](bool) { apply_runtime_settings(true); });
+        add_bool(left, right, current.enhancements.borderlessAcres,
+                 localization::get("settings.gameplay.borderless_acres"),
+                 localization::get("settings.gameplay.borderless_acres_help"));
         add_bool(left, right, current.enhancements.fastText, localization::get("settings.gameplay.fast_text"),
                  localization::get("settings.gameplay.fast_text_help"));
         add_bool(left, right, current.enhancements.pillarboxNes, localization::get("settings.gameplay.nes_aspect"),

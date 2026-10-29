@@ -1,5 +1,4 @@
 #include "acgc/controller_ports.hpp"
-#include "acgc/config.hpp"
 #include "acgc/settings.hpp"
 #include "acgc/input_profiles.hpp"
 #include "acgc/legacy_input.hpp"
@@ -42,10 +41,10 @@ void initialize() {
         aurora::pad::clear_bindings(aurora::pad::ProfileTarget::keyboard(port));
     }
     auto& inputSettings = settings().input;
-    if (!inputSettings.singlePortMigrated.value()) {
+    if (!inputSettings.singlePortMigrated.get()) {
         aurora::pad::clear_port(0);
-        inputSettings.singlePortMigrated.set_value(true);
-        config::save();
+        inputSettings.singlePortMigrated.set(true);
+        save_settings();
     }
     // Aurora Auto assigns immediately. This port waits for a fresh button press.
     if (aurora::pad::port_preference(0).state == aurora::pad::PortAssignment::Auto) {
@@ -91,27 +90,27 @@ void update() {
 }
 
 bool auto_assign() {
-    return settings().input.autoAssignController.value() || !SDL_HasKeyboard();
+    return settings().input.autoAssignController.get() || !SDL_HasKeyboard();
 }
 
 void select_automatic() {
     aurora::pad::clear_port(0);
-    settings().input.autoAssignController.set_value(true);
-    config::save();
+    settings().input.autoAssignController.set(true);
+    save_settings();
     input::save_profiles();
 }
 
 void select_none() {
     aurora::pad::clear_port(0);
-    settings().input.autoAssignController.set_value(false);
-    config::save();
+    settings().input.autoAssignController.set(false);
+    save_settings();
     input::save_profiles();
 }
 
 void select_controller(aurora::input::SourceId source) {
     assign(source);
-    settings().input.autoAssignController.set_value(true);
-    config::save();
+    settings().input.autoAssignController.set(true);
+    save_settings();
 }
 
 } // namespace acgc::controller_ports

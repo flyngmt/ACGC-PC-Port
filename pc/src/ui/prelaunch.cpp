@@ -208,7 +208,7 @@ std::optional<DiscVerificationResult> take_finished_disc_verification() {
 }
 
 void begin_update_check() {
-    if (!settings().backend.checkForUpdates.value() || sUpdateCheckTask || sUpdateCheckResult.has_value()) {
+    if (!settings().backend.checkForUpdates.get() || sUpdateCheckTask || sUpdateCheckResult.has_value()) {
         return;
     }
     sUpdateCheckTask =
@@ -277,9 +277,9 @@ std::string verification_error_message(disc::ValidationError error) {
 void persist_disc_choice(const std::string& path, disc::ValidationError validation) {
     auto& backend = settings().backend;
     const auto savedVerification = verification_to_config(validation);
-    const bool changed = backend.discPath.value() != path || backend.discVerification.value() != savedVerification;
-    backend.discPath.set_value(path);
-    backend.discVerification.set_value(savedVerification);
+    const bool changed = backend.discPath.get() != path || backend.discVerification.get() != savedVerification;
+    backend.discPath.set(path);
+    backend.discVerification.set(savedVerification);
     save_settings();
     if (changed) {
         disc::log_verification_state(path, savedVerification);
@@ -470,8 +470,8 @@ void refresh_configured_disc_state() noexcept {
     }
 
     auto verification = disc::ValidationError::Unknown;
-    if (state.configuredDiscPath == settings().backend.discPath.value()) {
-        verification = verification_from_config(settings().backend.discVerification.value());
+    if (state.configuredDiscPath == settings().backend.discPath.get()) {
+        verification = verification_from_config(settings().backend.discVerification.get());
     }
     if (verification_allows_launch(verification)) {
         state.configuredDiscCanLaunch = true;
@@ -493,9 +493,9 @@ void ensure_prelaunch_initialized() noexcept {
     if (state.initialized) {
         return;
     }
-    state.configuredDiscPath = settings().backend.discPath.value();
+    state.configuredDiscPath = settings().backend.discPath.get();
     state.activeDiscPath = state.configuredDiscPath;
-    state.configuredDiscValidation = verification_from_config(settings().backend.discVerification.value());
+    state.configuredDiscValidation = verification_from_config(settings().backend.discVerification.get());
     state.initialized = true;
     refresh_configured_disc_state();
     if (!state.configuredDiscPath.empty() && !state.configuredDiscCanLaunch &&

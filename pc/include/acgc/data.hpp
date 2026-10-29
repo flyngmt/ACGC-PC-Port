@@ -26,6 +26,7 @@ namespace acgc::data {
 
 using Paths = borealis::data::Paths;
 
+borealis::data::MigrationRules migration_rules();
 borealis::data::Manager& manager();
 Paths initialize(const std::filesystem::path& userDirectoryOverride = {});
 std::filesystem::path cache_path();

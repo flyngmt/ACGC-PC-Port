@@ -204,7 +204,6 @@ list(FILTER GAME_CXX_SOURCES EXCLUDE REGEX ".*/jsyswrapper_main\\.cpp$")
 # migrated. Dolphin SDK implementations come exclusively from Aurora.
 # =============================================================================
 set(PC_SOURCES
-    ${PC_ROOT}/src/acgc_config.cpp
     ${PC_ROOT}/src/acgc_controller_ports.cpp
     ${PC_ROOT}/src/acgc_data.cpp
     ${PC_ROOT}/src/acgc_disc.cpp
@@ -416,6 +415,7 @@ target_link_libraries(acgc PRIVATE
     TracyClient
     nlohmann_json::nlohmann_json
     borealis::cli
+    borealis::config
     borealis::crash
     borealis::data
     borealis::disc

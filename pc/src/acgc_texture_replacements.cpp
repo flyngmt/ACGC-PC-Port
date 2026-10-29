@@ -3,7 +3,6 @@
 #include <dolphin/gx/GXStruct.h>
 #include <aurora/texture.hpp>
 
-#include "acgc/config.hpp"
 #include "acgc/data.hpp"
 #include "borealis/io.hpp"
 #include "borealis/log.hpp"
@@ -32,7 +31,7 @@ const std::filesystem::path& directory()
     // fall back to those roots while the data directory has no pack.
     static const std::filesystem::path path = [] {
         std::error_code ec;
-        const std::filesystem::path primary = acgc::config::user_directory() / "texture_pack";
+        const std::filesystem::path primary = acgc::data::manager().active_data_path() / "texture_pack";
         if (std::filesystem::is_directory(primary, ec)) {
             return primary;
         }

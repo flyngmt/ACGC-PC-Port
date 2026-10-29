@@ -1,6 +1,6 @@
 #pragma once
 
-#include "acgc/config.hpp"
+#include <borealis/config.hpp>
 
 #include <aurora/aurora.h>
 
@@ -10,8 +10,6 @@
 #include <vector>
 
 namespace acgc {
-
-using config::ConfigVar;
 
 enum class DiscVerificationState : std::uint8_t {
     Unknown = 0,
@@ -25,69 +23,96 @@ enum class InterfaceTheme : std::uint8_t {
     Night,
 };
 
-struct UserSettings {
-    struct Backend {
-        ConfigVar<std::string> discPath;
-        ConfigVar<DiscVerificationState> discVerification;
-        ConfigVar<bool> skipPrelaunch;
-        ConfigVar<bool> checkForUpdates;
+constexpr auto config_enum_values(DiscVerificationState)
+{
+    using enum DiscVerificationState;
+    return borealis::config::enum_table<DiscVerificationState>({
+        { Unknown, "unknown" },
+        { Success, "success" },
+        { HashMismatch, "hash_mismatch" },
+    });
+}
 
-        Backend();
+constexpr auto config_enum_values(InterfaceTheme)
+{
+    using enum InterfaceTheme;
+    return borealis::config::enum_table<InterfaceTheme>({
+        { Dynamic, "dynamic" },
+        { Day, "day" },
+        { Night, "night" },
+    });
+}
+
+struct UserSettings {
+    borealis::config::Registry registry;
+
+    struct Backend {
+        borealis::config::Var<std::string> discPath;
+        borealis::config::Var<DiscVerificationState> discVerification;
+        borealis::config::Var<bool> skipPrelaunch;
+        borealis::config::Var<bool> checkForUpdates;
+
+        explicit Backend(borealis::config::Registry& registry);
     } backend;
 
     struct Video {
-        ConfigVar<AuroraBackend> renderer;
-        ConfigVar<int> windowWidth;
-        ConfigVar<int> windowHeight;
-        ConfigVar<int> windowMode;
-        ConfigVar<int> uiScale;
-        ConfigVar<InterfaceTheme> theme;
-        ConfigVar<bool> vsync;
-        ConfigVar<int> maxFrameRate;
-        ConfigVar<bool> hudAtEdges;
+        borealis::config::Var<AuroraBackend> renderer;
+        borealis::config::Var<int> windowWidth;
+        borealis::config::Var<int> windowHeight;
+        borealis::config::Var<int> windowMode;
+        borealis::config::Var<int> uiScale;
+        borealis::config::Var<InterfaceTheme> theme;
+        borealis::config::Var<bool> vsync;
+        borealis::config::Var<int> maxFrameRate;
+        borealis::config::Var<bool> hudAtEdges;
 
-        Video();
+        explicit Video(borealis::config::Registry& registry);
     } video;
 
     struct Enhancements {
-        ConfigVar<int> preloadTextures;
-        ConfigVar<bool> disableResetti;
-        ConfigVar<bool> disableShopVisitorRequirement;
-        ConfigVar<bool> borderlessAcres;
-        ConfigVar<bool> pillarboxNes;
-        ConfigVar<bool> fastText;
-        ConfigVar<bool> reduceTravelMoveOut;
+        borealis::config::Var<int> preloadTextures;
+        borealis::config::Var<bool> disableResetti;
+        borealis::config::Var<bool> disableShopVisitorRequirement;
+        borealis::config::Var<bool> borderlessAcres;
+        borealis::config::Var<bool> pillarboxNes;
+        borealis::config::Var<bool> fastText;
+        borealis::config::Var<bool> reduceTravelMoveOut;
 
-        Enhancements();
+        explicit Enhancements(borealis::config::Registry& registry);
     } enhancements;
 
     struct Audio {
-        ConfigVar<int> masterVolume;
+        borealis::config::Var<int> masterVolume;
 
-        Audio();
+        explicit Audio(borealis::config::Registry& registry);
     } audio;
 
     struct Input {
-        ConfigVar<int> stickDeadzone;
-        ConfigVar<int> cstickDeadzone;
-        ConfigVar<bool> autoAssignController;
-        ConfigVar<bool> singlePortMigrated;
+        borealis::config::Var<int> stickDeadzone;
+        borealis::config::Var<int> cstickDeadzone;
+        borealis::config::Var<bool> autoAssignController;
+        borealis::config::Var<bool> singlePortMigrated;
 
-        Input();
+        explicit Input(borealis::config::Registry& registry);
     } input;
+
+    UserSettings();
 };
 
 struct SettingsLoadResult {
-    config::LoadResult canonicalResult;
+    borealis::config::Status canonicalResult;
     bool importedLegacy = false;
     std::filesystem::path legacyPath;
 };
 
 UserSettings& settings();
 std::vector<AuroraBackend> available_renderer_backends();
-void register_settings();
-SettingsLoadResult load_settings(const std::filesystem::path& userDirectory,
-                                 const std::vector<std::filesystem::path>& legacyCandidates);
+void observe_runtime_settings();
+void update_settings();
+void set_window_size(int width, int height);
+void set_frame_limit(int value);
+SettingsLoadResult load_settings(
+    const std::filesystem::path& userDirectory, const std::vector<std::filesystem::path>& legacyCandidates);
 void apply_settings_bridge(bool refreshGameplay);
 void apply_runtime_settings(bool refreshGameplay);
 void apply_ui_scale();
