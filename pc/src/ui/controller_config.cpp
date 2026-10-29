@@ -1,7 +1,7 @@
 #include "acgc/ui/controller_config.hpp"
 #include <borealis/ui/config.hpp>
 #include "acgc/ui/scrolling_background.hpp"
-#include <borealis/ui/bool_button.hpp>
+#include "acgc/ui/bool_button.hpp"
 #include <borealis/ui/button.hpp>
 #include <borealis/ui/component.hpp>
 #include <borealis/ui/group_button.hpp>

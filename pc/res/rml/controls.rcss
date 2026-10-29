@@ -222,26 +222,37 @@ select-button.dropdown-button.expanded dropdown-indicator {
     transform: rotate(180deg);
 }
 
-select-button.adjustable value {
+select-button adjust-value {
     display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
     align-items: center;
     justify-content: flex-end;
-    overflow: visible;
 }
 
-select-button .value-label {
+select-button adjust-value value {
     flex: 0 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 select-button .adjust-arrow {
     flex: 0 0 auto;
     padding: 0 6dp;
     font-family: var(--font-family-icons);
+    font-size: var(--font-size-lg);
     font-weight: normal;
+    color: var(--color-text-muted);
     focus: none;
+}
+
+select-button:not(:disabled):hover .adjust-arrow:not(.modified),
+select-button:not(:disabled):focus-visible .adjust-arrow:not(.modified),
+select-button:not(:disabled):selected .adjust-arrow:not(.modified),
+select-button:not(:disabled):active .adjust-arrow:not(.modified) {
+    color: var(--color-text-strong);
+}
+
+select-button .adjust-arrow.modified {
+    color: var(--color-modified);
 }
 
 select-button .adjust-arrow.unavailable {

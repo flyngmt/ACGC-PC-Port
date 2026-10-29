@@ -6,7 +6,7 @@
 #include "acgc/data.hpp"
 #include "acgc/settings.hpp"
 #include "acgc/texture_replacements.hpp"
-#include <borealis/ui/bool_button.hpp>
+#include "acgc/ui/bool_button.hpp"
 #include <borealis/ui/config.hpp>
 #include <borealis/ui/dropdown_button.hpp>
 #include <borealis/ui/modal.hpp>

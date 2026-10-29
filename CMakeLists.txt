@@ -217,6 +217,8 @@ set(PC_SOURCES
     ${PC_ROOT}/src/aurora_platform.cpp
     ${PC_ROOT}/src/aurora_widescreen.cpp
     ${PC_ROOT}/src/aurora_vi.cpp
+    ${PC_ROOT}/src/ui/adjust_arrows.cpp
+    ${PC_ROOT}/src/ui/bool_button.cpp
     ${PC_ROOT}/src/ui/controller_config.cpp
     ${PC_ROOT}/src/ui/localization.cpp
     ${PC_ROOT}/src/ui/menu_bar.cpp
