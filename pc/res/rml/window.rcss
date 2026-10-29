@@ -92,7 +92,6 @@ window content pane {
     min-width: 0;
     min-height: 0;
     padding: 26dp;
-    padding-bottom: 0dp;
     gap: 10dp;
     overflow: hidden auto;
     font-size: var(--font-size-lg);
@@ -116,13 +115,6 @@ window content pane:last-of-type > div {
     display: block;
     font-size: var(--font-size-sm);
     color: var(--color-text-faint);
-}
-
-window content pane > spacer {
-    display: block;
-    flex: 0 0 16dp;
-    height: 16dp;
-    pointer-events: none;
 }
 
 .verification-progress {

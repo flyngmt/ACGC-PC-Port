@@ -1,4 +1,4 @@
-window.town-select .modal-dialog {
+window.town-select modal-dialog {
     display: block;
     min-width: 480dp;
 }
