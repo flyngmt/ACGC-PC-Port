@@ -37,7 +37,7 @@ scrollbarhorizontal sliderbar {
     height: 0;
 }
 
-.section-heading {
+section-heading {
     font-family: var(--font-family-heading);
     font-weight: bold;
     font-size: var(--font-size-xl);
@@ -45,7 +45,7 @@ scrollbarhorizontal sliderbar {
     letter-spacing: 0.5dp;
 }
 
-.section-heading:not(:first-of-type) {
+section-heading:not(:first-of-type) {
     padding-top: 14dp;
 }
 
