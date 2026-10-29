@@ -6,6 +6,7 @@
 #include <borealis/ui/input.hpp>
 #include <borealis/io.hpp>
 #include <borealis/log.hpp>
+#include <aurora/aurora.h>
 #include <aurora/input.hpp>
 #include <aurora/rmlui.hpp>
 
@@ -22,6 +23,7 @@ using namespace borealis::ui;
 namespace {
 bool sInitialized = false;
 bool sWasPausingGame = false;
+float sDisplayScale = 0.0f;
 aurora::input::LayerId sMenuLayer = aurora::input::kInvalidLayerId;
 
 bool load_ui_fonts() {
@@ -107,6 +109,7 @@ void shutdown() noexcept {
     localization::shutdown();
     g_pc_paused = 0;
     sWasPausingGame = false;
+    sDisplayScale = 0.0f;
     sInitialized = false;
 }
 
@@ -121,6 +124,11 @@ void handle_event(const SDL_Event& event) noexcept {
 void update() noexcept {
     if (!initialized()) {
         return;
+    }
+    const float displayScale = aurora_get_window_size().scale;
+    if (displayScale != sDisplayScale) {
+        sDisplayScale = displayScale;
+        borealis::ui::apply_scale();
     }
     borealis::ui::update();
     theme::update();

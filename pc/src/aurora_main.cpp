@@ -105,9 +105,6 @@ bool ac_aurora_begin_frame() {
             if (event->sdl.type == SDL_EVENT_KEY_DOWN && !event->sdl.key.repeat && event->sdl.key.key == SDLK_F2) {
                 pc_speedhack_toggle();
             }
-            if (event->sdl.type == SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED) {
-                acgc::apply_ui_scale();
-            }
             acgc::ui::handle_event(event->sdl);
             acgc::input::pointer_window_event(event->sdl);
         } else if (event->type == AURORA_PAUSED || event->type == AURORA_UNPAUSED) {
@@ -440,9 +437,6 @@ bool run_prelaunch()
             } else if (event->type == AURORA_UNPAUSED) {
                 paused = false;
             } else if (event->type == AURORA_SDL_EVENT) {
-                if (event->sdl.type == SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED) {
-                    acgc::apply_ui_scale();
-                }
                 acgc::ui::handle_event(event->sdl);
             } else if (event->type == AURORA_CONTROLLER_ADDED) {
                 acgc::controller_ports::enforce_single_port();

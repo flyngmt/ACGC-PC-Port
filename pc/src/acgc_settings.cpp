@@ -10,7 +10,7 @@
 #include "borealis/io.hpp"
 #include "borealis/log.hpp"
 
-#include <aurora/rmlui.hpp>
+#include <borealis/ui/ui.hpp>
 #include "extern/aurora/lib/window.hpp"
 
 #include <algorithm>
@@ -345,13 +345,7 @@ void apply_settings_bridge(bool refreshGameplay)
 
 void apply_ui_scale()
 {
-    const int uiScale = settings().video.uiScale.get();
-    float scale = 0.0f;
-    if (uiScale != 0) {
-        const float displayScale = aurora::window::get_window_size().scale;
-        scale = static_cast<float>(uiScale) / 100.0f * (displayScale > 0.0f ? displayScale : 1.0f);
-    }
-    aurora::rmlui::set_ui_scale(scale);
+    borealis::ui::set_user_scale(settings().video.uiScale.get());
 }
 
 void apply_runtime_settings(bool refreshGameplay)
