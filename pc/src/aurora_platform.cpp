@@ -649,11 +649,7 @@ void PPCSync() {
 OSThread* GXSetCurrentGXThread() {
     return OSGetCurrentThread();
 }
-void GXSetScissorBoxOffset(s32, s32) {
-}
 void GXAbortFrame() {
-}
-void GXSetCopyClamp(GXFBClamp) {
 }
 void GXReadXfRasMetric(u32* xf_wait_in, u32* xf_wait_out, u32* ras_busy, u32* clocks) {
     if (xf_wait_in)

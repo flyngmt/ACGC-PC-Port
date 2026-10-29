@@ -3,7 +3,7 @@
 #include "acgc/app_info.hpp"
 #include "acgc/settings.hpp"
 #include "acgc/ui/controller_config.hpp"
-#include "acgc/ui/modal.hpp"
+#include <borealis/ui/modal.hpp>
 #include "acgc/ui/settings.hpp"
 #include "acgc/ui/localization.hpp"
 #include "acgc/ui/ui.hpp"
@@ -28,15 +28,18 @@
 #include <utility>
 
 namespace acgc::ui {
+using namespace borealis::ui;
+
 namespace {
 
-constexpr borealis::Log Log{"acgc::ui::prelaunch"};
+constexpr borealis::Log Log{ "acgc::ui::prelaunch" };
 
-Rml::String document_source()
-{
+Rml::String document_source() {
     return R"RML(
 <rml>
 <head>
+    <link type="text/rcss" href="res/rml/theme.rcss" />
+    <link type="text/rcss" href="res/rml/controls.rcss" />
     <link type="text/rcss" href="res/rml/scrolling_background.rcss" />
     <link type="text/rcss" href="res/rml/prelaunch.rcss" />
 </head>
@@ -59,7 +62,8 @@ Rml::String document_source()
             <span id="disc-version" class="detail" />
         </disc-info>
         <version-info class="intro-item delay-5">
-            <div class="version">)RML" + escape(localization::get("prelaunch.version")) + R"RML( <span id="version-text"></span></div>
+            <div class="version">)RML" +
+           escape(localization::get("prelaunch.version")) + R"RML( <span id="version-text"></span></div>
             <div id="update-status" class="update">
                 <span id="update-message"></span>
                 <button id="update-download">
@@ -74,12 +78,10 @@ Rml::String document_source()
 )RML";
 }
 
-std::vector<borealis::file_select::Filter> disc_file_filters()
-{
+std::vector<borealis::file_select::Filter> disc_file_filters() {
     return {
-        {localization::get("prelaunch.file_filter.disc_images"),
-         "iso;gcm;ciso;gcz;nfs;rvz;wbfs;wia;tgc"},
-        {localization::get("prelaunch.file_filter.all_files"), "*"},
+        { localization::get("prelaunch.file_filter.disc_images"), "iso;gcm;ciso;gcz;nfs;rvz;wbfs;wia;tgc" },
+        { localization::get("prelaunch.file_filter.all_files"), "*" },
     };
 }
 
@@ -90,9 +92,7 @@ struct DiscVerificationResult {
 };
 
 struct DiscVerificationTask {
-    explicit DiscVerificationTask(std::string discPath)
-        : path(std::move(discPath))
-    {
+    explicit DiscVerificationTask(std::string discPath) : path(std::move(discPath)) {
         worker = std::thread([this] {
             try {
                 validation = disc::verify(path, status, info);
@@ -107,20 +107,20 @@ struct DiscVerificationTask {
         });
     }
 
-    ~DiscVerificationTask()
-    {
+    ~DiscVerificationTask() {
         status.cancelRequested.store(true, std::memory_order_relaxed);
         join();
     }
 
-    void join()
-    {
+    void join() {
         if (worker.joinable()) {
             worker.join();
         }
     }
 
-    [[nodiscard]] bool finished() const { return done.load(std::memory_order_acquire); }
+    [[nodiscard]] bool finished() const {
+        return done.load(std::memory_order_acquire);
+    }
 
     std::string path;
     disc::DiscInfo info;
@@ -137,33 +137,34 @@ borealis::Task<borealis::update::Result> sUpdateCheckTask;
 std::optional<borealis::update::Result> sUpdateCheckResult;
 PrelaunchState sPrelaunchState;
 
-bool verification_allows_launch(disc::ValidationError validation) noexcept
-{
-    return validation == disc::ValidationError::Success ||
-        validation == disc::ValidationError::HashMismatch;
+bool verification_allows_launch(disc::ValidationError validation) noexcept {
+    return validation == disc::ValidationError::Success || validation == disc::ValidationError::HashMismatch;
 }
 
-disc::ValidationError verification_from_config(DiscVerificationState value) noexcept
-{
+disc::ValidationError verification_from_config(DiscVerificationState value) noexcept {
     switch (value) {
-    case DiscVerificationState::Success: return disc::ValidationError::Success;
-    case DiscVerificationState::HashMismatch: return disc::ValidationError::HashMismatch;
-    case DiscVerificationState::Unknown:
-    default: return disc::ValidationError::Unknown;
+        case DiscVerificationState::Success:
+            return disc::ValidationError::Success;
+        case DiscVerificationState::HashMismatch:
+            return disc::ValidationError::HashMismatch;
+        case DiscVerificationState::Unknown:
+        default:
+            return disc::ValidationError::Unknown;
     }
 }
 
-DiscVerificationState verification_to_config(disc::ValidationError validation) noexcept
-{
+DiscVerificationState verification_to_config(disc::ValidationError validation) noexcept {
     switch (validation) {
-    case disc::ValidationError::Success: return DiscVerificationState::Success;
-    case disc::ValidationError::HashMismatch: return DiscVerificationState::HashMismatch;
-    default: return DiscVerificationState::Unknown;
+        case disc::ValidationError::Success:
+            return DiscVerificationState::Success;
+        case disc::ValidationError::HashMismatch:
+            return DiscVerificationState::HashMismatch;
+        default:
+            return DiscVerificationState::Unknown;
     }
 }
 
-std::string format_bytes(std::uint64_t bytes)
-{
+std::string format_bytes(std::uint64_t bytes) {
     constexpr double KiB = 1024.0;
     constexpr double MiB = KiB * 1024.0;
     constexpr double GiB = MiB * 1024.0;
@@ -179,8 +180,7 @@ std::string format_bytes(std::uint64_t bytes)
     return fmt::format("{} B", bytes);
 }
 
-void begin_disc_verification(std::string path)
-{
+void begin_disc_verification(std::string path) {
     if (path.empty()) {
         return;
     }
@@ -192,8 +192,7 @@ void begin_disc_verification(std::string path)
     sDiscVerificationModalPushed = false;
 }
 
-std::optional<DiscVerificationResult> take_finished_disc_verification()
-{
+std::optional<DiscVerificationResult> take_finished_disc_verification() {
     if (sDiscVerificationTask == nullptr || !sDiscVerificationTask->finished()) {
         return std::nullopt;
     }
@@ -208,39 +207,32 @@ std::optional<DiscVerificationResult> take_finished_disc_verification()
     return result;
 }
 
-void begin_update_check()
-{
-    if (!settings().backend.checkForUpdates.value() || sUpdateCheckTask ||
-        sUpdateCheckResult.has_value()) {
+void begin_update_check() {
+    if (!settings().backend.checkForUpdates.value() || sUpdateCheckTask || sUpdateCheckResult.has_value()) {
         return;
     }
-    sUpdateCheckTask = borealis::update::check_latest_github_release(
-        AppInfo,
-        {
-            .currentVersion = BOREALIS_APP_DESCRIBE,
-            .includePrereleases = true,
-        });
+    sUpdateCheckTask =
+        borealis::update::check_latest_github_release(AppInfo, {
+                                                                   .currentVersion = BOREALIS_APP_DESCRIBE,
+                                                                   .includePrereleases = true,
+                                                               });
 }
 
-std::optional<borealis::update::Result> take_finished_update_check()
-{
+std::optional<borealis::update::Result> take_finished_update_check() {
     if (!sUpdateCheckTask.ready()) {
         return std::nullopt;
     }
     std::optional<borealis::update::Result> result;
     try {
         result = sUpdateCheckTask.try_take();
-    } catch (const std::exception& e) {
-        result = borealis::update::Result{.message = e.what()};
-    } catch (...) {
-        result = borealis::update::Result{.message = "Unknown error"};
+    } catch (const std::exception& e) { result = borealis::update::Result{ .message = e.what() }; } catch (...) {
+        result = borealis::update::Result{ .message = "Unknown error" };
     }
     sUpdateCheckTask = {};
     return result;
 }
 
-std::string update_release_label(const borealis::update::Release& release)
-{
+std::string update_release_label(const borealis::update::Release& release) {
     std::string_view label = release.tagName;
     if (!label.empty() && label.front() == 'v') {
         label.remove_prefix(1);
@@ -248,10 +240,8 @@ std::string update_release_label(const borealis::update::Release& release)
     return std::string(label);
 }
 
-void open_update_release()
-{
-    if (!sUpdateCheckResult.has_value() ||
-        sUpdateCheckResult->status != borealis::update::Status::UpdateAvailable) {
+void open_update_release() {
+    if (!sUpdateCheckResult.has_value() || sUpdateCheckResult->status != borealis::update::Status::UpdateAvailable) {
         return;
     }
     const std::string& url = sUpdateCheckResult->latest.htmlUrl;
@@ -262,33 +252,32 @@ void open_update_release()
     }
 }
 
-std::string verification_error_message(disc::ValidationError error)
-{
+std::string verification_error_message(disc::ValidationError error) {
     switch (error) {
-    case disc::ValidationError::IOError: return localization::get("prelaunch.verification.error.io");
-    case disc::ValidationError::InvalidImage:
-        return localization::get("prelaunch.verification.error.invalid_image");
-    case disc::ValidationError::WrongGame:
-        return localization::get("prelaunch.verification.error.wrong_game");
-    case disc::ValidationError::WrongVersion:
-        return localization::get("prelaunch.verification.error.wrong_version");
-    case disc::ValidationError::Canceled:
-        return localization::get("prelaunch.verification.error.canceled");
-    case disc::ValidationError::HashMismatch:
-        return localization::get("prelaunch.verification.error.hash_mismatch");
-    case disc::ValidationError::Success:
-        return localization::get("prelaunch.verification.success");
-    case disc::ValidationError::Unknown:
-    default: return localization::get("prelaunch.verification.error.unknown");
+        case disc::ValidationError::IOError:
+            return localization::get("prelaunch.verification.error.io");
+        case disc::ValidationError::InvalidImage:
+            return localization::get("prelaunch.verification.error.invalid_image");
+        case disc::ValidationError::WrongGame:
+            return localization::get("prelaunch.verification.error.wrong_game");
+        case disc::ValidationError::WrongVersion:
+            return localization::get("prelaunch.verification.error.wrong_version");
+        case disc::ValidationError::Canceled:
+            return localization::get("prelaunch.verification.error.canceled");
+        case disc::ValidationError::HashMismatch:
+            return localization::get("prelaunch.verification.error.hash_mismatch");
+        case disc::ValidationError::Success:
+            return localization::get("prelaunch.verification.success");
+        case disc::ValidationError::Unknown:
+        default:
+            return localization::get("prelaunch.verification.error.unknown");
     }
 }
 
-void persist_disc_choice(const std::string& path, disc::ValidationError validation)
-{
+void persist_disc_choice(const std::string& path, disc::ValidationError validation) {
     auto& backend = settings().backend;
     const auto savedVerification = verification_to_config(validation);
-    const bool changed = backend.discPath.value() != path ||
-        backend.discVerification.value() != savedVerification;
+    const bool changed = backend.discPath.value() != path || backend.discVerification.value() != savedVerification;
     backend.discPath.set_value(path);
     backend.discVerification.set_value(savedVerification);
     save_settings();
@@ -297,9 +286,7 @@ void persist_disc_choice(const std::string& path, disc::ValidationError validati
     }
 }
 
-void apply_valid_disc_result(const std::string& path, const disc::DiscInfo& info,
-                             disc::ValidationError validation)
-{
+void apply_valid_disc_result(const std::string& path, const disc::DiscInfo& info, disc::ValidationError validation) {
     auto& state = prelaunch_state();
     state.configuredDiscPath = path;
     state.configuredDiscCanLaunch = true;
@@ -310,8 +297,7 @@ void apply_valid_disc_result(const std::string& path, const disc::DiscInfo& info
     persist_disc_choice(path, validation);
 }
 
-void apply_disc_verification_result(const DiscVerificationResult& result)
-{
+void apply_disc_verification_result(const DiscVerificationResult& result) {
     auto& state = prelaunch_state();
     if (result.validation == disc::ValidationError::HashMismatch) {
         state.pendingDiscPath = result.path;
@@ -335,19 +321,17 @@ void apply_disc_verification_result(const DiscVerificationResult& result)
 }
 
 class DiscVerificationModal final : public WindowSmall {
-public:
-    DiscVerificationModal()
-        : WindowSmall({.windowClass = "modal", .dialogClass = "modal-dialog"})
-    {
-        auto* header = append(mDialog, "div");
+  public:
+    DiscVerificationModal() : WindowSmall({ .windowClass = "modal" }) {
+        auto* header = append(mDialog, "modal-header");
         header->SetClass("modal-header", true);
-        auto* title = append(header, "div");
+        auto* title = append(header, "modal-title");
         title->SetClass("modal-title", true);
         title->SetInnerRML(escape(localization::get("prelaunch.verification.title")));
         auto* icon = append(header, "icon");
         icon->SetClass("verifying", true);
 
-        auto* body = append(mDialog, "div");
+        auto* body = append(mDialog, "modal-body");
         body->SetClass("modal-body", true);
         auto* content = append(body, "div");
         content->SetClass("verification-progress", true);
@@ -360,7 +344,7 @@ public:
         mDetail = append(content, "div");
         mDetail->SetClass("verification-detail", true);
 
-        auto* actions = append(mDialog, "div");
+        auto* actions = append(mDialog, "modal-actions");
         actions->SetClass("modal-actions", true);
         mCancelButton = std::make_unique<Button>(actions, localization::get("common.cancel"));
         mCancelButton->root()->SetClass("modal-btn", true);
@@ -368,8 +352,7 @@ public:
         refresh();
     }
 
-    void update() override
-    {
+    void update() override {
         if (mFinished) {
             return;
         }
@@ -387,11 +370,12 @@ public:
         refresh();
     }
 
-    bool focus() override { return mCancelButton != nullptr && mCancelButton->focus(); }
+    bool focus() override {
+        return mCancelButton != nullptr && mCancelButton->focus();
+    }
 
-protected:
-    bool handle_nav_command(Rml::Event& event, NavCommand cmd) override
-    {
+  protected:
+    bool handle_nav_command(Rml::Event& event, NavCommand cmd) override {
         if (cmd == NavCommand::Cancel || cmd == NavCommand::Menu) {
             request_cancel();
             event.StopPropagation();
@@ -400,9 +384,8 @@ protected:
         return cmd == NavCommand::Left || cmd == NavCommand::Right;
     }
 
-private:
-    void request_cancel()
-    {
+  private:
+    void request_cancel() {
         if (sDiscVerificationTask == nullptr || mCancelRequested) {
             return;
         }
@@ -412,8 +395,7 @@ private:
         mCancelButton->set_disabled(true);
     }
 
-    void refresh()
-    {
+    void refresh() {
         if (sDiscVerificationTask == nullptr || mCancelRequested) {
             return;
         }
@@ -423,20 +405,17 @@ private:
         }
         mFileName->SetInnerRML(escape(fileName));
 
-        const std::uint64_t bytesRead =
-            sDiscVerificationTask->status.bytesRead.load(std::memory_order_relaxed);
-        const std::uint64_t bytesTotal =
-            sDiscVerificationTask->status.bytesTotal.load(std::memory_order_relaxed);
+        const std::uint64_t bytesRead = sDiscVerificationTask->status.bytesRead.load(std::memory_order_relaxed);
+        const std::uint64_t bytesTotal = sDiscVerificationTask->status.bytesTotal.load(std::memory_order_relaxed);
         if (bytesTotal == 0) {
             mProgress->SetAttribute("value", 0.0f);
             mDetail->SetInnerRML(escape(localization::get("prelaunch.verification.opening")));
             return;
         }
-        const float fraction = std::clamp(
-            static_cast<float>(bytesRead) / static_cast<float>(bytesTotal), 0.0f, 1.0f);
+        const float fraction = std::clamp(static_cast<float>(bytesRead) / static_cast<float>(bytesTotal), 0.0f, 1.0f);
         mProgress->SetAttribute("value", fraction);
-        mDetail->SetInnerRML(escape(fmt::format("{} / {} ({:.0f}%)", format_bytes(bytesRead),
-            format_bytes(bytesTotal), fraction * 100.0f)));
+        mDetail->SetInnerRML(escape(
+            fmt::format("{} / {} ({:.0f}%)", format_bytes(bytesRead), format_bytes(bytesTotal), fraction * 100.0f)));
     }
 
     Rml::Element* mFileName = nullptr;
@@ -447,8 +426,7 @@ private:
     bool mFinished = false;
 };
 
-void file_dialog_callback(borealis::file_select::Result result)
-{
+void file_dialog_callback(borealis::file_select::Result result) {
     if (result.status == borealis::file_select::Status::Selected && !result.locations.empty()) {
         begin_disc_verification(result.locations.front());
     } else if (result.status == borealis::file_select::Status::Failed ||
@@ -459,8 +437,7 @@ void file_dialog_callback(borealis::file_select::Result result)
     }
 }
 
-void apply_intro_animation(Rml::Element* element, const char* delayClass)
-{
+void apply_intro_animation(Rml::Element* element, const char* delayClass) {
     if (element == nullptr) {
         return;
     }
@@ -470,13 +447,11 @@ void apply_intro_animation(Rml::Element* element, const char* delayClass)
 
 } // namespace
 
-PrelaunchState& prelaunch_state() noexcept
-{
+PrelaunchState& prelaunch_state() noexcept {
     return sPrelaunchState;
 }
 
-void refresh_configured_disc_state() noexcept
-{
+void refresh_configured_disc_state() noexcept {
     auto& state = prelaunch_state();
     if (state.configuredDiscPath.empty()) {
         state.configuredDiscCanLaunch = false;
@@ -513,16 +488,14 @@ void refresh_configured_disc_state() noexcept
     state.configuredDiscValidation = disc::ValidationError::Unknown;
 }
 
-void ensure_prelaunch_initialized() noexcept
-{
+void ensure_prelaunch_initialized() noexcept {
     auto& state = prelaunch_state();
     if (state.initialized) {
         return;
     }
     state.configuredDiscPath = settings().backend.discPath.value();
     state.activeDiscPath = state.configuredDiscPath;
-    state.configuredDiscValidation =
-        verification_from_config(settings().backend.discVerification.value());
+    state.configuredDiscValidation = verification_from_config(settings().backend.discVerification.value());
     state.initialized = true;
     refresh_configured_disc_state();
     if (!state.configuredDiscPath.empty() && !state.configuredDiscCanLaunch &&
@@ -531,8 +504,7 @@ void ensure_prelaunch_initialized() noexcept
     }
 }
 
-void open_disc_picker() noexcept
-{
+void open_disc_picker() noexcept {
     ensure_prelaunch_initialized();
     borealis::file_select::open_file(
         {
@@ -543,8 +515,7 @@ void open_disc_picker() noexcept
         &file_dialog_callback);
 }
 
-void try_push_verification_modal(Document& host)
-{
+void try_push_verification_modal(Document& host) {
     auto& state = prelaunch_state();
     if (sDiscVerificationTask != nullptr && !sDiscVerificationModalPushed) {
         sDiscVerificationModalPushed = true;
@@ -565,8 +536,8 @@ void try_push_verification_modal(Document& host)
     };
 
     if (!state.pendingDiscPath.empty()) {
-        const Rml::String body = state.errorString + "<br/><br/>" +
-            escape(localization::get("prelaunch.verification.continue_risk"));
+        const Rml::String body =
+            state.errorString + "<br/><br/>" + escape(localization::get("prelaunch.verification.continue_risk"));
         auto accept = [](Modal& modal) {
             auto& current = prelaunch_state();
             const std::string path = std::move(current.pendingDiscPath);
@@ -582,8 +553,8 @@ void try_push_verification_modal(Document& host)
         host.push(std::make_unique<Modal>(Modal::Props{
             .title = escape(localization::get("prelaunch.verification.warning_title")),
             .bodyRml = body,
-            .actions = {{localization::get("common.cancel"), dismiss},
-                        {localization::get("prelaunch.verification.continue"), accept}},
+            .actions = { { localization::get("common.cancel"), dismiss },
+                         { localization::get("prelaunch.verification.continue"), accept } },
             .onDismiss = dismiss,
             .variant = "danger",
             .icon = "warning",
@@ -594,18 +565,16 @@ void try_push_verification_modal(Document& host)
     host.push(std::make_unique<Modal>(Modal::Props{
         .title = escape(localization::get("prelaunch.verification.error_title")),
         .bodyRml = state.errorString,
-        .actions = {{localization::get("common.ok"), dismiss}},
+        .actions = { { localization::get("common.ok"), dismiss } },
         .onDismiss = dismiss,
         .icon = "error",
     }));
 }
 
 Prelaunch::Prelaunch()
-    : Document(document_source(), false, DocumentScope::Prelaunch)
-    , mRoot(mDocument != nullptr ? mDocument->GetElementById("root") : nullptr)
-    , mScrollingBackground(
-          mDocument != nullptr ? mDocument->GetElementById("background-pattern") : nullptr)
-{
+    : Document(document_source(), false, kScopePrelaunch),
+      mRoot(mDocument != nullptr ? mDocument->GetElementById("root") : nullptr),
+      mScrollingBackground(mDocument != nullptr ? mDocument->GetElementById("background-pattern") : nullptr) {
     ensure_prelaunch_initialized();
     begin_update_check();
 
@@ -614,9 +583,8 @@ Prelaunch::Prelaunch()
     }
     if (auto* menuList = mDocument->GetElementById("menu-list")) {
         const bool ready = prelaunch_state().configuredDiscCanLaunch;
-        mMenuButtons.push_back(
-            std::make_unique<Button>(menuList, ready ? localization::get("prelaunch.play")
-                                                     : localization::get("prelaunch.select_disc")));
+        mMenuButtons.push_back(std::make_unique<Button>(menuList, ready ? localization::get("prelaunch.play")
+                                                                        : localization::get("prelaunch.select_disc")));
         mMenuButtons.back()->on_pressed([this] {
             auto& state = prelaunch_state();
             if (!state.configuredDiscCanLaunch) {
@@ -630,10 +598,8 @@ Prelaunch::Prelaunch()
         });
         apply_intro_animation(mMenuButtons.back()->root(), "delay-1");
 
-        mMenuButtons.push_back(
-            std::make_unique<Button>(menuList, localization::get("common.settings")));
-        mMenuButtons.back()->on_pressed(
-            [this] { push(std::make_unique<SettingsWindow>()); });
+        mMenuButtons.push_back(std::make_unique<Button>(menuList, localization::get("common.settings")));
+        mMenuButtons.back()->on_pressed([this] { push(std::make_unique<SettingsWindow>()); });
         apply_intro_animation(mMenuButtons.back()->root(), "delay-2");
 
         mMenuButtons.push_back(std::make_unique<Button>(menuList, localization::get("menu.controls")));
@@ -658,8 +624,8 @@ Prelaunch::Prelaunch()
             open_update_release();
             event.StopPropagation();
         });
-        listen(mUpdateDownload, Rml::EventId::Keydown, [](Rml::Event& event) {
-            if (map_nav_event(event) == NavCommand::Confirm) {
+        listen(mUpdateDownload, kNavCommandEvent, [](Rml::Event& event) {
+            if (nav_command(event) == NavCommand::Confirm) {
                 open_update_release();
                 event.StopPropagation();
             }
@@ -672,8 +638,7 @@ Prelaunch::Prelaunch()
     });
 }
 
-void Prelaunch::show()
-{
+void Prelaunch::show() {
     Document::show();
     if (mDocument != nullptr) {
         mDocument->SetAttribute("open", "");
@@ -683,8 +648,7 @@ void Prelaunch::show()
     }
 }
 
-void Prelaunch::hide(bool close)
-{
+void Prelaunch::hide(bool close) {
     if (mDocument == nullptr || mRoot == nullptr) {
         Document::hide(close);
         return;
@@ -701,8 +665,7 @@ void Prelaunch::hide(bool close)
     }
 }
 
-void Prelaunch::update()
-{
+void Prelaunch::update() {
     ensure_prelaunch_initialized();
     mScrollingBackground.update(mDocument != nullptr ? mDocument->GetContext() : nullptr);
     if (top_document() == this) {
@@ -714,20 +677,16 @@ void Prelaunch::update()
         mEntranceAnimationStarted = true;
     }
     if (!mMenuButtons.empty()) {
-        mMenuButtons.front()->set_text(
-            state.configuredDiscCanLaunch ? localization::get("prelaunch.play")
-                                           : localization::get("prelaunch.select_disc"));
+        mMenuButtons.front()->set_text(state.configuredDiscCanLaunch ? localization::get("prelaunch.play")
+                                                                     : localization::get("prelaunch.select_disc"));
     }
 
-    auto* statusLabel = mDiscStatus != nullptr
-        ? mDiscStatus->GetElementById("disc-status-label")
-        : nullptr;
+    auto* statusLabel = mDiscStatus != nullptr ? mDiscStatus->GetElementById("disc-status-label") : nullptr;
     if (mDiscStatus != nullptr && statusLabel != nullptr) {
         if (sDiscVerificationTask != nullptr) {
             mDiscStatus->SetAttribute("status", "verifying");
             statusLabel->SetInnerRML(escape(localization::get("prelaunch.status.verifying")));
-        } else if (state.configuredDiscCanLaunch &&
-                   state.configuredDiscValidation == disc::ValidationError::Success) {
+        } else if (state.configuredDiscCanLaunch && state.configuredDiscValidation == disc::ValidationError::Success) {
             mDiscStatus->SetAttribute("status", "good");
             statusLabel->SetInnerRML(escape(localization::get("prelaunch.status.ready")));
         } else if (state.configuredDiscCanLaunch &&
@@ -742,9 +701,9 @@ void Prelaunch::update()
     if (mDiscDetail != nullptr) {
         if (state.configuredDiscCanLaunch) {
             mDiscDetail->SetProperty(Rml::PropertyId::Display, Rml::Style::Display::Block);
-            mDiscDetail->SetInnerRML(escape(localization::format("prelaunch.disc_detail",
-                borealis::io::display_name(state.configuredDiscPath),
-                state.configuredDiscInfo.gameId, state.configuredDiscInfo.revision)));
+            mDiscDetail->SetInnerRML(escape(
+                localization::format("prelaunch.disc_detail", borealis::io::display_name(state.configuredDiscPath),
+                                     state.configuredDiscInfo.gameId, state.configuredDiscInfo.revision)));
         } else {
             mDiscDetail->SetProperty(Rml::PropertyId::Display, Rml::Style::Display::None);
         }
@@ -775,8 +734,8 @@ void Prelaunch::update()
             mUpdateStatus->SetAttribute("state", "available");
             mUpdateMessage->SetInnerRML(escape(localization::get("prelaunch.update.available")));
             if (mUpdateDownloadLabel != nullptr) {
-                mUpdateDownloadLabel->SetInnerRML(escape(localization::format(
-                    "prelaunch.update.get", update_release_label(sUpdateCheckResult->latest))));
+                mUpdateDownloadLabel->SetInnerRML(escape(
+                    localization::format("prelaunch.update.get", update_release_label(sUpdateCheckResult->latest))));
             }
         } else {
             mUpdateStatus->SetAttribute("state", "failed");
@@ -786,19 +745,15 @@ void Prelaunch::update()
     Document::update();
 }
 
-bool Prelaunch::focus()
-{
+bool Prelaunch::focus() {
     return !mMenuButtons.empty() && mMenuButtons.front()->focus();
 }
 
-bool Prelaunch::visible() const
-{
-    return mDocument != nullptr && mRoot != nullptr && mDocument->HasAttribute("open") &&
-        mRoot->HasAttribute("open");
+bool Prelaunch::visible() const {
+    return mDocument != nullptr && mRoot != nullptr && mDocument->HasAttribute("open") && mRoot->HasAttribute("open");
 }
 
-bool Prelaunch::handle_nav_command(Rml::Event& event, NavCommand cmd)
-{
+bool Prelaunch::handle_nav_command(Rml::Event& event, NavCommand cmd) {
     int direction = 0;
     if (cmd == NavCommand::Right) {
         direction = 1;
@@ -821,7 +776,7 @@ bool Prelaunch::handle_nav_command(Rml::Event& event, NavCommand cmd)
     for (int attempts = 0; attempts < count; ++attempts) {
         focused = ((focused + direction) % count + count) % count;
         if (mMenuButtons[focused]->focus()) {
-            play_menu_sound(kSoundItemFocus);
+            play_nav_sound(NavSound::ItemFocus);
             event.StopPropagation();
             return true;
         }

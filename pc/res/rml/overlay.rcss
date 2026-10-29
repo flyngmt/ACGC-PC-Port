@@ -1,7 +1,3 @@
-*, *:before, *:after {
-    box-sizing: border-box;
-}
-
 body {
     width: 100%;
     height: 100%;
@@ -9,9 +5,9 @@ body {
     padding: 0;
     overflow: visible;
     pointer-events: none;
-    font-family: "ACGC Body";
+    font-family: var(--font-family-body);
     font-weight: normal;
-    font-size: 18dp;
+    font-size: var(--font-size-base);
 }
 
 typing-status {
@@ -22,11 +18,11 @@ typing-status {
     left: 50%;
     padding: 0.5em 0.72em;
     gap: 0.5em;
-    color: var(--text);
-    background-color: var(--surface);
-    border: 4dp var(--surface-border);
+    color: var(--color-text);
+    background-color: var(--color-surface);
+    border: 4dp var(--color-surface-border);
     border-radius: 1.5em;
-    box-shadow: 0 0.42em 1.17em 0.08em var(--shadow-soft);
+    box-shadow: 0 0.42em 1.17em 0.08em var(--color-shadow-soft);
     filter: opacity(0);
     transform: translateY(-0.67em);
     transition: filter transform 0.18s cubic-in-out;
@@ -38,19 +34,19 @@ typing-status[open] {
 }
 
 typing-status label {
-    font-family: "ACGC Heading";
+    font-family: var(--font-family-heading);
     font-weight: bold;
-    color: var(--text);
+    color: var(--color-text);
 }
 
 typing-status key {
     padding: 0.17em 0.5em;
     border-radius: 0.67em;
-    background-color: var(--highlight);
-    font-family: "ACGC Heading";
+    background-color: var(--color-highlight);
+    font-family: var(--font-family-heading);
     font-weight: bold;
     font-size: 0.83em;
-    color: var(--text-strong);
+    color: var(--color-text-strong);
 }
 
 typing-status state {
@@ -58,17 +54,17 @@ typing-status state {
     padding: 0.17em 0.5em;
     border-radius: 0.67em;
     text-align: center;
-    color: var(--text-muted);
-    background-color: var(--surface-raised);
+    color: var(--color-text-muted);
+    background-color: var(--color-surface-raised);
     font-weight: bold;
     transition: color background-color 0.14s linear-in-out;
 }
 
 typing-status[active] {
-    border-color: var(--positive-soft);
+    border-color: var(--color-positive-soft);
 }
 
 typing-status[active] state {
-    color: var(--text-on-accent);
-    background-color: var(--positive);
+    color: var(--color-text-on-accent);
+    background-color: var(--color-positive);
 }

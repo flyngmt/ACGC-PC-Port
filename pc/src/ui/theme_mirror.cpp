@@ -195,7 +195,7 @@ DocumentSweep::DocumentSweep(Rml::Context& context, Rml::ElementDocument& source
 	}
 	make_inert(*mDocument);
 	mDocument->SetProperty("pointer-events", "none");
-	mDocument->SetProperty("color", "var(--text)");
+	mDocument->SetProperty("color", "var(--color-text)");
 	mDocument->Show(Rml::ModalFlag::None, Rml::FocusFlag::None);
 }
 

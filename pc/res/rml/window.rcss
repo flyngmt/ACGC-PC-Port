@@ -1,20 +1,12 @@
-*, *:before, *:after {
-    box-sizing: border-box;
-}
-
 body {
     display: flex;
     width: 100%;
     height: 100%;
     padding: 64dp;
-    font-family: "ACGC Body";
+    font-family: var(--font-family-body);
     font-weight: normal;
     font-style: normal;
-    font-size: 16dp;
-}
-
-b {
-    font-weight: bold;
+    font-size: var(--font-size-sm);
 }
 
 window {
@@ -27,10 +19,10 @@ window {
     max-height: 768dp;
     margin: auto;
     overflow: hidden;
-    background-color: var(--surface);
-    border: 4dp var(--surface-border);
-    border-radius: 36dp;
-    box-shadow: 0 14dp 36dp 2dp var(--shadow);
+    background-color: var(--color-surface);
+    border: 4dp var(--color-surface-border);
+    border-radius: var(--radius-window);
+    box-shadow: 0 14dp 36dp 2dp var(--color-shadow);
     filter: opacity(0);
     transform: scale(0.96);
     transform-origin: center;
@@ -47,7 +39,7 @@ window[open] {
     transform: scale(1);
 }
 
-window-background {
+background {
     display: block;
     position: absolute;
     left: 0;
@@ -55,24 +47,24 @@ window-background {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    z-index: 0;
+    z-index: -1;
     pointer-events: none;
 }
 
 window > tab-bar,
 window > content,
-window > .modal-dialog {
+window > modal-dialog {
     position: relative;
     z-index: 1;
 }
 
 @media (max-height: 640dp) {
     body {
-        padding: 16dp;
+        padding: var(--space-lg);
     }
 
     window {
-        border-radius: 28dp;
+        border-radius: var(--radius-window-compact);
         box-shadow: none;
     }
 }
@@ -80,9 +72,9 @@ window > .modal-dialog {
 window tab-bar {
     flex: 0 0 72dp;
     height: 72dp;
-    padding: 4dp 8dp;
-    background-color: var(--surface-raised);
-    border-bottom: 2dp var(--divider);
+    padding: var(--space-xs) var(--space-sm);
+    background-color: var(--color-surface-raised);
+    border-bottom: 2dp var(--color-divider);
 }
 
 window content {
@@ -103,12 +95,12 @@ window content pane {
     padding-bottom: 0dp;
     gap: 10dp;
     overflow: hidden auto;
-    font-size: 19dp;
+    font-size: var(--font-size-lg);
 }
 
 window content pane:last-of-type {
-    background-color: var(--surface-sunken);
-    border-left: 2dp var(--divider);
+    background-color: var(--color-surface-sunken);
+    border-left: 2dp var(--color-divider);
 }
 
 window content pane > * {
@@ -122,8 +114,8 @@ window content pane:last-of-type > div {
 
 .data-folder-current {
     display: block;
-    font-size: 16dp;
-    color: var(--text-faint);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-faint);
 }
 
 window content pane > spacer {
@@ -131,326 +123,6 @@ window content pane > spacer {
     flex: 0 0 16dp;
     height: 16dp;
     pointer-events: none;
-}
-
-scrollbarvertical {
-    width: 10dp;
-    margin: 6dp 5dp 6dp 0;
-}
-
-scrollbarvertical sliderarrowdec,
-scrollbarvertical sliderarrowinc {
-    width: 0;
-    height: 0;
-}
-
-scrollbarvertical slidertrack {
-    width: 10dp;
-    background-color: var(--scroll-track);
-    border-radius: 5dp;
-}
-
-scrollbarvertical sliderbar {
-    width: 10dp;
-    min-height: 28dp;
-    background-color: var(--scroll-thumb);
-    border-radius: 5dp;
-    transition: background-color 0.14s linear-in-out;
-}
-
-scrollbarvertical sliderbar:hover,
-scrollbarvertical sliderbar:active {
-    background-color: var(--accent-bright);
-}
-
-scrollbarhorizontal,
-scrollbarhorizontal sliderarrowdec,
-scrollbarhorizontal sliderarrowinc,
-scrollbarhorizontal slidertrack,
-scrollbarhorizontal sliderbar {
-    width: 0;
-    height: 0;
-}
-
-.section-heading {
-    font-family: "ACGC Heading";
-    font-weight: bold;
-    font-size: 20dp;
-    color: var(--heading);
-    letter-spacing: 0.5dp;
-}
-
-.section-heading:not(:first-of-type) {
-    padding-top: 14dp;
-}
-
-button {
-    padding: 9dp 18dp;
-    text-align: center;
-    font-family: "ACGC Body";
-    font-size: 19dp;
-    font-weight: normal;
-    color: var(--text);
-    background-color: var(--control);
-    border-radius: 18dp;
-    transition: background-color 0.1s linear-in-out, transform 0.08s linear-in-out;
-    cursor: pointer;
-    focus: auto;
-}
-
-button:not(:disabled):hover,
-button:not(:disabled):focus-visible {
-    color: var(--text-strong);
-    background-color: var(--highlight);
-}
-
-button:not(:disabled):selected {
-    color: var(--text-on-accent);
-    background-color: var(--accent);
-}
-
-button:not(:disabled):active {
-    color: var(--text-strong);
-    background-color: var(--pressed);
-    transform: scale(0.98);
-}
-
-button:disabled {
-    opacity: 0.38;
-    cursor: default;
-}
-
-button.modal-btn {
-    flex: 1 1 0;
-    text-align: center;
-}
-
-select.dropdown {
-    display: block;
-    width: 100%;
-    height: 48dp;
-    color: var(--text);
-    background-color: var(--control);
-    border-radius: 22dp;
-    cursor: pointer;
-    focus: auto;
-    /* Let Up/Down leave the closed dropdown so keyboard and controller
-       navigation can reach the rest of the pane. */
-    nav-up: auto;
-    nav-down: auto;
-}
-
-select.dropdown selectvalue {
-    width: auto;
-    height: 48dp;
-    margin-right: 48dp;
-    padding: 0 16dp;
-    line-height: 48dp;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    font-size: 19dp;
-}
-
-select.dropdown selectarrow {
-    width: 48dp;
-    height: 48dp;
-    color: var(--text-muted);
-    font-family: "Material Symbols Rounded";
-    font-size: 24dp;
-    decorator: text("&#xe5cf;" center center);
-}
-
-select.dropdown:hover,
-select.dropdown:focus-visible {
-    color: var(--text-strong);
-    background-color: var(--highlight);
-}
-
-select.dropdown:active {
-    color: var(--text-strong);
-    background-color: var(--pressed);
-}
-
-select.dropdown:hover selectarrow,
-select.dropdown:focus-visible selectarrow,
-select.dropdown:active selectarrow {
-    color: var(--text-strong);
-}
-
-select.dropdown selectbox {
-    width: 100%;
-    max-height: 360dp;
-    margin-top: 4dp;
-    padding: 6dp;
-    color: var(--text);
-    background-color: var(--surface);
-    border: 2dp var(--divider);
-    border-radius: 18dp;
-    box-shadow: 0 8dp 20dp 2dp var(--shadow-soft);
-}
-
-select.dropdown selectbox option {
-    padding: 9dp 12dp;
-    background-color: transparent;
-    border-radius: 12dp;
-}
-
-select.dropdown selectbox option:hover {
-    color: var(--text-strong);
-    background-color: var(--highlight);
-}
-
-select.dropdown selectbox option:checked {
-    color: var(--text-on-accent);
-    background-color: var(--accent);
-}
-
-select-button {
-    display: flex;
-    align-items: center;
-    gap: 10dp;
-    min-height: 48dp;
-    padding: 9dp 16dp;
-    color: var(--text);
-    background-color: var(--control);
-    border-radius: 22dp;
-    transition: background-color 0.1s linear-in-out, transform 0.08s linear-in-out;
-    cursor: pointer;
-    focus: auto;
-}
-
-select-button:not(:disabled):hover,
-select-button:not(:disabled):focus-visible {
-    color: var(--text-strong);
-    background-color: var(--highlight);
-}
-
-select-button:not(:disabled):selected {
-    color: var(--text-strong);
-    background-color: var(--selected);
-}
-
-select-button:not(:disabled):active {
-    color: var(--text-strong);
-    background-color: var(--pressed);
-    transform: scale(0.99);
-}
-
-select-button:not(:disabled):hover value:not(.modified),
-select-button:not(:disabled):focus-visible value:not(.modified),
-select-button:not(:disabled):selected value:not(.modified),
-select-button:not(:disabled):active value:not(.modified) {
-    color: var(--text-strong);
-}
-
-select-button:disabled {
-    opacity: 0.38;
-    cursor: default;
-}
-
-select-button key {
-    flex: 0 1 auto;
-    font-family: "ACGC Heading";
-    font-weight: bold;
-    font-size: 17dp;
-}
-
-select-button value {
-    flex: 1 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    text-align: right;
-    font-size: 19dp;
-    color: var(--text-muted);
-}
-
-select-button value.modified {
-    font-weight: bold;
-    color: var(--modified);
-}
-
-select-button.adjustable value {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    overflow: visible;
-}
-
-select-button .value-label {
-    flex: 0 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-select-button .adjust-arrow {
-    flex: 0 0 auto;
-    padding: 0 6dp;
-    font-family: "Material Symbols Rounded";
-    font-weight: normal;
-    focus: none;
-}
-
-select-button .adjust-arrow.unavailable {
-    opacity: 0.3;
-    cursor: default;
-}
-
-select-button input {
-    text-align: right;
-    font-family: "ACGC Body";
-    font-size: 19dp;
-    background-color: transparent;
-}
-
-icon {
-    display: inline-block;
-    width: 1em;
-    height: 1em;
-    vertical-align: middle;
-    font-family: "Material Symbols Rounded";
-    font-weight: normal;
-}
-
-icon.warning {
-    decorator: text("&#xe002;" center center);
-}
-
-icon.error {
-    decorator: text("&#xe000;" center center);
-}
-
-icon.verifying {
-    decorator: text("&#xe8b5;" center center);
-}
-
-icon.celebration {
-    decorator: text("&#xea65;" center center);
-}
-
-icon.question-mark {
-    decorator: text("&#xeb8b;" center center);
-}
-
-icon.train {
-    decorator: text("&#xe570;" center center);
-}
-
-progress {
-    display: block;
-    width: 100%;
-    height: 8dp;
-    margin: 4dp 0;
-    background-color: rgba(255, 255, 255, 14%);
-    border-radius: 4dp;
-}
-
-progress fill {
-    background-color: #ffd65a;
-    border-radius: 4dp;
 }
 
 .verification-progress {
@@ -462,23 +134,23 @@ progress fill {
 
 .verification-file {
     display: block;
-    font-size: 18dp;
-    color: #f4ffff;
+    font-size: var(--font-size-base);
+    color: var(--color-dialog-text);
 }
 
 .verification-detail {
     display: block;
-    font-size: 15dp;
-    color: rgba(226, 244, 249, 72%);
+    font-size: var(--font-size-xs);
+    color: var(--color-dialog-muted);
 }
 
 window.modal {
     max-width: 680dp;
-    color: #f4ffff;
-    background-color: rgba(29, 57, 81, 94%);
-    border: 4dp rgba(164, 201, 217, 72%);
-    border-radius: 42dp;
-    box-shadow: 0 16dp 42dp 4dp rgba(4, 17, 29, 60%);
+    color: var(--color-dialog-text);
+    background-color: var(--color-dialog-surface);
+    border: 4dp var(--color-dialog-border);
+    border-radius: var(--radius-modal);
+    box-shadow: 0 16dp 42dp 4dp var(--color-dialog-shadow);
 }
 
 window.modal.danger {
@@ -486,86 +158,86 @@ window.modal.danger {
 }
 
 window.modal.light {
-    color: var(--text);
-    background-color: var(--surface);
-    border-color: var(--surface-border);
-    box-shadow: 0 14dp 36dp 2dp var(--shadow);
+    color: var(--color-text);
+    background-color: var(--color-surface);
+    border-color: var(--color-surface-border);
+    box-shadow: 0 14dp 36dp 2dp var(--color-shadow);
 }
 
-.modal-dialog {
+modal-dialog {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     width: 100%;
-    padding: 32dp;
+    padding: var(--space-2xl);
     gap: 22dp;
     flex: 0 1 auto;
     text-align: left;
 }
 
-.modal-header {
+modal-header {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
     width: 100%;
     flex: 0 0 auto;
-    gap: 16dp;
+    gap: var(--space-lg);
 }
 
-.modal-header icon {
+modal-header icon {
     flex: 0 0 36dp;
     width: 36dp;
     height: 36dp;
     line-height: 36dp;
     text-align: center;
-    font-size: 25dp;
-    color: #ffd65a;
+    font-size: var(--font-size-4xl);
+    color: var(--color-dialog-accent);
     background-color: rgba(255, 255, 255, 12%);
-    border-radius: 18dp;
+    border-radius: var(--radius-button);
 }
 
-.modal-title {
+modal-title {
     display: block;
     flex: 1 1 auto;
-    font-family: "ACGC Heading";
+    font-family: var(--font-family-heading);
     font-weight: bold;
-    font-size: 24dp;
-    color: #f4ffff;
+    font-size: var(--font-size-3xl);
+    color: var(--color-dialog-text);
 }
 
-window.modal.danger .modal-title,
-window.modal.danger .modal-header icon {
-    color: #ffd65a;
+window.modal.danger modal-title,
+window.modal.danger modal-header icon {
+    color: var(--color-dialog-accent);
 }
 
-window.modal.light .modal-title {
-    color: var(--text);
+window.modal.light modal-title {
+    color: var(--color-text);
 }
 
-window.modal.light .modal-header icon {
-    color: var(--heading);
-    background-color: var(--surface-raised);
+window.modal.light modal-header icon {
+    color: var(--color-heading);
+    background-color: var(--color-surface-raised);
 }
 
-window.modal.light .modal-header icon.warning {
-    color: var(--warning);
+window.modal.light modal-header icon.warning {
+    color: var(--color-warning);
     decorator: text("&#xe002;" center 46%);
 }
 
-.modal-body {
+modal-body {
     display: block;
     width: 100%;
     flex: 0 1 auto;
     min-width: 0;
-    font-size: 21dp;
+    font-size: var(--font-size-2xl);
     line-height: 1.5;
-    color: #f4ffff;
+    color: var(--color-dialog-text);
     font-weight: normal;
 }
 
-window.modal.light .modal-body {
-    color: var(--text);
+window.modal.light modal-body {
+    color: var(--color-text);
 }
 
 .modal-url {
@@ -575,20 +247,20 @@ window.modal.light .modal-body {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    font-size: 17dp;
-    color: rgba(226, 244, 249, 72%);
+    font-size: var(--font-size-md);
+    color: var(--color-dialog-muted);
 }
 
 window.modal.light .modal-url {
-    color: var(--text-muted);
+    color: var(--color-text-muted);
 }
 
-.modal-body span.tip {
-    font-size: 15dp;
-    color: rgba(226, 244, 249, 72%);
+modal-body span.tip {
+    font-size: var(--font-size-xs);
+    color: var(--color-dialog-muted);
 }
 
-.modal-actions {
+modal-actions {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
@@ -596,39 +268,105 @@ window.modal.light .modal-url {
     gap: 14dp;
     width: 100%;
     flex: 0 0 auto;
-    padding-top: 4dp;
+    padding-top: var(--space-xs);
 }
 
 window.modal button {
-    color: #4f493d;
-    background-color: #fff1a8;
+    color: var(--color-dialog-button-text);
+    background-color: var(--color-dialog-button);
 }
 
 window.modal button:not(:disabled):hover,
 window.modal button:not(:disabled):focus-visible {
-    color: #4f493d;
-    background-color: #ffd65a;
+    color: var(--color-dialog-button-text);
+    background-color: var(--color-dialog-accent);
 }
 
 window.modal button:not(:disabled):selected,
 window.modal button:not(:disabled):active {
-    color: #4f493d;
-    background-color: #ffc429;
+    color: var(--color-dialog-button-text);
+    background-color: var(--color-dialog-button-active);
 }
 
 window.modal.light button {
-    color: var(--modal-button-text);
-    background-color: var(--modal-button);
+    color: var(--color-modal-button-text);
+    background-color: var(--color-modal-button);
 }
 
 window.modal.light button:not(:disabled):hover,
 window.modal.light button:not(:disabled):focus-visible {
-    color: var(--modal-button-text-strong);
-    background-color: var(--modal-button-hover);
+    color: var(--color-modal-button-text-strong);
+    background-color: var(--color-modal-button-hover);
 }
 
 window.modal.light button:not(:disabled):selected,
 window.modal.light button:not(:disabled):active {
-    color: var(--modal-button-text-strong);
-    background-color: var(--modal-button-active);
+    color: var(--color-modal-button-text-strong);
+    background-color: var(--color-modal-button-active);
+}
+
+modal-content {
+    display: none;
+    width: 100%;
+    min-height: 0;
+}
+modal-content.active { display: block; }
+modal-content pane {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    max-height: 38vh;
+    overflow: hidden auto;
+}
+@media (max-height: 640dp) {
+    modal-dialog { padding: var(--space-lg); gap: var(--space-sm); }
+    modal-body { font-size: var(--font-size-sm); }
+}
+
+binding-row {
+    display: flex;
+    flex-flow: column;
+    gap: var(--space-xs);
+}
+
+binding-row > select-button {
+    width: 100%;
+}
+
+binding-actions {
+    display: none;
+    flex-flow: row wrap;
+    gap: var(--space-xs);
+    padding: 0 var(--space-sm) var(--space-xs);
+}
+
+binding-row.expanded binding-actions {
+    display: flex;
+}
+
+binding-actions button {
+    flex: 0 1 auto;
+    min-height: 32dp;
+    padding: var(--space-xs) var(--space-sm);
+    font-size: var(--font-size-sm);
+    border-radius: var(--radius-small);
+}
+
+binding-row.capturing > select-button {
+    border-color: var(--color-accent);
+}
+
+.binding-help {
+    margin-top: var(--space-sm);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    line-height: 1.5;
+}
+
+.binding-save-retry {
+    display: none;
+}
+
+.bindings-pane.save-failed .binding-save-retry {
+    display: block;
 }

@@ -1,15 +1,11 @@
-*, *:before, *:after {
-    box-sizing: border-box;
-}
-
 body {
     display: block;
     width: 100%;
     height: 100%;
     overflow: hidden;
-    font-family: "ACGC Body";
+    font-family: var(--font-family-body);
     font-weight: normal;
-    font-size: 18dp;
+    font-size: var(--font-size-base);
     filter: opacity(0);
     transition: filter 0.35s linear-in-out;
     z-index: -1;
@@ -20,7 +16,7 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background-color: var(--background);
+    background-color: var(--color-background);
 }
 
 body[open] {
@@ -75,15 +71,15 @@ hero img {
 #menu-list button {
     min-width: 142dp;
     height: 54dp;
-    padding: 0 24dp;
+    padding: 0 var(--space-xl);
     line-height: 54dp;
     text-align: center;
     white-space: nowrap;
-    font-family: "ACGC Heading";
+    font-family: var(--font-family-heading);
     font-weight: bold;
-    font-size: 19dp;
-    color: var(--text);
-    background-color: var(--control-strong);
+    font-size: var(--font-size-lg);
+    color: var(--color-text);
+    background-color: var(--color-control-strong);
     border-radius: 27dp;
     transition: background-color color transform 0.1s linear-in-out;
     cursor: pointer;
@@ -92,14 +88,14 @@ hero img {
 
 #menu-list button:hover,
 #menu-list button:focus-visible {
-    color: var(--text-strong);
-    background-color: var(--highlight);
+    color: var(--color-text-strong);
+    background-color: var(--color-highlight);
     transform: scale(1.04);
 }
 
 #menu-list button:active {
-    color: var(--text-strong);
-    background-color: var(--pressed);
+    color: var(--color-text-strong);
+    background-color: var(--color-pressed);
     transform: scale(0.98);
 }
 
@@ -110,12 +106,12 @@ version-info {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 4dp;
+    gap: var(--space-xs);
     min-height: 54dp;
-    padding: 12dp 18dp;
-    background-color: var(--control-strong);
+    padding: var(--space-md) 18dp;
+    background-color: var(--color-control-strong);
     border-radius: 27dp;
-    font-size: 16dp;
+    font-size: var(--font-size-sm);
 }
 
 disc-info {
@@ -140,13 +136,13 @@ version-info {
     display: block;
     width: 20dp;
     height: 20dp;
-    font-family: "Material Symbols Rounded";
+    font-family: var(--font-family-icons);
     font-weight: normal;
-    font-size: 20dp;
+    font-size: var(--font-size-xl);
 }
 
 #disc-status[status=good] {
-    color: var(--positive);
+    color: var(--color-positive);
 }
 
 #disc-status[status=good] icon {
@@ -154,7 +150,7 @@ version-info {
 }
 
 #disc-status[status=bad] {
-    color: var(--status-bad);
+    color: var(--color-status-bad);
 }
 
 #disc-status[status=bad] icon {
@@ -162,7 +158,7 @@ version-info {
 }
 
 #disc-status[status=verifying] {
-    color: var(--status-info);
+    color: var(--color-status-info);
 }
 
 #disc-status[status=verifying] icon {
@@ -170,7 +166,7 @@ version-info {
 }
 
 #disc-status[status=mismatch] {
-    color: var(--warning);
+    color: var(--color-warning);
 }
 
 #disc-status[status=mismatch] icon {
@@ -178,12 +174,12 @@ version-info {
 }
 
 .detail {
-    color: var(--text-faint);
+    color: var(--color-text-faint);
     font-size: 14dp;
 }
 
 .version {
-    font-family: "ACGC Heading";
+    font-family: var(--font-family-heading);
     font-weight: bold;
 }
 
@@ -191,8 +187,8 @@ version-info {
     display: none;
     align-items: center;
     justify-content: flex-end;
-    gap: 8dp;
-    color: var(--text-faint);
+    gap: var(--space-sm);
+    color: var(--color-text-faint);
     font-size: 14dp;
 }
 
@@ -208,11 +204,11 @@ version-info {
 #update-download {
     display: none;
     margin: 0;
-    padding: 2dp 8dp;
-    color: var(--text-on-accent);
-    background-color: var(--accent);
+    padding: var(--space-2xs) var(--space-sm);
+    color: var(--color-text-on-accent);
+    background-color: var(--color-accent);
     border-radius: 12dp;
-    font-family: "ACGC Body";
+    font-family: var(--font-family-body);
     font-weight: normal;
     font-size: 14dp;
     cursor: pointer;
@@ -227,14 +223,14 @@ version-info {
 
 #update-download:hover,
 #update-download:focus-visible {
-    background-color: var(--accent-bright);
+    background-color: var(--color-accent-bright);
 }
 
 #update-download icon {
     display: block;
     width: 16dp;
     height: 16dp;
-    font-family: "Material Symbols Rounded";
+    font-family: var(--font-family-icons);
     font-weight: normal;
     decorator: text("&#xe5c8;" center center);
 }
@@ -276,14 +272,14 @@ body.animate-in .intro-item {
         height: 46dp;
         padding: 0 18dp;
         line-height: 46dp;
-        font-size: 16dp;
+        font-size: var(--font-size-sm);
     }
 
     disc-info,
     version-info {
         bottom: 18dp;
         min-height: 44dp;
-        padding: 8dp 13dp;
+        padding: var(--space-sm) 13dp;
     }
 
     disc-info { left: 18dp; }

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "acgc/disc.hpp"
-#include "button.hpp"
-#include "document.hpp"
+#include <borealis/ui/button.hpp>
+#include <borealis/ui/document.hpp>
 #include "scrolling_background.hpp"
 
 #include <memory>
@@ -11,7 +11,7 @@
 
 namespace acgc::ui {
 
-class Prelaunch final : public Document {
+class Prelaunch final : public borealis::ui::Document {
 public:
     Prelaunch();
 
@@ -23,11 +23,11 @@ public:
     bool obscures_game() const override { return true; }
 
 protected:
-    bool handle_nav_command(Rml::Event& event, NavCommand cmd) override;
+    bool handle_nav_command(Rml::Event& event, borealis::ui::NavCommand cmd) override;
 
 private:
     bool mEntranceAnimationStarted = false;
-    std::vector<std::unique_ptr<Button>> mMenuButtons;
+    std::vector<std::unique_ptr<borealis::ui::Button>> mMenuButtons;
     Rml::Element* mRoot = nullptr;
     ScrollingBackground mScrollingBackground;
     Rml::Element* mDiscStatus = nullptr;
@@ -59,6 +59,6 @@ PrelaunchState& prelaunch_state() noexcept;
 void ensure_prelaunch_initialized() noexcept;
 void refresh_configured_disc_state() noexcept;
 void open_disc_picker() noexcept;
-void try_push_verification_modal(Document& host);
+void try_push_verification_modal(borealis::ui::Document& host);
 
 } // namespace acgc::ui

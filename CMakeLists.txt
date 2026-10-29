@@ -18,6 +18,7 @@ set(AURORA_ENABLE_DVD ON CACHE BOOL "" FORCE)
 set(AURORA_ENABLE_CARD ON CACHE BOOL "" FORCE)
 set(AURORA_ENABLE_RMLUI ON CACHE BOOL "" FORCE)
 add_subdirectory(extern/aurora EXCLUDE_FROM_ALL)
+set(BOREALIS_ENABLE_UI ON CACHE BOOL "" FORCE)
 add_subdirectory(extern/borealis EXCLUDE_FROM_ALL)
 
 include(FetchContent)
@@ -208,6 +209,7 @@ set(PC_SOURCES
     ${PC_ROOT}/src/acgc_data.cpp
     ${PC_ROOT}/src/acgc_disc.cpp
     ${PC_ROOT}/src/acgc_game_input_block.cpp
+    ${PC_ROOT}/src/acgc_input_profiles.cpp
     ${PC_ROOT}/src/acgc_legacy_input.cpp
     ${PC_ROOT}/src/acgc_settings.cpp
     ${PC_ROOT}/src/acgc_texture_replacements.cpp
@@ -217,30 +219,17 @@ set(PC_SOURCES
     ${PC_ROOT}/src/aurora_platform.cpp
     ${PC_ROOT}/src/aurora_widescreen.cpp
     ${PC_ROOT}/src/aurora_vi.cpp
-    ${PC_ROOT}/src/ui/bool_button.cpp
-    ${PC_ROOT}/src/ui/button.cpp
-    ${PC_ROOT}/src/ui/component.cpp
     ${PC_ROOT}/src/ui/controller_config.cpp
-    ${PC_ROOT}/src/ui/document.cpp
-    ${PC_ROOT}/src/ui/event.cpp
-    ${PC_ROOT}/src/ui/input.cpp
     ${PC_ROOT}/src/ui/localization.cpp
     ${PC_ROOT}/src/ui/menu_bar.cpp
-    ${PC_ROOT}/src/ui/modal.cpp
-    ${PC_ROOT}/src/ui/number_button.cpp
     ${PC_ROOT}/src/ui/overlay.cpp
-    ${PC_ROOT}/src/ui/pane.cpp
     ${PC_ROOT}/src/ui/prelaunch.cpp
     ${PC_ROOT}/src/ui/scrolling_background.cpp
-    ${PC_ROOT}/src/ui/select_button.cpp
     ${PC_ROOT}/src/ui/settings.cpp
-    ${PC_ROOT}/src/ui/string_button.cpp
-    ${PC_ROOT}/src/ui/tab_bar.cpp
     ${PC_ROOT}/src/ui/theme.cpp
     ${PC_ROOT}/src/ui/theme_mirror.cpp
     ${PC_ROOT}/src/ui/town_select.cpp
     ${PC_ROOT}/src/ui/ui.cpp
-    ${PC_ROOT}/src/ui/window.cpp
     ${PC_ROOT}/src/pc_audio.c
     ${PC_ROOT}/src/pc_clock.c
     ${PC_ROOT}/src/pc_gci.c
@@ -430,6 +419,7 @@ target_link_libraries(acgc PRIVATE
     borealis::disc
     borealis::file_select
     borealis::log
+    borealis::ui
     borealis::update
     aurora::card
     aurora::core

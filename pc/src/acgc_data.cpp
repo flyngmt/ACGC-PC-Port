@@ -101,6 +101,7 @@ borealis::data::Manager& manager() {
                             "gamecontrollerdb.txt",
                             "imgui.ini",
                             "keyboard_bindings.dat",
+                            "input.json",
                         },
                     .extensions = {".controller", ".gci"},
                 },

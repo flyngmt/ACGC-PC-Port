@@ -1,0 +1,9 @@
+*, *:before, *:after { box-sizing: border-box; }
+body {
+    font-family: var(--font-family-body);
+    font-size: var(--font-size-base);
+    font-weight: normal;
+    font-style: normal;
+    color: var(--color-text);
+}
+b { font-weight: bold; }

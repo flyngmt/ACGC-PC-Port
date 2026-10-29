@@ -1,4 +1,5 @@
 #include "acgc/settings.hpp"
+#include <aurora/pad.hpp>
 
 #include "acgc/config.hpp"
 #include "ac_birth_control.h"
@@ -311,19 +312,15 @@ void apply_runtime_settings(bool refreshGameplay)
     apply_settings_bridge(refreshGameplay);
     apply_ui_scale();
 
-    constexpr int kAxisMaximum = 32767;
-    for (u32 port = 0; port < PAD_MAX_CONTROLLERS; ++port) {
-        u32 buttonCount = 0;
-        PADGetButtonMappings(port, &buttonCount);
-        PADDeadZones* deadZones = PADGetDeadZones(port);
-        if (deadZones == nullptr) {
-            continue;
+    if (const auto source = aurora::pad::port_controller(0)) {
+        const auto target = aurora::pad::ProfileTarget::controller(source);
+        if (const auto* profile = aurora::pad::profile(target)) {
+            auto values = profile->settings;
+            values.leftStickDeadZone = settings().input.stickDeadzone.value() / 100.f;
+            values.rightStickDeadZone = settings().input.cstickDeadzone.value() / 100.f;
+            values.useDeadzones = values.leftStickDeadZone != 0.f || values.rightStickDeadZone != 0.f;
+            if (values != profile->settings) aurora::pad::set_settings(target, values);
         }
-        deadZones->stickDeadZone = static_cast<u16>(
-            settings().input.stickDeadzone.value() * kAxisMaximum / 100);
-        deadZones->substickDeadZone = static_cast<u16>(
-            settings().input.cstickDeadzone.value() * kAxisMaximum / 100);
-        deadZones->useDeadzones = deadZones->stickDeadZone != 0 || deadZones->substickDeadZone != 0;
     }
 }
 

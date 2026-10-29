@@ -1,0 +1,54 @@
+body {
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+}
+
+popover {
+    position: absolute;
+    display: flex;
+    flex-flow: column;
+    padding: 6dp;
+    gap: 0;
+    max-width: 90%;
+    max-height: 90%;
+    overflow-y: auto;
+    color: var(--color-text);
+    background-color: var(--color-surface);
+    border: 2dp var(--color-divider);
+    border-radius: var(--radius-button);
+    box-shadow: 0 8dp 20dp 2dp var(--color-shadow-soft);
+    filter: opacity(0);
+    transform: scale(0.95);
+    transform-origin: left top;
+    transition: filter transform 0.15s cubic-in-out;
+    focus: auto;
+}
+
+popover[open] {
+    filter: opacity(1);
+    transform: scale(1);
+}
+
+.context-menu {
+    max-height: 360dp;
+}
+
+.context-menu button {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: var(--space-sm);
+    padding: 9dp var(--space-md);
+    background-color: transparent;
+    border-radius: 12dp;
+    white-space: nowrap;
+}
+
+.context-menu icon {
+    flex: 0 0 1em;
+}
+
+.dropdown-menu icon {
+    display: none;
+}

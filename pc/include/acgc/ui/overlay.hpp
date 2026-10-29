@@ -1,10 +1,10 @@
 #pragma once
 
-#include "document.hpp"
+#include <borealis/ui/document.hpp>
 
 namespace acgc::ui {
 
-class Overlay final : public Document {
+class Overlay final : public borealis::ui::Document {
 public:
     Overlay();
 

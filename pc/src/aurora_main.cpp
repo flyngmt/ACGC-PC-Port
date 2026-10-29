@@ -17,6 +17,7 @@
 #include "aurora_debug.h"
 #include "acgc/app_info.hpp"
 #include "acgc/controller_ports.hpp"
+#include "acgc/input_profiles.hpp"
 #include "acgc/data.hpp"
 #include "acgc/disc.hpp"
 #include "acgc/legacy_input.hpp"
@@ -85,27 +86,14 @@ static void pc_speedhack_toggle() {
 #ifdef MOUSE_INPUT
 static void update_mouse_pad_buttons() {
     u32 buttons = 0;
-    const auto add_binding = [&buttons](s32 scancode) {
-        if (scancode <= PAD_KEY_MOUSE_LEFT && scancode >= PAD_KEY_MOUSE_X2) {
-            buttons |= 1u << (PAD_KEY_MOUSE_LEFT - scancode);
-        }
-    };
-    for (u32 port = 0; port < PAD_CHANMAX; ++port) {
-        u32 count = 0;
-        if (const auto* bindings = PADGetKeyButtonBindings(port, &count)) {
-            for (u32 i = 0; i < count; ++i) {
-                if (bindings[i].padButton != 0) {
-                    add_binding(bindings[i].scancode);
-                }
-            }
-        }
-        if (const auto* bindings = PADGetKeyAxisBindings(port, &count)) {
-            for (u32 i = 0; i < count; ++i) {
-                add_binding(bindings[i].scancode);
+    if (const auto bindings = aurora::pad::binding_set(0)) {
+        for (const auto& binding : bindings->bindings) {
+            if (const auto* mouse = binding.input.control.get_if<aurora::binding::PhysicalInput::MouseButton>();
+                mouse && mouse->button > 0 && mouse->button <= 32) {
+                buttons |= 1u << (mouse->button - 1);
             }
         }
     }
-    // PAD > Mouse
     pc_mouse_set_pad_buttons(buttons);
 }
 #endif
@@ -122,16 +110,16 @@ bool ac_aurora_begin_frame() {
     pc_emu64_frame_cull_visible = 0;
     pc_emu64_frame_cull_rejected = 0;
 
-    pc_mouse_set_blocked(PC_MOUSE_BLOCK_HOST_UI, acgc::ui::any_document_visible());
+    pc_mouse_set_blocked(PC_MOUSE_BLOCK_HOST_UI, borealis::ui::any_document_visible());
     pc_mouse_set_blocked(PC_MOUSE_BLOCK_IMGUI, ac_debug_imgui_wants_mouse());
     const AuroraEvent* event = aurora_update();
-    pc_mouse_set_blocked(PC_MOUSE_BLOCK_HOST_UI, acgc::ui::any_document_visible());
+    pc_mouse_set_blocked(PC_MOUSE_BLOCK_HOST_UI, borealis::ui::any_document_visible());
     update_render_size();
     while (event != nullptr && event->type != AURORA_NONE) {
         if (event->type == AURORA_EXIT) {
             g_pc_running = 0;
         } else if (event->type == AURORA_SDL_EVENT) {
-            if (!acgc::ui::any_document_visible()) {
+            if (!borealis::ui::any_document_visible()) {
                 pc_typing_handle_event(&event->sdl);
             }
             if (event->sdl.type == SDL_EVENT_KEY_DOWN && !event->sdl.key.repeat && event->sdl.key.key == SDLK_F2) {
@@ -141,7 +129,7 @@ bool ac_aurora_begin_frame() {
                 acgc::apply_ui_scale();
             }
             acgc::ui::handle_event(event->sdl);
-            if (acgc::ui::any_document_visible()) {
+            if (borealis::ui::any_document_visible()) {
                 pc_typing_cancel();
             }
             pc_mouse_handle_event(&event->sdl);
@@ -470,36 +458,9 @@ void update_render_size() {
     }
 }
 
-void configure_default_keyboard_input() {
-    u32 binding_count = 0;
-    if (PADGetKeyButtonBindings(0, &binding_count) != nullptr) {
-        return;
-    }
-
-    PADKeyButtonBinding buttons[PAD_BUTTON_COUNT] = {
-        { SDL_SCANCODE_SPACE, PAD_BUTTON_A },      { SDL_SCANCODE_LSHIFT, PAD_BUTTON_B },
-        { SDL_SCANCODE_X, PAD_BUTTON_X },          { SDL_SCANCODE_Y, PAD_BUTTON_Y },
-        { SDL_SCANCODE_RETURN, PAD_BUTTON_START }, { SDL_SCANCODE_Z, PAD_TRIGGER_Z },
-        { SDL_SCANCODE_Q, PAD_TRIGGER_L },         { SDL_SCANCODE_E, PAD_TRIGGER_R },
-        { SDL_SCANCODE_I, PAD_BUTTON_UP },         { SDL_SCANCODE_K, PAD_BUTTON_DOWN },
-        { SDL_SCANCODE_J, PAD_BUTTON_LEFT },       { SDL_SCANCODE_L, PAD_BUTTON_RIGHT },
-    };
-    PADKeyAxisBinding axes[PAD_AXIS_COUNT] = {
-        { SDL_SCANCODE_D, PAD_AXIS_LEFT_X_POS, 100 },      { SDL_SCANCODE_A, PAD_AXIS_LEFT_X_NEG, 100 },
-        { SDL_SCANCODE_W, PAD_AXIS_LEFT_Y_POS, 100 },      { SDL_SCANCODE_S, PAD_AXIS_LEFT_Y_NEG, 100 },
-        { SDL_SCANCODE_RIGHT, PAD_AXIS_RIGHT_X_POS, 100 }, { SDL_SCANCODE_LEFT, PAD_AXIS_RIGHT_X_NEG, 100 },
-        { SDL_SCANCODE_UP, PAD_AXIS_RIGHT_Y_POS, 100 },    { SDL_SCANCODE_DOWN, PAD_AXIS_RIGHT_Y_NEG, 100 },
-        { SDL_SCANCODE_Q, PAD_AXIS_TRIGGER_L, 100 },       { SDL_SCANCODE_E, PAD_AXIS_TRIGGER_R, 100 },
-    };
-
-    PADSetKeyButtonBindings(0, buttons);
-    PADSetKeyAxisBindings(0, axes);
-    PADSetKeyboardActive(0, TRUE);
-}
-
 bool run_prelaunch()
 {
-    acgc::ui::push_document(std::make_unique<acgc::ui::Prelaunch>());
+    borealis::ui::push_document(std::make_unique<acgc::ui::Prelaunch>());
     bool paused = false;
     auto& state = acgc::ui::prelaunch_state();
     while (!state.launchRequested && !state.quitRequested) {
@@ -597,6 +558,7 @@ int main(int argc, char* argv[]) {
     if (const char* base_path = SDL_GetBasePath()) {
         legacy_input.emplace_back(std::filesystem::path(base_path) / "keybindings.ini");
     }
+    acgc::input::register_defaults();
     acgc::prepare_legacy_input(user_path, legacy_input);
 
     const auto& settings = acgc::settings();
@@ -655,7 +617,6 @@ int main(int argc, char* argv[]) {
     PADInit();
     acgc::controller_ports::initialize();
     acgc::apply_legacy_keyboard_input();
-    configure_default_keyboard_input();
     acgc::apply_runtime_settings(false);
     if (!acgc::ui::initialize()) {
         UiLog.error("Could not initialize the Aurora host menu");
@@ -717,6 +678,7 @@ int main(int argc, char* argv[]) {
     pc_audio_shutdown();
     pc_audio_mq_shutdown();
     pc_typing_shutdown();
+    acgc::controller_ports::shutdown();
     pc_mouse_shutdown();
     aurora_dvd_close();
     acgc::texture_replacements::shutdown();

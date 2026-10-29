@@ -1,7 +1,3 @@
-*, *:before, *:after {
-    box-sizing: border-box;
-}
-
 body {
     display: flex;
     align-items: flex-start;
@@ -10,10 +6,10 @@ body {
     width: 100%;
     height: 100%;
     margin: 0;
-    padding: 0 16dp;
-    font-family: "ACGC Body";
+    padding: 0 var(--space-lg);
+    font-family: var(--font-family-body);
     font-weight: normal;
-    font-size: 18dp;
+    font-size: var(--font-size-base);
 }
 
 button {
@@ -30,11 +26,11 @@ popup {
     height: 72dp;
     margin-top: 18dp;
     overflow: hidden;
-    color: var(--text);
-    background-color: var(--surface);
-    border: 4dp var(--surface-border);
-    border-radius: 36dp;
-    box-shadow: 0 10dp 28dp 2dp var(--shadow);
+    color: var(--color-text);
+    background-color: var(--color-surface);
+    border: 4dp var(--color-surface-border);
+    border-radius: var(--radius-window);
+    box-shadow: 0 10dp 28dp 2dp var(--color-shadow);
     filter: opacity(0);
     transform: translateY(-104dp);
     transition: filter transform 0.18s cubic-in-out;

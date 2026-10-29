@@ -24,8 +24,8 @@ namespace {
 
 struct Token {
 	const char* name;
-	Rml::Colourb day;
-	Rml::Colourb night;
+	Rml::String day;
+	Rml::String night;
 };
 
 constexpr int kNightStartMinutes = 20 * 60;
@@ -36,42 +36,42 @@ constexpr Uint64 kFinishMs       = 400;
 constexpr float kSweepMs         = 15000.0f;
 constexpr float kSweepEdge       = 0.5f;
 
-const std::array kPalette = {
-	Token { "--background", Rml::Colourb(0xF3, 0xE4, 0xB9), Rml::Colourb(0x13, 0x1A, 0x2A) },
-	Token { "--surface", Rml::Colourb(0xFF, 0xFB, 0xE7), Rml::Colourb(0x1E, 0x27, 0x3B) },
-	Token { "--surface-border", Rml::Colourb(0xF5, 0xE7, 0xBD), Rml::Colourb(0x34, 0x40, 0x5B) },
-	Token { "--surface-raised", Rml::Colourb(0xF8, 0xED, 0xCF, 0xD6), Rml::Colourb(0x28, 0x33, 0x4C, 0xD6) },
-	Token { "--surface-sunken", Rml::Colourb(0xFF, 0xF3, 0xD2, 0xD6), Rml::Colourb(0x18, 0x20, 0x33, 0xD6) },
-	Token { "--divider", Rml::Colourb(0xEA, 0xD9, 0xAD), Rml::Colourb(0x3A, 0x47, 0x63) },
-	Token { "--text", Rml::Colourb(0x65, 0x5B, 0x47), Rml::Colourb(0xEB, 0xE4, 0xD1) },
-	Token { "--text-muted", Rml::Colourb(0x74, 0x68, 0x4F), Rml::Colourb(0xB9, 0xB1, 0x9F) },
-	Token { "--text-faint", Rml::Colourb(0x65, 0x5B, 0x47, 0xAD), Rml::Colourb(0xEB, 0xE4, 0xD1, 0xA3) },
-	Token { "--text-strong", Rml::Colourb(0x65, 0x54, 0x3C), Rml::Colourb(0x22, 0x28, 0x38) },
-	Token { "--text-on-accent", Rml::Colourb(0xFF, 0xFD, 0xF3), Rml::Colourb(0xFF, 0xFD, 0xF3) },
-	Token { "--heading", Rml::Colourb(0xD9, 0x78, 0x21), Rml::Colourb(0x8F, 0xA8, 0xE8) },
-	Token { "--warning", Rml::Colourb(0xD9, 0x78, 0x21), Rml::Colourb(0xF2, 0xA6, 0x54) },
-	Token { "--control", Rml::Colourb(0xFF, 0xFF, 0xFF, 0x85), Rml::Colourb(0xFF, 0xFF, 0xFF, 0x12) },
-	Token { "--control-strong", Rml::Colourb(0xFF, 0xFF, 0xFF, 0x99), Rml::Colourb(0xFF, 0xFF, 0xFF, 0x1A) },
-	Token { "--highlight", Rml::Colourb(0xFF, 0xE2, 0x7A), Rml::Colourb(0xD8, 0xDF, 0xF2) },
-	Token { "--selected", Rml::Colourb(0xFF, 0xD2, 0x5A), Rml::Colourb(0xC9, 0xD3, 0xEE) },
-	Token { "--pressed", Rml::Colourb(0xFF, 0xC7, 0x42), Rml::Colourb(0xB9, 0xC6, 0xE6) },
-	Token { "--accent", Rml::Colourb(0xE9, 0x84, 0x24), Rml::Colourb(0x5B, 0x7F, 0xD1) },
-	Token { "--accent-bright", Rml::Colourb(0xEF, 0x94, 0x2C), Rml::Colourb(0x78, 0x96, 0xDE) },
-	Token { "--shadow", Rml::Colourb(0x36, 0x2D, 0x1D, 0x6B), Rml::Colourb(0x03, 0x07, 0x12, 0x99) },
-	Token { "--shadow-soft", Rml::Colourb(0x36, 0x2D, 0x1D, 0x52), Rml::Colourb(0x03, 0x07, 0x12, 0x80) },
-	Token { "--scroll-track", Rml::Colourb(0xD4, 0xB9, 0x7D, 0x40), Rml::Colourb(0x9F, 0xB0, 0xD5, 0x29) },
-	Token { "--scroll-thumb", Rml::Colourb(0xD3, 0x8B, 0x2E, 0x8C), Rml::Colourb(0x78, 0x96, 0xDE, 0x8C) },
-	Token { "--positive", Rml::Colourb(0x19, 0x8D, 0x79), Rml::Colourb(0x57, 0xC4, 0xAE) },
-	Token { "--positive-soft", Rml::Colourb(0x89, 0xD2, 0xC2), Rml::Colourb(0x3F, 0x8C, 0x7F) },
-	Token { "--modified", Rml::Colourb(0x00, 0x9C, 0x9B), Rml::Colourb(0x5C, 0xCF, 0xCE) },
-	Token { "--status-bad", Rml::Colourb(0x9A, 0x73, 0x50), Rml::Colourb(0xC9, 0xA5, 0x82) },
-	Token { "--status-info", Rml::Colourb(0x24, 0x7C, 0x9A), Rml::Colourb(0x74, 0xBF, 0xDC) },
-	Token { "--modal-button", Rml::Colourb(0xFF, 0xF1, 0xA8), Rml::Colourb(0xFF, 0xFF, 0xFF, 0x14) },
-	Token { "--modal-button-text", Rml::Colourb(0x4F, 0x49, 0x3D), Rml::Colourb(0xEB, 0xE4, 0xD1) },
-	Token { "--modal-button-text-strong", Rml::Colourb(0x4F, 0x49, 0x3D), Rml::Colourb(0x22, 0x28, 0x38) },
-	Token { "--modal-button-hover", Rml::Colourb(0xFF, 0xD6, 0x5A), Rml::Colourb(0xD8, 0xDF, 0xF2) },
-	Token { "--modal-button-active", Rml::Colourb(0xFF, 0xC4, 0x29), Rml::Colourb(0xB9, 0xC6, 0xE6) },
-	Token { "--pattern-tint", Rml::Colourb(0xFF, 0xFF, 0xFF), Rml::Colourb(0xA9, 0xBB, 0xEB) },
+std::array kPalette = {
+	Token { "--color-background", {}, {} },
+	Token { "--color-surface", {}, {} },
+	Token { "--color-surface-border", {}, {} },
+	Token { "--color-surface-raised", {}, {} },
+	Token { "--color-surface-sunken", {}, {} },
+	Token { "--color-divider", {}, {} },
+	Token { "--color-text", {}, {} },
+	Token { "--color-text-muted", {}, {} },
+	Token { "--color-text-faint", {}, {} },
+	Token { "--color-text-strong", {}, {} },
+	Token { "--color-text-on-accent", {}, {} },
+	Token { "--color-heading", {}, {} },
+	Token { "--color-warning", {}, {} },
+	Token { "--color-control", {}, {} },
+	Token { "--color-control-strong", {}, {} },
+	Token { "--color-highlight", {}, {} },
+	Token { "--color-selected", {}, {} },
+	Token { "--color-pressed", {}, {} },
+	Token { "--color-accent", {}, {} },
+	Token { "--color-accent-bright", {}, {} },
+	Token { "--color-shadow", {}, {} },
+	Token { "--color-shadow-soft", {}, {} },
+	Token { "--color-scroll-track", {}, {} },
+	Token { "--color-scroll-thumb", {}, {} },
+	Token { "--color-positive", {}, {} },
+	Token { "--color-positive-soft", {}, {} },
+	Token { "--color-modified", {}, {} },
+	Token { "--color-status-bad", {}, {} },
+	Token { "--color-status-info", {}, {} },
+	Token { "--color-modal-button", {}, {} },
+	Token { "--color-modal-button-text", {}, {} },
+	Token { "--color-modal-button-text-strong", {}, {} },
+	Token { "--color-modal-button-hover", {}, {} },
+	Token { "--color-modal-button-active", {}, {} },
+	Token { "--color-pattern-tint", {}, {} },
 };
 
 bool sStarted          = false;
@@ -83,11 +83,28 @@ Rml::Context* sContext = nullptr;
 std::vector<std::unique_ptr<DocumentSweep>> sSweeps;
 std::vector<Rml::ElementDocument*> sShown;
 
-Rml::String format(const Rml::Colourb& colour)
+std::array<Rml::Colourb, 2> sBackground{};
+
+void load_palette(Rml::Context& context)
 {
-	Rml::String value;
-	Rml::TypeConverter<Rml::Colourb, Rml::String>::Convert(colour, value);
-	return value;
+    // RmlUi resolves the stylesheet so the RCSS remains the sole source of theme
+    // values. This hidden probe never joins the interactive document stack.
+    auto* probe = context.LoadDocumentFromMemory(R"(<rml><head>
+        <link type="text/rcss" href="res/rml/theme.rcss" />
+        </head><body /></rml>)");
+    if (!probe) return;
+    probe->SetProperty("background-color", "var(--color-background)");
+    for (int night = 0; night < 2; ++night) {
+        probe->SetClassNames(night ? "theme-night" : "theme-day");
+        probe->UpdateDocument();
+        for (auto& token : kPalette) {
+            if (const auto* property = probe->GetProperty(token.name)) {
+                (night ? token.night : token.day) = property->Get<Rml::String>();
+            }
+        }
+        sBackground[night] = probe->GetProperty<Rml::Colourb>("background-color");
+    }
+    probe->Close();
 }
 
 bool night_at(int minutes)
@@ -104,7 +121,7 @@ bool in_grace(int minutes)
 void apply_palette(Rml::Element& element, bool night)
 {
 	for (const Token& token : kPalette) {
-		element.SetProperty(token.name, format(night ? token.night : token.day));
+		element.SetProperty(token.name, night ? token.night : token.day);
 	}
 }
 
@@ -288,7 +305,7 @@ void advance()
 			settle(night);
 			return;
 		}
-		if (!any_document_visible()) {
+		if (!borealis::ui::any_document_visible()) {
 			return;
 		}
 		sSweepStart = SDL_GetTicks();
@@ -323,7 +340,8 @@ void attach(Rml::Context* context) noexcept
 	}
 	sSweeps.clear();
 	sContext = context;
-	sContext->GetRootElement()->SetProperty("color", "var(--text)");
+	load_palette(*sContext);
+	sContext->GetRootElement()->SetProperty("color", "var(--color-text)");
 	if (!sStarted) {
 		update();
 	}
@@ -347,8 +365,7 @@ Rml::Colourb background() noexcept
 	if (!sStarted) {
 		update();
 	}
-	static const Token& token = *std::ranges::find(kPalette, std::string_view { "--background" }, &Token::name);
-	return sNight ? token.night : token.day;
+	return sBackground[sNight ? 1 : 0];
 }
 
 } // namespace acgc::ui::theme

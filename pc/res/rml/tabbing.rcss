@@ -17,35 +17,35 @@ tab-bar scrollbarhorizontal sliderbar {
 
 tab-bar tab {
     flex: 0 0 auto;
-    margin: 4dp;
+    margin: var(--space-xs);
     padding: 0 20dp;
     line-height: 56dp;
     white-space: nowrap;
-    color: var(--text-muted);
+    color: var(--color-text-muted);
     background-color: rgba(255, 226, 122, 0%);
-    border-radius: 24dp;
+    border-radius: var(--radius-tab);
     transition: background-color 0.1s linear-in-out, transform 0.08s linear-in-out;
     cursor: pointer;
     focus: auto;
-    font-family: "ACGC Heading";
+    font-family: var(--font-family-heading);
     font-weight: bold;
-    font-size: 17dp;
+    font-size: var(--font-size-md);
 }
 
 tab-bar tab:focus-visible,
 tab-bar tab:hover {
-    color: var(--text-strong);
-    background-color: var(--highlight);
+    color: var(--color-text-strong);
+    background-color: var(--color-highlight);
 }
 
 tab-bar tab:selected {
-    color: var(--text-on-accent);
-    background-color: var(--accent);
+    color: var(--color-text-on-accent);
+    background-color: var(--color-accent);
 }
 
 tab-bar tab:active {
-    color: var(--text-strong);
-    background-color: var(--pressed);
+    color: var(--color-text-strong);
+    background-color: var(--color-pressed);
     transform: scale(0.97);
 }
 
@@ -65,12 +65,12 @@ window > close {
     z-index: 1;
     width: 48dp;
     height: 48dp;
-    font-family: "Material Symbols Rounded";
+    font-family: var(--font-family-icons);
     font-weight: normal;
-    font-size: 24dp;
-    color: var(--text-on-accent);
-    background-color: var(--accent);
-    border-radius: 24dp;
+    font-size: var(--font-size-3xl);
+    color: var(--color-text-on-accent);
+    background-color: var(--color-accent);
+    border-radius: var(--radius-tab);
     decorator: text("&#xe5cd;" center center);
     transition: background-color 0.1s linear-in-out, transform 0.08s linear-in-out;
     cursor: pointer;
@@ -81,12 +81,12 @@ tab-bar[closable] close:hover,
 tab-bar[closable] close:focus-visible,
 window > close:hover,
 window > close:focus-visible {
-    background-color: var(--pressed);
+    background-color: var(--color-pressed);
 }
 
 tab-bar[closable] close:active,
 window > close:active {
-    background-color: var(--accent-bright);
+    background-color: var(--color-accent-bright);
     transform: scale(0.94);
 }
 

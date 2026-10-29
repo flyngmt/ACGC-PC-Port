@@ -1,159 +1,117 @@
 #include "acgc/controller_ports.hpp"
-
 #include "acgc/config.hpp"
 #include "acgc/settings.hpp"
-#include "borealis/log.hpp"
-
-#include <SDL3/SDL_gamepad.h>
+#include "acgc/input_profiles.hpp"
+#include "acgc/legacy_input.hpp"
 #include <SDL3/SDL_keyboard.h>
-#include <dolphin/pad.h>
-
-#include <algorithm>
-#include <vector>
+#include <borealis/log.hpp>
 
 namespace acgc::controller_ports {
 namespace {
 
-constexpr borealis::Log Log{"acgc::input"};
+constexpr borealis::Log Log{ "acgc::input" };
+aurora::input::LayerId sLayer = aurora::input::kInvalidLayerId;
+aurora::input::SourceId sController = aurora::input::kInvalidSourceId;
 
-struct TrackedController {
-	SDL_JoystickID id = 0;
-	Uint64 buttons    = 0;
-};
-
-std::vector<TrackedController> sTracked;
-
-Uint64 held_buttons(SDL_Gamepad* gamepad)
-{
-	Uint64 buttons = 0;
-	for (int button = 0; button < SDL_GAMEPAD_BUTTON_COUNT; ++button) {
-		if (SDL_GetGamepadButton(gamepad, static_cast<SDL_GamepadButton>(button))) {
-			buttons |= Uint64 { 1 } << button;
-		}
-	}
-	return buttons;
+void assign(aurora::input::SourceId source) {
+    if (!aurora::pad::set_port_controller(0, source)) {
+        return;
+    }
+    apply_legacy_controller_input(source);
+    apply_runtime_settings(false);
+    input::save_profiles();
+    sController = source;
 }
 
-bool keyboard_has_bindings()
-{
-	u32 buttonCount                    = 0;
-	u32 axisCount                      = 0;
-	const PADKeyButtonBinding* buttons = PADGetKeyButtonBindings(PAD_CHAN0, &buttonCount);
-	const PADKeyAxisBinding* axes      = PADGetKeyAxisBindings(PAD_CHAN0, &axisCount);
-	for (u32 i = 0; buttons != nullptr && i < buttonCount; ++i) {
-		if (buttons[i].scancode != PAD_KEY_INVALID) {
-			return true;
-		}
-	}
-	for (u32 i = 0; axes != nullptr && i < axisCount; ++i) {
-		if (axes[i].scancode != PAD_KEY_INVALID) {
-			return true;
-		}
-	}
-	return false;
-}
-
-void restore_keyboard()
-{
-	u32 count = 0;
-	if (PADGetKeyButtonBindings(PAD_CHAN0, &count) != nullptr) {
-		return;
-	}
-	PADSetKeyboardActive(PAD_CHAN0, TRUE);
-	if (!keyboard_has_bindings()) {
-		PADSetKeyboardActive(PAD_CHAN0, FALSE);
-	}
-}
-
-void assign(u32 index)
-{
-	PADSetPortForIndex(index, PAD_CHAN0);
-	apply_runtime_settings(false);
+aurora::input::EventResult on_event(const aurora::input::InputEvent& event, void*) {
+    const auto* button = event.payload.get_if<aurora::input::InputEvent::ButtonChanged>();
+    if (button && button->pressed && event.source.kind == aurora::input::InputSource::Kind::Controller &&
+        event.source.origin == aurora::input::InputSource::Origin::Physical && auto_assign() &&
+        !aurora::pad::port_controller(0)) {
+        assign(event.source.id);
+        Log.info("Assigned controller to player 1 after a button press");
+    }
+    return aurora::input::EventResult::Pass;
 }
 
 } // namespace
 
-void initialize()
-{
-	for (u32 port = PAD_CHAN1; port < PAD_CHANMAX; ++port) {
-		PADSetKeyboardActive(port, FALSE);
-	}
-	restore_keyboard();
-
-	auto& input = settings().input;
-	if (!input.singlePortMigrated.value()) {
-		for (u32 port = PAD_CHAN0; port < PAD_CHANMAX; ++port) {
-			PADClearPort(port);
-		}
-		input.singlePortMigrated.set_value(true);
-		config::save();
-	}
+void initialize() {
+    for (u32 port = 1; port < PAD_CHANMAX; ++port) {
+        aurora::pad::clear_port(port);
+        aurora::pad::clear_bindings(aurora::pad::ProfileTarget::keyboard(port));
+    }
+    auto& inputSettings = settings().input;
+    if (!inputSettings.singlePortMigrated.value()) {
+        aurora::pad::clear_port(0);
+        inputSettings.singlePortMigrated.set_value(true);
+        config::save();
+    }
+    // Aurora Auto assigns immediately. This port waits for a fresh button press.
+    if (aurora::pad::port_preference(0).state == aurora::pad::PortAssignment::Auto) {
+        aurora::pad::clear_port(0);
+    }
+    if (sLayer == aurora::input::kInvalidLayerId) {
+        sLayer = aurora::input::register_layer({
+            .label = "acgc.controller-claim",
+            .priority = aurora::input::kRmlUiLayerPriority + 2,
+            .onEvent = on_event,
+        });
+    }
+    update();
+    input::save_profiles();
 }
 
-void enforce_single_port()
-{
-	for (u32 index = 0; index < PADCount(); ++index) {
-		SDL_Gamepad* gamepad = PADGetSDLGamepadForIndex(index);
-		if (gamepad != nullptr && SDL_GetGamepadPlayerIndex(gamepad) > PAD_CHAN0) {
-			SDL_SetGamepadPlayerIndex(gamepad, -1);
-		}
-	}
+void shutdown() {
+    aurora::input::unregister_layer(sLayer);
+    sLayer = aurora::input::kInvalidLayerId;
+    sController = aurora::input::kInvalidSourceId;
 }
 
-void update()
-{
-	const bool canAssign = auto_assign() && PADGetIndexForPort(PAD_CHAN0) < 0;
-	s32 pressedIndex     = -1;
-
-	std::vector<TrackedController> current;
-	for (u32 index = 0; index < PADCount(); ++index) {
-		SDL_Gamepad* gamepad = PADGetSDLGamepadForIndex(index);
-		if (gamepad == nullptr) {
-			continue;
-		}
-		const SDL_JoystickID id = SDL_GetGamepadID(gamepad);
-		const Uint64 buttons    = held_buttons(gamepad);
-		const auto tracked
-		    = std::find_if(sTracked.begin(), sTracked.end(), [id](const TrackedController& entry) { return entry.id == id; });
-		const Uint64 previous = tracked != sTracked.end() ? tracked->buttons : buttons;
-		if (canAssign && pressedIndex < 0 && (buttons & ~previous) != 0) {
-			pressedIndex = static_cast<s32>(index);
-		}
-		current.push_back({ id, buttons });
-	}
-	sTracked = std::move(current);
-
-	if (pressedIndex >= 0) {
-		const char* name = PADGetNameForControllerIndex(static_cast<u32>(pressedIndex));
-		Log.info("Assigned controller '{}' to player 1", name != nullptr ? name : "unknown");
-		assign(static_cast<u32>(pressedIndex));
-	}
+void enforce_single_port() {
+    for (u32 port = 1; port < PAD_CHANMAX; ++port) {
+        if (aurora::pad::port_preference(port).state != aurora::pad::PortAssignment::None) {
+            aurora::pad::clear_port(port);
+        }
+    }
 }
 
-bool auto_assign()
-{
-	return settings().input.autoAssignController.value() || !SDL_HasKeyboard();
+void update() {
+    enforce_single_port();
+    for (const auto& source : aurora::input::sources()) {
+        if (source.kind == aurora::input::InputSource::Kind::Controller) {
+            apply_legacy_controller_input(source.id);
+        }
+    }
+    const auto current = aurora::pad::port_controller(0);
+    if (sController != current) {
+        sController = current;
+        apply_runtime_settings(false);
+    }
 }
 
-void select_automatic()
-{
-	PADClearPort(PAD_CHAN0);
-	settings().input.autoAssignController.set_value(true);
-	config::save();
+bool auto_assign() {
+    return settings().input.autoAssignController.value() || !SDL_HasKeyboard();
 }
 
-void select_none()
-{
-	PADClearPort(PAD_CHAN0);
-	settings().input.autoAssignController.set_value(false);
-	config::save();
+void select_automatic() {
+    aurora::pad::clear_port(0);
+    settings().input.autoAssignController.set_value(true);
+    config::save();
+    input::save_profiles();
 }
 
-void select_controller(u32 index)
-{
-	assign(index);
-	settings().input.autoAssignController.set_value(true);
-	config::save();
+void select_none() {
+    aurora::pad::clear_port(0);
+    settings().input.autoAssignController.set_value(false);
+    config::save();
+    input::save_profiles();
+}
+
+void select_controller(aurora::input::SourceId source) {
+    assign(source);
+    settings().input.autoAssignController.set_value(true);
+    config::save();
 }
 
 } // namespace acgc::controller_ports

@@ -1,27 +1,11 @@
 #pragma once
-
-#include "document.hpp"
-#include "tab_bar.hpp"
-
-#include <memory>
-
+#include <borealis/ui/menu_bar.hpp>
+#include "ui.hpp"
 namespace acgc::ui {
-
-class MenuBar final : public Document {
+class MenuBar final : public borealis::ui::MenuBar {
 public:
     MenuBar();
-
-    void show() override;
-    void hide(bool close) override;
-    bool focus() override;
-    bool visible() const override;
-
 protected:
-    bool handle_nav_command(Rml::Event& event, NavCommand command) override;
-
-private:
-    Rml::Element* mRoot = nullptr;
-    std::unique_ptr<TabBar> mTabBar;
+    void build_tabs() override;
 };
-
 } // namespace acgc::ui

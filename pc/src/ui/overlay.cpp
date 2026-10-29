@@ -1,4 +1,5 @@
 #include "acgc/ui/overlay.hpp"
+#include "acgc/ui/ui.hpp"
 
 #include "acgc/ui/localization.hpp"
 
@@ -8,22 +9,27 @@
 #include <cmath>
 
 namespace acgc::ui {
+using namespace borealis::ui;
+
 namespace {
 
 constexpr float kMarginDp = 20.0f;
 
-Rml::String document_source()
-{
+Rml::String document_source() {
     return R"RML(
 <rml>
 <head>
+    <link type="text/rcss" href="res/rml/theme.rcss" />
+    <link type="text/rcss" href="res/rml/controls.rcss" />
     <link type="text/rcss" href="res/rml/overlay.rcss" />
 </head>
 <body>
     <typing-status id="typing-status">
-        <label>)RML" + escape(localization::get("overlay.keyboard_typing")) + R"RML(</label>
+        <label>)RML" +
+           escape(localization::get("overlay.keyboard_typing")) + R"RML(</label>
         <key>Tab</key>
-        <state id="typing-state">)RML" + escape(localization::get("common.off")) + R"RML(</state>
+        <state id="typing-state">)RML" +
+           escape(localization::get("common.off")) + R"RML(</state>
     </typing-status>
 </body>
 </rml>
@@ -33,21 +39,18 @@ Rml::String document_source()
 } // namespace
 
 Overlay::Overlay()
-    : Document(document_source(), true, DocumentScope::Overlay)
-    , mTypingStatus(mDocument ? mDocument->GetElementById("typing-status") : nullptr)
-    , mTypingState(mDocument ? mDocument->GetElementById("typing-state") : nullptr)
-{
+    : Document(document_source(), true, kScopeOverlay),
+      mTypingStatus(mDocument ? mDocument->GetElementById("typing-status") : nullptr),
+      mTypingState(mDocument ? mDocument->GetElementById("typing-state") : nullptr) {
 }
 
-void Overlay::show()
-{
+void Overlay::show() {
     if (mDocument != nullptr) {
         mDocument->Show(Rml::ModalFlag::None, Rml::FocusFlag::None, Rml::ScrollFlag::None);
     }
 }
 
-void Overlay::update()
-{
+void Overlay::update() {
     update_layout();
 
     const bool editorActive = pc_typing_is_editor_active() != 0;
@@ -69,15 +72,14 @@ void Overlay::update()
             mTypingStatus->RemoveAttribute("active");
         }
         if (mTypingState != nullptr) {
-            mTypingState->SetInnerRML(escape(typingActive ? localization::get("common.on")
-                                                         : localization::get("common.off")));
+            mTypingState->SetInnerRML(
+                escape(typingActive ? localization::get("common.on") : localization::get("common.off")));
         }
         mWasTypingActive = typingActive;
     }
 }
 
-void Overlay::update_layout()
-{
+void Overlay::update_layout() {
     if (mDocument == nullptr || mTypingStatus == nullptr) {
         return;
     }
@@ -97,13 +99,11 @@ void Overlay::update_layout()
     const float margin = kMarginDp * dpRatio;
     const float top = std::round(std::max(margin, safeInsets.top));
     const float width = mTypingStatus->GetBox().GetSize(Rml::BoxArea::Border).x;
-    const float safeAreaCenter =
-        (safeInsets.left + static_cast<float>(dimensions.x) - safeInsets.right) * 0.5f;
+    const float safeAreaCenter = (safeInsets.left + static_cast<float>(dimensions.x) - safeInsets.right) * 0.5f;
     const float left = safeAreaCenter - width * 0.5f;
 
     if (top != mAppliedTop) {
-        mTypingStatus->SetProperty(
-            Rml::PropertyId::Top, Rml::Property(top, Rml::Unit::PX));
+        mTypingStatus->SetProperty(Rml::PropertyId::Top, Rml::Property(top, Rml::Unit::PX));
         mAppliedTop = top;
     }
     if (left != mAppliedLeft) {

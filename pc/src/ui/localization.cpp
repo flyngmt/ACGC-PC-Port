@@ -101,7 +101,7 @@ void load() noexcept
     sLocalized.clear();
     sMissingKeys.clear();
 
-    const auto directory = resource_path("lang");
+    const auto directory = borealis::ui::resource_path("lang");
     const auto englishPath = directory / "en.json";
     if (!load_catalog(englishPath, sEnglish)) {
         Log.warn("English UI catalog '{}' is unavailable; translation keys will be shown",
