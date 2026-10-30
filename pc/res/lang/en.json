@@ -89,7 +89,7 @@
   "controller.page.buttons": "Buttons",
   "controller.page.device": "Device",
   "controller.page.rumble": "Rumble",
-  "controller.page.sticks": "Sticks",
+  "controller.page.sticks": "Stick Deadzones",
   "controller.page.triggers": "Triggers",
   "controller.rumble.help": "Adjust the rumble strength, then test it here.",
   "controller.rumble.high_frequency": "High-Frequency Rumble",
