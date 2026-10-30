@@ -77,6 +77,45 @@ bool operation_succeeded(const borealis::data::Status& status) {
     return false;
 }
 
+void ensure_folder(const std::filesystem::path& path) {
+    std::error_code ec;
+    if (path.empty() || std::filesystem::is_directory(path, ec)) {
+        return;
+    }
+    std::filesystem::create_directories(path, ec);
+    if (ec) {
+        Log.warn("Could not create folder {}: {}", borealis::io::fs_path_to_string(path), ec.message());
+    }
+}
+
+bool legacy_folder_exists(const std::filesystem::path& name, const std::filesystem::path& primary) {
+    std::error_code ec;
+    const auto target = std::filesystem::weakly_canonical(primary, ec);
+    for (const auto& candidate : { std::filesystem::current_path(ec) / name, base_path_relative(name) }) {
+        ec.clear();
+        if (candidate.empty() || !std::filesystem::is_directory(candidate, ec)) {
+            continue;
+        }
+        if (std::filesystem::weakly_canonical(candidate, ec) != target) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void ensure_folders() {
+    const auto root = manager().active_data_path();
+    for (const char* folder : { "save/card_a", "save/card_b" }) {
+        ensure_folder(root / folder);
+    }
+    for (const char* folder : { "texture_pack", "nes_roms" }) {
+        if (!legacy_folder_exists(folder, root / folder)) {
+            ensure_folder(root / folder);
+        }
+    }
+    ensure_folder(manager().paths().cachePath);
+}
+
 } // namespace
 
 borealis::data::MigrationRules migration_rules() {
@@ -122,6 +161,7 @@ Paths initialize(const std::filesystem::path& userDirectoryOverride) {
         Log.warn("{} Migration will be retried on the next launch.", status_message(status));
     }
     Log.info("Data directory: {}", borealis::io::fs_path_to_string(manager().active_data_path()));
+    ensure_folders();
     return manager().paths();
 }
 
