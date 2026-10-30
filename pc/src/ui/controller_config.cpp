@@ -15,6 +15,8 @@
 #include <SDL3/SDL_gamepad.h>
 #include <SDL3/SDL_keyboard.h>
 #include <algorithm>
+#include <array>
+#include <string_view>
 #include <optional>
 
 namespace acgc::ui {
@@ -34,6 +36,104 @@ Rml::String tr(const char* key) {
 
 SDL_Gamepad* gamepad(SourceId source) {
     return SDL_GetGamepadFromID(aurora::input::gamepad_for_source(source));
+}
+
+struct LabelKey {
+    std::string_view label;
+    const char* key;
+    int index = 0;
+};
+
+constexpr std::array kLabelKeys = {
+    LabelKey{ "Unbound", "controller.binding.not_bound" },
+    LabelKey{ "Cross", "controller.input.cross" },
+    LabelKey{ "Circle", "controller.input.circle" },
+    LabelKey{ "Square", "controller.input.square" },
+    LabelKey{ "Triangle", "controller.input.triangle" },
+    LabelKey{ "Back", "controller.input.back" },
+    LabelKey{ "Guide", "controller.input.guide" },
+    LabelKey{ "Start", "controller.input.start" },
+    LabelKey{ "Select", "controller.input.select" },
+    LabelKey{ "Options", "controller.input.options" },
+    LabelKey{ "Share", "controller.input.share" },
+    LabelKey{ "Create", "controller.input.create" },
+    LabelKey{ "Menu", "controller.input.menu" },
+    LabelKey{ "View", "controller.input.view" },
+    LabelKey{ "Plus", "controller.input.plus" },
+    LabelKey{ "Minus", "controller.input.minus" },
+    LabelKey{ "Start/Pause", "controller.input.start_pause" },
+    LabelKey{ "Left Stick", "controller.input.left_stick" },
+    LabelKey{ "Right Stick", "controller.input.right_stick" },
+    LabelKey{ "Control Stick", "controller.input.control_stick" },
+    LabelKey{ "C Stick", "controller.input.c_stick" },
+    LabelKey{ "Left Shoulder", "controller.input.left_shoulder" },
+    LabelKey{ "Right Shoulder", "controller.input.right_shoulder" },
+    LabelKey{ "Left Trigger", "controller.input.left_trigger" },
+    LabelKey{ "Right Trigger", "controller.input.right_trigger" },
+    LabelKey{ "D-Pad Up", "controller.input.d_pad_up" },
+    LabelKey{ "D-Pad Down", "controller.input.d_pad_down" },
+    LabelKey{ "D-Pad Left", "controller.input.d_pad_left" },
+    LabelKey{ "D-Pad Right", "controller.input.d_pad_right" },
+    LabelKey{ "Touchpad", "controller.input.touchpad" },
+    LabelKey{ "Left Paddle 1", "controller.input.left_paddle", 1 },
+    LabelKey{ "Left Paddle 2", "controller.input.left_paddle", 2 },
+    LabelKey{ "Right Paddle 1", "controller.input.right_paddle", 1 },
+    LabelKey{ "Right Paddle 2", "controller.input.right_paddle", 2 },
+    LabelKey{ "Misc Button 1", "controller.input.misc_button", 1 },
+    LabelKey{ "Misc Button 2", "controller.input.misc_button", 2 },
+    LabelKey{ "Misc Button 3", "controller.input.misc_button", 3 },
+    LabelKey{ "Misc Button 4", "controller.input.misc_button", 4 },
+    LabelKey{ "Misc Button 5", "controller.input.misc_button", 5 },
+    LabelKey{ "Misc Button 6", "controller.input.misc_button", 6 },
+    LabelKey{ "Up", "controller.input.up" },
+    LabelKey{ "Down", "controller.input.down" },
+    LabelKey{ "Left", "controller.input.left" },
+    LabelKey{ "Right", "controller.input.right" },
+};
+
+Rml::String translate_label(std::string_view label) {
+    const auto found = std::ranges::find(kLabelKeys, label, &LabelKey::label);
+    if (found == kLabelKeys.end()) {
+        return Rml::String(label);
+    }
+    return found->index != 0 ? localization::format(found->key, found->index) : tr(found->key);
+}
+
+Rml::String stick_label(SDL_Gamepad* pad, SDL_GamepadAxis axis, PhysicalInput::GamepadAxis::Direction direction) {
+    const bool right = axis == SDL_GAMEPAD_AXIS_RIGHTX || axis == SDL_GAMEPAD_AXIS_RIGHTY;
+    const bool vertical = axis == SDL_GAMEPAD_AXIS_LEFTY || axis == SDL_GAMEPAD_AXIS_RIGHTY;
+    const bool gamecube = pad != nullptr && SDL_GetGamepadType(pad) == SDL_GAMEPAD_TYPE_GAMECUBE;
+    const Rml::String stick = tr(gamecube ? (right ? "controller.input.c_stick" : "controller.input.control_stick")
+                                          : (right ? "controller.input.right_stick" : "controller.input.left_stick"));
+    using enum PhysicalInput::GamepadAxis::Direction;
+    Rml::String part;
+    if (direction == Full) {
+        part = vertical ? "Y" : "X";
+    } else {
+        const bool positive = direction == Positive;
+        part = tr(vertical ? (positive ? "controller.input.down" : "controller.input.up")
+                           : (positive ? "controller.input.right" : "controller.input.left"));
+    }
+    return localization::format("controller.input.stick_direction", stick, part);
+}
+
+Rml::String binding_label(const PhysicalInput& input, SDL_Gamepad* pad) {
+    if (const auto* mouse = input.control.get_if<PhysicalInput::MouseButton>()) {
+        constexpr std::array keys = { "controller.input.mouse_left", "controller.input.mouse_middle",
+                                      "controller.input.mouse_right", "controller.input.mouse_x1",
+                                      "controller.input.mouse_x2" };
+        if (mouse->button >= 1 && mouse->button <= keys.size()) {
+            return tr(keys[mouse->button - 1]);
+        }
+    } else if (const auto* button = input.control.get_if<PhysicalInput::GamepadButton>()) {
+        return translate_label(aurora::binding::button_label(pad, button->button));
+    } else if (const auto* axis = input.control.get_if<PhysicalInput::GamepadAxis>()) {
+        if (axis->axis < SDL_GAMEPAD_AXIS_LEFT_TRIGGER) {
+            return stick_label(pad, axis->axis, axis->direction);
+        }
+        return translate_label(aurora::binding::axis_label(pad, axis->axis));
+    }
+    return aurora::binding::input_label(input, pad);
 }
 
 bool selected_half(const Binding& binding, int direction) {
@@ -107,7 +207,7 @@ class BindingRow final : public Component {
                     if (!label.empty()) {
                         label += ", ";
                     }
-                    label += aurora::binding::input_label(
+                    label += binding_label(
                         binding.input, target.kind == ProfileTarget::Kind::Controller ? gamepad(target.id) : nullptr);
                 }
                 return label.empty() ? tr("controller.binding.not_bound") : label;
@@ -121,7 +221,7 @@ class BindingRow final : public Component {
             if (!selected_half(bindings[i], control.direction)) {
                 continue;
             }
-            const auto label = aurora::binding::input_label(
+            const auto label = binding_label(
                 bindings[i].input, target.kind == ProfileTarget::Kind::Controller ? gamepad(target.id) : nullptr);
             auto& button = actions->add_child<Button>(label + " ×");
             button.on_pressed([removeBinding, i] { removeBinding(i); });
@@ -199,7 +299,7 @@ class BindingsPane final : public Pane {
                                               PAD_BUTTON_Y, PAD_BUTTON_START, PAD_TRIGGER_Z }
                     : std::vector<PADButton>{ PAD_BUTTON_UP, PAD_BUTTON_DOWN, PAD_BUTTON_LEFT, PAD_BUTTON_RIGHT };
             for (const auto button : buttons) {
-                add(aurora::pad::control_for_button(button), 0, PADGetButtonName(button));
+                add(aurora::pad::control_for_button(button), 0, translate_label(PADGetButtonName(button)));
             }
         } else if (group == 2) {
             add(aurora::pad::control_for_button(PAD_TRIGGER_L), 0, tr("controller.input.left_click"));
