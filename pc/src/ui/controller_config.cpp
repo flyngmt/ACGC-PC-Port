@@ -534,7 +534,7 @@ void ControllerConfigWindow::build_bindings(Rml::Element* content, bool keyboard
     const auto target = keyboard ? ProfileTarget::keyboard(0) : ProfileTarget::controller(mController);
     auto& bindings = add_child<BindingsPane>(content, target, mAllowConflicts);
     mBindings = &bindings;
-    const char* groups[] = { "controller.page.buttons", "controller.section.dpad", "controller.section.analog",
+    const char* groups[] = { "controller.page.buttons", "controller.section.dpad", "controller.page.triggers",
                              "controller.section.control_stick", "controller.section.c_stick" };
     for (int group = 0; group < 5; ++group) {
         categories.register_control(categories.add_group_button({ .text = tr(groups[group]) }), bindings,

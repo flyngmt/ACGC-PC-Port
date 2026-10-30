@@ -100,7 +100,6 @@
   "controller.rumble.test": "Test Rumble",
   "controller.rumble.use_device_haptics": "Use Device Haptics",
   "controller.rumble.use_device_haptics_help": "Use the device's built-in haptics instead of controller rumble.",
-  "controller.section.analog": "Analog",
   "controller.section.c_stick": "C Stick",
   "controller.section.control_stick": "Control Stick",
   "controller.section.controller": "Controller",
