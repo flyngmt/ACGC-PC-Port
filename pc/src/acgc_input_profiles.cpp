@@ -74,16 +74,14 @@ std::vector<aurora::binding::Binding> editable_bindings(aurora::pad::ProfileTarg
     return result;
 }
 
-bool append_binding(aurora::pad::ProfileTarget target, aurora::binding::ControlId control, int direction,
-                    aurora::binding::PhysicalInput physical, aurora::pad::ConflictPolicy policy) {
+bool replace_binding(aurora::pad::ProfileTarget target, aurora::binding::ControlId control, int direction,
+                     aurora::binding::PhysicalInput physical, aurora::pad::ConflictPolicy policy) {
     auto bindings = editable_bindings(target, control, direction);
     physical.source = 0; // Profiles resolve source IDs at runtime.
     const float scale = direction < 0 ? -1.f : 1.f;
-    for (const auto& binding : bindings) {
-        if (aurora::binding::same_input(binding.input, physical) && binding.scale == scale) {
-            return true;
-        }
-    }
+    std::erase_if(bindings, [direction](const aurora::binding::Binding& binding) {
+        return direction == 0 || (binding.scale < 0.f) == (direction < 0);
+    });
     const aurora::binding::Binding binding{
         .input = physical,
         .target = control,

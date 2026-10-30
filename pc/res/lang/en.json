@@ -10,7 +10,7 @@
   "common.stop": "Stop",
   "common.unknown": "Unknown",
 
-  "controller.binding.inline_help": "Select a control to add an input. Use × to remove a binding. Escape or Back cancels capture.",
+  "controller.binding.inline_help": "Select a control, then press the input to assign to it. Escape or Back cancels.",
   "controller.section.dpad": "D-Pad",
   "controller.input.left_click": "L Click",
   "controller.input.right_click": "R Click",

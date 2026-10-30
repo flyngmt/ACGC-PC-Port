@@ -325,25 +325,6 @@ binding-row > select-button {
     width: 100%;
 }
 
-binding-actions {
-    display: none;
-    flex-flow: row wrap;
-    gap: var(--space-xs);
-    padding: 0 var(--space-sm) var(--space-xs);
-}
-
-binding-row.expanded binding-actions {
-    display: flex;
-}
-
-binding-actions button {
-    flex: 0 1 auto;
-    min-height: 32dp;
-    padding: var(--space-xs) var(--space-sm);
-    font-size: var(--font-size-sm);
-    border-radius: var(--radius-small);
-}
-
 binding-row.capturing > select-button {
     border-color: var(--color-accent);
 }

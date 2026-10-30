@@ -19,6 +19,6 @@ bool save_profiles();
 namespace acgc::input {
 std::vector<aurora::binding::Binding> editable_bindings(aurora::pad::ProfileTarget target,
                                                         aurora::binding::ControlId control, int direction);
-bool append_binding(aurora::pad::ProfileTarget target, aurora::binding::ControlId control, int direction,
-                    aurora::binding::PhysicalInput physical, aurora::pad::ConflictPolicy policy);
+bool replace_binding(aurora::pad::ProfileTarget target, aurora::binding::ControlId control, int direction,
+                     aurora::binding::PhysicalInput physical, aurora::pad::ConflictPolicy policy);
 } // namespace acgc::input

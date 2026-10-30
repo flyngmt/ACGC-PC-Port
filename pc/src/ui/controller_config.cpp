@@ -191,8 +191,7 @@ struct BindingControl {
 class BindingRow final : public Component {
   public:
     BindingRow(Rml::Element* parent, const BindingControl& control, ProfileTarget target,
-               std::function<bool()> capturing, std::function<void()> startCapture,
-               std::function<void(size_t)> removeBinding)
+               std::function<bool()> capturing, std::function<void()> startCapture)
         : Component(append(parent, "binding-row")), mCapturing(std::move(capturing)) {
         mSummary = &add_child<ControlledSelectButton>(ControlledSelectButton::Props{
             .key = control.label, .getValue = [this, target, control] {
@@ -213,37 +212,6 @@ class BindingRow final : public Component {
                 return label.empty() ? tr("controller.binding.not_bound") : label;
             } });
         mSummary->on_pressed(std::move(startCapture));
-        mFocusTargets.push_back(mSummary->root());
-
-        auto actions = std::make_unique<Component>(append(mRoot, "binding-actions"));
-        const auto bindings = input::editable_bindings(target, control.control, control.direction);
-        for (size_t i = 0; i < bindings.size(); ++i) {
-            if (!selected_half(bindings[i], control.direction)) {
-                continue;
-            }
-            const auto label = binding_label(
-                bindings[i].input, target.kind == ProfileTarget::Kind::Controller ? gamepad(target.id) : nullptr);
-            auto& button = actions->add_child<Button>(label + " ×");
-            button.on_pressed([removeBinding, i] { removeBinding(i); });
-            mFocusTargets.push_back(button.root());
-        }
-        mChildren.push_back(std::move(actions));
-        listen(mRoot, kNavCommandEvent, [this](Rml::Event& event) {
-            const auto command = nav_command(event);
-            if (command != NavCommand::Left && command != NavCommand::Right) {
-                return;
-            }
-            const auto found = std::find(mFocusTargets.begin(), mFocusTargets.end(), event.GetTargetElement());
-            if (found == mFocusTargets.end()) {
-                return;
-            }
-            const int index = static_cast<int>(found - mFocusTargets.begin());
-            const int next = index + (command == NavCommand::Right ? 1 : -1);
-            if (next >= 0 && next < static_cast<int>(mFocusTargets.size())) {
-                mFocusTargets[next]->Focus();
-                event.StopPropagation();
-            }
-        });
     }
 
     bool focus() override {
@@ -251,8 +219,6 @@ class BindingRow final : public Component {
     }
 
     void update() override {
-        const bool expanded = mCapturing() || contains(mRoot->GetContext()->GetFocusElement());
-        mRoot->SetClass("expanded", expanded);
         mRoot->SetClass("capturing", mCapturing());
         Component::update();
     }
@@ -260,7 +226,6 @@ class BindingRow final : public Component {
   private:
     ControlledSelectButton* mSummary = nullptr;
     std::function<bool()> mCapturing;
-    std::vector<Rml::Element*> mFocusTargets;
 };
 
 } // namespace
@@ -340,7 +305,7 @@ class BindingsPane final : public Pane {
                     start_capture(index);
                 } else {
                     const auto& control = mControls[index];
-                    if (input::append_binding(mTarget, control.control, control.direction, physical,
+                    if (input::replace_binding(mTarget, control.control, control.direction, physical,
                                               mAllowConflicts ? aurora::pad::ConflictPolicy::Allow
                                                               : aurora::pad::ConflictPolicy::Unbind)) {
                         persist();
@@ -390,18 +355,7 @@ class BindingsPane final : public Pane {
         for (size_t index = 0; index < mControls.size(); ++index) {
             auto& row = add_child<BindingRow>(
                 mControls[index], mTarget, [this, index] { return mCapturing == static_cast<int>(index); },
-                [this, index] { start_capture(static_cast<int>(index)); },
-                [this, index](size_t bindingIndex) {
-                    const auto& control = mControls[index];
-                    auto bindings = input::editable_bindings(mTarget, control.control, control.direction);
-                    if (bindingIndex < bindings.size()) {
-                        bindings.erase(bindings.begin() + static_cast<std::ptrdiff_t>(bindingIndex));
-                        aurora::pad::set_binding(mTarget, control.control, std::move(bindings));
-                        persist();
-                        mRebuild = true;
-                        mFocusRow = static_cast<int>(index);
-                    }
-                });
+                [this, index] { start_capture(static_cast<int>(index)); });
             mRows.push_back(&row);
         }
         mStatus = add_text(tr("controller.binding.inline_help"));
