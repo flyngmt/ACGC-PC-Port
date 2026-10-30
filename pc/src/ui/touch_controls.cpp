@@ -15,6 +15,8 @@
 #include <algorithm>
 #include <cmath>
 
+extern "C" u32 pc_frame_counter;
+
 namespace acgc::ui {
 using namespace borealis::ui;
 
@@ -29,7 +31,7 @@ constexpr float kStickZoneTopDp = 92.0f;
 constexpr float kStickZoneBottomDp = 30.0f;
 constexpr float kStickZoneWidth = 0.46f;
 constexpr u8 kTriggerAnalog = 180;
-constexpr auto kMinPress = std::chrono::milliseconds(70);
+constexpr u32 kMinPressFrames = 2;
 constexpr uint16_t kHapticStrength = 0x8000;
 constexpr uint16_t kHapticDurationMs = 20;
 constexpr float kPressedScale = 0.94f;
@@ -241,7 +243,7 @@ TouchControls::TouchControls()
             mCStick = { .id = finger_id(event),
                         .start = position,
                         .current = position,
-                        .pressedAt = Clock::now(),
+                        .pressFrame = pc_frame_counter,
                         .active = true };
             haptic_tap();
         }
@@ -344,7 +346,7 @@ void TouchControls::press_button(size_t index, SDL_FingerID id) {
     if (touch.active && !touch.releasePending) {
         return;
     }
-    touch = { .id = id, .pressedAt = Clock::now(), .active = true };
+    touch = { .id = id, .pressFrame = pc_frame_counter, .active = true };
     if (mButtons[index] != nullptr) {
         mButtons[index]->SetClass("pressed", true);
     }
@@ -453,13 +455,13 @@ void TouchControls::sync_safe_area() {
 }
 
 void TouchControls::sync_buttons() {
-    const auto now = Clock::now();
+    const u32 frame = pc_frame_counter;
     for (auto& touch : mTouches) {
-        if (touch.active && touch.releasePending && now - touch.pressedAt >= kMinPress) {
+        if (touch.active && touch.releasePending && frame - touch.pressFrame >= kMinPressFrames) {
             touch = {};
         }
     }
-    if (mCStick.active && mCStick.releasePending && now - mCStick.pressedAt >= kMinPress) {
+    if (mCStick.active && mCStick.releasePending && frame - mCStick.pressFrame >= kMinPressFrames) {
         mCStick = {};
     }
     sync_c_stick();

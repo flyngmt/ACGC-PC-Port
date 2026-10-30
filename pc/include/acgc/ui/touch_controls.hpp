@@ -8,8 +8,8 @@
 #include <SDL3/SDL_touch.h>
 
 #include <array>
-#include <chrono>
 #include <cstddef>
+#include <cstdint>
 
 namespace acgc::ui {
 
@@ -48,20 +48,18 @@ public:
     bool claims_pointer(Rml::Element* element) const override;
 
 private:
-    using Clock = std::chrono::steady_clock;
-
     struct StickTouch {
         SDL_FingerID id = 0;
         Rml::Vector2f start;
         Rml::Vector2f current;
-        Clock::time_point pressedAt{};
+        std::uint32_t pressFrame = 0;
         bool active = false;
         bool releasePending = false;
     };
 
     struct ButtonTouch {
         SDL_FingerID id = 0;
-        Clock::time_point pressedAt{};
+        std::uint32_t pressFrame = 0;
         bool active = false;
         bool releasePending = false;
     };
