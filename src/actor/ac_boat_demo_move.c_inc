@@ -150,8 +150,7 @@ static void aBTD_pl_ride_on_end_wait(BOAT_DEMO_ACTOR* boat_demo, GAME_PLAY* play
     if (boat_demo->demo_act == aBTD_DEMO_START_CALL_END) {
 #ifdef TARGET_PC
         /* Scripted acre changes require the original camera behavior. */
-        l_wade_disabled_bak = g_mPlib_wade_disabled;
-        g_mPlib_wade_disabled = FALSE;
+        mPlib_SuspendWade(TRUE);
 #endif
         aBTD_setupAction(boat_demo, play, aBTD_ACTION_START_CALL_END_WAIT);
     }
@@ -235,7 +234,7 @@ static void aBTD_pl_ride_off_start_wait(BOAT_DEMO_ACTOR* boat_demo, GAME_PLAY* p
 static void aBTD_pl_ride_off_end_wait(BOAT_DEMO_ACTOR* boat_demo, GAME_PLAY* play) {
     if (boat_demo->demo_act == aBTD_DEMO_ANCHOR) {
 #ifdef TARGET_PC
-        g_mPlib_wade_disabled = l_wade_disabled_bak;
+        mPlib_SuspendWade(FALSE);
 #endif
         aBTD_setupAction(boat_demo, play, aBTD_ACTION_ANCHOR_WAIT);
     }

@@ -336,7 +336,7 @@ void apply_settings_bridge(bool refreshGameplay)
     g_pc_settings.stick_deadzone = current.input.stickDeadzone.get();
     g_pc_settings.cstick_deadzone = current.input.cstickDeadzone.get();
     // Keep the introduction's acre restriction when unrelated settings are applied. Otherwise softlocks the intro.
-    g_mPlib_wade_disabled = g_pc_settings.borderless_acres && !mEv_CheckFirstIntro();
+    g_mPlib_wade_disabled = g_pc_settings.borderless_acres && !mEv_CheckFirstIntro() && !g_mPlib_wade_suspended;
     if (refreshGameplay && g_mPlib_wade_disabled && !borderlessWasEnabled) {
         aBC_RequestNearbyRefresh();
     }

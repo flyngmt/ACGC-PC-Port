@@ -11,6 +11,10 @@ extern "C" {
 #endif
 
 extern int g_mPlib_wade_disabled;
+#ifdef TARGET_PC
+extern int g_mPlib_wade_suspended;
+extern void mPlib_SuspendWade(BOOL suspend);
+#endif
 
 extern BOOL mPlib_IsWadeDisabled(void);
 extern cKF_Animation_R_c* mPlib_Get_Pointer_Animation(int anim_idx);

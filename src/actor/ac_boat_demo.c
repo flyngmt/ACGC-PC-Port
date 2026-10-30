@@ -56,10 +56,6 @@ extern u8 aBTD_island_ldr[];
 
 static void aBTD_setupAction(BOAT_DEMO_ACTOR* boat_demo, GAME_PLAY* play, int action);
 
-#ifdef TARGET_PC
-static int l_wade_disabled_bak = FALSE;
-#endif
-
 static void aBTD_actor_ct(ACTOR* actorx, GAME* game) {
     BOAT_DEMO_ACTOR* boat_demo = (BOAT_DEMO_ACTOR*)actorx;
     GAME_PLAY* play = (GAME_PLAY*)game;
@@ -80,6 +76,11 @@ static void aBTD_actor_ct(ACTOR* actorx, GAME* game) {
 }
 
 static void aBTD_actor_dt(ACTOR* actorx, GAME* game) {
+#ifdef TARGET_PC
+    if (g_mPlib_wade_suspended) {
+        mPlib_SuspendWade(FALSE);
+    }
+#endif
     if (Common_Get(clip).demo_clip2 != NULL) {
         Common_Get(clip).demo_clip2 = NULL;
     }

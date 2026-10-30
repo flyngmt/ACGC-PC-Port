@@ -10,9 +10,18 @@
 #include "ac_uki.h"
 #ifdef TARGET_PC
 #include "pc_bswap.h"
+#include "pc_settings.h"
 #endif
 
 int g_mPlib_wade_disabled = FALSE;
+#ifdef TARGET_PC
+int g_mPlib_wade_suspended = FALSE;
+
+extern void mPlib_SuspendWade(BOOL suspend) {
+    g_mPlib_wade_suspended = suspend;
+    g_mPlib_wade_disabled = !suspend && g_pc_settings.borderless_acres && !mEv_CheckFirstIntro();
+}
+#endif
 
 extern BOOL mPlib_IsWadeDisabled(void) {
     return g_mPlib_wade_disabled && mEv_CheckTitleDemo() <= 0;
