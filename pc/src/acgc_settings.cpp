@@ -247,7 +247,8 @@ UserSettings::Input::Input(borealis::config::Registry& registry)
       cstickDeadzone(registry, "input.cstickDeadzone", 12, { .min = 0, .max = 40 }),
       autoAssignController(registry, "input.autoAssignController", true),
       singlePortMigrated(registry, "input.singlePortMigrated", false),
-      allowBackgroundInput(registry, "input.allowBackgroundInput", true)
+      allowBackgroundInput(registry, "input.allowBackgroundInput", true),
+      touchControls(registry, "input.touchControls", !ACGC_HAS_WINDOW_CONTROLS)
 {
 }
 

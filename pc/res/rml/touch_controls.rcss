@@ -1,0 +1,256 @@
+body {
+    --touch-text: rgba(248, 244, 232, 90%);
+    --touch-background: rgba(22, 24, 28, 48%);
+    --touch-background-pressed: rgba(63, 78, 90, 68%);
+    --touch-border: rgba(255, 255, 255, 22%);
+    --touch-border-pressed: rgba(255, 255, 255, 48%);
+    --touch-button-a: rgba(46, 140, 96, 62%);
+    --touch-button-b: rgba(171, 58, 58, 58%);
+    --touch-button-z: rgba(118, 79, 158, 58%);
+    --touch-c-stick: rgba(245, 200, 60, 70%);
+    --touch-stick-background: rgba(18, 20, 24, 35%);
+    --touch-stick-knob: rgba(238, 236, 226, 55%);
+
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: var(--font-family-heading);
+    font-weight: bold;
+    color: var(--touch-text);
+    z-index: 1;
+    filter: opacity(0);
+    transition: filter 0.2s linear-in-out;
+}
+
+body[open] {
+    filter: opacity(1);
+}
+
+body:not([open]) {
+    pointer-events: none;
+}
+
+touch-area {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+button {
+    display: flex;
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-width: 1dp;
+    border-color: var(--touch-border);
+    background-color: var(--touch-background);
+    color: var(--touch-text);
+    text-align: center;
+    focus: none;
+    tab-index: none;
+    transform-origin: center;
+    transition: background-color border-color filter transform 0.08s linear-in-out;
+}
+
+button.pressed {
+    background-color: var(--touch-background-pressed);
+    border-color: var(--touch-border-pressed);
+    filter: brightness(1.18);
+    transform: scale(0.94);
+}
+
+button span {
+    display: block;
+    line-height: 1;
+}
+
+.trigger {
+    width: 78dp;
+    height: 46dp;
+    border-radius: 23dp;
+    font-size: var(--font-size-3xl);
+}
+
+.l {
+    top: 18dp;
+    left: 24dp;
+}
+
+.r {
+    top: 18dp;
+    right: 24dp;
+}
+
+.z {
+    top: 72dp;
+    right: 24dp;
+    background-color: var(--touch-button-z);
+}
+
+.start {
+    top: 18dp;
+    left: 50%;
+    margin-left: -39dp;
+    font-size: var(--font-size-sm);
+}
+
+.face {
+    width: 58dp;
+    height: 58dp;
+    border-radius: 29dp;
+    font-size: var(--font-size-4xl);
+}
+
+.a {
+    right: 62dp;
+    bottom: 64dp;
+    width: 74dp;
+    height: 74dp;
+    border-radius: 37dp;
+    font-size: 31dp;
+    background-color: var(--touch-button-a);
+}
+
+.b {
+    right: 158dp;
+    bottom: 48dp;
+    background-color: var(--touch-button-b);
+}
+
+.x {
+    right: 28dp;
+    bottom: 144dp;
+}
+
+.y {
+    right: 124dp;
+    bottom: 138dp;
+}
+
+c-stick {
+    display: block;
+    position: absolute;
+    right: 8dp;
+    bottom: 6dp;
+    width: 58dp;
+    height: 58dp;
+    padding: 9dp;
+    box-sizing: border-box;
+    border-radius: 29dp;
+    border-width: 1dp;
+    border-color: rgba(245, 200, 60, 45%);
+    background-color: var(--touch-background);
+    transition: border-color 0.08s linear-in-out;
+}
+
+c-stick.pressed {
+    border-color: rgba(245, 200, 60, 85%);
+}
+
+c-knob {
+    display: flex;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    width: 38dp;
+    height: 38dp;
+    border-radius: 19dp;
+    background-color: var(--touch-c-stick);
+    font-size: var(--font-size-xl);
+    color: rgba(40, 32, 10, 85%);
+}
+
+c-knob span {
+    display: block;
+    line-height: 1;
+}
+
+d-pad {
+    display: block;
+    position: absolute;
+    top: 74dp;
+    left: 14dp;
+    width: 102dp;
+    height: 102dp;
+}
+
+.dpad {
+    width: 34dp;
+    height: 34dp;
+    border-radius: 8dp;
+}
+
+.dpad.up {
+    top: 0;
+    left: 34dp;
+}
+
+.dpad.left {
+    top: 34dp;
+    left: 0;
+}
+
+.dpad.right {
+    top: 34dp;
+    left: 68dp;
+}
+
+.dpad.down {
+    top: 68dp;
+    left: 34dp;
+}
+
+.dpad glyph {
+    display: block;
+    font-family: var(--font-family-icons);
+    font-weight: normal;
+    font-size: var(--font-size-3xl);
+    line-height: 1;
+}
+
+touch-stick {
+    display: block;
+    position: absolute;
+    width: 124dp;
+    height: 124dp;
+    border-radius: 62dp;
+    border-width: 1dp;
+    border-color: rgba(255, 255, 255, 20%);
+    background-color: var(--touch-stick-background);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s linear-in-out;
+}
+
+touch-stick.active {
+    opacity: 1;
+}
+
+stick-ring {
+    display: block;
+    position: absolute;
+    left: 18dp;
+    top: 18dp;
+    width: 88dp;
+    height: 88dp;
+    border-radius: 44dp;
+    border-width: 1dp;
+    border-color: rgba(255, 255, 255, 18%);
+}
+
+stick-knob {
+    display: block;
+    position: absolute;
+    width: 48dp;
+    height: 48dp;
+    border-radius: 24dp;
+    border-width: 1dp;
+    border-color: rgba(255, 255, 255, 45%);
+    background-color: var(--touch-stick-knob);
+}

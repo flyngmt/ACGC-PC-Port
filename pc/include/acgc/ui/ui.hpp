@@ -16,6 +16,7 @@ namespace acgc::ui {
 
 inline constexpr borealis::ui::DocumentScope kScopePrelaunch = borealis::ui::kScopeUser;
 inline constexpr borealis::ui::DocumentScope kScopeOverlay = borealis::ui::kScopeUser + 1;
+inline constexpr borealis::ui::DocumentScope kScopeTouchControls = borealis::ui::kScopeUser + 2;
 
 bool initialize() noexcept;
 bool initialized() noexcept;

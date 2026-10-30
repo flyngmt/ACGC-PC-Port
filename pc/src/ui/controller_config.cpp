@@ -467,6 +467,9 @@ void ControllerConfigWindow::build_device(Rml::Element* content) {
     options.add_child<BoolButton>(
         bind(settings().input.allowBackgroundInput, { .key = tr("controller.options.background_input") }));
     options.add_text(tr("controller.options.background_input_help"));
+    options.add_child<BoolButton>(
+        bind(settings().input.touchControls, { .key = tr("controller.options.touch_controls") }));
+    options.add_text(tr("controller.options.touch_controls_help"));
     if (!mController) {
         return;
     }

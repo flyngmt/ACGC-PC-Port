@@ -103,6 +103,7 @@ struct UserSettings {
         borealis::config::Var<bool> autoAssignController;
         borealis::config::Var<bool> singlePortMigrated;
         borealis::config::Var<bool> allowBackgroundInput;
+        borealis::config::Var<bool> touchControls;
 
         explicit Input(borealis::config::Registry& registry);
     } input;

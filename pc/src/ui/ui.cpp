@@ -3,6 +3,7 @@
 #include "acgc/ui/overlay.hpp"
 #include "acgc/ui/localization.hpp"
 #include "acgc/ui/theme.hpp"
+#include "acgc/ui/touch_controls.hpp"
 #include <borealis/ui/input.hpp>
 #include <borealis/io.hpp>
 #include <borealis/log.hpp>
@@ -96,6 +97,7 @@ bool initialize() noexcept {
     sInitialized = true;
     push_document(std::make_unique<MenuBar>(), false);
     push_document(std::make_unique<Overlay>(), true, true);
+    push_document(std::make_unique<TouchControls>(), false, true);
     return true;
 }
 
