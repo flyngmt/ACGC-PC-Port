@@ -1,0 +1,42 @@
+--- a/libxenon/drivers/usb/usbctrl.c
++++ b/libxenon/drivers/usb/usbctrl.c
+@@ -89,10 +89,15 @@
+ 
+ static usbctrl_softc_t* controllers[4] = {NULL, NULL, NULL, NULL};
+ 
++extern void ac_usb_input_disconnect(int port);
++
+ static void setcontroller(usbctrl_softc_t* ctrl, int id) //FIXME: Not exactly sure if I like this way of finding a controller from a controller num, possibly rumble should be done through controller data and be updated periodically
+ {
+ 	if(id >= 0 && id < 4)
+-		controllers[id] = ctrl;
++		{
++            controllers[id] = ctrl;
++            if (!ctrl) ac_usb_input_disconnect(id);
++        }
+ }
+ static usbctrl_softc_t* getcontroller(int id)
+ {
+@@ -669,3 +674,8 @@
+ 
+ }
+ 
++
++/* Project extension: actual attach/detach state, not packet freshness. */
++int ac_usb_controller_connected(unsigned int port) {
++    return port < 4 && (controller_mask & (1U << port)) && controllers[port] != NULL;
++}
+--- a/libxenon/drivers/input/input.c
++++ b/libxenon/drivers/input/input.c
+@@ -27,3 +27,11 @@
+ {
+ 	usbctrl_set_rumble(port, l, r);
+ }
++
++/* Project extension: a detached pad must not retain stale input packets. */
++void ac_usb_input_disconnect(int port) {
++    if (port < 0 || port >= 4) return;
++    struct controller_data_s empty = {0};
++    ctrl[port] = empty;
++    valid[port] = 0;
++}

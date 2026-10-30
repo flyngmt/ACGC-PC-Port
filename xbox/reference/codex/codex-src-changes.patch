@@ -1,0 +1,2942 @@
+diff --git a/include/JSystem/JGeometry.h b/include/JSystem/JGeometry.h
+index ae0c7d44..a4ccc23e 100644
+--- a/include/JSystem/JGeometry.h
++++ b/include/JSystem/JGeometry.h
+@@ -260,10 +260,17 @@ struct TBox2 : TBox<TVec2<T> > {
+ 	TBox2(f32 x0, f32 y0, TVec2<f32>& f) { set(x0, y0, x0 + f.x, y0 + f.y);	}
+ 	TBox2(f32 val)
+ 	{
++#if defined(TARGET_XBOX360)
++		this->f.y = val;
++		this->f.x = val;
++		this->i.y = val;
++		this->i.x = val;
++#else
+ 		f.y = val;
+ 		f.x = val;
+ 		i.y = val;
+ 		i.x = val;
++#endif
+ 	}
+ 
+ 	// inline TBox2& operator=(const TBox2& other)
+diff --git a/include/MSL_C/MSL_Common/float.h b/include/MSL_C/MSL_Common/float.h
+index 7fd861bc..4f6cdeff 100644
+--- a/include/MSL_C/MSL_Common/float.h
++++ b/include/MSL_C/MSL_Common/float.h
+@@ -1,3 +1,7 @@
++#if defined(TARGET_XBOX360)
++#include <float.h>
++#include "../../../xbox360/math_compat.h"
++#else
+ #ifndef _MSL_COMMON_FLOAT_H
+ #define _MSL_COMMON_FLOAT_H
+ 
+@@ -90,3 +94,4 @@ inline int __fpclassifyd(double __value)
+ #define DBL_MAX_10_EXP 308
+ 
+ #endif /* _MSL_COMMON_FLOAT_H */
++#endif
+diff --git a/include/MSL_C/MSL_Common_Embedded/Math/fdlibm.h b/include/MSL_C/MSL_Common_Embedded/Math/fdlibm.h
+index f8e03e22..a8827c03 100644
+--- a/include/MSL_C/MSL_Common_Embedded/Math/fdlibm.h
++++ b/include/MSL_C/MSL_Common_Embedded/Math/fdlibm.h
+@@ -1,3 +1,6 @@
++#if defined(TARGET_XBOX360)
++#include "../../../../xbox360/math_compat.h"
++#else
+ #ifndef _FDLIBM_H
+ #define _FDLIBM_H
+ 
+@@ -252,3 +255,4 @@ extern unsigned long __float_huge[];
+ #endif // ifdef __cplusplus
+ 
+ #endif
++#endif
+diff --git a/include/MSL_C/ctype.h b/include/MSL_C/ctype.h
+index 5ecbde44..d69c280a 100644
+--- a/include/MSL_C/ctype.h
++++ b/include/MSL_C/ctype.h
+@@ -8,14 +8,20 @@
+ extern "C" {
+ #endif
+ 
+-__declspec(weak) int isalpha(int __c);
+-__declspec(weak) int isdigit(int __c);
+-__declspec(weak) int isspace(int __c);
+-__declspec(weak) int isupper(int __c);
+-__declspec(weak) int isxdigit(int __c);
++#if defined(TARGET_XBOX360)
++#define AC_MSL_CTYPE_WEAK __attribute__((weak))
++#else
++#define AC_MSL_CTYPE_WEAK __declspec(weak)
++#endif
++AC_MSL_CTYPE_WEAK int isalpha(int __c);
++AC_MSL_CTYPE_WEAK int isdigit(int __c);
++AC_MSL_CTYPE_WEAK int isspace(int __c);
++AC_MSL_CTYPE_WEAK int isupper(int __c);
++AC_MSL_CTYPE_WEAK int isxdigit(int __c);
+ 
+-__declspec(weak) int tolower(int __c);
+-__declspec(weak) int toupper(int __c);
++AC_MSL_CTYPE_WEAK int tolower(int __c);
++AC_MSL_CTYPE_WEAK int toupper(int __c);
++#undef AC_MSL_CTYPE_WEAK
+ 
+ // added underscore to avoid naming conflicts
+ inline int _isalpha(int c) {
+diff --git a/include/MSL_C/math.h b/include/MSL_C/math.h
+index 27d18d4d..1d9f7f00 100644
+--- a/include/MSL_C/math.h
++++ b/include/MSL_C/math.h
+@@ -1,3 +1,13 @@
++#if defined(TARGET_XBOX360)
++#include "types.h"
++#include "../../xbox360/math_compat.h"
++#define PI 3.14159265358979323846
++#define F_PI ((f32)PI)
++#define SQRT2 (1.4142135623730950488016887242097)
++#define F_SQRT2 ((f32)SQRT2)
++#define F_SQRT2_DIV2 (0.707106f)
++#define SQRTF(f) (__frsqrte(f))
++#else
+ #ifndef MATH_H
+ #define MATH_H
+ 
+@@ -39,3 +49,4 @@ extern double ceil(double);
+ #endif
+ 
+ #endif
++#endif
+diff --git a/include/MSL_C/w_math.h b/include/MSL_C/w_math.h
+index d7880a22..9e8944da 100644
+--- a/include/MSL_C/w_math.h
++++ b/include/MSL_C/w_math.h
+@@ -1,3 +1,6 @@
++#if defined(TARGET_XBOX360)
++#include "../../xbox360/math_compat.h"
++#else
+ #ifndef W_MATH_H
+ #define W_MATH_H
+ 
+@@ -85,3 +88,4 @@ extern "C" {
+ #endif
+ 
+ #endif
++#endif
+diff --git a/include/cmath.h b/include/cmath.h
+index 1e6e6475..43719e54 100644
+--- a/include/cmath.h
++++ b/include/cmath.h
+@@ -1,3 +1,6 @@
++#if defined(TARGET_XBOX360)
++#include "../xbox360/math_compat.h"
++#else
+ #ifndef _DOLPHIN_CMATH_H_
+ #define _DOLPHIN_CMATH_H_
+ 
+@@ -5,3 +8,4 @@ float powf(float x, float y);
+ float tanf(float);
+ 
+ #endif // _DOLPHIN_CMATH_H_
++#endif
+diff --git a/include/dolphin/dvd.h b/include/dolphin/dvd.h
+index a6fb05f9..8cdd1e2a 100644
+--- a/include/dolphin/dvd.h
++++ b/include/dolphin/dvd.h
+@@ -224,7 +224,11 @@ void DVDDumpWaitingQueue();
+ 
+ #define DVD_WATYPE_MAX 2
+ 
++#if defined(TARGET_XBOX360)
++extern DVDDiskID DiskID;
++#else
+ DVDDiskID DiskID AT_ADDRESS(0x80000000);
++#endif
+ 
+ //////////////////////////////////
+ 
+diff --git a/include/dolphin/os.h b/include/dolphin/os.h
+index dec25bb1..c8aec0d3 100644
+--- a/include/dolphin/os.h
++++ b/include/dolphin/os.h
+@@ -126,9 +126,16 @@ s32 __gUnknown800030C0[2] : (OS_BASE_CACHED | 0x30C0);
+ u8 __gUnknown800030E3 : (OS_BASE_CACHED | 0x30E3);
+ vu16 __OSDeviceCode AT_ADDRESS(OS_BASE_CACHED | 0x30E6);
+ #else
++#if defined(TARGET_XBOX360) && defined(AC_PORT_BOOT_MENU)
++/* The menu retains GameCube tick units. Its port clock backend must convert
++ * Xenon ticks; never dereference GameCube low-memory clock words on Xenon. */
++#define __OSBusClock  162000000U
++#define __OSCoreClock 486000000U
++#else
+ #define __OSBusClock  (*(u32 *)(OS_BASE_CACHED | 0x00F8))
+ #define __OSCoreClock (*(u32 *)(OS_BASE_CACHED | 0x00FC))
+ #endif
++#endif
+ #define OS_BUS_CLOCK   __OSBusClock
+ #define OS_CORE_CLOCK  __OSCoreClock
+ #define OS_TIMER_CLOCK (OS_BUS_CLOCK/4)
+diff --git a/include/dolphin/os/OSLink.h b/include/dolphin/os/OSLink.h
+index 1e6a031c..0cbda448 100644
+--- a/include/dolphin/os/OSLink.h
++++ b/include/dolphin/os/OSLink.h
+@@ -24,8 +24,13 @@ struct OSModuleQueue {
+     OSModuleInfo* tail;
+ };
+ 
++#if defined(TARGET_XBOX360)
++extern OSModuleQueue __OSModuleList;
++extern void* __OSStringTable;
++#else
+ OSModuleQueue __OSModuleList AT_ADDRESS(0x800030C8);
+ void* __OSStringTable AT_ADDRESS(0x800030D0);
++#endif
+ 
+ struct OSModuleLink {
+     OSModuleInfo* next;
+diff --git a/include/graph.h b/include/graph.h
+index 887486b2..007c6ae9 100644
+--- a/include/graph.h
++++ b/include/graph.h
+@@ -127,6 +127,18 @@ extern void graph_dt(GRAPH* graph);
+ #define NEXT_BG_OPA_DISP NEXT_DISP(&__graph->bg_opaque_thaga)
+ #define NEXT_BG_XLU_DISP NEXT_DISP(&__graph->bg_translucent_thaga)
+ 
++#if defined(TARGET_XBOX360)
++/* thaGfx.head_p is already Gfx*. Preserve its lvalue for assignments. */
++#define NOW_POLY_OPA_DISP NOW_DISP(&__graph->polygon_opaque_thaga)
++#define NOW_POLY_XLU_DISP NOW_DISP(&__graph->polygon_translucent_thaga)
++#define NOW_OVERLAY_DISP NOW_DISP(&__graph->overlay_thaga)
++#define NOW_WORK_DISP NOW_DISP(&__graph->work_thaga)
++#define NOW_FONT_DISP NOW_DISP(&__graph->font_thaga)
++#define NOW_SHADOW_DISP NOW_DISP(&__graph->shadow_thaga)
++#define NOW_LIGHT_DISP NOW_DISP(&__graph->light_thaga)
++#define NOW_BG_OPA_DISP NOW_DISP(&__graph->bg_opaque_thaga)
++#define NOW_BG_XLU_DISP NOW_DISP(&__graph->bg_translucent_thaga)
++#else
+ #define NOW_POLY_OPA_DISP (Gfx*)NOW_DISP(&__graph->polygon_opaque_thaga)
+ #define NOW_POLY_XLU_DISP (Gfx*)NOW_DISP(&__graph->polygon_translucent_thaga)
+ #define NOW_OVERLAY_DISP (Gfx*)NOW_DISP(&__graph->overlay_thaga)
+@@ -136,6 +148,7 @@ extern void graph_dt(GRAPH* graph);
+ #define NOW_LIGHT_DISP (Gfx*)NOW_DISP(&__graph->light_thaga)
+ #define NOW_BG_OPA_DISP (Gfx*)NOW_DISP(&__graph->bg_opaque_thaga)
+ #define NOW_BG_XLU_DISP (Gfx*)NOW_DISP(&__graph->bg_translucent_thaga)
++#endif
+ 
+ #define SET_POLY_OPA_DISP(p) SET_DISP(&__graph->polygon_opaque_thaga, p)
+ #define SET_POLY_XLU_DISP(p) SET_DISP(&__graph->polygon_translucent_thaga, p)
+diff --git a/include/libc/math.h b/include/libc/math.h
+index c280a561..3a585c5c 100644
+--- a/include/libc/math.h
++++ b/include/libc/math.h
+@@ -1,3 +1,6 @@
++#if defined(TARGET_XBOX360)
++#include "../../xbox360/math_compat.h"
++#else
+ #ifndef _MATH_H_
+ #define _MATH_H_
+ 
+@@ -110,3 +113,4 @@ inline float fmodf(float x, float m)
+ #endif
+ 
+ #endif
++#endif
+diff --git a/include/libc/stddef.h b/include/libc/stddef.h
+index 5051a861..cac3ba14 100644
+--- a/include/libc/stddef.h
++++ b/include/libc/stddef.h
+@@ -6,8 +6,12 @@
+ 
+ #ifndef _SIZE_T_DEF
+ #define _SIZE_T_DEF
++#if defined(TARGET_XBOX360)
++typedef __SIZE_TYPE__ size_t;
++#else
+ typedef unsigned long size_t;
+ #endif
++#endif
+ 
+ #ifndef NULL
+ #define NULL 0L
+diff --git a/include/libultra/gu.h b/include/libultra/gu.h
+index 5268a76a..47580028 100644
+--- a/include/libultra/gu.h
++++ b/include/libultra/gu.h
+@@ -60,7 +60,18 @@ void guLookAtHilite (Mtx *m, LookAt *l, Hilite *h,
+ 		float xl2,  float yl2,  float zl2,   /* light 2 direction */
+ 		int twidth, int theight);	     /* highlight txtr size*/
+ 
++#if defined(TARGET_XBOX360)
++#ifdef __cplusplus
++extern "C" {
++#endif
++extern signed short sins (unsigned short angle);
++extern signed short coss (unsigned short angle);
++#ifdef __cplusplus
++}
++#endif
++#else
+ extern signed short sins (unsigned short angle);
+ extern signed short coss (unsigned short angle);
++#endif
+ 
+ #endif
+diff --git a/include/m_collision_obj.h b/include/m_collision_obj.h
+index dffa4643..8d140cb7 100644
+--- a/include/m_collision_obj.h
++++ b/include/m_collision_obj.h
+@@ -236,13 +236,21 @@ extern void CollisionCheck_OCC_Tris_Vs_Pipe(GAME*, CollisionCheck_c*, ClObjTris_
+ extern int CollisionCheck_Check1ClObjNoOCC(ClObj_c*);
+ extern void CollisionCheck_OCC(GAME*, CollisionCheck_c*);
+ extern int ClObjTrisElem_OCCClear(GAME*, ClObjTrisElem_c*);
++#if defined(TARGET_XBOX360)
++extern void ClObj_OCCClear(GAME*, ClObj_c*);
++#else
+ extern int ClObj_OCCClear(GAME*, ClObj_c*);
++#endif
+ extern int ClObjTris_OCCClear(GAME*, ClObj_c*);
+ extern int CollisionCheck_setOCC(GAME*, CollisionCheck_c*, ClObj_c*);
+ extern void CollisionCheck_Status_ct(Status_c*);
+ extern void CollisionCheck_Status_Clear(Status_c*);
+ extern void CollisionCheck_Status_set3(Status_c*, StatusData_c*);
++#if defined(TARGET_XBOX360)
++extern void CollisionCheck_Uty_ActorWorldPosSetPipeC(ACTOR*, ClObjPipe_c*);
++#else
+ extern int CollisionCheck_Uty_ActorWorldPosSetPipeC(ACTOR*, ClObjPipe_c*);
++#endif
+ 
+ #ifdef __cplusplus
+ }
+diff --git a/include/m_post_office.h b/include/m_post_office.h
+index df721685..c935ba3f 100644
+--- a/include/m_post_office.h
++++ b/include/m_post_office.h
+@@ -48,7 +48,11 @@ typedef struct post_office_s {
+ extern int mPO_count_mail(int house_no);
+ extern int mPO_get_keep_mail_sum();
+ extern int mPO_receipt_proc(Mail_c* mail, int send_type);
++#if defined(TARGET_XBOX360)
++extern void mPO_delivery_one_address(int house_no);
++#else
+ extern int mPO_delivery_one_address(int house_no);
++#endif
+ extern void mPO_delivery_all_address_proc();
+ extern void mPO_business_proc(GAME_PLAY* play);
+ extern void mPO_first_work();
+diff --git a/include/m_roll_lib.h b/include/m_roll_lib.h
+index 982dca82..9e1b1916 100644
+--- a/include/m_roll_lib.h
++++ b/include/m_roll_lib.h
+@@ -23,7 +23,11 @@ extern int mRlib_HeightGapCheck_And_ReversePos(ACTOR* actor);
+ extern int mRlib_Hole_check(ACTOR* actor);
+ extern int mRlib_Get_ground_norm_inHole(ACTOR* actor, xyz_t* normal, f32* dist, s16* angle_y, s16* angle_rate, f32 rate_mod);
+ extern int mRlib_PSnowmanBreakCheck(ACTOR* actor, GAME_PLAY* play, f32* speed);
++#if defined(TARGET_XBOX360)
++extern void mRlib_PSnowmanBreakNeckSwing(s16* head_angle_y, f32 f0, f32 scale);
++#else
+ extern int mRlib_PSnowmanBreakNeckSwing(s16* head_angle_y, f32 f0, f32 scale);
++#endif
+ extern int mRlib_PSnowman_NormalTalk(ACTOR* actor, GAME_PLAY* play, f32* speed, mDemo_REQUEST_PROC demo_req_proc);
+ extern int mRlib_snowman_ball_unit_check_from_pos(GAME_PLAY* play, const xyz_t* wpos);
+ 
+diff --git a/include/m_snowman.h b/include/m_snowman.h
+index a5dd7899..8e9c6f2b 100644
+--- a/include/m_snowman.h
++++ b/include/m_snowman.h
+@@ -40,7 +40,11 @@ typedef struct snowman_info_s{
+ } mSN_snowman_info_c;
+ 
+ extern int mSN_check_life(mActor_name_t* ac, int idx);
++#if defined(TARGET_XBOX360)
++extern void mSN_ClearSnowmanData(mActor_name_t* ac, int idx);
++#else
+ extern int mSN_ClearSnowmanData(mActor_name_t* ac, int idx);
++#endif
+ extern int mSN_ClearSnowman(mActor_name_t* ac);
+ extern int mSN_MeltSnowman(mActor_name_t* ac, int days);
+ extern int mSN_get_free_space();
+diff --git a/include/types.h b/include/types.h
+index fd8199c0..3a9d90a7 100644
+--- a/include/types.h
++++ b/include/types.h
+@@ -141,7 +141,9 @@ typedef u32 unknown;
+     ARGB8_to_RGB5A3((((a) & 0xFF) << 24) | (((r) & 0xFF) << 16) | (((g) & 0xFF) << 8) | ((b) & 0xFF))
+ 
+ #pragma section RX "forcestrip"
+-#ifndef __INTELLISENSE__
++#if defined(TARGET_XBOX360)
++#define FORCESTRIP __attribute__((section("forcestrip")))
++#elif !defined(__INTELLISENSE__)
+ #define FORCESTRIP __declspec(section "forcestrip")
+ #else
+ #define FORCESTRIP
+diff --git a/src/actor/ac_ball.c b/src/actor/ac_ball.c
+index 28bf30d2..36c4afa2 100644
+--- a/src/actor/ac_ball.c
++++ b/src/actor/ac_ball.c
+@@ -268,7 +268,11 @@ static void aBALL_BGcheck(BALL_ACTOR* actor) {
+     }
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aBALL_OBJcheck(BALL_ACTOR* actor, GAME* ac_xbox360_unused_arg_1) {
++#else
+ static void aBALL_OBJcheck(BALL_ACTOR* actor, GAME*) {
++#endif
+     int wade;
+     ACTOR* collided;
+     xyz_t pos_speed;
+diff --git a/src/actor/ac_boxTrick01.c b/src/actor/ac_boxTrick01.c
+index 0e824caf..823edcf2 100644
+--- a/src/actor/ac_boxTrick01.c
++++ b/src/actor/ac_boxTrick01.c
+@@ -2,9 +2,21 @@
+ 
+ #include "m_name_table.h"
+ 
++#if defined(TARGET_XBOX360)
++static void BoxTrick01_Actor_ct(ACTOR* actor, GAME* game);
++#else
+ extern void BoxTrick01_Actor_ct(ACTOR* actor, GAME* game);
++#endif
++#if defined(TARGET_XBOX360)
++static void BoxTrick01_Actor_dt(ACTOR* actor, GAME* game);
++#else
+ extern void BoxTrick01_Actor_dt(ACTOR* actor, GAME* game);
++#endif
++#if defined(TARGET_XBOX360)
++static void BoxTrick01_Actor_move(ACTOR* actor, GAME* game);
++#else
+ extern void BoxTrick01_Actor_move(ACTOR* actor, GAME* game);
++#endif
+ 
+ ACTOR_PROFILE BoxTrick01_Profile = {
+     mAc_PROFILE_BOXTRICK01,
+diff --git a/src/actor/ac_bridge_a.c b/src/actor/ac_bridge_a.c
+index 9f2bbc56..6a646385 100644
+--- a/src/actor/ac_bridge_a.c
++++ b/src/actor/ac_bridge_a.c
+@@ -115,7 +115,11 @@ static void aBridgeA_actor_dt(ACTOR* actorx, GAME* game) {
+     sAdo_DeletePlussBridge();
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aBridge_player_check(STRUCTURE_ACTOR* bridge, GAME_PLAY* play) {
++#else
+ static f32 aBridge_player_check(STRUCTURE_ACTOR* bridge, GAME_PLAY* play) {
++#endif
+     PLAYER_ACTOR* player = GET_PLAYER_ACTOR(play);
+     xyz_t player_pos = player->actor_class.world.position;
+     xyz_t bridge_pos = bridge->actor_class.world.position;
+diff --git a/src/actor/ac_fallSESW_move.c_inc b/src/actor/ac_fallSESW_move.c_inc
+index 5cfa0239..756a1f57 100644
+--- a/src/actor/ac_fallSESW_move.c_inc
++++ b/src/actor/ac_fallSESW_move.c_inc
+@@ -1,4 +1,8 @@
++#if defined(TARGET_XBOX360)
++void aFLEW_actor_move(ACTOR* actor, GAME* ac_xbox360_unused_arg_1) {
++#else
+ void aFLEW_actor_move(ACTOR* actor, GAME*) {
++#endif
+     xyz_t pos;
+ 
+     xyz_t_move(&pos, &actor->world.position);
+diff --git a/src/actor/ac_fallS_move.c_inc b/src/actor/ac_fallS_move.c_inc
+index daadde13..00147012 100644
+--- a/src/actor/ac_fallS_move.c_inc
++++ b/src/actor/ac_fallS_move.c_inc
+@@ -1,4 +1,8 @@
++#if defined(TARGET_XBOX360)
++void aFLS_actor_move(ACTOR* actor, GAME* ac_xbox360_unused_arg_1) {
++#else
+ void aFLS_actor_move(ACTOR* actor, GAME*) {
++#endif
+     xyz_t pos;
+ 
+     xyz_t_move(&pos, &actor->world.position);
+diff --git a/src/actor/ac_museum_fish.c b/src/actor/ac_museum_fish.c
+index 5d7a0b29..e436a11b 100644
+--- a/src/actor/ac_museum_fish.c
++++ b/src/actor/ac_museum_fish.c
+@@ -112,7 +112,11 @@ ACTOR_PROFILE Museum_Fish_Profile = {
+     NULL
+ };
+ 
++#if defined(TARGET_XBOX360)
++xyz_t suisou_pos[5] = { 
++#else
+ static xyz_t suisou_pos[5] = { 
++#endif
+     { 220.0f, 40.0f, 220.0f }, 
+     { 420.0f, 40.0f, 220.0f }, 
+     { 220.0f, 40.0f, 460.0f }, 
+diff --git a/src/actor/ac_museum_insect_tonbo.c_inc b/src/actor/ac_museum_insect_tonbo.c_inc
+index b080b715..ff01c6de 100644
+--- a/src/actor/ac_museum_insect_tonbo.c_inc
++++ b/src/actor/ac_museum_insect_tonbo.c_inc
+@@ -126,7 +126,11 @@ void minsect_tonbo_rock_target_set(MUSEUM_INSECT_PRIVATE_DATA* actor, GAME* game
+ 
+ // UNUSED
+ void minsect_tonbo_suprised_near_player() {
++#if defined(TARGET_XBOX360)
++    extern int _strip(f32);
++#else
+     extern _strip(f32);
++#endif
+     _strip(75.f);
+     _strip(6.f);
+     _strip(55.f);
+diff --git a/src/actor/ac_quest_talk_init.c b/src/actor/ac_quest_talk_init.c
+index fc6ce9b7..106b4c9c 100644
+--- a/src/actor/ac_quest_talk_init.c
++++ b/src/actor/ac_quest_talk_init.c
+@@ -267,7 +267,11 @@ static int aQMgr_actor_get_errand_next_idx(aQMgr_regist_c* regist) {
+     return idx;
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aQMgr_actor_set_errand_next(u8* next, aQMgr_regist_c* regist, u8 kind) {
++#else
+ static int aQMgr_actor_set_errand_next(u8* next, aQMgr_regist_c* regist, u8 kind) {
++#endif
+     int idx = aQMgr_actor_get_errand_next_idx(regist);
+ 
+     if (idx >= 0 && idx < mPr_ERRAND_QUEST_NUM) {
+diff --git a/src/actor/ac_reserve_move.c_inc b/src/actor/ac_reserve_move.c_inc
+index e1f1e59d..a55a5715 100644
+--- a/src/actor/ac_reserve_move.c_inc
++++ b/src/actor/ac_reserve_move.c_inc
+@@ -1,4 +1,8 @@
++#if defined(TARGET_XBOX360)
++static void aRSV_set_bgOffset(ACTOR* ac_xbox360_unused_arg_0, int ac_xbox360_unused_arg_1) {
++#else
+ static void aRSV_set_bgOffset(ACTOR*, int) {
++#endif
+ }
+ 
+ static void aRSV_set_talk_info(ACTOR* actor) {
+diff --git a/src/actor/ac_shop_indoor.c b/src/actor/ac_shop_indoor.c
+index eeb6ff6c..2dbb6e91 100644
+--- a/src/actor/ac_shop_indoor.c
++++ b/src/actor/ac_shop_indoor.c
+@@ -133,7 +133,11 @@ ACTOR_PROFILE Shop_Indoor_Profile = {
+ };
+ // clang-format on
+ 
++#if defined(TARGET_XBOX360)
++static void aSI_GetShopIndoorBank(ACTOR* actorx, GAME* game) {
++#else
+ static int aSI_GetShopIndoorBank(ACTOR* actorx, GAME* game) {
++#endif
+     SHOP_INDOOR_ACTOR* shop_indoor = (SHOP_INDOOR_ACTOR*)actorx;
+     u8** floor_data_pp = shop_indoor->floor_data_p;
+     u8** wall_data_pp = shop_indoor->wall_data_p;
+diff --git a/src/actor/ac_tent.c b/src/actor/ac_tent.c
+index d2c3d1d7..b9c0f2d4 100644
+--- a/src/actor/ac_tent.c
++++ b/src/actor/ac_tent.c
+@@ -189,7 +189,11 @@ static void aTnt_SetupAction(ACTOR* actor, int type) {
+     tent->structure_class.action = type;
+ }
+ 
++#if defined(TARGET_XBOX360)
++static int aTnt_ControlLight(ACTOR* ac_xbox360_unused_arg_0) {
++#else
+ static int aTnt_ControlLight(ACTOR*) {
++#endif
+     if (Common_Get(time.now_sec) >= 18000 && Common_Get(time.now_sec) < 64800) {
+         return 0;
+     }
+diff --git a/src/actor/ac_tools.c b/src/actor/ac_tools.c
+index d624329d..09c379a7 100644
+--- a/src/actor/ac_tools.c
++++ b/src/actor/ac_tools.c
+@@ -30,7 +30,11 @@ static void aTOL_actor_ct(ACTOR* actor, GAME* game) {
+     aTOL_init_clip_area(game);
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aTOL_actor_dt(ACTOR* ac_xbox360_unused_arg_0, GAME* ac_xbox360_unused_arg_1) {
++#else
+ static void aTOL_actor_dt(ACTOR*, GAME*) {
++#endif
+     aTOL_free_clip_area();
+ }
+ 
+diff --git a/src/actor/ac_toudai_draw.c_inc b/src/actor/ac_toudai_draw.c_inc
+index 8dbfba7f..cf410a3d 100644
+--- a/src/actor/ac_toudai_draw.c_inc
++++ b/src/actor/ac_toudai_draw.c_inc
+@@ -1,4 +1,8 @@
++#if defined(TARGET_XBOX360)
++static int aTOU_actor_draw_before(GAME* ac_xbox360_unused_arg_0,cKF_SkeletonInfo_R_c* ac_xbox360_unused_arg_1, int idx, Gfx** gfxp,u8* dispbuf, void* actor, s_xyz* rotation, xyz_t* translation){
++#else
+ static int aTOU_actor_draw_before(GAME*,cKF_SkeletonInfo_R_c*, int idx, Gfx** gfxp,u8* dispbuf, void* actor, s_xyz* rotation, xyz_t* translation){
++#endif
+ 
+     if(idx == 4){
+         *gfxp = NULL;
+diff --git a/src/actor/ac_weather_leaf.c b/src/actor/ac_weather_leaf.c
+index f072f92e..d16a7ae9 100644
+--- a/src/actor/ac_weather_leaf.c
++++ b/src/actor/ac_weather_leaf.c
+@@ -74,7 +74,11 @@ static void aWeatherLeaf_make(ACTOR* actor, GAME* game) {
+     }
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aWeatherLeaf_ct(aWeather_Priv* priv, GAME* ac_xbox360_unused_arg_1) {
++#else
+ static void aWeatherLeaf_ct(aWeather_Priv* priv, GAME*) {
++#endif
+     priv->work[0] = RANDOM_F(3.0f);
+     priv->work[1] = RANDOM_F(65535.0f);
+     priv->work[2] = RANDOM_F(65535.0f);
+diff --git a/src/actor/ac_weather_rain.c b/src/actor/ac_weather_rain.c
+index 19999c44..d7cafd5c 100644
+--- a/src/actor/ac_weather_rain.c
++++ b/src/actor/ac_weather_rain.c
+@@ -93,7 +93,11 @@ static void aWeatherRain_make(ACTOR* actor, GAME* game) {
+     }
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aWeatherRain_ct(aWeather_Priv* ac_xbox360_unused_arg_0, GAME* ac_xbox360_unused_arg_1) {
++#else
+ static void aWeatherRain_ct(aWeather_Priv*, GAME*) {
++#endif
+ }
+ 
+ static void aWeatherRain_MoveRain(aWeather_Priv* priv) {
+diff --git a/src/actor/ac_weather_sakura.c b/src/actor/ac_weather_sakura.c
+index 6b85345d..0f5f99ab 100644
+--- a/src/actor/ac_weather_sakura.c
++++ b/src/actor/ac_weather_sakura.c
+@@ -67,7 +67,11 @@ static void aWeatherSakura_make(ACTOR* actor, GAME* game) {
+     }
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aWeatherSakura_ct(aWeather_Priv* priv, GAME* ac_xbox360_unused_arg_1) {
++#else
+ static void aWeatherSakura_ct(aWeather_Priv* priv, GAME*) {
++#endif
+     priv->work[0] = RANDOM_F(65535.0f);
+     priv->work[1] = RANDOM_F(65535.0f);
+     priv->work[2] = RANDOM_F(65535.0f);
+diff --git a/src/actor/ac_weather_snow.c b/src/actor/ac_weather_snow.c
+index 35952c72..28dfc4b9 100644
+--- a/src/actor/ac_weather_snow.c
++++ b/src/actor/ac_weather_snow.c
+@@ -68,7 +68,11 @@ static void aWeatherSnow_make(ACTOR* actor, GAME* game) {
+     }
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aWeatherSnow_ct(aWeather_Priv* ac_xbox360_unused_arg_0, GAME* ac_xbox360_unused_arg_1) {
++#else
+ static void aWeatherSnow_ct(aWeather_Priv*, GAME*) {
++#endif
+ }
+ 
+ static int aWeatherSnow_CheckSnowBorder(aWeather_Priv* priv, GAME_PLAY* play) {
+diff --git a/src/actor/npc/ac_npc_police2_move.c_inc b/src/actor/npc/ac_npc_police2_move.c_inc
+index db37a98c..0ecfe098 100644
+--- a/src/actor/npc/ac_npc_police2_move.c_inc
++++ b/src/actor/npc/ac_npc_police2_move.c_inc
+@@ -4,7 +4,11 @@ static void aPOL2_BGcheck(ACTOR* actorx) {
+ 
+ static void aPOL2_set_animation(NPC_POLICE2_ACTOR* actor, int action) {
+     // clang-format off
++#if defined(TARGET_XBOX360)
++    static int animeSeqNoTable[] = {
++#else
+     static animeSeqNoTable[] = {
++#endif
+         aNPC_ANIM_WAIT1,
+         aNPC_ANIM_WAIT1,
+         aNPC_ANIM_WALK1,
+diff --git a/src/actor/npc/ac_npc_totakeke.c b/src/actor/npc/ac_npc_totakeke.c
+index 76efeede..ae53307f 100644
+--- a/src/actor/npc/ac_npc_totakeke.c
++++ b/src/actor/npc/ac_npc_totakeke.c
+@@ -10,18 +10,66 @@
+ #include "m_string_data.h"
+ #include "m_ledit_ovl.h"
+ 
++#if defined(TARGET_XBOX360)
++static void aNTT_schedule_proc(NPC_TOTAKEKE_ACTOR* totakeke, GAME_PLAY* play, int schedule_id);
++#else
+ void aNTT_schedule_proc(NPC_TOTAKEKE_ACTOR* totakeke, GAME_PLAY* play, int schedule_id);
++#endif
++#if defined(TARGET_XBOX360)
++static int aNTT_change_talk_proc(NPC_TOTAKEKE_ACTOR*, int);
++#else
+ int aNTT_change_talk_proc(NPC_TOTAKEKE_ACTOR*, int);
++#endif
++#if defined(TARGET_XBOX360)
++static void aNTT_setup_think_proc(NPC_TOTAKEKE_ACTOR*, GAME_PLAY*, u8);
++#else
+ void aNTT_setup_think_proc(NPC_TOTAKEKE_ACTOR*, GAME_PLAY*, u8);
++#endif
++#if defined(TARGET_XBOX360)
++static void aNTT_enso_init(NPC_TOTAKEKE_ACTOR*);
++#else
+ int aNTT_enso_init(NPC_TOTAKEKE_ACTOR*);
++#endif
++#if defined(TARGET_XBOX360)
++static void aNTT_actor_ct(ACTOR* actorx, GAME* game);
++#else
+ void aNTT_actor_ct(ACTOR* actorx, GAME* game);
++#endif
++#if defined(TARGET_XBOX360)
++static void aNTT_actor_dt(ACTOR* actorx, GAME* game);
++#else
+ void aNTT_actor_dt(ACTOR* actorx, GAME* game);
++#endif
++#if defined(TARGET_XBOX360)
++static void aNTT_actor_init(ACTOR* actorx, GAME* game);
++#else
+ void aNTT_actor_init(ACTOR* actorx, GAME* game);
++#endif
++#if defined(TARGET_XBOX360)
++static void aNTT_actor_save(ACTOR* actorx, GAME* game);
++#else
+ void aNTT_actor_save(ACTOR* actorx, GAME* game);
++#endif
++#if defined(TARGET_XBOX360)
++static void aNTT_actor_move(ACTOR* actorx, GAME* game);
++#else
+ void aNTT_actor_move(ACTOR* actorx, GAME* game);
++#endif
++#if defined(TARGET_XBOX360)
++static void aNTT_actor_draw(ACTOR* actorx, GAME* game);
++#else
+ void aNTT_actor_draw(ACTOR* actorx, GAME* game);
++#endif
++#if defined(TARGET_XBOX360)
++static int aNTT_talk_init(ACTOR* actorx, GAME* game);
++#else
+ int aNTT_talk_init(ACTOR* actorx, GAME* game);
++#endif
++#if defined(TARGET_XBOX360)
++static int aNTT_talk_end_chk(ACTOR* actorx, GAME* game);
++#else
+ int aNTT_talk_end_chk(ACTOR* actorx, GAME* game);
++#endif
+ 
+ // clang-format off
+ ACTOR_PROFILE Npc_Totakeke_Profile = {
+diff --git a/src/actor/npc/ac_npc_totakeke_talk.c_inc b/src/actor/npc/ac_npc_totakeke_talk.c_inc
+index 2aa6a479..3062c4f9 100644
+--- a/src/actor/npc/ac_npc_totakeke_talk.c_inc
++++ b/src/actor/npc/ac_npc_totakeke_talk.c_inc
+@@ -19,7 +19,11 @@ static int aNTT_bitcheck_func(int field, u16 flag) {
+     }
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aNTT_enso_init(NPC_TOTAKEKE_ACTOR* totakeke) {
++#else
+ static int aNTT_enso_init(NPC_TOTAKEKE_ACTOR* totakeke) {
++#endif
+     totakeke->npc_class.request.act_priority = 4;
+     totakeke->npc_class.request.act_idx = aNPC_ACT_ENSOU;
+     totakeke->npc_class.request.act_type = aNPC_ACT_TYPE_DEFAULT;
+diff --git a/src/actor/npc/event/ac_ev_angler_move.c_inc b/src/actor/npc/event/ac_ev_angler_move.c_inc
+index cc2de793..802618f8 100644
+--- a/src/actor/npc/event/ac_ev_angler_move.c_inc
++++ b/src/actor/npc/event/ac_ev_angler_move.c_inc
+@@ -127,7 +127,11 @@ static int get_top_of_angler_size(void) {
+     return save_p->size;
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void set_top_of_angler_size(int size) {
++#else
+ static int set_top_of_angler_size(int size) {
++#endif
+     aEANG_event_data_c* save_p = get_fish_save_area();
+ 
+     save_p->size = size;
+diff --git a/src/actor/tool/ac_t_anrium1.c b/src/actor/tool/ac_t_anrium1.c
+index a3638419..52a9b3f5 100644
+--- a/src/actor/tool/ac_t_anrium1.c
++++ b/src/actor/tool/ac_t_anrium1.c
+@@ -27,7 +27,11 @@ ACTOR_PROFILE T_Anrium1_Profile = {
+ 
+ extern Gfx crw_anrium1_body_model[];
+ 
++#if defined(TARGET_XBOX360)
++static void aTA1_actor_ct(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTA1_actor_ct(ACTOR* actor, GAME*){
++#endif
+ 
+     aTA1_setupAction(actor,4);
+ }
+@@ -50,7 +54,11 @@ static void aTA1_setupAction(ACTOR*actor, int action){
+ 
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aTA1_actor_move(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTA1_actor_move(ACTOR* actor, GAME*){
++#endif
+     ANRIUM1_ACTOR* anrium = (ANRIUM1_ACTOR*)actor;
+ 
+     if(anrium->tools_class.work0 != anrium->current_id){
+diff --git a/src/actor/tool/ac_t_bag1.c b/src/actor/tool/ac_t_bag1.c
+index 1aeba6b9..496d25cb 100644
+--- a/src/actor/tool/ac_t_bag1.c
++++ b/src/actor/tool/ac_t_bag1.c
+@@ -27,7 +27,11 @@ ACTOR_PROFILE T_Bag1_Profile = {
+ 
+ extern Gfx crw_bag1_body_model[];
+ 
++#if defined(TARGET_XBOX360)
++static void aTBG1_actor_ct(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTBG1_actor_ct(ACTOR* actor, GAME*){
++#endif
+ 
+     aTBG1_setupAction(actor,4);
+ }
+@@ -50,7 +54,11 @@ static void aTBG1_setupAction(ACTOR*actor, int action){
+ 
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aTBG1_actor_move(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTBG1_actor_move(ACTOR* actor, GAME*){
++#endif
+     BAG1_ACTOR* bag = (BAG1_ACTOR*)actor;
+ 
+     if(bag->tools_class.work0 != bag->current_id){
+diff --git a/src/actor/tool/ac_t_bag2.c b/src/actor/tool/ac_t_bag2.c
+index 37d01894..ba7f74b6 100644
+--- a/src/actor/tool/ac_t_bag2.c
++++ b/src/actor/tool/ac_t_bag2.c
+@@ -27,7 +27,11 @@ ACTOR_PROFILE T_Bag2_Profile = {
+ 
+ extern Gfx crw_bag2_body_model[];
+ 
++#if defined(TARGET_XBOX360)
++static void aTBG2_actor_ct(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTBG2_actor_ct(ACTOR* actor, GAME*){
++#endif
+ 
+     aTBG2_setupAction(actor,4);
+ }
+@@ -50,7 +54,11 @@ static void aTBG2_setupAction(ACTOR*actor, int action){
+ 
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aTBG2_actor_move(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTBG2_actor_move(ACTOR* actor, GAME*){
++#endif
+     BAG2_ACTOR* bag = (BAG2_ACTOR*)actor;
+ 
+     if(bag->tools_class.work0 != bag->current_id){
+diff --git a/src/actor/tool/ac_t_biscus1.c b/src/actor/tool/ac_t_biscus1.c
+index d7dd4b79..7048f861 100644
+--- a/src/actor/tool/ac_t_biscus1.c
++++ b/src/actor/tool/ac_t_biscus1.c
+@@ -27,7 +27,11 @@ ACTOR_PROFILE T_Biscus1_Profile = {
+ 
+ extern Gfx crw_biscus1_body_model[];
+ 
++#if defined(TARGET_XBOX360)
++static void aTB1_actor_ct(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTB1_actor_ct(ACTOR* actor, GAME*){
++#endif
+ 
+     aTB1_setupAction(actor,4);
+ }
+@@ -50,7 +54,11 @@ static void aTB1_setupAction(ACTOR*actor, int action){
+ 
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aTB1_actor_move(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTB1_actor_move(ACTOR* actor, GAME*){
++#endif
+     BISCUS1_ACTOR* biscus = (BISCUS1_ACTOR*)actor;
+ 
+     if(biscus->tools_class.work0 != biscus->current_id){
+diff --git a/src/actor/tool/ac_t_biscus2.c b/src/actor/tool/ac_t_biscus2.c
+index f3fd648a..23406839 100644
+--- a/src/actor/tool/ac_t_biscus2.c
++++ b/src/actor/tool/ac_t_biscus2.c
+@@ -27,7 +27,11 @@ ACTOR_PROFILE T_Biscus2_Profile = {
+ 
+ extern Gfx crw_biscus2_body_model[];
+ 
++#if defined(TARGET_XBOX360)
++static void aTB2_actor_ct(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTB2_actor_ct(ACTOR* actor, GAME*){
++#endif
+ 
+     aTB2_setupAction(actor,4);
+ }
+@@ -50,7 +54,11 @@ static void aTB2_setupAction(ACTOR*actor, int action){
+ 
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aTB2_actor_move(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTB2_actor_move(ACTOR* actor, GAME*){
++#endif
+     BISCUS2_ACTOR* biscus = (BISCUS2_ACTOR*)actor;
+ 
+     if(biscus->tools_class.work0 != biscus->current_id){
+diff --git a/src/actor/tool/ac_t_biscus3.c b/src/actor/tool/ac_t_biscus3.c
+index 6efc508f..0176f417 100644
+--- a/src/actor/tool/ac_t_biscus3.c
++++ b/src/actor/tool/ac_t_biscus3.c
+@@ -27,7 +27,11 @@ ACTOR_PROFILE T_Biscus3_Profile = {
+ 
+ extern Gfx crw_biscus3_body_model[];
+ 
++#if defined(TARGET_XBOX360)
++static void aTB3_actor_ct(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTB3_actor_ct(ACTOR* actor, GAME*){
++#endif
+ 
+     aTB3_setupAction(actor,4);
+ }
+@@ -50,7 +54,11 @@ static void aTB3_setupAction(ACTOR*actor, int action){
+ 
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aTB3_actor_move(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTB3_actor_move(ACTOR* actor, GAME*){
++#endif
+     BISCUS3_ACTOR* biscus = (BISCUS3_ACTOR*)actor;
+ 
+     if(biscus->tools_class.work0 != biscus->current_id){
+diff --git a/src/actor/tool/ac_t_biscus4.c b/src/actor/tool/ac_t_biscus4.c
+index 3515bb0b..2ddbc044 100644
+--- a/src/actor/tool/ac_t_biscus4.c
++++ b/src/actor/tool/ac_t_biscus4.c
+@@ -27,7 +27,11 @@ ACTOR_PROFILE T_Biscus4_Profile = {
+ 
+ extern Gfx crw_biscus4_body_model[];
+ 
++#if defined(TARGET_XBOX360)
++static void aTB4_actor_ct(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTB4_actor_ct(ACTOR* actor, GAME*){
++#endif
+ 
+     aTB4_setupAction(actor,4);
+ }
+@@ -50,7 +54,11 @@ static void aTB4_setupAction(ACTOR*actor, int action){
+ 
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aTB4_actor_move(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTB4_actor_move(ACTOR* actor, GAME*){
++#endif
+     BISCUS4_ACTOR* biscus = (BISCUS4_ACTOR*)actor;
+ 
+     if(biscus->tools_class.work0 != biscus->current_id){
+diff --git a/src/actor/tool/ac_t_cobra1.c b/src/actor/tool/ac_t_cobra1.c
+index c360f1fc..c127c83d 100644
+--- a/src/actor/tool/ac_t_cobra1.c
++++ b/src/actor/tool/ac_t_cobra1.c
+@@ -27,7 +27,11 @@ ACTOR_PROFILE T_Cobra1_Profile = {
+ 
+ extern Gfx crw_cobra_model[];
+ 
++#if defined(TARGET_XBOX360)
++static void aTCB1_actor_ct(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTCB1_actor_ct(ACTOR* actor, GAME*){
++#endif
+ 
+     aTCB1_setupAction(actor,4);
+ }
+@@ -50,7 +54,11 @@ static void aTCB1_setupAction(ACTOR*actor, int action){
+ 
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aTCB1_actor_move(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTCB1_actor_move(ACTOR* actor, GAME*){
++#endif
+     COBRA1_ACTOR* cobra = (COBRA1_ACTOR*)actor;
+ 
+     if(cobra->tools_class.work0 != cobra->current_id){
+diff --git a/src/actor/tool/ac_t_hasu1.c b/src/actor/tool/ac_t_hasu1.c
+index 94931031..0f0f6098 100644
+--- a/src/actor/tool/ac_t_hasu1.c
++++ b/src/actor/tool/ac_t_hasu1.c
+@@ -27,7 +27,11 @@ ACTOR_PROFILE T_Hasu1_Profile = {
+ 
+ extern Gfx crw_hasu1_body_model[];
+ 
++#if defined(TARGET_XBOX360)
++static void aTHS1_actor_ct(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTHS1_actor_ct(ACTOR* actor, GAME*){
++#endif
+ 
+     aTHS1_setupAction(actor,4);
+ }
+@@ -50,7 +54,11 @@ static void aTHS1_setupAction(ACTOR*actor, int action){
+ 
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aTHS1_actor_move(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTHS1_actor_move(ACTOR* actor, GAME*){
++#endif
+     HASU1_ACTOR* hasu = (HASU1_ACTOR*)actor;
+ 
+     if(hasu->tools_class.work0 != hasu->current_id){
+diff --git a/src/actor/tool/ac_t_hat1.c b/src/actor/tool/ac_t_hat1.c
+index b0e808b2..951073e4 100644
+--- a/src/actor/tool/ac_t_hat1.c
++++ b/src/actor/tool/ac_t_hat1.c
+@@ -27,7 +27,11 @@ ACTOR_PROFILE T_Hat1_Profile = {
+ 
+ extern Gfx crw_hat1_body_model[];
+ 
++#if defined(TARGET_XBOX360)
++static void aTHT1_actor_ct(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTHT1_actor_ct(ACTOR* actor, GAME*){
++#endif
+ 
+     aTHT1_setupAction(actor,4);
+ }
+@@ -50,7 +54,11 @@ static void aTHT1_setupAction(ACTOR*actor, int action){
+ 
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aTHT1_actor_move(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTHT1_actor_move(ACTOR* actor, GAME*){
++#endif
+     HAT1_ACTOR* hat = (HAT1_ACTOR*)actor;
+ 
+     if(hat->tools_class.work0 != hat->current_id){
+diff --git a/src/actor/tool/ac_t_hat2.c b/src/actor/tool/ac_t_hat2.c
+index f3b77d04..17fa274e 100644
+--- a/src/actor/tool/ac_t_hat2.c
++++ b/src/actor/tool/ac_t_hat2.c
+@@ -27,7 +27,11 @@ ACTOR_PROFILE T_Hat2_Profile = {
+ 
+ extern Gfx crw_hat2_body_model[];
+ 
++#if defined(TARGET_XBOX360)
++static void aTHT2_actor_ct(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTHT2_actor_ct(ACTOR* actor, GAME*){
++#endif
+ 
+     aTHT2_setupAction(actor,4);
+ }
+@@ -50,7 +54,11 @@ static void aTHT2_setupAction(ACTOR*actor, int action){
+ 
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aTHT2_actor_move(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTHT2_actor_move(ACTOR* actor, GAME*){
++#endif
+     HAT2_ACTOR* hat = (HAT2_ACTOR*)actor;
+ 
+     if(hat->tools_class.work0 != hat->current_id){
+diff --git a/src/actor/tool/ac_t_hat3.c b/src/actor/tool/ac_t_hat3.c
+index e89564a1..143643cc 100644
+--- a/src/actor/tool/ac_t_hat3.c
++++ b/src/actor/tool/ac_t_hat3.c
+@@ -27,7 +27,11 @@ ACTOR_PROFILE T_Hat3_Profile = {
+ 
+ extern Gfx crw_hat3_body_model[];
+ 
++#if defined(TARGET_XBOX360)
++static void aTHT3_actor_ct(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTHT3_actor_ct(ACTOR* actor, GAME*){
++#endif
+ 
+     aTHT3_setupAction(actor,4);
+ }
+@@ -50,7 +54,11 @@ static void aTHT3_setupAction(ACTOR*actor, int action){
+ 
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void aTHT3_actor_move(ACTOR* actor, GAME* ac_xbox360_unused_arg_1){
++#else
+ static void aTHT3_actor_move(ACTOR* actor, GAME*){
++#endif
+     HAT3_ACTOR* hat = (HAT3_ACTOR*)actor;
+ 
+     if(hat->tools_class.work0 != hat->current_id){
+diff --git a/src/audio.c b/src/audio.c
+index 0111b093..ffdd38b0 100644
+--- a/src/audio.c
++++ b/src/audio.c
+@@ -292,11 +292,19 @@ extern void sAdo_LevSeEcho(u8 b) {
+ }
+ 
+ extern u8 sAdo_BgmFadeoutCheck() {
++#if defined(TARGET_XBOX360)
++    return Na_BgmFadeoutCheck();
++#else
+     Na_BgmFadeoutCheck();
++#endif
+ }
+ 
+ extern u8 sAdo_SeFadeoutCheck() {
++#if defined(TARGET_XBOX360)
++    return Na_SeFadeoutCheck();
++#else
+     Na_SeFadeoutCheck();
++#endif
+ }
+ 
+ extern void sAdo_RoomType(u8 type) {
+diff --git a/src/data/model/act_m_abura2.c b/src/data/model/act_m_abura2.c
+index e9a2c765..d2dcda10 100644
+--- a/src/data/model/act_m_abura2.c
++++ b/src/data/model/act_m_abura2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_abura_v[];
++#else
+ extern Vtx act_m_abura_v[];
++#endif
+ static Vtx act_m_abura_v[] = {
+ #include "assets/act_m_abura2/act_m_abura_v.inc"
+ };
+diff --git a/src/data/model/act_m_akiakane2.c b/src/data/model/act_m_akiakane2.c
+index a7615cd6..68c7f2f0 100644
+--- a/src/data/model/act_m_akiakane2.c
++++ b/src/data/model/act_m_akiakane2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_akiakane_v[];
++#else
+ extern Vtx act_m_akiakane_v[];
++#endif
+ static Vtx act_m_akiakane_v[] = {
+ #include "assets/act_m_akiakane2/act_m_akiakane_v.inc"
+ };
+diff --git a/src/data/model/act_m_amenbo2.c b/src/data/model/act_m_amenbo2.c
+index e5bc1a66..12590153 100644
+--- a/src/data/model/act_m_amenbo2.c
++++ b/src/data/model/act_m_amenbo2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_amenbo_v[];
++#else
+ extern Vtx act_m_amenbo_v[];
++#endif
+ static Vtx act_m_amenbo_v[] = {
+ #include "assets/act_m_amenbo2/act_m_amenbo_v.inc"
+ };
+diff --git a/src/data/model/act_m_dango2.c b/src/data/model/act_m_dango2.c
+index 17175a6b..a770f0b3 100644
+--- a/src/data/model/act_m_dango2.c
++++ b/src/data/model/act_m_dango2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_dango_v[];
++#else
+ extern Vtx act_m_dango_v[];
++#endif
+ static Vtx act_m_dango_v[] = {
+ #include "assets/act_m_dango2/act_m_dango_v.inc"
+ };
+diff --git a/src/data/model/act_m_danna2.c b/src/data/model/act_m_danna2.c
+index 32b507e3..f2d2a49b 100644
+--- a/src/data/model/act_m_danna2.c
++++ b/src/data/model/act_m_danna2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_danna_v[];
++#else
+ extern Vtx act_m_danna_v[];
++#endif
+ static Vtx act_m_danna_v[] = {
+ #include "assets/act_m_danna2/act_m_danna_v.inc"
+ };
+diff --git a/src/data/model/act_m_genji22.c b/src/data/model/act_m_genji22.c
+index 361e1604..157cf3a1 100644
+--- a/src/data/model/act_m_genji22.c
++++ b/src/data/model/act_m_genji22.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_genji2_v[];
++#else
+ extern Vtx act_m_genji2_v[];
++#endif
+ static Vtx act_m_genji2_v[] = {
+ #include "assets/act_m_genji22/act_m_genji2_v.inc"
+ };
+diff --git a/src/data/model/act_m_ginyanma2.c b/src/data/model/act_m_ginyanma2.c
+index 32eb9321..4f955af3 100644
+--- a/src/data/model/act_m_ginyanma2.c
++++ b/src/data/model/act_m_ginyanma2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_ginyanma_v[];
++#else
+ extern Vtx act_m_ginyanma_v[];
++#endif
+ static Vtx act_m_ginyanma_v[] = {
+ #include "assets/act_m_ginyanma2/act_m_ginyanma_v.inc"
+ };
+diff --git a/src/data/model/act_m_hachi2.c b/src/data/model/act_m_hachi2.c
+index c290e819..ddd31d9a 100644
+--- a/src/data/model/act_m_hachi2.c
++++ b/src/data/model/act_m_hachi2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_hachi_v[];
++#else
+ extern Vtx act_m_hachi_v[];
++#endif
+ static Vtx act_m_hachi_v[] = {
+ #include "assets/act_m_hachi2/act_m_hachi_v.inc"
+ };
+diff --git a/src/data/model/act_m_higurashi2.c b/src/data/model/act_m_higurashi2.c
+index ada7e759..7ea604ee 100644
+--- a/src/data/model/act_m_higurashi2.c
++++ b/src/data/model/act_m_higurashi2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_higurashi_v[];
++#else
+ extern Vtx act_m_higurashi_v[];
++#endif
+ static Vtx act_m_higurashi_v[] = {
+ #include "assets/act_m_higurashi2/act_m_higurashi_v.inc"
+ };
+diff --git a/src/data/model/act_m_ka2.c b/src/data/model/act_m_ka2.c
+index 88440ec1..10734794 100644
+--- a/src/data/model/act_m_ka2.c
++++ b/src/data/model/act_m_ka2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_ka_v[];
++#else
+ extern Vtx act_m_ka_v[];
++#endif
+ static Vtx act_m_ka_v[] = {
+ #include "assets/act_m_ka2/act_m_ka_v.inc"
+ };
+diff --git a/src/data/model/act_m_kamakiri2.c b/src/data/model/act_m_kamakiri2.c
+index c7279bf3..d6875ddc 100644
+--- a/src/data/model/act_m_kamakiri2.c
++++ b/src/data/model/act_m_kamakiri2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_kamakiri_v[];
++#else
+ extern Vtx act_m_kamakiri_v[];
++#endif
+ static Vtx act_m_kamakiri_v[] = {
+ #include "assets/act_m_kamakiri2/act_m_kamakiri_v.inc"
+ };
+diff --git a/src/data/model/act_m_kiageha2.c b/src/data/model/act_m_kiageha2.c
+index 743b784a..6f360c3f 100644
+--- a/src/data/model/act_m_kiageha2.c
++++ b/src/data/model/act_m_kiageha2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_kiageha_v[];
++#else
+ extern Vtx act_m_kiageha_v[];
++#endif
+ static Vtx act_m_kiageha_v[] = {
+ #include "assets/act_m_kiageha2/act_m_kiageha_v.inc"
+ };
+diff --git a/src/data/model/act_m_kirigirisu2.c b/src/data/model/act_m_kirigirisu2.c
+index 87b91d8e..a8dc2009 100644
+--- a/src/data/model/act_m_kirigirisu2.c
++++ b/src/data/model/act_m_kirigirisu2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_kirigirisu_v[];
++#else
+ extern Vtx act_m_kirigirisu_v[];
++#endif
+ static Vtx act_m_kirigirisu_v[] = {
+ #include "assets/act_m_kirigirisu2/act_m_kirigirisu_v.inc"
+ };
+diff --git a/src/data/model/act_m_koorogi2.c b/src/data/model/act_m_koorogi2.c
+index 7497cfa6..fe2dca9e 100644
+--- a/src/data/model/act_m_koorogi2.c
++++ b/src/data/model/act_m_koorogi2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_koorogi_v[];
++#else
+ extern Vtx act_m_koorogi_v[];
++#endif
+ static Vtx act_m_koorogi_v[] = {
+ #include "assets/act_m_koorogi2/act_m_koorogi_v.inc"
+ };
+diff --git a/src/data/model/act_m_kumo2.c b/src/data/model/act_m_kumo2.c
+index 8e00d4f5..629ed80b 100644
+--- a/src/data/model/act_m_kumo2.c
++++ b/src/data/model/act_m_kumo2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_kumo_v[];
++#else
+ extern Vtx act_m_kumo_v[];
++#endif
+ static Vtx act_m_kumo_v[] = {
+ #include "assets/act_m_kumo2/act_m_kumo_v.inc"
+ };
+diff --git a/src/data/model/act_m_matumushi.c b/src/data/model/act_m_matumushi.c
+index cc89bbc8..6bbdee74 100644
+--- a/src/data/model/act_m_matumushi.c
++++ b/src/data/model/act_m_matumushi.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_matumushi_v[];
++#else
+ extern Vtx act_m_matumushi_v[];
++#endif
+ static Vtx act_m_matumushi_v[] = {
+ #include "assets/act_m_matumushi/act_m_matumushi_v.inc"
+ };
+diff --git a/src/data/model/act_m_minmin2.c b/src/data/model/act_m_minmin2.c
+index 28324ed6..df211e39 100644
+--- a/src/data/model/act_m_minmin2.c
++++ b/src/data/model/act_m_minmin2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_minmin_v[];
++#else
+ extern Vtx act_m_minmin_v[];
++#endif
+ static Vtx act_m_minmin_v[] = {
+ #include "assets/act_m_minmin2/act_m_minmin_v.inc"
+ };
+diff --git a/src/data/model/act_m_mino2.c b/src/data/model/act_m_mino2.c
+index 381f41a5..f15a0693 100644
+--- a/src/data/model/act_m_mino2.c
++++ b/src/data/model/act_m_mino2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_mino_v[];
++#else
+ extern Vtx act_m_mino_v[];
++#endif
+ static Vtx act_m_mino_v[] = {
+ #include "assets/act_m_mino2/act_m_mino_v.inc"
+ };
+diff --git a/src/data/model/act_m_monki2.c b/src/data/model/act_m_monki2.c
+index 2be88271..1cd66ff8 100644
+--- a/src/data/model/act_m_monki2.c
++++ b/src/data/model/act_m_monki2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_monki_v[];
++#else
+ extern Vtx act_m_monki_v[];
++#endif
+ static Vtx act_m_monki_v[] = {
+ #include "assets/act_m_monki2/act_m_monki_v.inc"
+ };
+diff --git a/src/data/model/act_m_monshiro2.c b/src/data/model/act_m_monshiro2.c
+index 6f11bc4c..39206878 100644
+--- a/src/data/model/act_m_monshiro2.c
++++ b/src/data/model/act_m_monshiro2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_monshiro_v[];
++#else
+ extern Vtx act_m_monshiro_v[];
++#endif
+ static Vtx act_m_monshiro_v[] = {
+ #include "assets/act_m_monshiro2/act_m_monshiro_v.inc"
+ };
+diff --git a/src/data/model/act_m_nanahoshi2.c b/src/data/model/act_m_nanahoshi2.c
+index 575c4869..6b462cee 100644
+--- a/src/data/model/act_m_nanahoshi2.c
++++ b/src/data/model/act_m_nanahoshi2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_nanahoshi_v[];
++#else
+ extern Vtx act_m_nanahoshi_v[];
++#endif
+ static Vtx act_m_nanahoshi_v[] = {
+ #include "assets/act_m_nanahoshi2/act_m_nanahoshi_v.inc"
+ };
+diff --git a/src/data/model/act_m_ohmurasaki2.c b/src/data/model/act_m_ohmurasaki2.c
+index 419c2ebb..ba792262 100644
+--- a/src/data/model/act_m_ohmurasaki2.c
++++ b/src/data/model/act_m_ohmurasaki2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_ohmurasaki_v[];
++#else
+ extern Vtx act_m_ohmurasaki_v[];
++#endif
+ static Vtx act_m_ohmurasaki_v[] = {
+ #include "assets/act_m_ohmurasaki2/act_m_ohmurasaki_v.inc"
+ };
+diff --git a/src/data/model/act_m_oniyanma2.c b/src/data/model/act_m_oniyanma2.c
+index 87ab7f38..cfd6def2 100644
+--- a/src/data/model/act_m_oniyanma2.c
++++ b/src/data/model/act_m_oniyanma2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_oniyanma_v[];
++#else
+ extern Vtx act_m_oniyanma_v[];
++#endif
+ static Vtx act_m_oniyanma_v[] = {
+ #include "assets/act_m_oniyanma2/act_m_oniyanma_v.inc"
+ };
+diff --git a/src/data/model/act_m_shiokara2.c b/src/data/model/act_m_shiokara2.c
+index 339a32d1..b49a2445 100644
+--- a/src/data/model/act_m_shiokara2.c
++++ b/src/data/model/act_m_shiokara2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_shiokara_v[];
++#else
+ extern Vtx act_m_shiokara_v[];
++#endif
+ static Vtx act_m_shiokara_v[] = {
+ #include "assets/act_m_shiokara2/act_m_shiokara_v.inc"
+ };
+diff --git a/src/data/model/act_m_suzumushi2.c b/src/data/model/act_m_suzumushi2.c
+index 21b81dc7..dd914d44 100644
+--- a/src/data/model/act_m_suzumushi2.c
++++ b/src/data/model/act_m_suzumushi2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_suzumushi_v[];
++#else
+ extern Vtx act_m_suzumushi_v[];
++#endif
+ static Vtx act_m_suzumushi_v[] = {
+ #include "assets/act_m_suzumushi2/act_m_suzumushi_v.inc"
+ };
+diff --git a/src/data/model/act_m_syouryou2.c b/src/data/model/act_m_syouryou2.c
+index fca40ecf..408c5f4e 100644
+--- a/src/data/model/act_m_syouryou2.c
++++ b/src/data/model/act_m_syouryou2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_syouryou_v[];
++#else
+ extern Vtx act_m_syouryou_v[];
++#endif
+ static Vtx act_m_syouryou_v[] = {
+ #include "assets/act_m_syouryou2/act_m_syouryou_v.inc"
+ };
+diff --git a/src/data/model/act_m_tentou2.c b/src/data/model/act_m_tentou2.c
+index cfe4553b..80affad1 100644
+--- a/src/data/model/act_m_tentou2.c
++++ b/src/data/model/act_m_tentou2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_tentou_v[];
++#else
+ extern Vtx act_m_tentou_v[];
++#endif
+ static Vtx act_m_tentou_v[] = {
+ #include "assets/act_m_tentou2/act_m_tentou_v.inc"
+ };
+diff --git a/src/data/model/act_m_tonosama2.c b/src/data/model/act_m_tonosama2.c
+index ef030a45..09475a16 100644
+--- a/src/data/model/act_m_tonosama2.c
++++ b/src/data/model/act_m_tonosama2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_tonosama_v[];
++#else
+ extern Vtx act_m_tonosama_v[];
++#endif
+ static Vtx act_m_tonosama_v[] = {
+ #include "assets/act_m_tonosama2/act_m_tonosama_v.inc"
+ };
+diff --git a/src/data/model/act_m_tukutuku2.c b/src/data/model/act_m_tukutuku2.c
+index 4ff5f8c1..97e16f17 100644
+--- a/src/data/model/act_m_tukutuku2.c
++++ b/src/data/model/act_m_tukutuku2.c
+@@ -5,7 +5,11 @@
+ #include "ac_npc.h"
+ #include "ef_effect_control.h"
+ 
++#if defined(TARGET_XBOX360)
++static Vtx act_m_tukutuku_v[];
++#else
+ extern Vtx act_m_tukutuku_v[];
++#endif
+ static Vtx act_m_tukutuku_v[] = {
+ #include "assets/act_m_tukutuku2/act_m_tukutuku_v.inc"
+ };
+diff --git a/src/effect/ef_room_sunshine.c b/src/effect/ef_room_sunshine.c
+index 31290341..a7e0dc4f 100644
+--- a/src/effect/ef_room_sunshine.c
++++ b/src/effect/ef_room_sunshine.c
+@@ -6,11 +6,31 @@
+ #include "m_collision_bg.h"
+ #include "sys_matrix.h"
+ 
++#if defined(TARGET_XBOX360)
++static void Ef_Room_Sunshine_actor_ct(ACTOR* actor, GAME* play);
++#else
+ void Ef_Room_Sunshine_actor_ct(ACTOR* actor, GAME* play);
++#endif
++#if defined(TARGET_XBOX360)
++static void Ef_Room_SunshineL_actor_move(ACTOR* actor, GAME* play);
++#else
+ void Ef_Room_SunshineL_actor_move(ACTOR* actor, GAME* play);
++#endif
++#if defined(TARGET_XBOX360)
++static void Ef_Room_SunshineL_actor_draw(ACTOR* actor, GAME* play);
++#else
+ void Ef_Room_SunshineL_actor_draw(ACTOR* actor, GAME* play);
++#endif
++#if defined(TARGET_XBOX360)
++static void Ef_Room_SunshineR_actor_move(ACTOR* actor, GAME* play);
++#else
+ void Ef_Room_SunshineR_actor_move(ACTOR* actor, GAME* play);
++#endif
++#if defined(TARGET_XBOX360)
++static void Ef_Room_SunshineR_actor_draw(ACTOR* actor, GAME* play);
++#else
+ void Ef_Room_SunshineR_actor_draw(ACTOR* actor, GAME* play);
++#endif
+ 
+ extern Gfx light_floor01_mode[];
+ extern Vtx light_floorL01_vtx[];
+diff --git a/src/effect/ef_room_sunshine_minsect.c b/src/effect/ef_room_sunshine_minsect.c
+index 40619d26..82e0dd72 100644
+--- a/src/effect/ef_room_sunshine_minsect.c
++++ b/src/effect/ef_room_sunshine_minsect.c
+@@ -7,12 +7,32 @@
+ #include "sys_matrix.h"
+ #include "m_rcp.h"
+ 
++#if defined(TARGET_XBOX360)
++static void Ef_Room_Sunshine_Minsect_actor_ct(ACTOR* actor, GAME* play);
++#else
+ void Ef_Room_Sunshine_Minsect_actor_ct(ACTOR* actor, GAME* play);
++#endif
+ void Ef_Room_Sunshine_Minsect_actor_dt(ACTOR* actor, GAME* play);
++#if defined(TARGET_XBOX360)
++static void Ef_Room_Sunshine_MinsectL_actor_draw(ACTOR* actor, GAME* play);
++#else
+ void Ef_Room_Sunshine_MinsectL_actor_draw(ACTOR* actor, GAME* play);
++#endif
++#if defined(TARGET_XBOX360)
++static void Ef_Room_Sunshine_MinsectL_actor_move(ACTOR* actor, GAME* play);
++#else
+ void Ef_Room_Sunshine_MinsectL_actor_move(ACTOR* actor, GAME* play);
++#endif
++#if defined(TARGET_XBOX360)
++static void Ef_Room_Sunshine_MinsectR_actor_draw(ACTOR* actor, GAME* play);
++#else
+ void Ef_Room_Sunshine_MinsectR_actor_draw(ACTOR* actor, GAME* play);
++#endif
++#if defined(TARGET_XBOX360)
++static void Ef_Room_Sunshine_MinsectR_actor_move(ACTOR* actor, GAME* play);
++#else
+ void Ef_Room_Sunshine_MinsectR_actor_move(ACTOR* actor, GAME* play);
++#endif
+ 
+ extern Gfx rom_museum4_ue_model[];
+ extern Gfx rom_museum4_model[];
+diff --git a/src/effect/ef_room_sunshine_museum.c b/src/effect/ef_room_sunshine_museum.c
+index 461d2b5f..6fa18499 100644
+--- a/src/effect/ef_room_sunshine_museum.c
++++ b/src/effect/ef_room_sunshine_museum.c
+@@ -6,11 +6,31 @@
+ #include "m_collision_bg.h"
+ #include "sys_matrix.h"
+ 
++#if defined(TARGET_XBOX360)
++static void Ef_Room_Sunshine_Museum_actor_ct(ACTOR* actorx, GAME* game);
++#else
+ void Ef_Room_Sunshine_Museum_actor_ct(ACTOR* actorx, GAME* game);
++#endif
++#if defined(TARGET_XBOX360)
++static void Ef_Room_Sunshine_MuseumL_actor_draw(ACTOR* actorx, GAME* game);
++#else
+ void Ef_Room_Sunshine_MuseumL_actor_draw(ACTOR* actorx, GAME* game);
++#endif
++#if defined(TARGET_XBOX360)
++static void Ef_Room_Sunshine_MuseumL_actor_move(ACTOR* actorx, GAME* game);
++#else
+ void Ef_Room_Sunshine_MuseumL_actor_move(ACTOR* actorx, GAME* game);
++#endif
++#if defined(TARGET_XBOX360)
++static void Ef_Room_Sunshine_MuseumR_actor_draw(ACTOR* actorx, GAME* game);
++#else
+ void Ef_Room_Sunshine_MuseumR_actor_draw(ACTOR* actorx, GAME* game);
++#endif
++#if defined(TARGET_XBOX360)
++static void Ef_Room_Sunshine_MuseumR_actor_move(ACTOR* actorx, GAME* game);
++#else
+ void Ef_Room_Sunshine_MuseumR_actor_move(ACTOR* actorx, GAME* game);
++#endif
+ 
+ extern Gfx obj_museum1_shine_model[];
+ extern Gfx obj_museum1_shine_modelT[];
+diff --git a/src/game/m_actor.c b/src/game/m_actor.c
+index 1f625f54..0873ce86 100644
+--- a/src/game/m_actor.c
++++ b/src/game/m_actor.c
+@@ -961,3 +961,95 @@ extern void Setpos_HiliteReflect_xlu_init(xyz_t* pos, GAME_PLAY* play) {
+ 
+     HiliteReflect_xlu_init(pos, &play->view.eye, &sun_pos, play->game.graph);
+ }
++
++#ifdef AC_SCENE_ACTOR_LIST
++#include "xbox360/scene_actor_list.h"
++_Static_assert(sizeof(Actor_list)==8&&__builtin_offsetof(Actor_list,actor)==4,"Actor list ABI");
++_Static_assert(sizeof(Actor_info)==4+8*ACTOR_PART_NUM,"Actor registry ABI");
++static unsigned int ac_scene_attaches,ac_scene_detaches;
++static Actor_info *ac_scene_walk_info;
++static ACTOR *ac_scene_pending[mAc_MAX_ACTORS];
++static unsigned int ac_scene_pending_count,ac_scene_walk_phase;
++static unsigned int ac_scene_walks,ac_scene_visits,ac_scene_retirements;
++int ac_scene_actor_validate(const Actor_info *info){
++    if(!info||info->total_num<0||info->total_num>mAc_MAX_ACTORS)return -1;
++    unsigned int total=0;
++    for(unsigned int part=0;part<ACTOR_PART_NUM;++part){
++        const ACTOR *previous=0,*actor=info->list[part].actor;unsigned int count=0;
++        while(actor){
++            if(++count>mAc_MAX_ACTORS||actor->part!=part||actor->prev_actor!=previous)return -2;
++            previous=actor;actor=actor->next_actor;
++        }
++        if((int)count!=info->list[part].num_actors)return -3;
++        total+=count;
++    }
++    return (int)total==info->total_num?0:-4;
++}
++int ac_scene_actor_contains(const Actor_info *info,const ACTOR *actor){
++    if(!actor||ac_scene_actor_validate(info))return -1;
++    for(unsigned int part=0;part<ACTOR_PART_NUM;++part)
++        for(const ACTOR *p=info->list[part].actor;p;p=p->next_actor)if(p==actor)return 1;
++    return 0;
++}
++int ac_scene_actor_attach(Actor_info *info,ACTOR *actor,unsigned int part){
++    if(ac_scene_walk_info)return -2;
++    if(!actor||part>=ACTOR_PART_NUM||ac_scene_actor_validate(info)||
++       info->total_num>=mAc_MAX_ACTORS||ac_scene_actor_contains(info,actor)!=0||
++       actor->prev_actor||actor->next_actor)return -1;
++    Actor_info_part_new(info,actor,(u8)part);++ac_scene_attaches;
++    return ac_scene_actor_validate(info);
++}
++static int ac_scene_actor_unlink(Actor_info *info,ACTOR *actor){
++    if(ac_scene_actor_contains(info,actor)!=1)return -1;
++    Actor_info_part_delete(info,actor);++ac_scene_detaches;
++    return ac_scene_actor_validate(info);
++}
++int ac_scene_actor_detach(Actor_info *info,ACTOR *actor){
++    if(ac_scene_walk_info)return -2;
++    return ac_scene_actor_unlink(info,actor);
++}
++int ac_scene_actor_stats(void){return ac_scene_attaches==6&&ac_scene_detaches==6?0:-1;}
++int ac_scene_actor_defer_remove(Actor_info *info,ACTOR *actor){
++    if(!info||ac_scene_walk_info!=info||ac_scene_walk_phase!=1||
++       ac_scene_actor_contains(info,actor)!=1)return -1;
++    for(unsigned int i=0;i<ac_scene_pending_count;++i)if(ac_scene_pending[i]==actor)return 0;
++    if(ac_scene_pending_count>=mAc_MAX_ACTORS)return -2;
++    ac_scene_pending[ac_scene_pending_count++]=actor;return 0;
++}
++static void ac_scene_walk_clear(void){
++    for(unsigned int i=0;i<ac_scene_pending_count;++i)ac_scene_pending[i]=0;
++    ac_scene_pending_count=0;ac_scene_walk_phase=0;ac_scene_walk_info=0;
++}
++int ac_scene_actor_walk(Actor_info *info,ACSceneActorVisit visit,ACSceneActorRemoved removed,
++                        void *user,unsigned int *visited){
++    if(ac_scene_walk_info||!visit||!visited||ac_scene_actor_validate(info))return -1;
++    *visited=0;ac_scene_walk_info=info;ac_scene_walk_phase=1;
++    for(unsigned int part=0;part<ACTOR_PART_NUM;++part){
++        for(ACTOR *actor=info->list[part].actor;actor;actor=actor->next_actor){
++            int result=visit(actor,user);++*visited;
++            if(result||ac_scene_actor_validate(info)){ac_scene_walk_clear();return -2;}
++        }
++    }
++    ac_scene_walk_phase=2;
++    for(unsigned int i=0;i<ac_scene_pending_count;++i){
++        ACTOR *actor=ac_scene_pending[i];
++        if(ac_scene_actor_unlink(info,actor)){ac_scene_walk_clear();return -3;}
++        if(removed)removed(actor,user);
++        if(ac_scene_actor_validate(info)){ac_scene_walk_clear();return -3;}
++    }
++    ++ac_scene_walks;ac_scene_visits+=*visited;ac_scene_retirements+=ac_scene_pending_count;
++    ac_scene_walk_clear();return 0;
++}
++void ac_scene_actor_traversal_counts(unsigned int counts[3]){
++    if(counts){counts[0]=ac_scene_walks;counts[1]=ac_scene_visits;counts[2]=ac_scene_retirements;}
++}
++int ac_scene_actor_traversal_stats(void){
++#ifdef AC_RESIDENT_SCENE
++    const unsigned int expected_visits=3603;
++#else
++    const unsigned int expected_visits=3599;
++#endif
++    return !ac_scene_walk_info&&!ac_scene_pending_count&&!ac_scene_walk_phase&&
++           ac_scene_walks==1803&&ac_scene_visits==expected_visits&&ac_scene_retirements==3?0:-1;
++}
++#endif
+diff --git a/src/game/m_actor_shadow.c b/src/game/m_actor_shadow.c
+index 055a7bab..360f0de3 100644
+--- a/src/game/m_actor_shadow.c
++++ b/src/game/m_actor_shadow.c
+@@ -172,7 +172,11 @@ Gfx* mActorShadow_SetTexScroll(ACTOR* actor, Shadow_Info* shadow, GAME* game) {
+         step = 0;
+     }
+ 
++#if defined(TARGET_XBOX360)
++    return mActorShadow_TileScroll2(&x1, &y1, 0, 0, 0, 0, 0x20, 0x10, (u32*)&actor->shape_info.unk_20, &y2, step, 0,
++#else
+     mActorShadow_TileScroll2(&x1, &y1, 0, 0, 0, 0, 0x20, 0x10, (u32*)&actor->shape_info.unk_20, &y2, step, 0,
++#endif
+                              shadow->unk34, 0, 0x20, 0x10, game);
+ }
+ 
+diff --git a/src/game/m_banti.c b/src/game/m_banti.c
+index f24011db..aa6717e9 100644
+--- a/src/game/m_banti.c
++++ b/src/game/m_banti.c
+@@ -115,7 +115,11 @@ static void banti_chk_disp_left(GAME_PLAY* play) {
+     }
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void banti_calc_disp_alpha_rate(GAME_PLAY* play) {
++#else
+ static f32 banti_calc_disp_alpha_rate(GAME_PLAY* play) {
++#endif
+     if (mDemo_CheckDemo() || mEv_IsTitleDemo() || banti.disabled) {
+         banti.addressable_type = mPlayer_ADDRESSABLE_FALSE_MOVEMENT;
+         add_calc(&banti.alpha, 0.0f, 1.0f - sqrtf(0.8), 0.1f,
+diff --git a/src/game/m_collision_obj.c b/src/game/m_collision_obj.c
+index 6508d8c9..0b8a5a6e 100644
+--- a/src/game/m_collision_obj.c
++++ b/src/game/m_collision_obj.c
+@@ -18,11 +18,19 @@ int ClObj_ct(GAME* game, ClObj_c* cl) {
+     return 1;
+ }
+ 
++#if defined(TARGET_XBOX360)
++int ClObj_dt(GAME* ac_xbox360_unused_arg_0, ClObj_c* ac_xbox360_unused_arg_1) {
++#else
+ int ClObj_dt(GAME*, ClObj_c*) {
++#endif
+     return 1;
+ }
+ 
++#if defined(TARGET_XBOX360)
++int ClObj_set4(GAME* ac_xbox360_unused_arg_0, ClObj_c* cl, ACTOR* actor, ClObjData_c* data) {
++#else
+ int ClObj_set4(GAME*, ClObj_c* cl, ACTOR* actor, ClObjData_c* data) {
++#endif
+     cl->owner_actor = actor;
+     cl->collision_flags0 = data->collision_flags0;
+     cl->collision_flags1 = data->collision_flags1;
+@@ -31,7 +39,11 @@ int ClObj_set4(GAME*, ClObj_c* cl, ACTOR* actor, ClObjData_c* data) {
+     return 1;
+ }
+ 
++#if defined(TARGET_XBOX360)
++void ClObj_OCClear(GAME* ac_xbox360_unused_arg_0, ClObj_c* cl) {
++#else
+ void ClObj_OCClear(GAME*, ClObj_c* cl) {
++#endif
+     cl->collision_flags0 &= ~ClObj_FLAG_COLLIDED;
+     cl->collided_actor = NULL;
+     cl->collision_flags1 &= ~ClObj_FLAG2_PLAYER_WAS_HIT;
+@@ -49,7 +61,11 @@ int ClObjElem_set(ClObjElem_c* elem, ClObjElemData_c* data) {
+     return 1;
+ }
+ 
++#if defined(TARGET_XBOX360)
++void ClObjElem_OCClear(GAME* ac_xbox360_unused_arg_0, ClObjElem_c* elem) {
++#else
+ void ClObjElem_OCClear(GAME*, ClObjElem_c* elem) {
++#endif
+     elem->flags &= ~ClObjElem_FLAG_HIT;
+ }
+ 
+@@ -82,7 +98,11 @@ int ClObjPipeAttr_ct(GAME* game, ClObjPipeAttr_c* attribute) {
+     return 1;
+ }
+ 
++#if defined(TARGET_XBOX360)
++int ClObjPipeAttr_dt(GAME* ac_xbox360_unused_arg_0, ClObjPipeAttr_c* ac_xbox360_unused_arg_1) {
++#else
+ int ClObjPipeAttr_dt(GAME*, ClObjPipeAttr_c*) {
++#endif
+     return 1;
+ }
+ 
+@@ -695,7 +715,11 @@ int ClObjTrisElem_OCCClear(GAME* game, ClObjTrisElem_c* triselem) {
+     return 1;
+ }
+ 
++#if defined(TARGET_XBOX360)
++void ClObj_OCCClear(GAME* game, ClObj_c* col) {
++#else
+ int ClObj_OCCClear(GAME* game, ClObj_c* col) {
++#endif
+     col->collided_actor = NULL;
+     col->collision_flags1 &= ~ClObj_FLAG_DONT_UPDATE_POS;
+ }
+@@ -770,7 +794,11 @@ void CollisionCheck_Status_set3(Status_c* status, StatusData_c* data) {
+     status->weight = data->weight;
+ }
+ 
++#if defined(TARGET_XBOX360)
++void CollisionCheck_Uty_ActorWorldPosSetPipeC(ACTOR* actor, ClObjPipe_c* pipe) {
++#else
+ int CollisionCheck_Uty_ActorWorldPosSetPipeC(ACTOR* actor, ClObjPipe_c* pipe) {
++#endif
+     pipe->attribute.pipe.center.x = actor->world.position.x;
+     pipe->attribute.pipe.center.y = actor->world.position.y;
+     pipe->attribute.pipe.center.z = actor->world.position.z;
+diff --git a/src/game/m_font_main.c_inc b/src/game/m_font_main.c_inc
+index 1bde1bf9..a7bef4a2 100644
+--- a/src/game/m_font_main.c_inc
++++ b/src/game/m_font_main.c_inc
+@@ -236,7 +236,11 @@ static Gfx* mFont_gfxSetPrimColor(Gfx* gfx, int r, int g, int b, int a) {
+   return gfx;
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void mFont_gppSetPrimColor(Gfx** gpp, rgba_t* color) {
++#else
+ static Gfx* mFont_gppSetPrimColor(Gfx** gpp, rgba_t* color) {
++#endif
+   Gfx* g = *gpp;
+ 
+   gDPSetPrimColor(
+diff --git a/src/game/m_player_call.c b/src/game/m_player_call.c
+index f78d58e5..98a6aa52 100644
+--- a/src/game/m_player_call.c
++++ b/src/game/m_player_call.c
+@@ -9,9 +9,21 @@ static mActor_proc Player_actor_dt_func;
+ static mActor_proc Player_actor_move_func;
+ static mActor_proc Player_actor_draw_func;
+ 
++#if defined(TARGET_XBOX360)
++static
++#endif
+ void Player_actor_ct_call(ACTOR* actor, GAME* game);
++#if defined(TARGET_XBOX360)
++static
++#endif
+ void Player_actor_dt_call(ACTOR* actor, GAME* game);
++#if defined(TARGET_XBOX360)
++static
++#endif
+ void Player_actor_move_call(ACTOR* actor, GAME* game);
++#if defined(TARGET_XBOX360)
++static
++#endif
+ void Player_actor_draw_call(ACTOR* actor, GAME* game);
+ 
+ ACTOR_PROFILE Player_Profile = {
+diff --git a/src/game/m_player_lib.c b/src/game/m_player_lib.c
+index 63710890..5ac2c49f 100644
+--- a/src/game/m_player_lib.c
++++ b/src/game/m_player_lib.c
+@@ -2129,7 +2129,11 @@ extern int mPlib_request_main_hold_type1(GAME* game, int ftr_no, int player_dire
+ }
+ 
+ extern int mPlib_request_main_recieve_wait_type1(GAME* game, mActor_name_t item, int counter_flag) {
++#if defined(TARGET_XBOX360)
++    return GET_PLAYER_ACTOR_GAME(game)->request_main_recieve_wait_all_proc(
++#else
+     GET_PLAYER_ACTOR_GAME(game)->request_main_recieve_wait_all_proc(
++#endif
+         game, GET_PLAYER_ACTOR_GAME(game)->main_data.talk.talk_actor_p,
+         GET_PLAYER_ACTOR_GAME(game)->main_data.talk.turn_flag, GET_PLAYER_ACTOR_GAME(game)->now_main_index, item,
+         counter_flag, mPlayer_REQUEST_PRIORITY_19);
+@@ -2149,7 +2153,11 @@ extern int mPlib_request_main_give_type1(GAME* game, mActor_name_t item, int mod
+         turn_flag = FALSE;
+     }
+ 
++#if defined(TARGET_XBOX360)
++    return GET_PLAYER_ACTOR_GAME(game)->request_main_give_all_proc(game, talk_actor_p, turn_flag, return_main_index, item,
++#else
+     GET_PLAYER_ACTOR_GAME(game)->request_main_give_all_proc(game, talk_actor_p, turn_flag, return_main_index, item,
++#endif
+                                                             mode, present, on_surface, mPlayer_REQUEST_PRIORITY_19);
+ }
+ 
+diff --git a/src/game/m_player_main_dig_scoop.c_inc b/src/game/m_player_main_dig_scoop.c_inc
+index b63a49f5..a0399797 100644
+--- a/src/game/m_player_main_dig_scoop.c_inc
++++ b/src/game/m_player_main_dig_scoop.c_inc
+@@ -205,7 +205,11 @@ static void Player_actor_BGcheck_Dig_scoop(ACTOR* actor) {
+     Player_actor_BGcheck_common_type1(actor);
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void Player_actor_lean_angle_scoop_common(ACTOR* actor, const xyz_t* pos, f32 frame) {
++#else
+ static int Player_actor_lean_angle_scoop_common(ACTOR* actor, const xyz_t* pos, f32 frame) {
++#endif
+     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
+     s16 ang = 0;
+ 
+diff --git a/src/game/m_player_main_fill_scoop.c_inc b/src/game/m_player_main_fill_scoop.c_inc
+index f5d864b4..f6c0b105 100644
+--- a/src/game/m_player_main_fill_scoop.c_inc
++++ b/src/game/m_player_main_fill_scoop.c_inc
+@@ -135,7 +135,11 @@ static void Player_actor_BGcheck_Fill_scoop(ACTOR* actor) {
+     Player_actor_BGcheck_common_type1(actor);
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void Player_actor_lean_angle_Fill_scoop(ACTOR* actor) {
++#else
+ static int Player_actor_lean_angle_Fill_scoop(ACTOR* actor) {
++#endif
+     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
+     f32 mod = 0.0f;
+ 
+diff --git a/src/game/m_player_main_get_scoop.c_inc b/src/game/m_player_main_get_scoop.c_inc
+index dd1f9648..fe1e42de 100644
+--- a/src/game/m_player_main_get_scoop.c_inc
++++ b/src/game/m_player_main_get_scoop.c_inc
+@@ -134,7 +134,11 @@ static void Player_actor_BGcheck_Get_scoop(ACTOR* actor) {
+     Player_actor_BGcheck_common_type1(actor);
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void Player_actor_lean_angle_Get_scoop(ACTOR* actor) {
++#else
+ static int Player_actor_lean_angle_Get_scoop(ACTOR* actor) {
++#endif
+     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
+     s16 ang = 0;
+     mPlayer_main_get_scoop_c* main_scoop = &player->main_data.get_scoop;
+diff --git a/src/game/m_player_main_reflect_axe.c_inc b/src/game/m_player_main_reflect_axe.c_inc
+index d0f7f860..3378261e 100644
+--- a/src/game/m_player_main_reflect_axe.c_inc
++++ b/src/game/m_player_main_reflect_axe.c_inc
+@@ -46,7 +46,11 @@ static void Player_actor_settle_main_Reflect_axe(ACTOR* actor, GAME* game) {
+     actor->world.angle.y = actor->shape_info.rotation.y;
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void Player_actor_Movement_Reflect_axe_common(ACTOR* actor, mPlayer_main_axe_common_c* axe_common_p,
++#else
+ static int Player_actor_Movement_Reflect_axe_common(ACTOR* actor, mPlayer_main_axe_common_c* axe_common_p,
++#endif
+                                                     int priority) {
+     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
+     f32 cur = player->keyframe0.frame_control.current_frame;
+@@ -62,11 +66,19 @@ static void Player_actor_Movement_Reflect_axe(ACTOR* actor, mPlayer_main_reflect
+     Player_actor_Movement_Reflect_axe_common(actor, &main_axe->axe_common, flag);
+ }
+ 
++#if defined(TARGET_XBOX360)
++static int Player_actor_CulcAnimation_Reflect_axe(ACTOR* actor, f32* frame_calc, int unused_arg) {
++#else
+ static int Player_actor_CulcAnimation_Reflect_axe(ACTOR* actor, f32* frame_calc, int) {
++#endif
+     return Player_actor_CulcAnimation_Base2(actor, frame_calc);
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void Player_actor_SetEffectHit_Reflect_axe(ACTOR* actor, GAME* game, s16 arg2, int unused_arg) {
++#else
+ static void Player_actor_SetEffectHit_Reflect_axe(ACTOR* actor, GAME* game, s16 arg2, int) {
++#endif
+     Player_actor_SetEffectHit_axe_common(actor, game, arg2);
+ }
+ 
+@@ -75,7 +87,11 @@ static void Player_actor_SetEffect_Reflect_axe(ACTOR* actor, GAME* game, int arg
+     Player_actor_SetEffectStart_axe_common(actor, game);
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void Player_actor_SetAngleSpeedF_Reflect_axe(ACTOR* actor, int unused_arg) {
++#else
+ static void Player_actor_SetAngleSpeedF_Reflect_axe(ACTOR* actor, int) {
++#endif
+     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
+ 
+     if (Player_actor_Check_AnimationFrame(&player->keyframe0.frame_control, 15.0f)) {
+@@ -84,7 +100,11 @@ static void Player_actor_SetAngleSpeedF_Reflect_axe(ACTOR* actor, int) {
+     }
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void Player_actor_SetOrderNPC_Reflect_axe(ACTOR* actor, mPlayer_main_reflect_axe_c* main_axe, int unused_arg) {
++#else
+ static void Player_actor_SetOrderNPC_Reflect_axe(ACTOR* actor, mPlayer_main_reflect_axe_c* main_axe, int) {
++#endif
+     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
+     int rock;
+     if (Player_actor_Check_AnimationFrame(&player->keyframe0.frame_control, 15.0f)) {
+@@ -122,7 +142,11 @@ static void Player_actor_SetOrderNPC_Reflect_axe(ACTOR* actor, mPlayer_main_refl
+     }
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void Player_actor_SetSound_Reflect_axe(ACTOR* actor, mPlayer_main_reflect_axe_c* main_axe, int unused_arg) {
++#else
+ static void Player_actor_SetSound_Reflect_axe(ACTOR* actor, mPlayer_main_reflect_axe_c* main_axe, int) {
++#endif
+     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
+ 
+     Player_actor_SetSound_AXE_FURI_axe_common(actor);
+@@ -146,11 +170,19 @@ static void Player_actor_SetSound_Reflect_axe(ACTOR* actor, mPlayer_main_reflect
+     }
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void Player_actor_ChangeItemNo_Reflect_axe(ACTOR* actor, mPlayer_main_reflect_axe_c* main_axe, int unused_arg) {
++#else
+ static void Player_actor_ChangeItemNo_Reflect_axe(ACTOR* actor, mPlayer_main_reflect_axe_c* main_axe, int) {
++#endif
+     Player_actor_ChangeItemNo_axe_common(actor, main_axe->axe_common.axe_damage_no);
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void Player_actor_informed_insects_Reflect_axe(ACTOR* actor, mPlayer_main_reflect_axe_c* main_axe, int unused_arg) {
++#else
+ static void Player_actor_informed_insects_Reflect_axe(ACTOR* actor, mPlayer_main_reflect_axe_c* main_axe, int) {
++#endif
+     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
+ 
+     if (Player_actor_Check_AnimationFrame(&player->keyframe0.frame_control, 15.0f)) {
+@@ -177,11 +209,19 @@ static void Player_actor_SearchAnimation_Reflect_axe(ACTOR* actor, GAME* game, m
+     }
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void Player_actor_ObjCheck_Reflect_axe(ACTOR* actor, GAME* game, int unused_arg) {
++#else
+ static void Player_actor_ObjCheck_Reflect_axe(ACTOR* actor, GAME* game, int) {
++#endif
+     Player_actor_Excute_Corect_forStand(actor, game);
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void Player_actor_BGcheck_Reflect_axe(ACTOR* actor, int unused_arg) {
++#else
+ static void Player_actor_BGcheck_Reflect_axe(ACTOR* actor, int) {
++#endif
+     Player_actor_BGcheck_common_type1(actor);
+ }
+ 
+diff --git a/src/game/m_player_main_reflect_scoop.c_inc b/src/game/m_player_main_reflect_scoop.c_inc
+index b1d1709f..d058de37 100644
+--- a/src/game/m_player_main_reflect_scoop.c_inc
++++ b/src/game/m_player_main_reflect_scoop.c_inc
+@@ -34,7 +34,11 @@ static void Player_actor_settle_main_Reflect_scoop(ACTOR* actor, GAME* game) {
+     actor->world.angle.y = actor->shape_info.rotation.y;
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void Player_actor_Movement_Reflect_scoop(ACTOR* actor) {
++#else
+ static int Player_actor_Movement_Reflect_scoop(ACTOR* actor) {
++#endif
+     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
+     mPlayer_main_swing_axe_c* main_axe = &player->main_data.swing_axe;
+     cKF_FrameControl_c* fc = &player->keyframe0.frame_control;
+diff --git a/src/game/m_player_main_swing_axe.c_inc b/src/game/m_player_main_swing_axe.c_inc
+index ac52838e..029adbb9 100644
+--- a/src/game/m_player_main_swing_axe.c_inc
++++ b/src/game/m_player_main_swing_axe.c_inc
+@@ -62,13 +62,21 @@ static void Player_actor_Movement_axe_common(ACTOR* actor, const xyz_t* axe_pos)
+     Player_actor_Movement_Base_Braking_common(actor, 0.32625002f);
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void Player_actor_Movement_Swing_axe(ACTOR* actor, mPlayer_main_swing_axe_c* main_axe, int unused_arg) {
++#else
+ static void Player_actor_Movement_Swing_axe(ACTOR* actor, mPlayer_main_swing_axe_c* main_axe, int) {
++#endif
+     Player_actor_Movement_axe_common(actor, &main_axe->axe_common.target_pos);
+ 
+     actor->world.angle.y = actor->shape_info.rotation.y;
+ }
+ 
++#if defined(TARGET_XBOX360)
++static int Player_actor_CulcAnimation_Swing_axe(ACTOR* actor, f32* frame_calc, int unused_arg) {
++#else
+ static int Player_actor_CulcAnimation_Swing_axe(ACTOR* actor, f32* frame_calc, int) {
++#endif
+     return Player_actor_CulcAnimation_Base2(actor, frame_calc);
+ }
+ 
+@@ -173,7 +181,11 @@ static void Player_actor_SetSound_AXE_FURI_axe_common(ACTOR* actor) {
+     }
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void Player_actor_SetSound_AXE_FURI_Swing_axe(ACTOR* actor, int unused_arg) {
++#else
+ static void Player_actor_SetSound_AXE_FURI_Swing_axe(ACTOR* actor, int) {
++#endif
+     Player_actor_SetSound_AXE_FURI_axe_common(actor);
+ }
+ 
+@@ -246,11 +258,19 @@ static void Player_actor_Check_BirthBee_Swing_axe(ACTOR* actor, mPlayer_main_swi
+     }
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void Player_actor_ObjCheck_Swing_axe(ACTOR* actor, GAME* game, int unused_arg) {
++#else
+ static void Player_actor_ObjCheck_Swing_axe(ACTOR* actor, GAME* game, int) {
++#endif
+     Player_actor_Excute_Corect_forStand(actor, game);
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void Player_actor_BGcheck_Swing_axe(ACTOR* actor, int unused_arg) {
++#else
+ static void Player_actor_BGcheck_Swing_axe(ACTOR* actor, int) {
++#endif
+     Player_actor_BGcheck_common_type1(actor);
+ }
+ 
+diff --git a/src/game/m_post_office.c b/src/game/m_post_office.c
+index ca6f97d7..48662e7b 100644
+--- a/src/game/m_post_office.c
++++ b/src/game/m_post_office.c
+@@ -346,7 +346,11 @@ static void mPO_delivery_one_address_event_leaflet(int house_no) {
+     }
+ }
+ 
++#if defined(TARGET_XBOX360)
++extern void mPO_delivery_one_address(int house_no) {
++#else
+ extern int mPO_delivery_one_address(int house_no) {
++#endif
+     mPO_delivery_one_address_mail(house_no);
+     mPO_delivery_one_address_leaflet(&Save_Get(post_office).leaflet_recipient_flags.leaflet_flags,
+                                      &Save_Get(post_office).leaflet, house_no);
+diff --git a/src/game/m_random_field_ovl.c b/src/game/m_random_field_ovl.c
+index 2e9a8118..540d8864 100644
+--- a/src/game/m_random_field_ovl.c
++++ b/src/game/m_random_field_ovl.c
+@@ -1676,7 +1676,11 @@ static int mRF_SetUniqueFlatBlock(u8* blocks) {
+     return flags;
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void mRF_SetUniqueRailBlock(u8* blocks) {
++#else
+ static int mRF_SetUniqueRailBlock(u8* blocks) {
++#endif
+     u8 t0;
+     u8 t1;
+     int set_t0;
+diff --git a/src/game/m_rcp.c b/src/game/m_rcp.c
+index c097b349..1bbb07c4 100644
+--- a/src/game/m_rcp.c
++++ b/src/game/m_rcp.c
+@@ -318,8 +318,14 @@ extern Gfx* gfx_tex_scroll2(Gfx** gfxpp, int x, int y, int width, int height) {
+     Gfx* dl = gfxalloc(gfxpp, 3 * sizeof(Gfx));
+ 
+     gDPTileSync(dl);
++#if defined(TARGET_XBOX360)
+     gDPSetTileSize(dl + 1, G_TX_RENDERTILE, x, y, x + ((width - 1) << 2), y + ((height - 1) << 2));
+     gSPEndDisplayList(dl + 2);
++    return dl;
++#else
++    gDPSetTileSize(dl + 1, G_TX_RENDERTILE, x, y, x + ((width - 1) << 2), y + ((height - 1) << 2));
++    gSPEndDisplayList(dl + 2);
++#endif
+ }
+ 
+ extern Gfx* tex_scroll2(GRAPH* graph, u32 x, u32 y, int width, int height) {
+diff --git a/src/game/m_roll_lib.c b/src/game/m_roll_lib.c
+index 9f32f306..78ae6b3d 100644
+--- a/src/game/m_roll_lib.c
++++ b/src/game/m_roll_lib.c
+@@ -268,7 +268,11 @@ extern int mRlib_PSnowmanBreakCheck(ACTOR* actor, GAME_PLAY* play, f32* speed) {
+     return FALSE;
+ }
+ 
++#if defined(TARGET_XBOX360)
++extern void mRlib_PSnowmanBreakNeckSwing(s16* head_angle_y, f32 f0, f32 scale) {
++#else
+ extern int mRlib_PSnowmanBreakNeckSwing(s16* head_angle_y, f32 f0, f32 scale) {
++#endif
+     if (f0 > 20.0f) {
+         s16 rot_x;
+         s16 rot_z;
+diff --git a/src/game/m_snowman.c b/src/game/m_snowman.c
+index d2cb5a2f..7a4fcd30 100644
+--- a/src/game/m_snowman.c
++++ b/src/game/m_snowman.c
+@@ -19,7 +19,11 @@ extern int mSN_check_life(mActor_name_t* ac, int idx){
+     return ret;
+ }
+ 
++#if defined(TARGET_XBOX360)
++extern void mSN_ClearSnowmanData(mActor_name_t* ac, int idx){
++#else
+ extern int mSN_ClearSnowmanData(mActor_name_t* ac, int idx){
++#endif
+ 
+     bzero(Save_GetPointer(snowmen.snowmen_data[idx]), sizeof(mSN_snowman_data_c));
+     *ac = 0;
+diff --git a/src/game/m_submenu.c b/src/game/m_submenu.c
+index 5c78fac1..28b43e93 100644
+--- a/src/game/m_submenu.c
++++ b/src/game/m_submenu.c
+@@ -135,7 +135,11 @@ static int mSM_ovlptr_dllcnv_sub(void* proc, mSM_dlftbl_c* dlftbl, Submenu* subm
+ 
+ extern void* mSM_ovlptr_dllcnv(void* proc, Submenu* submenu, int dlf_idx) {
+     if (SubmenuArea_visit != NULL) {
++#if defined(TARGET_XBOX360)
++        return proc;
++#else
+         return; // ??
++#endif
+     } else if (mSM_ovlptr_dllcnv_sub(proc, SubmenuArea_dlftbl, submenu, dlf_idx) == FALSE) {
+         return NULL;
+     }
+diff --git a/src/game/m_tag_ovl.c b/src/game/m_tag_ovl.c
+index 6e71e146..1568e41e 100644
+--- a/src/game/m_tag_ovl.c
++++ b/src/game/m_tag_ovl.c
+@@ -3060,7 +3060,11 @@ static int mTG_nw_drop_furniture(GAME_PLAY* play, int type, int image_no) {
+     return idx;
+ }
+ 
++#if defined(TARGET_XBOX360)
++static void mTG_get_unit_front_player(xyz_t* pos_p, const xyz_t* player_pos, s16 angle_y) {
++#else
+ static int mTG_get_unit_front_player(xyz_t* pos_p, const xyz_t* player_pos, s16 angle_y) {
++#endif
+     int dir;
+     static f32 offset_pos[][2] = {
+         // clang-format off
+diff --git a/src/game/m_warning_ovl.c b/src/game/m_warning_ovl.c
+index 64f22e82..e0b7cc15 100644
+--- a/src/game/m_warning_ovl.c
++++ b/src/game/m_warning_ovl.c
+@@ -90,7 +90,11 @@ static u8 wr_with_secret_codes[18] = "with secret codes!";
+ static u8 wr_this_item[10] = "this item!";
+ 
+ /* Line definitions */
++#if defined(TARGET_XBOX360)
++#define mWR_LINE(str, pos_x, pos_y) { (pos_x), (pos_y), str, ARRAY_COUNT(str) }
++#else
+ #define mWR_LINE(str, pos_x, pos_y) { (pos_x), (pos_y), ##str, ARRAY_COUNT(str) }
++#endif
+ 
+ static mWR_line_c wr_mailbox_line[] = {
+   mWR_LINE(wr_You_cant_hold,             70.0f, 28.0f),
+@@ -213,7 +217,11 @@ static mWR_line_c wr_pr_fork_line[] = {
+   mWR_LINE(wr_this_item,     80.0f, 24.0f)
+ };
+ 
++#if defined(TARGET_XBOX360)
++#define mWR_DATA(line, scale_x, scale_y) { line, ARRAY_COUNT(line), (scale_x), (scale_y) }
++#else
+ #define mWR_DATA(line, scale_x, scale_y) { ##line, ARRAY_COUNT(line), (scale_x), (scale_y) }
++#endif
+ #define mWR_NULL { NULL, 0, 1.0f, 1.0f }
+ 
+ static mWR_data_c wr_win_data[] = {
+diff --git a/src/game/m_watch_my_step.c b/src/game/m_watch_my_step.c
+index efc1d57f..340e3b18 100644
+--- a/src/game/m_watch_my_step.c
++++ b/src/game/m_watch_my_step.c
+@@ -286,11 +286,19 @@ extern void watch_my_step_draw(GAME_PLAY* play) {
+     }
+ }
+ 
++#if defined(TARGET_XBOX360)
++void navigate_camera_ct() {
++#else
+ static void navigate_camera_ct() {
++#endif
+     bzero(&S_navigate, sizeof(mWt_navigate_c));
+ }
+ 
++#if defined(TARGET_XBOX360)
++void navigate_camera_move(GAME_PLAY* play) {
++#else
+ static void navigate_camera_move(GAME_PLAY* play) {
++#endif
+     S_navigate.draw_type = 0;
+ 
+     switch (S_navigate.mode) {
+@@ -339,7 +347,11 @@ static void navigate_camera_move(GAME_PLAY* play) {
+     }
+ }
+ 
++#if defined(TARGET_XBOX360)
++void navigate_camera_draw(GAME_PLAY* play) {
++#else
+ static void navigate_camera_draw(GAME_PLAY* play) {
++#endif
+     GRAPH* g = play->game.graph;
+     Gfx* font_gfx;
+     Mtx* font_mtx;
+@@ -418,14 +430,22 @@ static void mWt_set_coin_se(int play_flag) {
+ 
+ static u32 get_all_money();
+ 
++#if defined(TARGET_XBOX360)
++void mWt_mybell_confirmation_ct() {
++#else
+ static void mWt_mybell_confirmation_ct() {
++#endif
+     bzero(&S_mybell_conf, sizeof(S_mybell_conf));
+ 
+     S_mybell_conf.all_money = get_all_money();
+     mWt_set_coin_se(FALSE);
+ }
+ 
++#if defined(TARGET_XBOX360)
++void mWt_mybell_confirmation_move(GAME_PLAY* play) {
++#else
+ static void mWt_mybell_confirmation_move(GAME_PLAY* play) {
++#endif
+     static int place_chk[8] = {
+         SCENE_SHOP0,    SCENE_CONVENI,     SCENE_SUPER,       SCENE_DEPART,
+         SCENE_DEPART_2, SCENE_BROKER_SHOP, SCENE_POST_OFFICE, SCENE_NEEDLEWORK,
+@@ -514,7 +534,11 @@ static void mWt_mybell_confirmation_move(GAME_PLAY* play) {
+     }
+ }
+ 
++#if defined(TARGET_XBOX360)
++void mWt_mybell_confirmation_draw(GAME_PLAY* play) {
++#else
+ static void mWt_mybell_confirmation_draw(GAME_PLAY* play) {
++#endif
+     GAME* game = (GAME*)play;
+     GRAPH* g = play->game.graph;
+     Mtx* font_mtx;
+diff --git a/src/graph.c b/src/graph.c
+index d2727890..4ce6721b 100644
+--- a/src/graph.c
++++ b/src/graph.c
+@@ -34,7 +34,11 @@ u8 SoftResetEnable;
+ #endif
+ static int frame; // TODO: this is actually declared in graph_task_set00
+ 
++#if defined(TARGET_XBOX360)
++#define CONSTRUCT_THA_GA(tha_ga, name, name2) (THA_GA_ct((tha_ga), sys_dynamic.name, name2##_SIZE * sizeof(Gfx)))
++#else
+ #define CONSTRUCT_THA_GA(tha_ga, name, name2) (THA_GA_ct((tha_ga), sys_dynamic.##name, ##name2##_SIZE * sizeof(Gfx)))
++#endif
+ 
+ static void graph_setup_double_buffer(GRAPH* this) {
+     bzero(&sys_dynamic, sizeof(dynamic_t));
+diff --git a/src/static/Famicom/famicom.cpp b/src/static/Famicom/famicom.cpp
+index 4d6adb8f..68a739c8 100644
+--- a/src/static/Famicom/famicom.cpp
++++ b/src/static/Famicom/famicom.cpp
+@@ -546,7 +546,11 @@ static s32 memcard_getFreeBlocks(s32 chan, s32* unused_bytes, s32* unused_files)
+ }
+ 
+ /* @unused @fabricated - strings necessary for matching */
++#if defined(TARGET_XBOX360)
++static void memcard_list(int chan) {
++#else
+ static s32 memcard_list(int chan) {
++#endif
+     OSReport("No. Name Co B FileName                         (YYYY/MM/DD hh:mm:ss) IconAddr IFmt ISpd Pm Cp StB Lng Com\n");
+     OSReport("%3d %.4s %.2s %d %-32.32s (%04d/%02d/%02d %02d:%02d:%02d) %03x %04x %04x %02x %2d %3d %3d %04x\n");
+ }
+@@ -594,7 +598,11 @@ static int SetupResBanner(const ResTIMG*, u8*, size_t, size_t*, u8*);
+ static int SetupResIcon(const ResTIMG*, u8*, size_t, size_t*, u16*, u16*);
+ 
+ static void SetupExternCommentImage(u8* embedded_save_comment_img, u8* dst, u8* rom_file_comment_img) {
++#if defined(TARGET_XBOX360)
++    size_t size;
++#else
+     u32 size;
++#endif
+ 
+     switch (famicomCommon.memcard_game_header.flags0.comment_type) {
+         case MEMCARD_COMMENT_TYPE_NONE:
+diff --git a/src/static/JSystem/JKernel/JKRDvdFile.cpp b/src/static/JSystem/JKernel/JKRDvdFile.cpp
+index 1803fb24..10cb9233 100644
+--- a/src/static/JSystem/JKernel/JKRDvdFile.cpp
++++ b/src/static/JSystem/JKernel/JKRDvdFile.cpp
+@@ -76,6 +76,10 @@ bool JKRDvdFile::close() {
+             OSErrorLine(212, "cannot close DVD file\n"); /* JKRDvdFile.cpp line 212 */
+         }
+     }
++#if defined(TARGET_XBOX360)
++    // The destructor can close an already-closed caller-owned file.
++    return !this->mFileOpen;
++#endif
+ }
+ 
+ int JKRDvdFile::readData(void* data, s32 length, s32 ofs) {
+diff --git a/src/static/JSystem/JKernel/JKRHeap.cpp b/src/static/JSystem/JKernel/JKRHeap.cpp
+index de462130..dbd51abd 100644
+--- a/src/static/JSystem/JKernel/JKRHeap.cpp
++++ b/src/static/JSystem/JKernel/JKRHeap.cpp
+@@ -296,23 +296,47 @@ bool JKRHeap::isSubHeap(JKRHeap* heap) const {
+     return false;
+ }
+ 
++#if defined(TARGET_XBOX360)
++void* operator new(size_t byteCount) {
++#else
+ void* operator new(u32 byteCount) {
++#endif
+     return JKRHeap::alloc(byteCount, 4, nullptr);
+ }
++#if defined(TARGET_XBOX360)
++void* operator new(size_t byteCount, int alignment) {
++#else
+ void* operator new(u32 byteCount, int alignment) {
++#endif
+     return JKRHeap::alloc(byteCount, alignment, nullptr);
+ }
++#if defined(TARGET_XBOX360)
++void* operator new(size_t byteCount, JKRHeap* heap, int alignment) {
++#else
+ void* operator new(u32 byteCount, JKRHeap* heap, int alignment) {
++#endif
+     return JKRHeap::alloc(byteCount, alignment, heap);
+ }
+ 
++#if defined(TARGET_XBOX360)
++void* operator new[](size_t byteCount) {
++#else
+ void* operator new[](u32 byteCount) {
++#endif
+     return JKRHeap::alloc(byteCount, 4, nullptr);
+ }
++#if defined(TARGET_XBOX360)
++void* operator new[](size_t byteCount, int alignment) {
++#else
+ void* operator new[](u32 byteCount, int alignment) {
++#endif
+     return JKRHeap::alloc(byteCount, alignment, nullptr);
+ }
++#if defined(TARGET_XBOX360)
++void* operator new[](size_t byteCount, JKRHeap* heap, int alignment) {
++#else
+ void* operator new[](u32 byteCount, JKRHeap* heap, int alignment) {
++#endif
+     return JKRHeap::alloc(byteCount, alignment, heap);
+ }
+ 
+diff --git a/src/static/JSystem/JKernel/JKRMemArchive.cpp b/src/static/JSystem/JKernel/JKRMemArchive.cpp
+index 74519a48..6043b78b 100644
+--- a/src/static/JSystem/JKernel/JKRMemArchive.cpp
++++ b/src/static/JSystem/JKernel/JKRMemArchive.cpp
+@@ -192,6 +192,9 @@ u32 JKRMemArchive::fetchResource_subroutine(u8* src, u32 srcLength, u8* dst, u32
+ 
+         case JKRCOMPRESSION_YAY0:
+         case JKRCOMPRESSION_YAZ0:
++#if defined(TARGET_XBOX360)
++        { // Standard C++ scope: default must not bypass expandSize initialization.
++#endif
+             u32 expandSize = JKRDecompExpandSize(src);
+ 
+             if (expandSize > alignedDst) {
+@@ -200,6 +203,9 @@ u32 JKRMemArchive::fetchResource_subroutine(u8* src, u32 srcLength, u8* dst, u32
+ 
+             JKRDecompress(src, dst, expandSize, 0);
+             return expandSize;
++#if defined(TARGET_XBOX360)
++        }
++#endif
+ 
+         default: {
+             JPANIC(709, ":::??? bad sequence\n");
+diff --git a/src/static/jaudio_NES/game/emusound.c b/src/static/jaudio_NES/game/emusound.c
+index 0b57181d..e0d62853 100644
+--- a/src/static/jaudio_NES/game/emusound.c
++++ b/src/static/jaudio_NES/game/emusound.c
+@@ -347,10 +347,17 @@ sbufferStruct sbuffer = { 0 };
+ u8 LEN_TABLE_HVC[] = { 0x05, 0x7e, 0x0a, 0x01, 0x13, 0x02, 0x28, 0x03, 0x50, 0x04, 0x1e, 0x05, 0x07, 0x06, 0x0d, 0x07,
+                        0x06, 0x08, 0x0c, 0x09, 0x18, 0x0a, 0x30, 0x0b, 0x60, 0x0c, 0x24, 0x0d, 0x08, 0x0e, 0x10, 0x0f };
+ 
++#if defined(TARGET_XBOX360)
++s8 TRIANGLE_TABLE[] = {
++    0x00, 0x0f, 0x1e, 0x2d, 0x3c, 0x4b, 0x5a, 0x69, 0x78, 0x78, 0x69, 0x5a, 0x4b, 0x3c, 0x2d, 0x1e,
++    0x0f, 0x00, -17, -34, -51, -69, -86, -103, -120, -120, -103, -86, -69, -51, -34, -17
++};
++#else
+ s8 TRIANGLE_TABLE[] = {
+     0x00, 0x0f, 0x1e, 0x2d, 0x3c, 0x4b, 0x5a, 0x69, 0x78, 0x78, 0x69, 0x5a, 0x4b, 0x3c, 0x2d, 0x1e,
+     0x0f, 0x00, 0xef, 0xde, 0xcd, 0xbb, 0xaa, 0x99, 0x88, 0x88, 0x99, 0xaa, 0xbb, 0xcd, 0xde, 0xef
+ };
++#endif
+ 
+ static int NOISE_TABLE[] = { 0x000df86a, 0x0006fc35, 0x00037e1a, 0x0001bf0d, 0x0000df86, 0x00009504,
+                              0x00006fc3, 0x00005969, 0x000046d1, 0x00003852, 0x000025a5, 0x00001c29,
+diff --git a/src/static/jaudio_NES/internal/audiotable.c b/src/static/jaudio_NES/internal/audiotable.c
+index 46fa3b71..14f7b48b 100644
+--- a/src/static/jaudio_NES/internal/audiotable.c
++++ b/src/static/jaudio_NES/internal/audiotable.c
+@@ -20,6 +20,19 @@ u8 VELOCONV_TABLE[16][256] = {
+     {0x00, 0x00, 0x01, 0x01, 0x02, 0x03, 0x03, 0x04, 0x05, 0x06, 0x06, 0x07, 0x08, 0x09, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2F, 0x30, 0x31, 0x33, 0x34, 0x35, 0x37, 0x38, 0x3A, 0x3B, 0x3D, 0x3E, 0x3F, 0x40, 0x41, 0x42, 0x44, 0x45, 0x47, 0x48, 0x4A, 0x4B, 0x4C, 0x4E, 0x4F, 0x50, 0x52, 0x53, 0x54, 0x55, 0x56, 0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5F, 0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6C, 0x6D, 0x6E, 0x6F, 0x70, 0x71, 0x72, 0x72, 0x73, 0x74, 0x75, 0x76, 0x76, 0x77, 0x78, 0x79, 0x79, 0x7A, 0x7B, 0x7C, 0x7C, 0x7D, 0x7E, 0x7E, 0x7F, 0x7F, 0x81, 0x81, 0x82, 0x82, 0x83, 0x84, 0x84, 0x85, 0x86, 0x87, 0x87, 0x88, 0x89, 0x8A, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8E, 0x8F, 0x90, 0x91, 0x92, 0x93, 0x94, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9A, 0x9B, 0x9C, 0x9D, 0x9E, 0x9F, 0xA0, 0xA1, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xB0, 0xB1, 0xB2, 0xB4, 0xB5, 0xB6, 0xB8, 0xB9, 0xBB, 0xBC, 0xBE, 0xBF, 0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC8, 0xC9, 0xCB, 0xCC, 0xCD, 0xCF, 0xD0, 0xD1, 0xD3, 0xD4, 0xD5, 0xD6, 0xD7, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE, 0xE0, 0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7, 0xE8, 0xE9, 0xEA, 0xEB, 0xEC, 0xED, 0xED, 0xEE, 0xEF, 0xF0, 0xF1, 0xF2, 0xF3, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF7, 0xF8, 0xF9, 0xFA, 0xFA, 0xFB, 0xFC, 0xFD, 0xFD, 0xFE, 0xFF, 0xFF, 0x00, 0x00},
+ };
+ 
++#if defined(TARGET_XBOX360)
++s16 LSF_TABLE[] = { 0x0,    0x0,    0x0,    0x7FFF, 0x0,    0x0,    0x0,    0x0,    0xF0E,  0x105C, 0x112E, 0x1175,
++                    0x112E, 0x105C, 0xF0E,  0xD58,  0xD57,  0x10DA, 0x1333, 0x1406, 0x1333, 0x10DA, 0xD57,  0x92F,
++                    0xA4C,  0x1151, 0x1682, 0x186C, 0x1682, 0x1151, 0xA4C,  0x351,  0x536,  0x1064, 0x19F6, 0x1DB9,
++                    0x19F6, 0x1064, 0x536,  -802, -265, 0xD5D,  0x1C7C, 0x22F0, 0x1C7C, 0xD5D,  -265, -1863,
++                    -1558, 0x811,  0x1BEA, 0x254A, 0x1BEA, 0x811,  -1558, -1682, -2353, 0x2D6,  0x1D11, 0x2B14,
++                    0x1D11, 0x2D6,  -2353, -697, -2252, -693, 0x1BD1, 0x2EBA, 0x1BD1, -693, -2252, 0x29C,
++                    -1373, -1819, 0x189B, 0x300A, 0x189B, -1819, -1373, 0x5CC,  -213, -2740, 0x16D3, 0x3570,
++                    0x16D3, -2740, -213, 0x5D6,  0x3D4,  -3081, 0x1313, 0x37CE, 0x1313, -3081, 0x3D4,  0x24E,
++                    0x6E9,  -2973, 0xF1A,  0x3A85, 0xF1A,  -2973, 0x6E9,  -568, 0x7E7,  -2554, 0xB5F,  0x400D,
++                    0xB5F,  -2554, 0x7E7,  -1391, 0x6E6,  -1918, 0x7E0,  0x4D58, 0x7E0,  -1918, 0x6E6,  -1564,
++                    0x349,  -853, 0x35F,  0x68CD, 0x35F,  -853, 0x349,  -820 };
++#else
+ s16 LSF_TABLE[] = { 0x0,    0x0,    0x0,    0x7FFF, 0x0,    0x0,    0x0,    0x0,    0xF0E,  0x105C, 0x112E, 0x1175,
+                     0x112E, 0x105C, 0xF0E,  0xD58,  0xD57,  0x10DA, 0x1333, 0x1406, 0x1333, 0x10DA, 0xD57,  0x92F,
+                     0xA4C,  0x1151, 0x1682, 0x186C, 0x1682, 0x1151, 0xA4C,  0x351,  0x536,  0x1064, 0x19F6, 0x1DB9,
+@@ -31,7 +44,20 @@ s16 LSF_TABLE[] = { 0x0,    0x0,    0x0,    0x7FFF, 0x0,    0x0,    0x0,    0x0,
+                     0x6E9,  0xF463, 0xF1A,  0x3A85, 0xF1A,  0xF463, 0x6E9,  0xFDC8, 0x7E7,  0xF606, 0xB5F,  0x400D,
+                     0xB5F,  0xF606, 0x7E7,  0xFA91, 0x6E6,  0xF882, 0x7E0,  0x4D58, 0x7E0,  0xF882, 0x6E6,  0xF9E4,
+                     0x349,  0xFCAB, 0x35F,  0x68CD, 0x35F,  0xFCAB, 0x349,  0xFCCC };
++#endif
+ 
++#if defined(TARGET_XBOX360)
++s16 HSF_TABLE[] = { -289, -291, -289, 0x7810, -289, -291, -289, -290, -464, -467, -467, 0x7342,
++                    -467, -467, -464, -463, -662, -670, -672, 0x6DC5, -672, -670, -662, -656,
++                    -839, -855, -861, 0x68CE, -861, -855, -839, -822, -996, -1024, -1038, 0x6455,
++                    -1038, -1024, -996, -963, -1184, -1236, -1266, 0x5ED0, -1266, -1236, -1184, -1118,
++                    -1357, -1450, -1506, 0x5974, -1506, -1450, -1357, -1238, -1514, -1680, -1784, 0x53FA,
++                    -1784, -1680, -1514, -1307, -1613, -1877, -2048, 0x4FA6, -2048, -1877, -1613, -1298,
++                    -1657, -2185, -2559, 0x49B5, -2559, -2185, -1657, -1093, -1524, -2395, -3078, 0x466E,
++                    -3078, -2395, -1524, -739, -1253, -2504, -3621, 0x44EA, -3621, -2504, -1253, -367,
++                    -525, -2367, -4732, 0x446D, -4732, -2367, -525, 0x0,    -34, -1762, -5706, 0x445F,
++                    -5706, -1762, -34, -258, -772, -3, -6985, 0x4358, -6985, -3, -772, -3 };
++#else
+ s16 HSF_TABLE[] = { 0xFEDF, 0xFEDD, 0xFEDF, 0x7810, 0xFEDF, 0xFEDD, 0xFEDF, 0xFEDE, 0xFE30, 0xFE2D, 0xFE2D, 0x7342,
+                     0xFE2D, 0xFE2D, 0xFE30, 0xFE31, 0xFD6A, 0xFD62, 0xFD60, 0x6DC5, 0xFD60, 0xFD62, 0xFD6A, 0xFD70,
+                     0xFCB9, 0xFCA9, 0xFCA3, 0x68CE, 0xFCA3, 0xFCA9, 0xFCB9, 0xFCCA, 0xFC1C, 0xFC00, 0xFBF2, 0x6455,
+@@ -42,7 +68,72 @@ s16 HSF_TABLE[] = { 0xFEDF, 0xFEDD, 0xFEDF, 0x7810, 0xFEDF, 0xFEDD, 0xFEDF, 0xFE
+                     0xF3FA, 0xF6A5, 0xFA0C, 0xFD1D, 0xFB1B, 0xF638, 0xF1DB, 0x44EA, 0xF1DB, 0xF638, 0xFB1B, 0xFE91,
+                     0xFDF3, 0xF6C1, 0xED84, 0x446D, 0xED84, 0xF6C1, 0xFDF3, 0x0,    0xFFDE, 0xF91E, 0xE9B6, 0x445F,
+                     0xE9B6, 0xF91E, 0xFFDE, 0xFEFE, 0xFCFC, 0xFFFD, 0xE4B7, 0x4358, 0xE4B7, 0xFFFD, 0xFCFC, 0xFFFD };
++#endif
+ 
++#if defined(TARGET_XBOX360)
++s16 EL_FILTER[] = {
++    -43, -716, -1205, 0x6E32, -1205, -716, -43, 0x275,  0xF9,   -919, -1819, 0x6391, -1819, -919,
++    0xF9,   0x515,  0x4F3,  -802, -2650, 0x50F2, -2650, -802, 0x4F3,  0xA2B,  0x9C1,  -210, -3196, 0x44D1,
++    -3196, -210, 0x9C1,  0xD0B,  0xD55,  0x2B2,  -3385, 0x39A2, -3385, 0x2B2,  0xD55,  0xBDB,  0xF13,  0x6C6,
++    -3416, 0x31A0, -3416, 0x6C6,  0xF13,  0x7FA,  0xF12,  0xB5B,  -3414, 0x2CFC, -3414, 0xB5B,  0xF12,  0x37A,
++    0xD2E,  0x1062, -3345, 0x2A6B, -3345, 0x1062, 0xD2E,  0x50,   0x98E,  0x1591, -3130, 0x28F3, -3130, 0x1591,
++    0x98E,  0x56,   0x4FB,  0x1A68, -2665, 0x27F1, -2665, 0x1A68, 0x4FB,  0x474,  0xFC,   0x1E62, -1836, 0x2726,
++    -1836, 0x1E62, 0xFC,   0xBC2,  -98, 0x20EB, -461, 0x264D, -461, 0x20EB, -98, 0x137C, 0x2CF,  0x1CE0,
++    0x5F8,  0x2009, 0x5F8,  0x1CE0, 0x2CF,  0x14A6, 0x9C3,  0x14EF, 0xE43,  0x1761, 0xE43,  0x14EF, 0x9C3,  0xEB1,
++    0x2C7,  -205, -1026, 0x6BD8, -1026, -205, 0x2C7,  0x4F7,  0x537,  -108, -1520, 0x6104, -1520, -108,
++    0x537,  0x7D3,  0x9EC,  0x1C7,  -2104, 0x4D8D, -2104, 0x1C7,  0x9EC,  0xA98,  0xD4E,  0x512,  -2347, 0x3F8A,
++    -2347, 0x512,  0xD4E,  0x95D,  0xF14,  0x911,  -2440, 0x370E, -2440, 0x911,  0xF14,  0x594,  0xF12,  0xDB7,
++    -2439, 0x3258, -2439, 0xDB7,  0xF12,  0x103,  0xCB0,  0x1247, -2238, 0x2E53, -2238, 0x1247, 0xCB0,  -575,
++    0x919,  0x1785, -1929, 0x2D3B, -1929, 0x1785, 0x919,  -626, 0x4C9,  0x1DBD, -1395, 0x2EBF, -1395, 0x1DBD,
++    0x4C9,  0x14C,  0xAC,   0x2251, -352, 0x2EFC, -352, 0x2251, 0xAC,   0x847,  -172, 0x2006, 0x473,  0x2878,
++    0x473,  0x2006, -172, 0xD39,  0x1FF,  0x1B5E, 0xB0E,  0x21C9, 0xB0E,  0x1B5E, 0x1FF,  0xD5D,  0x7CB,  0x14C1,
++    0x11F3, 0x1A91, 0x11F3, 0x14C1, 0x7CB,  0x86E,  0x4AC,  0x139,  -815, 0x6951, -815, 0x139,  0x4AC,  0x482,
++    0x768,  0x29A,  -1159, 0x5D0D, -1159, 0x29A,  0x768,  0x5DC,  0xB76,  0x621,  -1548, 0x4B99, -1548, 0x621,
++    0xB76,  0x51C,  0xD87,  0xA71,  -1703, 0x4182, -1703, 0xA71,  0xD87,  0x13C,  0xCC5,  0xEAD,  -1608, 0x38FB,
++    -1608, 0xEAD,  0xCC5,  -910, 0xA19,  0x1319, -1364, 0x340D, -1364, 0x1319, 0xA19,  -1763, 0x634,  0x1885,
++    -970, 0x3373, -970, 0x1885, 0x634,  -1922, 0x151,  0x1FB9, -265, 0x3736, -265, 0x1FB9, 0x151,  -1186,
++    -795, 0x2001, 0x372,  0x3157, 0x372,  0x2001, -795, 0x187,  -1058, 0x1C38, 0x854,  0x28FC, 0x854,  0x1C38,
++    -1058, 0x5A4,  -503, 0x198C, 0xEDB,  0x253C, 0xEDB,  0x198C, -503, 0x605,  0x38A,  0x14CE, 0x167F, 0x20A6,
++    0x167F, 0x14CE, 0x38A,  0x1A7,  0x512,  0x30D,  -597, 0x698A, -597, 0x30D,  0x512,  0x188,  0x77A,  0x554,
++    -834, 0x5F0E, -834, 0x554,  0x77A,  0xCD,   0x9AA,  0x9DF,  -1015, 0x4DCC, -1015, 0x9DF,  0x9AA,  -817,
++    0x8E5,  0xE41,  -934, 0x4262, -934, 0xE41,  0x8E5,  -2050, 0x609,  0x1301, -673, 0x3D13, -673, 0x1301,
++    0x609,  -2964, 0x16E,  0x18DB, -181, 0x3D4D, -181, 0x18DB, 0x16E,  -3252, -1017, 0x1A4E, 0x263,  0x361E,
++    0x263,  0x1A4E, -1017, -2187, -1937, 0x1964, 0x616,  0x2EE0, 0x616,  0x1964, -1937, -774, -2216, 0x1782,
++    0xA9A,  0x29CA, 0xA9A,  0x1782, -2216, 0xAB,   -1795, 0x14E0, 0x107D, 0x2688, 0x107D, 0x14E0, -1795, 0xB6,
++    -659, 0x113B, 0x1854, 0x242C, 0x1854, 0x113B, -659, -908, 0x3C8,  0x472,  -358, 0x6A5C, -358, 0x472,
++    0x3C8,  -607, 0x4E3,  0x736,  -453, 0x5F62, -453, 0x736,  0x4E3,  -1246, 0x472,  0xC68,  -412, 0x50E5,
++    -412, 0xC68,  0x472,  -2601, 0x139,  0x11C6, -119, 0x4ADF, -119, 0x11C6, 0x139,  -3633, -972, 0x1432,
++    0x1A3,  0x3FA2, 0x1A3,  0x1432, -972, -3351, -2123, 0x146E, 0x442,  0x3570, 0x442,  0x146E, -2123, -2199,
++    -2916, 0x13CA, 0x786,  0x2EF3, 0x786,  0x13CA, -2916, -929, -3202, 0x123D, 0xBB3,  0x2AC9, 0xBB3,  0x123D,
++    -3202, -80, -2874, 0xF96,  0x1111, 0x27E6, 0x1111, 0xF96,  -2874, -84, -1937, 0xBB9,  0x17DC, 0x2581,
++    0x17DC, 0xBB9,  -1937, -1071, 0x136,  0x547,  -102, 0x6D2E, -102, 0x547,  0x136,  -1287, 0xA9,   0x876,
++    -55, 0x6527, -55, 0x876,  0xA9,   -2088, -697, 0xD04,  0xFC,   0x532C, 0xFC,   0xD04,  -697, -2909,
++    -1846, 0xF21,  0x2E3,  0x4392, 0x2E3,  0xF21,  -1846, -2549, -2904, 0xFC4,  0x55B,  0x3942, 0x55B,  0xFC4,
++    -2904, -1485, -3657, 0xF48,  0x887,  0x32C7, 0x887,  0xF48,  -3657, -261, -3814, 0xD39,  0xC34,  0x2D26,
++    0xC34,  0xD39,  -3814, 0x231,  -3535, 0xA77,  0x114C, 0x2A8A, 0x114C, 0xA77,  -3535, 0x24D,  -2812, 0x6B6,
++    0x18A8, 0x2A1E, 0x18A8, 0x6B6,  -2812, -299, -472, 0x523,  0xA4,   0x6C1D, 0xA4,   0x523,  -472, -1185,
++    -993, 0x799,  0x161,  0x6036, 0x161,  0x799,  -993, -1551, -2181, 0xA92,  0x35C,  0x4DD4, 0x35C,  0xA92,
++    -2181, -1347, -3275, 0xBA3,  0x5F1,  0x41FF, 0x5F1,  0xBA3,  -3275, -319, -3842, 0xAA5,  0x8C8,  0x37A5,
++    0x8C8,  0xAA5,  -3842, 0x379,  -3933, 0x88A,  0xC45,  0x3123, 0xC45,  0x88A,  -3933, 0x681,  -3664, 0x597,
++    0x114C, 0x2EC3, 0x114C, 0x597,  -3664, 0x6D3,  -3021, 0x15A,  0x18FF, 0x2FB1, 0x18FF, 0x15A,  -3021, 0x400,
++    -1075, 0x432,  0x1A1,  0x6A64, 0x1A1,  0x432,  -1075, -395, -1798, 0x5F1,  0x2E5,  0x5F76, 0x2E5,  0x5F1,
++    -1798, -206, -2921, 0x738,  0x592,  0x4C74, 0x592,  0x738,  -2921, 0x323,  -3491, 0x671,  0x879,  0x3F40,
++    0x879,  0x671,  -3491, 0x7A2,  -3600, 0x464,  0xC22,  0x382B, 0xC22,  0x464,  -3600, 0xAA6,  -3300, 0x116,
++    0x1165, 0x360A, 0x1165, 0x116,  -3300, 0xB33,  -2282, -916, 0x16AC, 0x31CC, 0x16AC, -916, -2282, 0x7DC,
++    -1306, 0x2AA,  0x289,  0x690C, 0x289,  0x2AA,  -1306, 0x257,  -1951, 0x35A,  0x431,  0x5CEB, 0x431,  0x35A,
++    -1951, 0x4BE,  -2705, 0x2F3,  0x799,  0x4C31, 0x799,  0x2F3,  -2705, 0x992,  -2857, 0xCF,   0xBB4,  0x43CA,
++    0xBB4,  0xCF,   -2857, 0xCD9,  -2261, -722, 0x1005, 0x3C41, 0x1005, -722, -2261, 0xC65,  -1164, -1891,
++    0x14A7, 0x361D, 0x14A7, -1891, -1164, 0x8B3,  -1119, 0xCA,   0x365,  0x6A00, 0x365,  0xCA,   -1119, 0x4E1,
++    -1545, 0x6C,   0x598,  0x6023, 0x598,  0x6C,   -1545, 0x7C0,  -1675, -472, 0x9E1,  0x5075, 0x9E1,  -472,
++    -1675, 0xAFE,  -1040, -1426, 0xE4D,  0x45D5, 0xE4D,  -1426, -1040, 0xA4A,  0x69,   -2626, 0x1307, 0x3E48,
++    0x1307, -2626, 0x69,   0x64F,  -554, -321, 0x42F,  0x6C27, 0x42F,  -321, -554, 0x4A1,  -562, -704,
++    0x6CA,  0x6253, 0x6CA,  -704, -562, 0x631,  0x49,   -1749, 0xBE5,  0x5444, 0xBE5,  -1749, 0x49,   0x5B2,
++    0x480,  -2704, 0xF2C,  0x4243, 0xF2C,  -2704, 0x480,  0x140,  0xDE,   -806, 0x4C5,  0x6CD6, 0x4C5,  -806,
++    0xDE,   0x194,  0x278,  -1385, 0x774,  0x6082, 0x774,  -1385, 0x278,  0xD0,   0x645,  -2339, 0xB18,  0x4807,
++    0xB18,  -2339, 0x645,  -756, 0x35D,  -1081, 0x4C8,  0x6500, 0x4C8,  -1081, 0x35D,  -576, 0x58E,  -1655,
++    0x70C,  0x557D, 0x70C,  -1655, 0x58E,  -1117, 0x1B2,  -453, 0x1D3,  0x73D4, 0x1D3,  -453, 0x1B2,  -405
++};
++#else
+ s16 EL_FILTER[] = {
+     0xFFD5, 0xFD34, 0xFB4B, 0x6E32, 0xFB4B, 0xFD34, 0xFFD5, 0x275,  0xF9,   0xFC69, 0xF8E5, 0x6391, 0xF8E5, 0xFC69,
+     0xF9,   0x515,  0x4F3,  0xFCDE, 0xF5A6, 0x50F2, 0xF5A6, 0xFCDE, 0x4F3,  0xA2B,  0x9C1,  0xFF2E, 0xF384, 0x44D1,
+@@ -105,7 +196,72 @@ s16 EL_FILTER[] = {
+     0xB18,  0xF6DD, 0x645,  0xFD0C, 0x35D,  0xFBC7, 0x4C8,  0x6500, 0x4C8,  0xFBC7, 0x35D,  0xFDC0, 0x58E,  0xF989,
+     0x70C,  0x557D, 0x70C,  0xF989, 0x58E,  0xFBA3, 0x1B2,  0xFE3B, 0x1D3,  0x73D4, 0x1D3,  0xFE3B, 0x1B2,  0xFE6B
+ };
++#endif
+ 
++#if defined(TARGET_XBOX360)
++s16 BP_FILTER[] = {
++    0x2AF,  0xFDA,  0x19C7, 0x1D78, 0x19C7, 0xFDA,  0x2AF,  -2532, -1303, 0xAD9,  0x18C1, 0x1E41, 0x18C1, 0xAD9,
++    -1303, -4185, -2873, 0x560,  0x172B, 0x1ECE, 0x172B, 0x560,  -2873, -4520, -4108, 0x0,    0x1719, 0x2213,
++    0x1719, 0x0,    -4108, -3999, -4233, -1334, 0x147A, 0x2247, 0x147A, -1334, -4233, -2371, -3882, -2547,
++    0x12C8, 0x24AD, 0x12C8, -2547, -3882, -900, -3072, -3668, 0x1147, 0x28C6, 0x1147, -3668, -3072, 0x0,
++    -1914, -4609, 0xF6E,  0x2E2B, 0xF6E,  -4609, -1914, 0x0,    -678, -5227, 0xCE5,  0x3489, 0xCE5,  -5227,
++    -678, -903, 0xF6,   -5250, 0x93B,  0x3A0A, 0x93B,  -5250, 0xF6,   -2189, 0x1FD,  -4812, 0x4EE,  0x4046,
++    0x4EE,  -4812, 0x1FD,  -3143, 0x0,    -4404, 0x0,    0x4F8F, 0x0,    -4404, 0x0,    -3591, -1151, -2707,
++    -1393, 0x4DF2, -1393, -2707, -1151, -2310, -1765, -1920, -2014, 0x4D58, -2014, -1920, -1765, -1566,
++    -3122, 0x542,  0x1558, 0x1BD5, 0x1558, 0x542,  -3122, -5776, -4566, 0x0,    0x145B, 0x1D41, 0x145B, 0x0,
++    -4566, -5723, -4941, -1265, 0x117A, 0x1C51, 0x117A, -1265, -4941, -4155, -4932, -2431, 0xFB5,  0x1D7D,
++    0xFB5,  -2431, -4932, -2447, -4511, -3587, 0xE5E,  0x205E, 0xE5E,  -3587, -4511, -927, -3660, -4711,
++    0xCF2,  0x24B4, 0xCF2,  -4711, -3660, 0x0,    -2471, -5685, 0xB04,  0x2A3A, 0xB04,  -5685, -2471, 0x0,
++    -1213, -6349, 0x84B,  0x30AF, 0x84B,  -6349, -1213, -929, -272, -6581, 0x4A5,  0x3812, 0x4A5,  -6581,
++    -272, -2327, 0x0,    -6351, 0x0,    0x40DC, 0x0,    -6351, 0x0,    -3460, -509, -4812, -1262, 0x4046,
++    -1262, -4812, -509, -3143, -1488, -3277, -2395, 0x4011, -2395, -3277, -1488, -2045, -2021, -2555,
++    -2910, 0x400D, -2910, -2555, -2021, -1392, -5281, -1216, 0xFD6,  0x1929, 0xFD6,  -1216, -5281, -5221,
++    -5495, -2330, 0xDE0,  0x1962, 0xDE0,  -2330, -5495, -3511, -5377, -3474, 0xC86,  0x1B4F, 0xC86,  -3474,
++    -5377, -1659, -4853, -4693, 0xB4D,  0x1ECF, 0xB4D,  -4693, -4853, 0x0,    -3646, -5586, 0x935,  0x21AF,
++    0x935,  -5586, -3646, 0x3C5,  -2373, -6636, 0x71D,  0x2794, 0x71D,  -6636, -2373, 0x3CB,  -1086, -7852,
++    0x45B,  0x3172, 0x45B,  -7852, -1086, 0x0,    0x0,    -8182, 0x0,    0x39F5, 0x0,    -8182, 0x0,    -1565,
++    0x110,  -6581, -1189, 0x3812, -1189, -6581, 0x110,  -2326, -246, -5250, -2363, 0x3A0A, -2363, -5250,
++    -246, -2189, -1231, -3701, -3393, 0x3A53, -3393, -3701, -1231, -1181, -1768, -2974, -3865, 0x3A85,
++    -3865, -2974, -1768, -569, -5832, -3391, 0xB84,  0x18A1, 0xB84,  -3391, -5832, -2116, -5587, -4647,
++    0xA51,  0x1B66, 0xA51,  -4647, -5587, 0x0,    -4365, -5434, 0x80F,  0x1C8A, 0x80F,  -5434, -4365, 0x6C6,
++    -3036, -6379, 0x5FE,  0x200D, 0x5FE,  -6379, -3036, 0xA64,  -1576, -7586, 0x394,  0x26C7, 0x394,  -7586,
++    -1576, 0xA7A,  0x0,    -9097, 0x0,    0x321F, 0x0,    -9097, 0x0,    0x6CC,  0x43E,  -7852, -1115, 0x3172,
++    -1115, -7852, 0x43E,  0x0,    0x4BD,  -6349, -2123, 0x30AF, -2123, -6349, 0x4BD,  -929, 0x2A6,  -5227,
++    -3301, 0x3489, -3301, -5227, 0x2A6,  -903, -406, -3992, -4605, 0x39A7, -4605, -3992, -406, 0x0,
++    -979, -3083, -4882, 0x37CF, -4882, -3083, -979, 0x24D,  -4748, -5319, 0x76E,  0x19CF, 0x76E,  -5319,
++    -4748, 0x8AA,  -3402, -6148, 0x553,  0x1BBD, 0x553,  -6148, -3402, 0xEFD,  -1853, -7246, 0x313,  0x2043,
++    0x313,  -7246, -1853, 0x127D, 0x0,    -8777, 0x0,    0x28BE, 0x0,    -8777, 0x0,    0x12AE, 0x628,  -7586,
++    -916, 0x26C7, -916, -7586, 0x628,  0xA7A,  0x945,  -6636, -1821, 0x2794, -1821, -6636, 0x945,  0x3CB,
++    0x9A7,  -5685, -2820, 0x2A3A, -2820, -5685, 0x9A7,  0x0,    0x77A,  -4609, -3950, 0x2E2B, -3950, -4609,
++    0x77A,  0x0,    0x34E,  -3385, -5195, 0x32EB, -5195, -3385, 0x34E,  0x36B,  0xD6,   -2741, -5841, 0x356F,
++    -5841, -2741, 0xD6,   0x5D4,  -1989, -7002, 0x2CC,  0x1CCD, 0x2CC,  -7002, -1989, 0x1758, 0x0,    -8439,
++    0x0,    0x232E, 0x0,    -8439, 0x0,    0x1AE2, 0x73D,  -7246, -787, 0x2043, -787, -7246, 0x73D,  0x127D,
++    0xBDC,  -6379, -1534, 0x200D, -1534, -6379, 0xBDC,  0xA64,  0xE3E,  -5586, -2357, 0x21AF, -2357, -5586,
++    0xE3E,  0x3C5,  0xE4C,  -4711, -3314, 0x24B4, -3314, -4711, 0xE4C,  0x0,    0xC00,  -3668, -4423, 0x28C6,
++    -4423, -3668, 0xC00,  0x0,    0x7D3,  -2459, -5656, 0x2D88, -5656, -2459, 0x7D3,  0x365,  0x55E,  -1820,
++    -6298, 0x3009, -6298, -1820, 0x55E,  0x5CB,  0x7C5,  -7002, -716, 0x1CCD, -716, -7002, 0x7C5,  0x1758,
++    0xD4A,  -6148, -1363, 0x1BBD, -1363, -6148, 0xD4A,  0xEFD,  0x110D, -5434, -2063, 0x1C8A, -2063, -5434,
++    0x110D, 0x6C6,  0x12F5, -4693, -2893, 0x1ECF, -2893, -4693, 0x12F5, 0x0,    0x119F, -3587, -3678, 0x205E,
++    -3678, -3587, 0x119F, -927, 0xF2A,  -2547, -4808, 0x24AD, -4808, -2547, 0xF2A,  -900, 0xB7A,  -1390,
++    -6423, 0x2C00, -6423, -1390, 0xB7A,  0x0,    0x8CD,  -695, -7120, 0x2EB9, -7120, -695, 0x8CD,  0x29B,
++    0x128C, -5319, -1902, 0x19CF, -1902, -5319, 0x128C, 0x8AA,  0x15D3, -4647, -2641, 0x1B66, -2641, -4647,
++    0x15D3, 0x0,    0x1501, -3474, -3206, 0x1B4F, -3206, -3474, 0x1501, -1659, 0x1344, -2431, -4021, 0x1D7D,
++    -4021, -2431, 0x1344, -2447, 0x1089, -1334, -5242, 0x2247, -5242, -1334, 0x1089, -2371, 0xC92,  0x0,
++    -7035, 0x2A2B, -7035, 0x0,    0xC92,  -1464, 0x933,  0x2D5,  -7440, 0x2B13, -7440, 0x2D5,  0x933,  -698,
++    0x16C8, -3391, -2948, 0x18A1, -2948, -3391, 0x16C8, -2116, 0x1577, -2330, -3552, 0x1962, -3552, -2330,
++    0x1577, -3511, 0x134D, -1265, -4474, 0x1C51, -4474, -1265, 0x134D, -4155, 0x100C, 0x0,    -5913, 0x2213,
++    -5913, 0x0,    0x100C, -3999, 0x94F,  0x57C,  -6726, 0x2419, -6726, 0x57C,  0x94F,  -2496, 0x617,  0x80F,
++    -7145, 0x2549, -7145, 0x80F,  0x617,  -1684, 0x14A1, -1216, -4054, 0x1929, -4054, -1216, 0x14A1, -5221,
++    0x11D6, 0x0,    -5211, 0x1D41, -5211, 0x0,    0x11D6, -5723, 0xB39,  0x560,  -5931, 0x1ECE, -5931, 0x560,
++    0xB39,  -4520, 0x459,  0xAC8,  -6833, 0x217C, -6833, 0xAC8,  0x459,  -2779, 0x10B,  0xD5C,  -7291, 0x22EF,
++    -7291, 0xD5C,  0x10B,  -1864, 0xC32,  0x542,  -5464, 0x1BD5, -5464, 0x542,  0xC32,  -5776, 0x517,  0xAD9,
++    -6337, 0x1E41, -6337, 0xAD9,  0x517,  -4185, -605, 0xF84,  -6859, 0x1F3A, -6859, 0xF84,  -605, -1897,
++    -1333, 0x1064, -6647, 0x1DBA, -6647, 0x1064, -1333, -803, -687, 0xFDA,  -6599, 0x1D78, -6599, 0xFDA,
++    -687, -2532, -2251, 0x11A8, -6201, 0x1AA5, -6201, 0x11A8, -2251, 0x0,    -2636, 0x1151, -5763, 0x186D,
++    -5763, 0x1151, -2636, 0x34F,  -3207, 0x111B, -5163, 0x153F, -5163, 0x111B, -3207, 0x722,  -3414, 0x10DA,
++    -4915, 0x1407, -4915, 0x10DA, -3414, 0x92E,  -3854, 0x105C, -4398, 0x1175, -4398, 0x105C, -3854, 0xD57
++};
++#else
+ s16 BP_FILTER[] = {
+     0x2AF,  0xFDA,  0x19C7, 0x1D78, 0x19C7, 0xFDA,  0x2AF,  0xF61C, 0xFAE9, 0xAD9,  0x18C1, 0x1E41, 0x18C1, 0xAD9,
+     0xFAE9, 0xEFA7, 0xF4C7, 0x560,  0x172B, 0x1ECE, 0x172B, 0x560,  0xF4C7, 0xEE58, 0xEFF4, 0x0,    0x1719, 0x2213,
+@@ -168,7 +324,30 @@ s16 BP_FILTER[] = {
+     0xE97D, 0x1151, 0xF5B4, 0x34F,  0xF379, 0x111B, 0xEBD5, 0x153F, 0xEBD5, 0x111B, 0xF379, 0x722,  0xF2AA, 0x10DA,
+     0xECCD, 0x1407, 0xECCD, 0x10DA, 0xF2AA, 0x92E,  0xF0F2, 0x105C, 0xEED2, 0x1175, 0xEED2, 0x105C, 0xF0F2, 0xD57
+ };
++#endif
+ 
++#if defined(TARGET_XBOX360)
++s16 wm_sin[] = { 0x0,    0xC8B,  0x18F8, 0x2527, 0x30FB, 0x3C56, 0x471C, 0x5133, 0x5A81, 0x62F1, 0x6A6C, 0x70E1, 0x7640,
++                 0x7A7C, 0x7D89, 0x7F61, 0x7FFF, 0x7F61, 0x7D89, 0x7A7C, 0x7640, 0x70E1, 0x6A6C, 0x62F1, 0x5A81, 0x5133,
++                 0x471C, 0x3C56, 0x30FB, 0x2527, 0x18F8, 0xC8B,  0x0,    -3211, -6392, -9511, -12539, -15446, -18204,
++                 -20787, -23169, -25329, -27244, -28897, -30272, -31356, -32137, -32609, -32767, -32609, -32137, -31356,
++                 -30272, -28897, -27244, -25329, -23169, -20787, -18204, -15446, -12539, -9511, -6392, -3211, 0x0,
++                 0x18F8, 0x30FB, 0x471C, 0x5A81, 0x6A6C, 0x7640, 0x7D89, 0x7FFF, 0x7D89, 0x7640, 0x6A6C, 0x5A81, 0x471C,
++                 0x30FB, 0x18F8, 0x0,    -6392, -12539, -18204, -23169, -27244, -30272, -32137, -32767, -32137, -30272,
++                 -27244, -23169, -18204, -12539, -6392, 0x0,    0x18F8, 0x30FB, 0x471C, 0x5A81, 0x6A6C, 0x7640, 0x7D89,
++                 0x7FFF, 0x7D89, 0x7640, 0x6A6C, 0x5A81, 0x471C, 0x30FB, 0x18F8, 0x0,    -6392, -12539, -18204, -23169,
++                 -27244, -30272, -32137, -32767, -32137, -30272, -27244, -23169, -18204, -12539, -6392, 0x0,    0x30FB,
++                 0x5A81, 0x7640, 0x7FFF, 0x7640, 0x5A81, 0x30FB, 0x0,    -12539, -23169, -30272, -32767, -30272, -23169,
++                 -12539, 0x0,    0x30FB, 0x5A81, 0x7640, 0x7FFF, 0x7640, 0x5A81, 0x30FB, 0x0,    -12539, -23169, -30272,
++                 -32767, -30272, -23169, -12539, 0x0,    0x30FB, 0x5A81, 0x7640, 0x7FFF, 0x7640, 0x5A81, 0x30FB, 0x0,
++                 -12539, -23169, -30272, -32767, -30272, -23169, -12539, 0x0,    0x30FB, 0x5A81, 0x7640, 0x7FFF, 0x7640,
++                 0x5A81, 0x30FB, 0x0,    -12539, -23169, -30272, -32767, -30272, -23169, -12539, 0x0,    0x5A81, 0x7FFF,
++                 0x5A81, 0x0,    -23169, -32767, -23169, 0x0,    0x5A81, 0x7FFF, 0x5A81, 0x0,    -23169, -32767, -23169,
++                 0x0,    0x5A81, 0x7FFF, 0x5A81, 0x0,    -23169, -32767, -23169, 0x0,    0x5A81, 0x7FFF, 0x5A81, 0x0,
++                 -23169, -32767, -23169, 0x0,    0x5A81, 0x7FFF, 0x5A81, 0x0,    -23169, -32767, -23169, 0x0,    0x5A81,
++                 0x7FFF, 0x5A81, 0x0,    -23169, -32767, -23169, 0x0,    0x5A81, 0x7FFF, 0x5A81, 0x0,    -23169, -32767,
++                 -23169, 0x0,    0x5A81, 0x7FFF, 0x5A81, 0x0,    -23169, -32767, -23169 };
++#else
+ s16 wm_sin[] = { 0x0,    0xC8B,  0x18F8, 0x2527, 0x30FB, 0x3C56, 0x471C, 0x5133, 0x5A81, 0x62F1, 0x6A6C, 0x70E1, 0x7640,
+                  0x7A7C, 0x7D89, 0x7F61, 0x7FFF, 0x7F61, 0x7D89, 0x7A7C, 0x7640, 0x70E1, 0x6A6C, 0x62F1, 0x5A81, 0x5133,
+                  0x471C, 0x3C56, 0x30FB, 0x2527, 0x18F8, 0xC8B,  0x0,    0xF375, 0xE708, 0xDAD9, 0xCF05, 0xC3AA, 0xB8E4,
+@@ -189,6 +368,7 @@ s16 wm_sin[] = { 0x0,    0xC8B,  0x18F8, 0x2527, 0x30FB, 0x3C56, 0x471C, 0x5133,
+                  0xA57F, 0x8001, 0xA57F, 0x0,    0x5A81, 0x7FFF, 0x5A81, 0x0,    0xA57F, 0x8001, 0xA57F, 0x0,    0x5A81,
+                  0x7FFF, 0x5A81, 0x0,    0xA57F, 0x8001, 0xA57F, 0x0,    0x5A81, 0x7FFF, 0x5A81, 0x0,    0xA57F, 0x8001,
+                  0xA57F, 0x0,    0x5A81, 0x7FFF, 0x5A81, 0x0,    0xA57F, 0x8001, 0xA57F };
++#endif
+ 
+ s16* WAVEMEM_TABLE[] = { wm_sin, wm_sin, wm_sin, wm_sin, wm_sin, wm_sin, wm_sin, wm_sin, wm_sin };
+ 
+diff --git a/src/static/jaudio_NES/internal/jamosc.c b/src/static/jaudio_NES/internal/jamosc.c
+index ec5a756d..f5eceae2 100644
+--- a/src/static/jaudio_NES/internal/jamosc.c
++++ b/src/static/jaudio_NES/internal/jamosc.c
+@@ -1,8 +1,16 @@
+ #include "jaudio_NES/jamosc.h"
+ #include "jaudio_NES/jammain_2.h"
+ 
++#if defined(TARGET_XBOX360)
++s16 VIB_TABLE[] = { 0, 0, 0, 0, 20, 0x7fff, 0, 20, 0, 0, 0x14, -16384, 0, 20, 0, 13, 0, 1 };
++#else
+ s16 VIB_TABLE[] = { 0, 0, 0, 0, 20, 0x7fff, 0, 20, 0, 0, 0x14, 0xc000, 0, 20, 0, 13, 0, 1 };
++#endif
++#if defined(TARGET_XBOX360)
++s16 TRE_TABLE[] = { 0, 0, 0x7fff, 0, 20, 0, 0, 20, -32767, 0, 0x14, 0, 0, 0x14, 0x7fff, 13, 0, 1 };
++#else
+ s16 TRE_TABLE[] = { 0, 0, 0x7fff, 0, 20, 0, 0, 20, 0x8001, 0, 0x14, 0, 0, 0x14, 0x7fff, 13, 0, 1 };
++#endif
+ s16 REL_TABLE[] = { 0, 10, 0, 15, 1, 0 };
+ 
+ Osc_ VIBRATO_DEF  = { 1, 0.8f, VIB_TABLE, VIB_TABLE, 0.0f, 1.0f };
+diff --git a/src/static/jaudio_NES/internal/rspsim.c b/src/static/jaudio_NES/internal/rspsim.c
+index d1675cd5..315eb92c 100644
+--- a/src/static/jaudio_NES/internal/rspsim.c
++++ b/src/static/jaudio_NES/internal/rspsim.c
+@@ -10,6 +10,29 @@ static u32 ADPCM_BOOKBUF_SIZE = 0;
+ static s16 ADPCM_BOOKBUF[8 * 16] ATTRIBUTE_ALIGN(32);
+ static s16 FINALR_STATE_BUF[16] ATTRIBUTE_ALIGN(32);
+ 
++#if defined(TARGET_XBOX360)
++static s16 RES_FILTER[64][4] ATTRIBUTE_ALIGN(32) = {
++    0x0C39, 0x66AD, 0x0D46, -33, 0x0B39, 0x6696, 0x0E5F, -40, 0x0A44, 0x6669, 0x0F83, -48, 0x095A, 0x6626,
++    0x10B4, -56, 0x087D, 0x65CD, 0x11F0, -65, 0x07AB, 0x655E, 0x1338, -74, 0x06E4, 0x64D9, 0x148C, -84,
++    0x0628, 0x643F, 0x15EB, -95, 0x0577, 0x638F, 0x1756, -106, 0x04D1, 0x62CB, 0x18CB, -118, 0x0435, 0x61F3,
++    0x1A4C, -130, 0x03A4, 0x6106, 0x1BD7, -143, 0x031C, 0x6007, 0x1D6C, -156, 0x029F, 0x5EF5, 0x1F0B, -170,
++    0x022A, 0x5DD0, 0x20B3, -184, 0x01BE, 0x5C9A, 0x2264, -198, 0x015B, 0x5B53, 0x241E, -212, 0x0101, 0x59FC,
++    0x25E0, -226, 0x00AE, 0x5896, 0x27A9, -240, 0x0063, 0x5720, 0x297A, -254, 0x001F, 0x559D, 0x2B50, -268,
++    -30, 0x540D, 0x2D2C, -280, -84, 0x5270, 0x2F0D, -293, -132, 0x50C7, 0x30F3, -304, -173, 0x4F14,
++    0x32DC, -314, -210, 0x4D57, 0x34C8, -323, -241, 0x4B91, 0x36B6, -330, -267, 0x49C2, 0x38A5, -336,
++    -289, 0x47ED, 0x3A95, -340, -306, 0x4611, 0x3C85, -341, -320, 0x4430, 0x3E74, -340, -330, 0x424A,
++    0x4060, -337, -337, 0x4060, 0x424A, -330, -340, 0x3E74, 0x4430, -320, -341, 0x3C85, 0x4611, -306,
++    -340, 0x3A95, 0x47ED, -289, -336, 0x38A5, 0x49C2, -267, -330, 0x36B6, 0x4B91, -241, -323, 0x34C8,
++    0x4D57, -210, -314, 0x32DC, 0x4F14, -173, -304, 0x30F3, 0x50C7, -132, -293, 0x2F0D, 0x5270, -84,
++    -280, 0x2D2C, 0x540D, -30, -268, 0x2B50, 0x559D, 0x001F, -254, 0x297A, 0x5720, 0x0063, -240, 0x27A9,
++    0x5896, 0x00AE, -226, 0x25E0, 0x59FC, 0x0101, -212, 0x241E, 0x5B53, 0x015B, -198, 0x2264, 0x5C9A, 0x01BE,
++    -184, 0x20B3, 0x5DD0, 0x022A, -170, 0x1F0B, 0x5EF5, 0x029F, -156, 0x1D6C, 0x6007, 0x031C, -143, 0x1BD7,
++    0x6106, 0x03A4, -130, 0x1A4C, 0x61F3, 0x0435, -118, 0x18CB, 0x62CB, 0x04D1, -106, 0x1756, 0x638F, 0x0577,
++    -95, 0x15EB, 0x643F, 0x0628, -84, 0x148C, 0x64D9, 0x06E4, -74, 0x1338, 0x655E, 0x07AB, -65, 0x11F0,
++    0x65CD, 0x087D, -56, 0x10B4, 0x6626, 0x095A, -48, 0x0F83, 0x6669, 0x0A44, -40, 0x0E5F, 0x6696, 0x0B39,
++    -33, 0x0D46, 0x66AD, 0x0C39,
++};
++#else
+ static s16 RES_FILTER[64][4] ATTRIBUTE_ALIGN(32) = {
+     0x0C39, 0x66AD, 0x0D46, 0xFFDF, 0x0B39, 0x6696, 0x0E5F, 0xFFD8, 0x0A44, 0x6669, 0x0F83, 0xFFD0, 0x095A, 0x6626,
+     0x10B4, 0xFFC8, 0x087D, 0x65CD, 0x11F0, 0xFFBF, 0x07AB, 0x655E, 0x1338, 0xFFB6, 0x06E4, 0x64D9, 0x148C, 0xFFAC,
+@@ -31,13 +54,25 @@ static s16 RES_FILTER[64][4] ATTRIBUTE_ALIGN(32) = {
+     0x65CD, 0x087D, 0xFFC8, 0x10B4, 0x6626, 0x095A, 0xFFD0, 0x0F83, 0x6669, 0x0A44, 0xFFD8, 0x0E5F, 0x6696, 0x0B39,
+     0xFFDF, 0x0D46, 0x66AD, 0x0C39,
+ };
++#endif
+ 
++#if defined(TARGET_XBOX360)
++static s16 AD2[4] = { 0x0000, 0x0001, -2, -1 };
++#else
+ static s16 AD2[4] = { 0x0000, 0x0001, 0xFFFE, 0xFFFF };
++#endif
+ 
++#if defined(TARGET_XBOX360)
++static s16 AD4[16] = {
++    0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
++    -8, -7, -6, -5, -4, -3, -2, -1,
++};
++#else
+ static s16 AD4[16] = {
+     0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
+     0xFFF8, 0xFFF9, 0xFFFA, 0xFFFB, 0xFFFC, 0xFFFD, 0xFFFE, 0xFFFF,
+ };
++#endif
+ 
+ static void Jac_Resample16(s16* input_L_channel, s16* input_R_channel, s16* output_interleaved, s32 input_sample_count,
+                            s32 output_sample_count, s16* history_buffer, u16* position_p, s32 is_first_block);
+diff --git a/src/static/libjsys/jsyswrapper_main.cpp b/src/static/libjsys/jsyswrapper_main.cpp
+index 4c73df16..ff9ab24f 100644
+--- a/src/static/libjsys/jsyswrapper_main.cpp
++++ b/src/static/libjsys/jsyswrapper_main.cpp
+@@ -370,7 +370,11 @@ extern void* JC__JKRMountArchive(const char* path, int mount_mode, void* heap, i
+ }
+ 
+ extern CSDIFileEntry* JC__JKRGetResourceEntry_byName(u32 root_name, const char* res_name, void* archive) {
++#if defined(TARGET_XBOX360)
++    return static_cast<CSDIFileEntry*>(JKRGetResourceEntry_byName(root_name, res_name, reinterpret_cast<JKRArchive*>(archive)));
++#else
+     JKRGetResourceEntry_byName(root_name, res_name, reinterpret_cast<JKRArchive*>(archive));
++#endif
+ }
+ 
+ extern void JC_JKRAramHeap_dump(void* heap) {
+diff --git a/src/system/sys_matrix.c b/src/system/sys_matrix.c
+index 751737b1..899048d4 100644
+--- a/src/system/sys_matrix.c
++++ b/src/system/sys_matrix.c
+@@ -1068,3 +1068,8 @@ void suMtxMakeSRT_ZXY(Mtx* mtx, f32 scaleX, f32 scaleY, f32 scaleZ, s16 rotX, s1
+     mu->intPart[3][3] = 1;
+     mu->fracPart[3][3] = 0;
+ }
++
++#if defined(TARGET_XBOX360)
++/* Port-owned lifetime boundary for caller-owned diagnostic matrix arenas. */
++void ac_xbox360_matrix_release(void) { Matrix_now = NULL; Matrix_stack = NULL; }
++#endif
+diff --git a/src/zurumode.c b/src/zurumode.c
+index 4d0b676c..ee50297e 100644
+--- a/src/zurumode.c
++++ b/src/zurumode.c
+@@ -8,7 +8,11 @@
+ static zuru_keycheck zuruKeyCheck;
+ s32 zurumode_flag;
+ 
++#if defined(TARGET_XBOX360)
++static void zerucheck_init(zuru_keycheck* key_check) {
++#else
+ static int zerucheck_init(zuru_keycheck* key_check) {
++#endif
+     key_check->zurumode_enabled = FALSE;
+     key_check->state = ZURUMODE_STAGE_BEGIN_e;
+     key_check->progressing = ZURUMODE_RESET;
