@@ -285,3 +285,99 @@ body.animate-in .intro-item {
     disc-info { left: 18dp; }
     version-info { right: 18dp; }
 }
+
+@media (max-height: 480dp) {
+    content {
+        padding: 14dp 14dp 74dp;
+    }
+
+    menu {
+        gap: 14dp;
+    }
+
+    hero img {
+        width: 480dp;
+        height: 237dp;
+    }
+
+    #menu-list {
+        gap: 10dp;
+    }
+
+    #menu-list button {
+        min-width: 92dp;
+        height: 36dp;
+        padding: 0 14dp;
+        line-height: 36dp;
+        font-size: var(--font-size-xs);
+        border-radius: 18dp;
+    }
+
+    disc-info,
+    version-info {
+        bottom: 12dp;
+        min-height: 36dp;
+        padding: 6dp 11dp;
+        border-radius: 18dp;
+        font-size: var(--font-size-xs);
+    }
+
+    disc-info { left: 12dp; }
+    version-info { right: 12dp; }
+
+    .detail,
+    .update {
+        font-size: 13dp;
+    }
+}
+
+@media (max-height: 375dp) {
+    content {
+        padding: 10dp 10dp 78dp;
+    }
+
+    menu {
+        gap: 10dp;
+    }
+
+    hero img {
+        width: 320dp;
+        height: 158dp;
+    }
+
+    #menu-list {
+        gap: 8dp;
+    }
+
+    #menu-list button {
+        min-width: 80dp;
+        height: 32dp;
+        padding: 0 12dp;
+        line-height: 32dp;
+        font-size: 14dp;
+        border-radius: 16dp;
+    }
+
+    disc-info,
+    version-info {
+        bottom: 8dp;
+        min-height: 32dp;
+        padding: 4dp 10dp;
+        border-radius: 16dp;
+        font-size: 14dp;
+    }
+
+    disc-info { left: 8dp; }
+    version-info { right: 8dp; }
+
+    #disc-status icon {
+        width: 16dp;
+        height: 16dp;
+        font-size: var(--font-size-md);
+    }
+
+    .detail,
+    .update {
+        font-size: 12dp;
+    }
+}
