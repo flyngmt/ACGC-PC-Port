@@ -562,7 +562,11 @@ int main(int argc, char* argv[]) {
     config.startFullscreen = settings.video.windowMode.get() != 0;
     config.mem1Size = 256 * 1024 * 1024;
     config.mem2Size = ARAM_DEFAULT_SIZE;
+#if ACGC_HAS_WINDOW_CONTROLS
     config.vsync = s_frame_limit_explicit ? false : settings.video.vsync.get();
+#else
+    config.vsync = true;
+#endif
     config.pauseOnFocusLost = false;
     config.allowJoystickBackgroundEvents = settings.input.allowBackgroundInput.get();
     config.logCallback = borealis::log::aurora_callback();

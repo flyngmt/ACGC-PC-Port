@@ -465,9 +465,11 @@ void ControllerConfigWindow::build_device(Rml::Element* content) {
     deadzone("controller.section.control_stick", settings().input.stickDeadzone);
     deadzone("controller.section.c_stick", settings().input.cstickDeadzone);
     options.add_section(tr("controller.options.section"));
+#if ACGC_HAS_WINDOW_CONTROLS
     options.add_child<BoolButton>(
         bind(settings().input.allowBackgroundInput, { .key = tr("controller.options.background_input") }));
     options.add_text(tr("controller.options.background_input_help"));
+#endif
     options.add_child<BoolButton>(
         bind(settings().input.touchControls, { .key = tr("controller.options.touch_controls") }));
     options.add_text(tr("controller.options.touch_controls_help"));

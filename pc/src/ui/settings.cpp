@@ -469,8 +469,10 @@ SettingsWindow::SettingsWindow()
                               [](Pane& pane) { pane.add_text(localization::get("settings.video.fullscreen_help")); });
 #endif
 
+#if ACGC_HAS_WINDOW_CONTROLS
         add_bool(left, right, current.video.vsync, localization::get("settings.video.vsync"),
                  localization::get("settings.video.vsync_help"));
+#endif
         add_bool(left, right, current.video.hudAtEdges, localization::get("settings.video.hud_at_edges"),
                  localization::get("settings.video.hud_at_edges_help"));
 
