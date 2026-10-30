@@ -76,6 +76,7 @@ Rml::String renderer_label(AuroraBackend renderer) {
     return localization::get("settings.video.renderer.automatic");
 }
 
+#if ACGC_HAS_WINDOW_CONTROLS
 struct ResolutionPreset {
     int width;
     int height;
@@ -210,6 +211,7 @@ class ConditionalNumberButton final : public NumberButton {
     std::function<bool()> mIsVisible;
     bool mVisible = true;
 };
+#endif // ACGC_HAS_WINDOW_CONTROLS
 
 #if ACGC_CAN_CHANGE_DATA_FOLDER
 
@@ -309,6 +311,7 @@ void show_data_folder_error_modal(std::string_view message) {
         doc->focus();
     }
 }
+#endif // ACGC_CAN_CHANGE_DATA_FOLDER
 
 constexpr const char* kTexturePackUrl =
     "https://forums.dolphin-emu.org/Thread-animal-crossing-hd-texture-pack-version-25-october-11th-2026";
@@ -340,6 +343,7 @@ void show_open_url_modal(const char* url) {
     }
 }
 
+#if ACGC_CAN_CHANGE_DATA_FOLDER
 void apply_data_folder_selection(void* userdata) {
     std::unique_ptr<std::string> selection(static_cast<std::string*>(userdata));
 
@@ -409,6 +413,7 @@ SettingsWindow::SettingsWindow()
                  localization::get("settings.startup.check_updates_help"));
     });
 
+#if ACGC_HAS_WINDOW_CONTROLS
     /* Created once per window, outside the tab builder, so rebuilding the tab
      * on activation does not discard staged, un-applied resolution edits. */
     const auto resolutionPresets = available_resolution_presets();
@@ -422,9 +427,13 @@ SettingsWindow::SettingsWindow()
         .height = video.windowHeight.get(),
         .custom = !currentIsPreset,
     });
+#endif
     const auto rendererBackends = available_renderer_backends();
 
-    add_tab(localization::get("settings.tabs.video"), [this, resolutionPresets, resolutionState,
+    add_tab(localization::get("settings.tabs.video"), [this,
+#if ACGC_HAS_WINDOW_CONTROLS
+                                                       resolutionPresets, resolutionState,
+#endif
                                                        rendererBackends](Rml::Element* content) {
         auto& current = settings();
         auto& left = add_child<Pane>(content, Pane::Type::Controlled);
@@ -449,6 +458,7 @@ SettingsWindow::SettingsWindow()
                 pane.add_text(localization::get("settings.video.renderer_help"));
             });
 
+#if ACGC_HAS_WINDOW_CONTROLS
         left.register_control(left.add_child<BoolButton>(BoolButton::Props{
                                   .key = localization::get("settings.video.fullscreen"),
                                   .getValue = [&current] { return current.video.windowMode.get() != 0; },
@@ -457,12 +467,14 @@ SettingsWindow::SettingsWindow()
                               }),
                               right,
                               [](Pane& pane) { pane.add_text(localization::get("settings.video.fullscreen_help")); });
+#endif
 
         add_bool(left, right, current.video.vsync, localization::get("settings.video.vsync"),
                  localization::get("settings.video.vsync_help"));
         add_bool(left, right, current.video.hudAtEdges, localization::get("settings.video.hud_at_edges"),
                  localization::get("settings.video.hud_at_edges_help"));
 
+#if ACGC_HAS_WINDOW_CONTROLS
         left.register_control(left.add_select_button({
                                   .key = localization::get("settings.video.window_size"),
                                   .getValue =
@@ -527,6 +539,7 @@ SettingsWindow::SettingsWindow()
                                       });
                                   pane.add_text(localization::get("settings.video.resolution.help"));
                               });
+#endif
 
         left.register_control(
             left.add_select_button({

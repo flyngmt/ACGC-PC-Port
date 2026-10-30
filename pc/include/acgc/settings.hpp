@@ -9,6 +9,16 @@
 #include <string>
 #include <vector>
 
+#if defined(__APPLE__)
+#include <TargetConditionals.h>
+#endif
+
+#if (defined(__APPLE__) && TARGET_OS_IOS && !TARGET_OS_MACCATALYST) || defined(__ANDROID__)
+#define ACGC_HAS_WINDOW_CONTROLS 0
+#else
+#define ACGC_HAS_WINDOW_CONTROLS 1
+#endif
+
 namespace acgc {
 
 enum class DiscVerificationState : std::uint8_t {

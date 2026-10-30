@@ -16,7 +16,7 @@
 #define ACGC_CAN_OPEN_DATA_FOLDER 0
 #endif
 
-#if (defined(__APPLE__) && TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
+#if (defined(__APPLE__) && TARGET_OS_IOS && !TARGET_OS_MACCATALYST) || defined(__ANDROID__)
 #define ACGC_CAN_CHANGE_DATA_FOLDER 0
 #else
 #define ACGC_CAN_CHANGE_DATA_FOLDER 1
