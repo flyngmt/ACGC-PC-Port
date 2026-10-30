@@ -1,5 +1,6 @@
 #include "acgc/ui/touch_controls.hpp"
 
+#include "acgc/game_editor.hpp"
 #include "acgc/settings.hpp"
 #include "acgc/ui/localization.hpp"
 #include "acgc/ui/ui.hpp"
@@ -240,6 +241,7 @@ TouchControls::TouchControls()
     listen(mCStickElement, aurora::rmlui::TouchStartEvent, [this](Rml::Event& event) {
         if (mShown && (!mCStick.active || mCStick.releasePending)) {
             const auto position = finger_position(event);
+            acgc::input::game_editor().set_typing(false);
             mCStick = { .id = finger_id(event),
                         .start = position,
                         .current = position,
@@ -346,6 +348,7 @@ void TouchControls::press_button(size_t index, SDL_FingerID id) {
     if (touch.active && !touch.releasePending) {
         return;
     }
+    acgc::input::game_editor().set_typing(false);
     touch = { .id = id, .pressFrame = pc_frame_counter, .active = true };
     if (mButtons[index] != nullptr) {
         mButtons[index]->SetClass("pressed", true);

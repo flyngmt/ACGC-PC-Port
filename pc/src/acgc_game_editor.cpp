@@ -1,6 +1,7 @@
 #include "acgc/game_editor.hpp"
 #include "acgc/game_text.hpp"
 #include <algorithm>
+#include <cmath>
 
 namespace acgc::input {
 namespace routed = aurora::input;
@@ -65,10 +66,27 @@ void GameEditor::set_available(bool available, bool multiline) {
     if (mOptions.multiline != multiline) {
         clear(); // A field switch cannot inherit queued commands.
     }
+    const bool opened = !mAvailable;
     mAvailable = true;
     auto options = mOptions;
     options.multiline = multiline;
     update_options(std::move(options));
+    if (opened) {
+        set_typing(true);
+    }
+}
+
+void GameEditor::set_typing(bool typing) {
+    if (!mAvailable || typing == mTyping) {
+        return;
+    }
+    if (typing) {
+        clear();
+        mTyping = true;
+        mSession = routed::TextInputSession(mLayer, mOptions);
+    } else {
+        stop();
+    }
 }
 
 void GameEditor::set_area(std::optional<routed::TextInputArea> area) {
@@ -131,15 +149,17 @@ routed::EventResult GameEditor::process(const Event& input) {
     if (!mAvailable) {
         return routed::EventResult::Pass;
     }
+    if (mTyping && input.source.kind == routed::InputSource::Kind::Controller) {
+        const auto* button = input.payload.get_if<Event::ButtonChanged>();
+        const auto* axis = input.payload.get_if<Event::AxisChanged>();
+        if ((button && button->pressed) || (axis && std::abs(axis->value) >= 0.5f)) {
+            stop();
+        }
+        return routed::EventResult::Pass;
+    }
     if (const auto* key = input.payload.get_if<Event::KeyChanged>(); key && key->pressed) {
         if (key->keycode == SDLK_TAB && !key->repeat) {
-            if (mTyping) {
-                stop();
-            } else {
-                clear();
-                mTyping = true;
-                mSession = routed::TextInputSession(mLayer, mOptions);
-            }
+            set_typing(!mTyping);
             if (mKeyboardActivity) {
                 mKeyboardActivity();
             }

@@ -19,6 +19,7 @@ class GameEditor {
     void initialize(std::function<void()> keyboardActivity = {});
     void shutdown();
     void set_available(bool available, bool multiline = false);
+    void set_typing(bool typing);
     void set_area(std::optional<aurora::input::TextInputArea> area);
     size_t drain(std::span<GameEditorEvent> output);
 
