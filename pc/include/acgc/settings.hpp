@@ -1,5 +1,7 @@
 #pragma once
 
+#include "acgc/ui/touch_layout.hpp"
+
 #include <borealis/config.hpp>
 
 #include <aurora/aurora.h>
@@ -105,6 +107,7 @@ struct UserSettings {
         borealis::config::Var<bool> allowBackgroundInput;
         borealis::config::Var<bool> touchControls;
         borealis::config::Var<bool> touchHaptics;
+        borealis::config::Var<ui::TouchLayout> touchLayout;
 
         explicit Input(borealis::config::Registry& registry);
     } input;

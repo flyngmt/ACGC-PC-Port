@@ -1,0 +1,104 @@
+body.touch-editor {
+    --editor-backdrop: rgba(4, 6, 8, 34%);
+    --editor-accent: rgba(255, 232, 128, 88%);
+    --editor-handle: rgba(34, 37, 42, 86%);
+
+    background-color: var(--editor-backdrop);
+    z-index: 8;
+}
+
+body.touch-editor .control {
+    opacity: 0.88;
+    cursor: move;
+}
+
+body.touch-editor .control:hover,
+body.touch-editor .control.editor-selected {
+    border-color: var(--editor-accent);
+    filter: brightness(1.15);
+}
+
+selection-frame {
+    display: none;
+    position: absolute;
+    z-index: 20;
+    border-width: 2dp;
+    border-color: var(--editor-accent);
+    background-color: rgba(255, 232, 128, 7%);
+    pointer-events: none;
+}
+
+selection-frame.visible {
+    display: block;
+}
+
+resize-handle {
+    display: block;
+    position: absolute;
+    width: 24dp;
+    height: 24dp;
+    border-width: 2dp;
+    border-color: var(--editor-accent);
+    border-radius: 12dp;
+    background-color: var(--editor-handle);
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+resize-handle.left {
+    left: -13dp;
+}
+
+resize-handle.right {
+    right: -13dp;
+}
+
+resize-handle.top {
+    top: -13dp;
+}
+
+resize-handle.bottom {
+    bottom: -13dp;
+}
+
+editor-toolbar {
+    display: flex;
+    position: absolute;
+    left: 24dp;
+    right: 24dp;
+    top: 50%;
+    z-index: 30;
+    height: 48dp;
+    margin-top: -24dp;
+    gap: var(--space-sm);
+    justify-content: center;
+    pointer-events: none;
+}
+
+editor-toolbar button.editor-command {
+    position: relative;
+    pointer-events: auto;
+    flex: 0 1 150dp;
+    min-width: 96dp;
+    height: 48dp;
+    padding: 0 14dp;
+    border-radius: 24dp;
+    border-color: rgba(255, 255, 255, 26%);
+    background-color: rgba(17, 19, 24, 88%);
+    font-family: var(--font-family-body);
+    font-size: var(--font-size-xl);
+    focus: auto;
+    tab-index: auto;
+    cursor: pointer;
+}
+
+editor-toolbar button.editor-command.primary {
+    border-color: rgba(255, 232, 128, 70%);
+    background-color: rgba(96, 82, 38, 90%);
+}
+
+editor-toolbar button.editor-command:hover,
+editor-toolbar button.editor-command:focus-visible {
+    border-color: var(--editor-accent);
+    background-color: rgba(78, 85, 96, 92%);
+}

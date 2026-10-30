@@ -62,6 +62,13 @@ button.pressed {
     background-color: var(--touch-background-pressed);
     border-color: var(--touch-border-pressed);
     filter: brightness(1.18);
+}
+
+.control {
+    transform-origin: center;
+}
+
+.dpad.pressed {
     transform: scale(0.94);
 }
 
@@ -71,75 +78,36 @@ button span {
 }
 
 .trigger {
-    width: 78dp;
-    height: 46dp;
     border-radius: 23dp;
     font-size: var(--font-size-3xl);
 }
 
-.l {
-    top: 18dp;
-    left: 24dp;
-}
-
-.r {
-    top: 18dp;
-    right: 24dp;
-}
-
 .z {
-    top: 72dp;
-    right: 24dp;
     background-color: var(--touch-button-z);
 }
 
 .start {
-    top: 18dp;
-    left: 50%;
-    margin-left: -39dp;
     font-size: var(--font-size-sm);
 }
 
 .face {
-    width: 58dp;
-    height: 58dp;
     border-radius: 29dp;
     font-size: var(--font-size-4xl);
 }
 
 .a {
-    right: 62dp;
-    bottom: 64dp;
-    width: 74dp;
-    height: 74dp;
     border-radius: 37dp;
     font-size: 31dp;
     background-color: var(--touch-button-a);
 }
 
 .b {
-    right: 158dp;
-    bottom: 48dp;
     background-color: var(--touch-button-b);
-}
-
-.x {
-    right: 28dp;
-    bottom: 144dp;
-}
-
-.y {
-    right: 124dp;
-    bottom: 138dp;
 }
 
 c-stick {
     display: block;
     position: absolute;
-    right: 8dp;
-    bottom: 6dp;
-    width: 58dp;
-    height: 58dp;
     padding: 9dp;
     box-sizing: border-box;
     border-radius: 29dp;
@@ -174,10 +142,6 @@ c-knob span {
 d-pad {
     display: block;
     position: absolute;
-    top: 74dp;
-    left: 14dp;
-    width: 102dp;
-    height: 102dp;
 }
 
 .dpad {
@@ -207,11 +171,6 @@ d-pad {
 }
 
 .menu {
-    top: 18dp;
-    left: 50%;
-    width: 46dp;
-    height: 46dp;
-    margin-left: 47dp;
     border-radius: 23dp;
 }
 

@@ -230,6 +230,8 @@ set(PC_SOURCES
     ${PC_ROOT}/src/ui/theme.cpp
     ${PC_ROOT}/src/ui/theme_mirror.cpp
     ${PC_ROOT}/src/ui/touch_controls.cpp
+    ${PC_ROOT}/src/ui/touch_controls_editor.cpp
+    ${PC_ROOT}/src/ui/touch_layout.cpp
     ${PC_ROOT}/src/ui/town_select.cpp
     ${PC_ROOT}/src/ui/ui.cpp
     ${PC_ROOT}/src/pc_audio.c

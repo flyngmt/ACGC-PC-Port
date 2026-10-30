@@ -32,6 +32,7 @@ constexpr u8 kTriggerAnalog = 180;
 constexpr auto kMinPress = std::chrono::milliseconds(70);
 constexpr uint16_t kHapticStrength = 0x8000;
 constexpr uint16_t kHapticDurationMs = 20;
+constexpr float kPressedScale = 0.94f;
 
 struct ButtonInfo {
     const char* id;
@@ -65,27 +66,8 @@ Rml::String document_source() {
         <stick-ring />
         <stick-knob id="knob" />
     </touch-stick>
-    <touch-area id="area">
-        <button id="trigger-l" class="control trigger l"><span>L</span></button>
-        <button id="trigger-r" class="control trigger r"><span>R</span></button>
-        <button id="button-z" class="control trigger z"><span>Z</span></button>
-        <button id="button-start" class="control trigger start"><span>)RML" +
-           escape(localization::get("controller.input.start")) + R"RML(</span></button>
-        <button id="button-menu" class="control menu"><glyph>&#xe5d2;</glyph></button>
-        <button id="button-y" class="control face y"><span>Y</span></button>
-        <button id="button-x" class="control face x"><span>X</span></button>
-        <button id="button-b" class="control face b"><span>B</span></button>
-        <button id="button-a" class="control face a"><span>A</span></button>
-        <c-stick id="c-stick">
-            <c-knob id="c-knob"><span>C</span></c-knob>
-        </c-stick>
-        <d-pad id="dpad">
-            <button id="dpad-up" class="dpad up"><glyph>&#xe5c7;</glyph></button>
-            <button id="dpad-left" class="dpad left"><glyph>&#xe5de;</glyph></button>
-            <button id="dpad-right" class="dpad right"><glyph>&#xe5df;</glyph></button>
-            <button id="dpad-down" class="dpad down"><glyph>&#xe5c5;</glyph></button>
-        </d-pad>
-    </touch-area>
+    <touch-area id="area">)RML" +
+           touch_controls_markup() + R"RML(</touch-area>
 </body>
 </rml>
 )RML";
@@ -125,6 +107,93 @@ Rml::Vector2f clamped_delta(Rml::Vector2f start, Rml::Vector2f current, float ra
 
 } // namespace
 
+Rml::String touch_controls_markup() {
+    return R"RML(
+        <button id="trigger-l" class="control trigger l"><span>L</span></button>
+        <button id="trigger-r" class="control trigger r"><span>R</span></button>
+        <button id="button-z" class="control trigger z"><span>Z</span></button>
+        <button id="button-start" class="control trigger start"><span>)RML" +
+           escape(localization::get("controller.input.start")) + R"RML(</span></button>
+        <button id="button-menu" class="control menu"><glyph>&#xe5d2;</glyph></button>
+        <button id="button-y" class="control face y"><span>Y</span></button>
+        <button id="button-x" class="control face x"><span>X</span></button>
+        <button id="button-b" class="control face b"><span>B</span></button>
+        <button id="button-a" class="control face a"><span>A</span></button>
+        <c-stick id="c-stick" class="control">
+            <c-knob id="c-knob"><span>C</span></c-knob>
+        </c-stick>
+        <d-pad id="dpad" class="control">
+            <button id="dpad-up" class="dpad up"><glyph>&#xe5c7;</glyph></button>
+            <button id="dpad-left" class="dpad left"><glyph>&#xe5de;</glyph></button>
+            <button id="dpad-right" class="dpad right"><glyph>&#xe5df;</glyph></button>
+            <button id="dpad-down" class="dpad down"><glyph>&#xe5c5;</glyph></button>
+        </d-pad>
+)RML";
+}
+
+TouchSize touch_area_size(Rml::ElementDocument* document, const Insets& insets) {
+    auto* context = document != nullptr ? document->GetContext() : nullptr;
+    if (context == nullptr) {
+        return {};
+    }
+    const float scale = dp_scale(document);
+    const auto dimensions = context->GetDimensions();
+    return {
+        .w = std::max(0.0f, static_cast<float>(dimensions.x) - insets.left - insets.right) / scale,
+        .h = std::max(0.0f, static_cast<float>(dimensions.y) - insets.top - insets.bottom) / scale,
+    };
+}
+
+void TouchLayoutView::bind(Rml::ElementDocument* document) {
+    const auto controls = touch_layout_controls();
+    for (size_t i = 0; i < mEntries.size() && i < controls.size(); ++i) {
+        mEntries[i] = Entry{};
+        mEntries[i].element = document != nullptr ? document->GetElementById(controls[i].elementId) : nullptr;
+    }
+}
+
+void TouchLayoutView::apply(const TouchLayout& layout, TouchSize area) {
+    if (area.w <= 0.0f || area.h <= 0.0f) {
+        return;
+    }
+    const auto controls = touch_layout_controls();
+    for (size_t i = 0; i < mEntries.size() && i < controls.size(); ++i) {
+        auto& entry = mEntries[i];
+        const auto& info = controls[i];
+        const auto placement = placement_for(layout, info);
+        entry.visual = resolve_visual(info, placement, area);
+        if (entry.element == nullptr) {
+            continue;
+        }
+        const TouchRect box{
+            .l = entry.visual.l + (entry.visual.w - info.w) * 0.5f,
+            .t = entry.visual.t + (entry.visual.h - info.h) * 0.5f,
+            .w = info.w,
+            .h = info.h,
+        };
+        if (box.l != entry.box.l || box.t != entry.box.t || box.w != entry.box.w || box.h != entry.box.h) {
+            entry.element->SetProperty(Rml::PropertyId::Left, Rml::Property(box.l, Rml::Unit::DP));
+            entry.element->SetProperty(Rml::PropertyId::Top, Rml::Property(box.t, Rml::Unit::DP));
+            entry.element->SetProperty(Rml::PropertyId::Width, Rml::Property(box.w, Rml::Unit::DP));
+            entry.element->SetProperty(Rml::PropertyId::Height, Rml::Property(box.h, Rml::Unit::DP));
+            entry.box = box;
+        }
+        const float scale = placement.scale * (entry.element->IsClassSet("pressed") ? kPressedScale : 1.0f);
+        if (scale != entry.scale) {
+            entry.element->SetProperty(Rml::PropertyId::Transform,
+                                       Rml::Transform::MakeProperty({ Rml::Transforms::Scale2D{ scale } }));
+            entry.scale = scale;
+        }
+    }
+}
+
+void TouchLayoutView::reset() {
+    for (auto& entry : mEntries) {
+        entry.box = { -1.0f, -1.0f, -1.0f, -1.0f };
+        entry.scale = -1.0f;
+    }
+}
+
 TouchControls::TouchControls()
     : Document(document_source(), true, kScopeTouchControls),
       mArea(mDocument != nullptr ? mDocument->GetElementById("area") : nullptr),
@@ -143,6 +212,7 @@ TouchControls::TouchControls()
     if (mDocument == nullptr) {
         return;
     }
+    mLayout.bind(mDocument);
     for (size_t i = 0; i < kButtons.size(); ++i) {
         auto* element = mDocument->GetElementById(kButtons[i].id);
         mButtons[i] = element;
@@ -251,6 +321,7 @@ void TouchControls::hide(bool close) {
 void TouchControls::update() {
     sync_visibility();
     sync_safe_area();
+    mLayout.apply(settings().input.touchLayout.get(), touch_area_size(mDocument, mInsets));
     sync_buttons();
     sync_stick();
     sync_pad();

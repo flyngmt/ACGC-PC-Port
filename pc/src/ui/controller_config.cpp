@@ -2,6 +2,7 @@
 #include <borealis/ui/config.hpp>
 #include "acgc/ui/scrolling_background.hpp"
 #include "acgc/ui/bool_button.hpp"
+#include "acgc/ui/touch_controls_editor.hpp"
 #include <borealis/ui/button.hpp>
 #include <borealis/ui/component.hpp>
 #include <borealis/ui/group_button.hpp>
@@ -472,6 +473,9 @@ void ControllerConfigWindow::build_device(Rml::Element* content) {
     options.add_text(tr("controller.options.touch_controls_help"));
     options.add_child<BoolButton>(
         bind(settings().input.touchHaptics, { .key = tr("controller.options.touch_haptics") }));
+    options.add_button(tr("controller.options.edit_touch_layout")).on_pressed([this] {
+        push(std::make_unique<TouchControlsEditor>());
+    });
     if (!mController) {
         return;
     }

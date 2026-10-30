@@ -1,5 +1,7 @@
 #pragma once
 
+#include "acgc/ui/touch_layout.hpp"
+
 #include <aurora/input.hpp>
 #include <borealis/ui/document.hpp>
 
@@ -10,6 +12,28 @@
 #include <cstddef>
 
 namespace acgc::ui {
+
+Rml::String touch_controls_markup();
+TouchSize touch_area_size(Rml::ElementDocument* document, const borealis::ui::Insets& insets);
+
+class TouchLayoutView {
+public:
+    void bind(Rml::ElementDocument* document);
+    void apply(const TouchLayout& layout, TouchSize area);
+    void reset();
+    [[nodiscard]] Rml::Element* element(size_t index) const { return mEntries[index].element; }
+    [[nodiscard]] const TouchRect& visual(size_t index) const { return mEntries[index].visual; }
+
+private:
+    struct Entry {
+        Rml::Element* element = nullptr;
+        TouchRect visual;
+        TouchRect box{ -1.0f, -1.0f, -1.0f, -1.0f };
+        float scale = -1.0f;
+    };
+
+    std::array<Entry, 11> mEntries{};
+};
 
 class TouchControls final : public borealis::ui::Document {
 public:
@@ -59,6 +83,7 @@ private:
     static aurora::input::EventResult on_input(const aurora::input::InputEvent& event, void* userdata);
 
     Rml::Element* mArea = nullptr;
+    TouchLayoutView mLayout;
     Rml::Element* mStickElement = nullptr;
     Rml::Element* mKnob = nullptr;
     Rml::Element* mCStickElement = nullptr;
