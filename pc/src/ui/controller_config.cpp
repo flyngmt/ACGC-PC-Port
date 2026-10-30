@@ -470,6 +470,8 @@ void ControllerConfigWindow::build_device(Rml::Element* content) {
     options.add_child<BoolButton>(
         bind(settings().input.touchControls, { .key = tr("controller.options.touch_controls") }));
     options.add_text(tr("controller.options.touch_controls_help"));
+    options.add_child<BoolButton>(
+        bind(settings().input.touchHaptics, { .key = tr("controller.options.touch_haptics") }));
     if (!mController) {
         return;
     }

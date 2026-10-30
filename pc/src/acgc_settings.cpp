@@ -248,7 +248,8 @@ UserSettings::Input::Input(borealis::config::Registry& registry)
       autoAssignController(registry, "input.autoAssignController", true),
       singlePortMigrated(registry, "input.singlePortMigrated", false),
       allowBackgroundInput(registry, "input.allowBackgroundInput", true),
-      touchControls(registry, "input.touchControls", !ACGC_HAS_WINDOW_CONTROLS)
+      touchControls(registry, "input.touchControls", !ACGC_HAS_WINDOW_CONTROLS),
+      touchHaptics(registry, "input.touchHaptics", true)
 {
 }
 

@@ -104,6 +104,7 @@ struct UserSettings {
         borealis::config::Var<bool> singlePortMigrated;
         borealis::config::Var<bool> allowBackgroundInput;
         borealis::config::Var<bool> touchControls;
+        borealis::config::Var<bool> touchHaptics;
 
         explicit Input(borealis::config::Registry& registry);
     } input;

@@ -83,6 +83,7 @@
   "controller.options.background_input_help": "Allow inputs even when the game window is not focused.",
   "controller.options.touch_controls": "Touch Controls",
   "controller.options.touch_controls_help": "Shows on-screen buttons over the game. Touch and drag on the left side of the screen to move.",
+  "controller.options.touch_haptics": "Touch Vibration",
   "controller.options.emulate_triggers": "Emulate Triggers",
   "controller.options.emulate_triggers_help": "Treat analog trigger movement as L and R button presses.",
   "controller.options.restore_defaults": "Restore Default Controls",

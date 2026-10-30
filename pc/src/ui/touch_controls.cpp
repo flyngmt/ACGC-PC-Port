@@ -4,6 +4,8 @@
 #include "acgc/ui/localization.hpp"
 #include "acgc/ui/ui.hpp"
 
+#include "extern/aurora/lib/device.hpp"
+
 #include <aurora/rmlui.hpp>
 #include <borealis/ui/ui.hpp>
 #include <dolphin/pad.h>
@@ -28,6 +30,8 @@ constexpr float kStickZoneBottomDp = 30.0f;
 constexpr float kStickZoneWidth = 0.46f;
 constexpr u8 kTriggerAnalog = 180;
 constexpr auto kMinPress = std::chrono::milliseconds(70);
+constexpr uint16_t kHapticStrength = 0x8000;
+constexpr uint16_t kHapticDurationMs = 20;
 
 struct ButtonInfo {
     const char* id;
@@ -85,6 +89,12 @@ Rml::String document_source() {
 </body>
 </rml>
 )RML";
+}
+
+void haptic_tap() {
+    if (settings().input.touchHaptics.get()) {
+        aurora::device::rumble(kHapticStrength, kHapticStrength, kHapticDurationMs);
+    }
 }
 
 SDL_FingerID finger_id(const Rml::Event& event) {
@@ -163,6 +173,7 @@ TouchControls::TouchControls()
                         .current = position,
                         .pressedAt = Clock::now(),
                         .active = true };
+            haptic_tap();
         }
         event.StopPropagation();
     });
@@ -172,6 +183,7 @@ TouchControls::TouchControls()
             mMenuFinger = finger_id(event);
             mMenuPressed = true;
             mMenuButton->SetClass("pressed", true);
+            haptic_tap();
         }
         event.StopPropagation();
     });
@@ -265,6 +277,7 @@ void TouchControls::press_button(size_t index, SDL_FingerID id) {
     if (mButtons[index] != nullptr) {
         mButtons[index]->SetClass("pressed", true);
     }
+    haptic_tap();
 }
 
 bool TouchControls::release_button(SDL_FingerID id) {
