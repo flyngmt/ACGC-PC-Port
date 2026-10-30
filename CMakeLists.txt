@@ -468,6 +468,14 @@ if (NOT ANDROID)
     )
     add_custom_target(acgc_resources ALL DEPENDS "${ACGC_RESOURCE_STAMP}")
     add_dependencies(acgc acgc_resources)
+
+    set(ACGC_USER_FOLDERS save/card_a save/card_b texture_pack nes_roms)
+    foreach (folder IN LISTS ACGC_USER_FOLDERS)
+        add_custom_command(TARGET acgc POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:acgc>/${folder}"
+            VERBATIM
+        )
+    endforeach ()
 endif ()
 
 # =============================================================================
@@ -480,4 +488,7 @@ install(TARGETS acgc
 aurora_install_runtime_dlls(acgc "\${CMAKE_INSTALL_PREFIX}/bin")
 if (NOT ANDROID)
     install(DIRECTORY "${PC_ROOT}/res/" DESTINATION bin/res)
+    foreach (folder IN LISTS ACGC_USER_FOLDERS)
+        install(DIRECTORY DESTINATION bin/${folder})
+    endforeach ()
 endif ()
