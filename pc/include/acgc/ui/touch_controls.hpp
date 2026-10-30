@@ -1,5 +1,6 @@
 #pragma once
 
+#include <aurora/input.hpp>
 #include <borealis/ui/document.hpp>
 
 #include <SDL3/SDL_touch.h>
@@ -53,6 +54,9 @@ private:
     void sync_stick();
     void sync_c_stick();
     void sync_pad();
+    void observe_input(const aurora::input::InputEvent& event);
+
+    static aurora::input::EventResult on_input(const aurora::input::InputEvent& event, void* userdata);
 
     Rml::Element* mArea = nullptr;
     Rml::Element* mStickElement = nullptr;
@@ -60,11 +64,16 @@ private:
     Rml::Element* mCStickElement = nullptr;
     Rml::Element* mCKnob = nullptr;
     Rml::Element* mDpad = nullptr;
+    Rml::Element* mMenuButton = nullptr;
     std::array<Rml::Element*, kButtonCount> mButtons{};
     std::array<ButtonTouch, kButtonCount> mTouches{};
     StickTouch mStick;
     StickTouch mCStick;
     borealis::ui::Insets mInsets;
+    aurora::input::LayerId mLayer = aurora::input::kInvalidLayerId;
+    SDL_FingerID mMenuFinger = 0;
+    bool mMenuPressed = false;
+    bool mDeviceInput = false;
     bool mShown = false;
     bool mPadActive = false;
 };

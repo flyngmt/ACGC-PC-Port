@@ -206,6 +206,16 @@ d-pad {
     left: 34dp;
 }
 
+.menu {
+    top: 18dp;
+    left: 50%;
+    width: 46dp;
+    height: 46dp;
+    margin-left: 47dp;
+    border-radius: 23dp;
+}
+
+.menu glyph,
 .dpad glyph {
     display: block;
     font-family: var(--font-family-icons);

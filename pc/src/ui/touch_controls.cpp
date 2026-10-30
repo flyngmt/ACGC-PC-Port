@@ -67,6 +67,7 @@ Rml::String document_source() {
         <button id="button-z" class="control trigger z"><span>Z</span></button>
         <button id="button-start" class="control trigger start"><span>)RML" +
            escape(localization::get("controller.input.start")) + R"RML(</span></button>
+        <button id="button-menu" class="control menu"><glyph>&#xe5d2;</glyph></button>
         <button id="button-y" class="control face y"><span>Y</span></button>
         <button id="button-x" class="control face x"><span>X</span></button>
         <button id="button-b" class="control face b"><span>B</span></button>
@@ -121,7 +122,14 @@ TouchControls::TouchControls()
       mKnob(mDocument != nullptr ? mDocument->GetElementById("knob") : nullptr),
       mCStickElement(mDocument != nullptr ? mDocument->GetElementById("c-stick") : nullptr),
       mCKnob(mDocument != nullptr ? mDocument->GetElementById("c-knob") : nullptr),
-      mDpad(mDocument != nullptr ? mDocument->GetElementById("dpad") : nullptr) {
+      mDpad(mDocument != nullptr ? mDocument->GetElementById("dpad") : nullptr),
+      mMenuButton(mDocument != nullptr ? mDocument->GetElementById("button-menu") : nullptr) {
+    mLayer = aurora::input::register_layer({
+        .label = "acgc.touch-controls",
+        .priority = aurora::input::kRmlUiLayerPriority + 2,
+        .onEvent = on_input,
+        .userdata = this,
+    });
     if (mDocument == nullptr) {
         return;
     }
@@ -159,6 +167,38 @@ TouchControls::TouchControls()
         event.StopPropagation();
     });
     listen(mDpad, aurora::rmlui::TouchStartEvent, [](Rml::Event& event) { event.StopPropagation(); });
+    listen(mMenuButton, aurora::rmlui::TouchStartEvent, [this](Rml::Event& event) {
+        if (mShown && !mMenuPressed) {
+            mMenuFinger = finger_id(event);
+            mMenuPressed = true;
+            mMenuButton->SetClass("pressed", true);
+        }
+        event.StopPropagation();
+    });
+    listen(mMenuButton, aurora::rmlui::TouchEndEvent, [this](Rml::Event& event) {
+        if (mMenuPressed && mMenuFinger == finger_id(event)) {
+            mMenuPressed = false;
+            mMenuButton->SetClass("pressed", false);
+            const auto position = finger_position(event);
+            const auto offset = mMenuButton->GetAbsoluteOffset(Rml::BoxArea::Border);
+            const auto size = mMenuButton->GetBox().GetSize(Rml::BoxArea::Border);
+            if (position.x >= offset.x && position.y >= offset.y && position.x <= offset.x + size.x &&
+                position.y <= offset.y + size.y) {
+                if (auto* document = top_document()) {
+                    document->element()->DispatchEvent(
+                        kNavCommandEvent, { { "command", Rml::Variant{ static_cast<int>(NavCommand::Menu) } } });
+                }
+            }
+        }
+        event.StopPropagation();
+    });
+    listen(mMenuButton, aurora::rmlui::TouchCancelEvent, [this](Rml::Event& event) {
+        if (mMenuPressed && mMenuFinger == finger_id(event)) {
+            mMenuPressed = false;
+            mMenuButton->SetClass("pressed", false);
+        }
+        event.StopPropagation();
+    });
 
     listen(mDocument, aurora::rmlui::TouchStartEvent, [this](Rml::Event& event) { handle_touch_down(event); });
     listen(mDocument, aurora::rmlui::TouchMoveEvent, [this](Rml::Event& event) { handle_touch_move(event); });
@@ -173,6 +213,7 @@ TouchControls::TouchControls()
 
 TouchControls::~TouchControls() {
     clear_input();
+    aurora::input::unregister_layer(mLayer);
 }
 
 void TouchControls::show() {
@@ -211,7 +252,8 @@ bool TouchControls::claims_pointer(Rml::Element* element) const {
     const auto contains = [element](Rml::Element* owner) {
         return owner != nullptr && (owner == element || owner->Contains(element));
     };
-    return contains(mCStickElement) || contains(mDpad) || std::ranges::any_of(mButtons, contains);
+    return contains(mCStickElement) || contains(mDpad) || contains(mMenuButton) ||
+           std::ranges::any_of(mButtons, contains);
 }
 
 void TouchControls::press_button(size_t index, SDL_FingerID id) {
@@ -282,6 +324,10 @@ void TouchControls::handle_touch_up(Rml::Event& event) {
 void TouchControls::clear_input() {
     mStick = {};
     mCStick = {};
+    mMenuPressed = false;
+    if (mMenuButton != nullptr) {
+        mMenuButton->SetClass("pressed", false);
+    }
     for (size_t i = 0; i < mTouches.size(); ++i) {
         mTouches[i] = {};
         if (mButtons[i] != nullptr) {
@@ -299,7 +345,7 @@ void TouchControls::clear_input() {
 }
 
 void TouchControls::sync_visibility() {
-    const bool wanted = settings().input.touchControls.get() && !any_document_visible();
+    const bool wanted = settings().input.touchControls.get() && !mDeviceInput && !any_document_visible();
     if (wanted && !mShown) {
         show();
     } else if (!wanted && mShown) {
@@ -409,6 +455,39 @@ void TouchControls::sync_pad() {
     } else if (mPadActive) {
         PADClearVirtualStatus(kPort);
         mPadActive = false;
+    }
+}
+
+aurora::input::EventResult TouchControls::on_input(const aurora::input::InputEvent& event, void* userdata) {
+    static_cast<TouchControls*>(userdata)->observe_input(event);
+    return aurora::input::EventResult::Pass;
+}
+
+void TouchControls::observe_input(const aurora::input::InputEvent& event) {
+    using Event = aurora::input::InputEvent;
+    using Kind = aurora::input::InputSource::Kind;
+    switch (event.source.kind) {
+    case Kind::Touch:
+        if (const auto* pointer = event.payload.get_if<Event::PointerChanged>();
+            pointer != nullptr && pointer->phase == Event::PointerChanged::Phase::Down) {
+            mDeviceInput = false;
+        }
+        break;
+    case Kind::Controller:
+        if (const auto* button = event.payload.get_if<Event::ButtonChanged>(); button != nullptr && button->pressed) {
+            mDeviceInput = true;
+        } else if (const auto* axis = event.payload.get_if<Event::AxisChanged>();
+                   axis != nullptr && std::abs(axis->value) >= 0.5f) {
+            mDeviceInput = true;
+        }
+        break;
+    case Kind::Keyboard:
+        if (const auto* key = event.payload.get_if<Event::KeyChanged>(); key != nullptr && key->pressed && !key->repeat) {
+            mDeviceInput = true;
+        }
+        break;
+    default:
+        break;
     }
 }
 
