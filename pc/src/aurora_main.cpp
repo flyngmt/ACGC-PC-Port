@@ -77,6 +77,7 @@ unsigned int pc_image_base = 0;
 unsigned int pc_image_end = 0;
 
 static bool s_frame_started = false;
+static bool s_speedhack_hotkey = false;
 
 static void pc_speedhack_toggle() {
     g_pc_speedhack_enabled = !g_pc_speedhack_enabled;
@@ -104,7 +105,8 @@ bool ac_aurora_begin_frame() {
         if (event->type == AURORA_EXIT) {
             g_pc_running = 0;
         } else if (event->type == AURORA_SDL_EVENT) {
-            if (event->sdl.type == SDL_EVENT_KEY_DOWN && !event->sdl.key.repeat && event->sdl.key.key == SDLK_F2) {
+            if (s_speedhack_hotkey && event->sdl.type == SDL_EVENT_KEY_DOWN && !event->sdl.key.repeat &&
+                event->sdl.key.key == SDLK_F2) {
                 pc_speedhack_toggle();
             }
             acgc::ui::handle_event(event->sdl);
@@ -285,6 +287,8 @@ ParseOutcome parse_command_line(int argc, char* argv[], CommandLine* out) {
             cxxopts::value<std::string>())
         ("profile", "Show performance diagnostics (optional =N interval, ignored)",
             cxxopts::value<std::string>()->implicit_value(""))
+        ("speedhack", "Enable the F2 key that toggles 5x game speed",
+            cxxopts::value<bool>()->default_value("false")->implicit_value("true"))
         ("framelimit", "Set a software frame limit (0 = uncapped)", cxxopts::value<std::string>())
         ("time", "Override the in-game clock, H[:M[:S]]", cxxopts::value<std::string>())
         ("date", "Override the in-game date, M/D[/Y]", cxxopts::value<std::string>())
@@ -334,6 +338,8 @@ ParseOutcome parse_command_line(int argc, char* argv[], CommandLine* out) {
         g_pc_frame_limit_override = limit;
         s_frame_limit_explicit = true;
     }
+
+    s_speedhack_hotkey = parsed["speedhack"].as<bool>();
 
     if (parsed.count("profile")) {
         g_pc_debug_ui_visible = 1;
