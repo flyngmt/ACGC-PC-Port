@@ -463,6 +463,45 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         BUILD_WITH_INSTALL_RPATH TRUE
     )
     set(ACGC_RESOURCE_DEST "$<TARGET_BUNDLE_CONTENT_DIR:acgc>/Resources/res")
+elseif (IOS)
+    set(ACGC_IOS_BUILD_NUMBER "1.0" CACHE STRING "iOS CFBundleVersion")
+    if (BOREALIS_APP_VERSION_OVERRIDE)
+        set(ACGC_IOS_SHORT_VERSION "${BOREALIS_APP_VERSION_OVERRIDE}")
+    else ()
+        set(ACGC_IOS_SHORT_VERSION "${BOREALIS_APP_SHORT_VERSION}")
+    endif ()
+    set(ACGC_IOS_ROOT "${DECOMP_ROOT}/platforms/ios")
+    set(ACGC_IOS_ASSETS_DIR "${CMAKE_CURRENT_BINARY_DIR}/ios_assets")
+    file(GLOB_RECURSE ACGC_IOS_ASSET_FILES CONFIGURE_DEPENDS "${ACGC_IOS_ROOT}/Assets.xcassets/*")
+    add_custom_command(
+        OUTPUT "${ACGC_IOS_ASSETS_DIR}/Assets.car"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${ACGC_IOS_ASSETS_DIR}"
+        COMMAND xcrun actool --compile "${ACGC_IOS_ASSETS_DIR}"
+            --platform iphoneos
+            --minimum-deployment-target "${CMAKE_OSX_DEPLOYMENT_TARGET}"
+            --target-device iphone --target-device ipad
+            --app-icon AppIcon
+            --output-partial-info-plist "${ACGC_IOS_ASSETS_DIR}/partial-Info.plist"
+            "${ACGC_IOS_ROOT}/Assets.xcassets"
+        DEPENDS ${ACGC_IOS_ASSET_FILES}
+        COMMENT "Compiling Nookery iOS asset catalog"
+        VERBATIM
+    )
+    target_sources(acgc PRIVATE "${ACGC_IOS_ASSETS_DIR}/Assets.car")
+    set_source_files_properties("${ACGC_IOS_ASSETS_DIR}/Assets.car" PROPERTIES
+        GENERATED TRUE
+        MACOSX_PACKAGE_LOCATION Resources
+    )
+    set_target_properties(acgc PROPERTIES
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_BUNDLE_NAME "Nookery"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "com.flyngmt.nookery"
+        MACOSX_BUNDLE_BUNDLE_VERSION "${ACGC_IOS_BUILD_NUMBER}"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "${ACGC_IOS_SHORT_VERSION}"
+        MACOSX_BUNDLE_INFO_PLIST "${ACGC_IOS_ROOT}/Info.plist.in"
+        XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2"
+    )
+    set(ACGC_RESOURCE_DEST "$<TARGET_BUNDLE_CONTENT_DIR:acgc>/res")
 else ()
     set(ACGC_RESOURCE_DEST "$<TARGET_FILE_DIR:acgc>/res")
 endif ()

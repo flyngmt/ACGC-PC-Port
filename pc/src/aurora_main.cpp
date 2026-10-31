@@ -607,15 +607,18 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    if (!aurora_dvd_open(discPath.c_str())) {
-        DvdLog.error("Could not open disc image: {}", discPath);
+    // Resolve opaque locations (e.g. iOS bookmark://) to a filesystem path, keeping any access grant alive.
+    const borealis::io::PathAccess discAccess = borealis::io::access_path(discPath);
+    const std::string discFile = discAccess ? borealis::io::fs_path_to_string(discAccess.path()) : discPath;
+    if (!aurora_dvd_open(discFile.c_str())) {
+        DvdLog.error("Could not open disc image: {}", borealis::io::display_name(discPath));
         acgc::ui::shutdown();
         aurora_shutdown();
         return 1;
     }
 
     if (!pc_assets_init()) {
-        AssetsLog.error("Could not load game assets from: {}", discPath);
+        AssetsLog.error("Could not load game assets from: {}", borealis::io::display_name(discPath));
         aurora_dvd_close();
         acgc::ui::shutdown();
         aurora_shutdown();

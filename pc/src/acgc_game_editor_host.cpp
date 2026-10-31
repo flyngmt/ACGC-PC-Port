@@ -4,6 +4,10 @@
 #include <algorithm>
 #include <cmath>
 
+#if defined(__APPLE__)
+#include <TargetConditionals.h>
+#endif
+
 namespace acgc::input {
 
 GameEditor& game_editor() {
@@ -14,7 +18,7 @@ GameEditor& game_editor() {
 } // namespace acgc::input
 
 extern "C" void acgc_editor_set_available(int available, int multiline) {
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) || (defined(__APPLE__) && TARGET_OS_IOS)
     available = 0;
 #endif
     acgc::input::game_editor().set_available(available != 0, multiline != 0);

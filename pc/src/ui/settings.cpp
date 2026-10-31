@@ -593,6 +593,8 @@ SettingsWindow::SettingsWindow()
                 });
 #if defined(__ANDROID__)
                 pane.add_text(localization::get("settings.video.texture_pack_help_android"));
+#elif defined(__APPLE__) && TARGET_OS_IOS
+                pane.add_text(localization::get("settings.video.texture_pack_help_ios"));
 #else
                 pane.add_text(localization::format("settings.video.texture_pack_help",
                                                    borealis::io::fs_path_to_string(texture_replacements::directory())));
