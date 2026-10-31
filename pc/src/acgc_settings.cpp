@@ -187,6 +187,13 @@ void migrate_settings(nlohmann::json& root, int)
     migrate_enum<DiscVerificationState>(root, "backend.discVerification");
     migrate_enum<InterfaceTheme>(root, "video.theme");
     migrate_enum<AuroraBackend>(root, "video.renderer");
+
+    if (const auto legacy = root.find("gameplay.reduceTravelMoveOut"); legacy != root.end()) {
+        if (legacy->is_boolean() && legacy->get<bool>() && !root.contains("gameplay.travelMoveOutChance")) {
+            root["gameplay.travelMoveOutChance"] = "10";
+        }
+        root.erase(legacy);
+    }
 }
 
 void apply_controller_settings()
@@ -233,7 +240,7 @@ UserSettings::Enhancements::Enhancements(borealis::config::Registry& registry)
       disableShopVisitorRequirement(registry, "gameplay.disableShopVisitorRequirement", false),
       borderlessAcres(registry, "gameplay.borderlessAcres", true),
       pillarboxNes(registry, "gameplay.pillarboxNes", true), fastText(registry, "gameplay.fastText", true),
-      reduceTravelMoveOut(registry, "gameplay.reduceTravelMoveOut", false)
+      travelMoveOutChance(registry, "gameplay.travelMoveOutChance", TravelMoveOutChance::Default)
 {
 }
 
@@ -291,7 +298,7 @@ SettingsLoadResult load_settings(
     SettingsLoadResult result{
         .canonicalResult = settings().registry.load({
             .path = userDirectory / "config.json",
-            .version = 1,
+            .version = 2,
             .migrate = migrate_settings,
         }),
     };
@@ -335,7 +342,17 @@ void apply_settings_bridge(bool refreshGameplay)
     g_pc_settings.borderless_acres = current.enhancements.borderlessAcres.get() ? 1 : 0;
     g_pc_settings.nes_aspect = current.enhancements.pillarboxNes.get() ? 1 : 0;
     g_pc_settings.fast_text = current.enhancements.fastText.get() ? 1 : 0;
-    g_pc_settings.reduce_travel_move_out = current.enhancements.reduceTravelMoveOut.get() ? 1 : 0;
+    switch (current.enhancements.travelMoveOutChance.get()) {
+        case TravelMoveOutChance::Ten:
+            g_pc_settings.travel_move_out_chance = 10;
+            break;
+        case TravelMoveOutChance::Fifty:
+            g_pc_settings.travel_move_out_chance = 50;
+            break;
+        case TravelMoveOutChance::Default:
+            g_pc_settings.travel_move_out_chance = 100;
+            break;
+    }
     g_pc_settings.master_volume = current.audio.masterVolume.get();
     g_pc_settings.stick_deadzone = current.input.stickDeadzone.get();
     g_pc_settings.cstick_deadzone = current.input.cstickDeadzone.get();

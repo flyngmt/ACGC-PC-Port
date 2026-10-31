@@ -643,9 +643,18 @@ SettingsWindow::SettingsWindow()
                  localization::get("settings.gameplay.single_player_shop"),
                  localization::get("settings.gameplay.single_player_shop_help"));
 
-        add_bool(left, right, current.enhancements.reduceTravelMoveOut,
-                 localization::get("settings.gameplay.reduce_travel_move_out"),
-                 localization::get("settings.gameplay.reduce_travel_move_out_help"));
+        left.register_control(
+            left.add_child<DropdownButton>(bind_dropdown(current.enhancements.travelMoveOutChance, {
+                .key = localization::get("settings.gameplay.travel_move_out"),
+                .options = {
+                    { "10%" },
+                    { "50%" },
+                    { localization::get("settings.gameplay.travel_move_out.default") },
+                },
+            })),
+            right, [](Pane& pane) {
+                pane.add_text(localization::get("settings.gameplay.travel_move_out_help"));
+            });
 
         add_bool(left, right, current.enhancements.borderlessAcres,
                  localization::get("settings.gameplay.borderless_acres"),

@@ -890,7 +890,7 @@ int mCD_SaveStation_NextLand_bg(s32* chan) {
             mPr_CopyPrivateInfo(&l_mcd_foreigner_file.file.priv, current_priv);
         }
         mNpc_ClearInAnimal();
-        if (!g_pc_settings.reduce_travel_move_out || RANDOM(10) == 0) {
+        if (g_pc_settings.travel_move_out_chance >= 100 || RANDOM(100) < g_pc_settings.travel_move_out_chance) {
             mNpc_CopyRemoveAnimal(mNpc_GetInAnimalP());
         }
         memcpy(&l_mcd_foreigner_file.file.remove_animal, mNpc_GetInAnimalP(), sizeof(Animal_c));

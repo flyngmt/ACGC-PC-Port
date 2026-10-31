@@ -35,6 +35,12 @@ enum class InterfaceTheme : std::uint8_t {
     Night,
 };
 
+enum class TravelMoveOutChance : std::uint8_t {
+    Ten = 0,
+    Fifty,
+    Default,
+};
+
 constexpr auto config_enum_values(DiscVerificationState)
 {
     using enum DiscVerificationState;
@@ -52,6 +58,16 @@ constexpr auto config_enum_values(InterfaceTheme)
         { Dynamic, "dynamic" },
         { Day, "day" },
         { Night, "night" },
+    });
+}
+
+constexpr auto config_enum_values(TravelMoveOutChance)
+{
+    using enum TravelMoveOutChance;
+    return borealis::config::enum_table<TravelMoveOutChance>({
+        { Ten, "10" },
+        { Fifty, "50" },
+        { Default, "default" },
     });
 }
 
@@ -88,7 +104,7 @@ struct UserSettings {
         borealis::config::Var<bool> borderlessAcres;
         borealis::config::Var<bool> pillarboxNes;
         borealis::config::Var<bool> fastText;
-        borealis::config::Var<bool> reduceTravelMoveOut;
+        borealis::config::Var<TravelMoveOutChance> travelMoveOutChance;
 
         explicit Enhancements(borealis::config::Registry& registry);
     } enhancements;
