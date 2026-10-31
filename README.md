@@ -1,91 +1,26 @@
-# Animal Crossing PC Port
+# Nookery
 
-A native PC port of Animal Crossing (GameCube), based on the
+Nookery (formerly known as ACGC-PC-Port) is a native Windows/Linux/MacOS/Android port of Animal Crossing (GameCube), based on the
 [ac-decomp](https://github.com/ACreTeam/ac-decomp) decompilation.
 
 This repository contains no game assets. A legally obtained GAFE01 Rev 0 (USA)
-disc image is required; RVZ, ISO, and GCM images are accepted.
+disc image is required. RVZ, ISO, CISO and GCM images are supported.
 
-## Building and running
+## Running the port for players
 
-Install CMake 3.25 or newer, Ninja, and a C/C++20 toolchain.
-Clone the repository with its submodules, then configure and build one of the included presets:
+- Download the latest release in the [Releases](https://github.com/flyngmt/ACGC-PC-Port/releases) page.
+- Extract Nookery.
+- Optionally download the [texture pack](https://forums.dolphin-emu.org/Thread-animal-crossing-hd-texture-pack-version-25-october-11th-2026)
+(Highly recommended, it looks really good! Done by extremely talented artists) and put the extracted files under `/texture_pack`
+- Run Nookery. You'll need to select your legally obtained Animal Crossing copy to play the game. 
+Nookery includes various toggleable quality of life changes, we recommend taking a look under gameplay tab in settings. 
+You might also want to take a peek at [features](#features) to have an idea about what to expect.
 
-```sh
-git clone --recurse-submodules https://github.com/flyngmt/ACGC-PC-Port.git
-cd ACGC-PC-Port
-cmake --preset relwithdebinfo
-cmake --build --preset relwithdebinfo
-./build/aurora/relwithdebinfo/bin/AnimalCrossing --disc /path/to/game.rvz
-```
 
-Use the `debug` preset for unoptimized builds with debug info.
+## Building and running for developers
 
-### Android
-
-With the Android SDK and NDK installed, build the arm64 native library and APK with:
-
-```sh
-export ANDROID_HOME="$HOME/Android/Sdk"
-export ANDROID_NDK_VERSION="29.0.14206865"
-cmake --preset android-arm64
-cmake --build --preset android-arm64
-cd platforms/android
-./gradlew :app:assembleDebug
-```
-
-See [platforms/android/README.md](platforms/android/README.md) for prerequisites,
-APK output paths, and launch-intent arguments.
-
-## Controls
-
-### Keyboard (defaults)
-
-| Key | Action |
-|-----|--------|
-| WASD | Move (left stick) |
-| Arrow Keys | Camera (C-stick) |
-| Space | A button |
-| Left Shift | B button |
-| Enter | Start |
-| X | X button |
-| Y | Y button |
-| Q / E | L / R triggers |
-| Z | Z trigger |
-| I / J / K / L | D-pad (up/left/down/right) |
-
-### Gamepad
-
-SDL3 game controllers are supported through Aurora, including hotplug and
-persisted mappings.
-
-Press F1 on a keyboard, Back/Select on a controller, or R + Start to open
-the port menu. F3 toggles debug diagnostics.
-
-## Command Line Options
-
-| Flag | Description |
-|------|-------------|
-| `--disc PATH` | Open an RVZ, ISO, or GCM image; defaults to `game.rvz` |
-| `--window-size WxH` | Set the initial window size |
-| `--widescreen` | Start at 1280x720 instead of 4:3 |
-| `--profile[=N]` | Show performance diagnostics |
-| `--model-viewer[=index]` | Launch the model viewer at an optional structure index |
-| `--framelimit N` | Set a software frame limit; 0 is uncapped |
-| `--no-framelimit` | Run uncapped |
-| `--time H[:M[:S]]` | Override the in-game clock |
-| `--date M/D[/Y]` | Override the in-game date |
-| `--rain[=intensity]` | Force `light`, `normal`, or `heavy` rain (default `heavy`) |
-| `--verbose`, `-v` | Enable additional game diagnostics and debug logging |
-| `--log-level LEVEL`, `-L` | Select `trace`, `debug`, `info`, `warning`, `error`, or `fatal` |
-| `--log-dir PATH` | Override the rotating log-file directory |
-| `--user-dir PATH` | Override the directory used for configuration, mappings, and saves |
-| `--help`, `-h` | Show the generated option list |
-
-Options whose value is optional (`--profile`, `--model-viewer`, `--rain`) must attach
-it with `=`: `--rain=light`, not `--rain light`.
-
-Run `AnimalCrossing --help` for the full option list.
+See [BUILDING.md](BUILDING.md) for Windows, Linux, and macOS, and [BUILDING_ANDROID.md](BUILDING_ANDROID.md) for Android.
+You can use `Nookery --help` to see available command line options after building.
 
 ## Data Folder
 
@@ -94,26 +29,59 @@ and `nes_roms/`. Its default location is:
 
 | Platform | Default data folder |
 |---|---|
-| Windows | The executable's folder (matching the pre-Aurora port); falls back to `%APPDATA%\Animal Crossing\` when that folder is not writable |
-| macOS | `~/Library/Application Support/Animal Crossing/` |
-| Linux | `~/.local/share/Animal Crossing/` |
+| Windows | The executable's folder |
+| macOS | `~/Library/Application Support/Nookery/` |
+| Linux | `~/.local/share/Nookery/` |
 | Android | The app's internal files directory, exposed through its system documents provider |
 
 Use Settings > Data to move game data to a custom folder.
 
 ## Save Data
 
-The home town lives at `save/card_a/DobutsunomoriP_MURA.gci` in the data
-folder. Visited towns use `save/card_b/`.
+Your main town is at `save/card_a/` in the data
+folder. We support .GCI files, you can just use your dolphin save if you are migrating. You can put multiple towns in `save/card_b/` to visit them in game.
+
+## Features
+
+- Native 64-bit, Windows, Linux, macOS and Android support, with Vulkan, D3D12, D3D11 and Metal renderers via Aurora
+- Widescreen support
+- Unlocked framerate
+- Borderless acres
+- Dolphin HD texture pack support
+- Full mouse support for walking, inventory and all of the overlays
+- Keyboard support for typing letters
+- Controller support with hotplug, button remapping and stick deadzones
+- Touch controls on Android, with a layout editor and vibration
+- Built-in NES emulator that allows loading your own ROMs from the `nes_roms` folder
+- Multiple towns in Card B so you can select where you want to visit easily
+- Ability to visit the island without a GBA
+- Extended date support up to year 3000
+- Quality-of-life options: fast text, single-player shop upgrades, optional Resetti, outdoor camera control, tool switch with D-pad and more!
+- Custom UI
+- Update checker for new releases
 
 ## Credits
 
-This project would not be possible without the work of the [ACreTeam](https://github.com/ACreTeam) decompilation team.
-Their complete C decompilation of Animal Crossing is the foundation this port is built on.
+This project would not be possible without the work of the [ACreTeam](https://github.com/ACreTeam) decompilation team. Thanks to everyone who worked on that project.
 
-Special thanks to the [Aurora](https://github.com/encounter/aurora) developers,
-[Dusklight](https://github.com/TwilitRealm/dusklight) for inspiration, and all
-[contributors](https://github.com/TwilitRealm/dusklight/graphs/contributors).
+Even though Cuyler is already included in ACreTeam, his contributions go well beyond decompilation side. 
+He gave me access to deluxe's code even though he had no reason to (the reason this port got so much QoL from deluxe mod!), 
+and was always helpful whenever I had questions about how the game worked. It was a lot of fun working together,  
+thanks man.
+
+Also special thanks to the [Encounter](https://github.com/encounter) for handling so much of the Aurora migration, and their massive help, 
+[Tom Lube](https://github.com/tomlube) for extensive private testing, [Aurora](https://github.com/encounter/aurora) developers,
+[Dusklight](https://github.com/TwilitRealm/dusklight) team for both their help and advice,
+and all [contributors](https://github.com/flyngmt/ACGC-PC-Port/graphs/contributors). This project couldn't get where it is without you.
+
+Nookery icon and in game signs has been made by [Rainy Ram](https://bsky.app/profile/rainyr.am)
+Old ACGC logo has been made by @YourPalFox.
+Thanks to both of them, they are really talented and I would highly recommend checking them out.
+And lastly, shoutout to Animal Crossing Modding Discord members for being such a chill community!
+
+## AI Notice
+
+This project had AI assistance during development (PC port code only).
 
 ## FAQ
 
