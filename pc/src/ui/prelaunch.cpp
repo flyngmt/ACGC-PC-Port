@@ -34,6 +34,18 @@ namespace {
 
 constexpr borealis::Log Log{ "acgc::ui::prelaunch" };
 
+#if defined(_WIN32)
+constexpr const char* kLogoPath = "res/logos/windows.png";
+#elif defined(__ANDROID__)
+constexpr const char* kLogoPath = "res/logos/android.png";
+#elif defined(__APPLE__) && TARGET_OS_IOS
+constexpr const char* kLogoPath = "res/logos/ios.png";
+#elif defined(__APPLE__)
+constexpr const char* kLogoPath = "res/logos/macos.png";
+#else
+constexpr const char* kLogoPath = "res/logos/linux.png";
+#endif
+
 Rml::String document_source() {
     return R"RML(
 <rml>
@@ -50,7 +62,7 @@ Rml::String document_source() {
     <content id="root">
         <menu>
             <hero class="intro-item delay-0">
-                <img src="res/icon.png" />
+                <img src=")RML" + Rml::String(kLogoPath) + R"RML(" />
             </hero>
             <div id="menu-list" />
         </menu>

@@ -8,14 +8,15 @@ def borealisDir = new File(acpcRepoDir, 'extern/borealis')
 ext.borealisAndroid = [
     borealisDir: borealisDir,
     propertiesFile: new File(acpcRepoDir, 'build/android-arm64/borealis-android.properties'),
-    namespace: 'com.flyngmt.acpc',
-    applicationId: 'com.flyngmt.acpc',
+    namespace: 'com.flyngmt.nookery',
+    applicationId: 'com.flyngmt.nookery',
     abis: ['arm64-v8a'],
     assets: [
         [
             from: new File(acpcRepoDir, 'pc/res'),
             into: 'res',
-            excludes: ['**/.DS_Store', 'app.manifest', 'app.rc', 'icon.ico']
+            excludes: ['**/.DS_Store', 'app.manifest', 'app.rc', 'icon.ico',
+                       'logos/ios.png', 'logos/linux.png', 'logos/macos.png', 'logos/windows.png']
         ]
     ],
     proguardRules: file('proguard-rules.pro')

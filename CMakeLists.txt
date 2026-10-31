@@ -19,6 +19,8 @@ set(AURORA_ENABLE_CARD ON CACHE BOOL "" FORCE)
 set(AURORA_ENABLE_RMLUI ON CACHE BOOL "" FORCE)
 add_subdirectory(extern/aurora EXCLUDE_FROM_ALL)
 set(BOREALIS_ENABLE_UI ON CACHE BOOL "" FORCE)
+include(extern/borealis/cmake/DetectVersion.cmake)
+borealis_detect_version("${CMAKE_CURRENT_SOURCE_DIR}")
 add_subdirectory(extern/borealis EXCLUDE_FROM_ALL)
 
 include(FetchContent)
@@ -448,6 +450,24 @@ if (NOT ANDROID)
     set_target_properties(acgc PROPERTIES OUTPUT_NAME "Nookery")
 endif ()
 
+if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(ACGC_MACOS_ROOT "${DECOMP_ROOT}/platforms/macos")
+    target_sources(acgc PRIVATE "${ACGC_MACOS_ROOT}/Nookery.icns")
+    set_source_files_properties("${ACGC_MACOS_ROOT}/Nookery.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    set_target_properties(acgc PROPERTIES
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_BUNDLE_NAME "Nookery"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "com.flyngmt.nookery"
+        MACOSX_BUNDLE_BUNDLE_VERSION "${BOREALIS_APP_VERSION}"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "${BOREALIS_APP_SHORT_VERSION}"
+        MACOSX_BUNDLE_INFO_PLIST "${ACGC_MACOS_ROOT}/Info.plist.in"
+        BUILD_WITH_INSTALL_RPATH TRUE
+    )
+    set(ACGC_RESOURCE_DEST "$<TARGET_BUNDLE_CONTENT_DIR:acgc>/Resources/res")
+else ()
+    set(ACGC_RESOURCE_DEST "$<TARGET_FILE_DIR:acgc>/res")
+endif ()
+
 include(extern/aurora/cmake/AuroraCopyRuntimeDLLs.cmake)
 aurora_copy_runtime_dlls(acgc)
 
@@ -460,7 +480,7 @@ if (NOT ANDROID)
         OUTPUT "${ACGC_RESOURCE_STAMP}"
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${PC_ROOT}/res"
-            "$<TARGET_FILE_DIR:acgc>/res"
+            "${ACGC_RESOURCE_DEST}"
         COMMAND ${CMAKE_COMMAND} -E touch "${ACGC_RESOURCE_STAMP}"
         DEPENDS ${ACGC_RESOURCE_FILES}
         COMMENT "Copying Animal Crossing UI resources"
@@ -469,7 +489,9 @@ if (NOT ANDROID)
     add_custom_target(acgc_resources ALL DEPENDS "${ACGC_RESOURCE_STAMP}")
     add_dependencies(acgc acgc_resources)
 
-    set(ACGC_USER_FOLDERS save/card_a save/card_b texture_pack nes_roms)
+    if (NOT APPLE)
+        set(ACGC_USER_FOLDERS save/card_a save/card_b texture_pack nes_roms)
+    endif ()
     foreach (folder IN LISTS ACGC_USER_FOLDERS)
         add_custom_command(TARGET acgc POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:acgc>/${folder}"
@@ -478,15 +500,24 @@ if (NOT ANDROID)
     endforeach ()
 endif ()
 
+if (CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND NOT CMAKE_GENERATOR STREQUAL "Xcode")
+    add_custom_command(TARGET acgc POST_BUILD
+        COMMAND /usr/bin/codesign --force --sign - "$<TARGET_BUNDLE_DIR:acgc>"
+        COMMENT "Ad-hoc signing Nookery.app"
+        VERBATIM
+    )
+endif ()
+
 # =============================================================================
 # Install rules (cmake --install . --prefix <dest>)
 # =============================================================================
 install(TARGETS acgc
+    BUNDLE DESTINATION .
     LIBRARY DESTINATION bin
     RUNTIME DESTINATION bin
 )
 aurora_install_runtime_dlls(acgc "\${CMAKE_INSTALL_PREFIX}/bin")
-if (NOT ANDROID)
+if (NOT ANDROID AND NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     install(DIRECTORY "${PC_ROOT}/res/" DESTINATION bin/res)
     foreach (folder IN LISTS ACGC_USER_FOLDERS)
         install(DIRECTORY DESTINATION bin/${folder})

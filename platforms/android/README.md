@@ -39,7 +39,7 @@ Borealis accepts command-line arguments through launch-intent extras:
 
 ```sh
 adb shell am start \
-  -n com.flyngmt.acpc/dev.encounter.borealis.BorealisActivity \
+  -n com.flyngmt.nookery/dev.encounter.borealis.BorealisActivity \
   --es borealis_args "--backend vulkan"
 ```
 
