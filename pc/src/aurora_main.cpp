@@ -162,7 +162,6 @@ constexpr borealis::Log AssetsLog{"acgc::assets"};
 
 bool s_uber_shader_requested = false;
 bool s_frame_limit_explicit = false;
-bool s_window_size_explicit = false;
 borealis::LogLevel s_log_level = borealis::LogLevel::Info;
 std::filesystem::path s_log_directory;
 std::filesystem::path s_user_directory;
@@ -226,29 +225,6 @@ void apply_frame_limit() {
     std::this_thread::sleep_until(next_frame);
 }
 
-bool parse_window_dimensions(const char* text, WindowDimensions* dimensions) {
-    if (text == nullptr || dimensions == nullptr) {
-        return false;
-    }
-
-    char* width_end = nullptr;
-    const long width = std::strtol(text, &width_end, 10);
-    if (width_end == text || (*width_end != 'x' && *width_end != 'X')) {
-        return false;
-    }
-
-    char* height_end = nullptr;
-    const long height = std::strtol(width_end + 1, &height_end, 10);
-    if (height_end == width_end + 1 || *height_end != '\0' || width < 320 || height < 240 || width > 16384 ||
-        height > 16384) {
-        return false;
-    }
-
-    dimensions->width = static_cast<int>(width);
-    dimensions->height = static_cast<int>(height);
-    return true;
-}
-
 #if ACGC_HAS_WINDOW_CONTROLS
 bool automatic_window_dimensions(WindowDimensions* dimensions) {
     constexpr double kWindowFill = 0.9;
@@ -293,7 +269,6 @@ bool automatic_window_dimensions(WindowDimensions* dimensions) {
 #endif
 
 struct CommandLine {
-    WindowDimensions window{};
     std::string discPath;
     bool discPathExplicit = false;
 };
@@ -309,10 +284,6 @@ ParseOutcome parse_command_line(int argc, char* argv[], CommandLine* out) {
             cxxopts::value<bool>()->default_value("false")->implicit_value("true"))
         ("disc", "Open an RVZ, ISO, or GCM image without the prelaunch menu",
             cxxopts::value<std::string>())
-        ("window-size", "Set the initial window size, WIDTHxHEIGHT (minimum 320x240)",
-            cxxopts::value<std::string>())
-        ("widescreen", "Start at 1280x720",
-            cxxopts::value<bool>()->default_value("false")->implicit_value("true"))
         ("profile", "Show performance diagnostics (optional =N interval, ignored)",
             cxxopts::value<std::string>()->implicit_value(""))
         ("framelimit", "Set a software frame limit (0 = uncapped)", cxxopts::value<std::string>())
@@ -357,20 +328,6 @@ ParseOutcome parse_command_line(int argc, char* argv[], CommandLine* out) {
     if (parsed.count("disc")) {
         out->discPath = parsed["disc"].as<std::string>();
         out->discPathExplicit = true;
-    }
-
-    if (parsed["widescreen"].as<bool>()) {
-        out->window.width = 1280;
-        out->window.height = 720;
-        s_window_size_explicit = true;
-    }
-    if (parsed.count("window-size")) {
-        if (!parse_window_dimensions(parsed["window-size"].as<std::string>().c_str(),
-                &out->window)) {
-            std::fprintf(stderr, "--window-size expects WIDTHxHEIGHT (minimum 320x240)\n");
-            return ParseOutcome::Failed;
-        }
-        s_window_size_explicit = true;
     }
 
     if (parsed["no-framelimit"].as<bool>()) {
@@ -504,7 +461,6 @@ int main(int argc, char* argv[]) {
     case ParseOutcome::Run:
         break;
     }
-    WindowDimensions windowDimensions = commandLine.window;
 
     const acgc::data::Paths data_paths = acgc::data::initialize(s_user_directory);
     const auto& log_root = data_paths.cachePath;
@@ -553,7 +509,7 @@ int main(int argc, char* argv[]) {
 
     const auto& settings = acgc::settings();
 #if ACGC_HAS_WINDOW_CONTROLS
-    if (!s_window_size_explicit && !settings.video.windowWidth.user_value() && !settings.video.windowHeight.user_value()) {
+    if (!settings.video.windowWidth.user_value() && !settings.video.windowHeight.user_value()) {
         WindowDimensions automatic;
         if (automatic_window_dimensions(&automatic)) {
             acgc::settings().video.windowWidth.set(automatic.width);
@@ -562,10 +518,9 @@ int main(int argc, char* argv[]) {
         }
     }
 #endif
-    if (!s_window_size_explicit) {
-        windowDimensions.width = settings.video.windowWidth.get();
-        windowDimensions.height = settings.video.windowHeight.get();
-    }
+    WindowDimensions windowDimensions;
+    windowDimensions.width = settings.video.windowWidth.get();
+    windowDimensions.height = settings.video.windowHeight.get();
     if (!s_frame_limit_explicit) {
         g_pc_frame_limit_override = settings.video.maxFrameRate.get();
     }
