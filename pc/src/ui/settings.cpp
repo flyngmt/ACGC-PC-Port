@@ -83,14 +83,6 @@ struct ResolutionPreset {
     bool desktop = false;
 };
 
-constexpr std::array kResolutionPresets = {
-    ResolutionPreset{ 640, 480 },   ResolutionPreset{ 800, 600 },   ResolutionPreset{ 960, 720 },
-    ResolutionPreset{ 1024, 768 },  ResolutionPreset{ 1152, 864 },  ResolutionPreset{ 1280, 960 },
-    ResolutionPreset{ 1400, 1050 }, ResolutionPreset{ 1600, 1200 }, ResolutionPreset{ 1280, 720 },
-    ResolutionPreset{ 1366, 768 },  ResolutionPreset{ 1600, 900 },  ResolutionPreset{ 1920, 1080 },
-    ResolutionPreset{ 2560, 1440 }, ResolutionPreset{ 3840, 2160 },
-};
-
 bool same_resolution(const ResolutionPreset& preset, int width, int height) {
     return preset.width == width && preset.height == height;
 }
@@ -104,9 +96,9 @@ std::vector<ResolutionPreset> available_resolution_presets() {
 
     /* Presets larger than the desktop would persist an off-screen window. */
     std::vector<ResolutionPreset> presets;
-    for (const ResolutionPreset& preset : kResolutionPresets) {
-        if (mode == nullptr || (preset.width <= mode->w && preset.height <= mode->h)) {
-            presets.push_back(preset);
+    for (const WindowResolution& resolution : kWindowResolutions) {
+        if (mode == nullptr || (resolution.width <= mode->w && resolution.height <= mode->h)) {
+            presets.push_back({ resolution.width, resolution.height });
         }
     }
     if (mode != nullptr) {

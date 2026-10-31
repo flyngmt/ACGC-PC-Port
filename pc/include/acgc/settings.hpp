@@ -6,6 +6,7 @@
 
 #include <aurora/aurora.h>
 
+#include <array>
 #include <cstdint>
 #include <filesystem>
 #include <string>
@@ -135,6 +136,19 @@ struct SettingsLoadResult {
     borealis::config::Status canonicalResult;
     bool importedLegacy = false;
     std::filesystem::path legacyPath;
+};
+
+struct WindowResolution {
+    int width;
+    int height;
+};
+
+inline constexpr std::array kWindowResolutions = {
+    WindowResolution{ 640, 480 },   WindowResolution{ 800, 600 },   WindowResolution{ 960, 720 },
+    WindowResolution{ 1024, 768 },  WindowResolution{ 1152, 864 },  WindowResolution{ 1280, 960 },
+    WindowResolution{ 1400, 1050 }, WindowResolution{ 1600, 1200 }, WindowResolution{ 1280, 720 },
+    WindowResolution{ 1366, 768 },  WindowResolution{ 1600, 900 },  WindowResolution{ 1920, 1080 },
+    WindowResolution{ 2560, 1440 }, WindowResolution{ 3840, 2160 },
 };
 
 UserSettings& settings();

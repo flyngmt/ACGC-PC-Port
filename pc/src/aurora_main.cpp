@@ -33,7 +33,9 @@
 #include "borealis/io.hpp"
 #include "borealis/log.hpp"
 
+#include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -246,6 +248,49 @@ bool parse_window_dimensions(const char* text, WindowDimensions* dimensions) {
     dimensions->height = static_cast<int>(height);
     return true;
 }
+
+#if ACGC_HAS_WINDOW_CONTROLS
+bool automatic_window_dimensions(WindowDimensions* dimensions) {
+    constexpr double kWindowFill = 0.9;
+
+    if (!SDL_InitSubSystem(SDL_INIT_VIDEO)) {
+        VideoLog.warn("Unable to query the display for a default window size: {}", SDL_GetError());
+        return false;
+    }
+
+    bool found = false;
+    const SDL_DisplayID display = SDL_GetPrimaryDisplay();
+    const SDL_DisplayMode* mode = display != 0 ? SDL_GetDesktopDisplayMode(display) : nullptr;
+    SDL_Rect usable{};
+    if (mode != nullptr && mode->w > 0 && mode->h > 0 && SDL_GetDisplayUsableBounds(display, &usable)) {
+        const double aspect = static_cast<double>(mode->w) / mode->h;
+        const double maxWidth = usable.w * kWindowFill;
+        const double maxHeight = usable.h * kWindowFill;
+        double width = maxWidth;
+        double height = maxWidth / aspect;
+        if (height > maxHeight) {
+            height = maxHeight;
+            width = maxHeight * aspect;
+        }
+        dimensions->width = std::max(640, static_cast<int>(width) & ~7);
+        dimensions->height = std::max(480, static_cast<int>(height) & ~7);
+        int bestArea = 0;
+        for (const acgc::WindowResolution& preset : acgc::kWindowResolutions) {
+            const double presetAspect = static_cast<double>(preset.width) / preset.height;
+            if (std::abs(presetAspect - aspect) < 0.01 && preset.width <= maxWidth && preset.height <= maxHeight &&
+                preset.width * preset.height > bestArea) {
+                dimensions->width = preset.width;
+                dimensions->height = preset.height;
+                bestArea = preset.width * preset.height;
+            }
+        }
+        found = true;
+    }
+
+    SDL_QuitSubSystem(SDL_INIT_VIDEO);
+    return found;
+}
+#endif
 
 struct CommandLine {
     WindowDimensions window{};
@@ -522,6 +567,16 @@ int main(int argc, char* argv[]) {
     acgc::prepare_legacy_input(user_path, legacy_input);
 
     const auto& settings = acgc::settings();
+#if ACGC_HAS_WINDOW_CONTROLS
+    if (!s_window_size_explicit && !settings.video.windowWidth.user_value() && !settings.video.windowHeight.user_value()) {
+        WindowDimensions automatic;
+        if (automatic_window_dimensions(&automatic)) {
+            acgc::settings().video.windowWidth.set(automatic.width);
+            acgc::settings().video.windowHeight.set(automatic.height);
+            VideoLog.info("Default window size {}x{} chosen for this display", automatic.width, automatic.height);
+        }
+    }
+#endif
     if (!s_window_size_explicit) {
         windowDimensions.width = settings.video.windowWidth.get();
         windowDimensions.height = settings.video.windowHeight.get();
