@@ -160,7 +160,6 @@ constexpr borealis::Log UiLog{"acgc::ui"};
 constexpr borealis::Log DvdLog{"acgc::dvd"};
 constexpr borealis::Log AssetsLog{"acgc::assets"};
 
-bool s_uber_shader_requested = false;
 bool s_frame_limit_explicit = false;
 borealis::LogLevel s_log_level = borealis::LogLevel::Info;
 std::filesystem::path s_log_directory;
@@ -287,14 +286,10 @@ ParseOutcome parse_command_line(int argc, char* argv[], CommandLine* out) {
         ("profile", "Show performance diagnostics (optional =N interval, ignored)",
             cxxopts::value<std::string>()->implicit_value(""))
         ("framelimit", "Set a software frame limit (0 = uncapped)", cxxopts::value<std::string>())
-        ("no-framelimit", "Run uncapped",
-            cxxopts::value<bool>()->default_value("false")->implicit_value("true"))
         ("time", "Override the in-game clock, H[:M[:S]]", cxxopts::value<std::string>())
         ("date", "Override the in-game date, M/D[/Y]", cxxopts::value<std::string>())
         ("rain", "Force rain, optionally =light, =normal or =heavy",
-            cxxopts::value<std::string>()->implicit_value("heavy"))
-        ("uber-shader", "Accepted for OpenGL-backend compatibility; ignored",
-            cxxopts::value<bool>()->default_value("false")->implicit_value("true"));
+            cxxopts::value<std::string>()->implicit_value("heavy"));
     options.parse_positional({"disc"});
     options.positional_help("[disc image]");
     options.allow_unrecognised_options();
@@ -330,10 +325,6 @@ ParseOutcome parse_command_line(int argc, char* argv[], CommandLine* out) {
         out->discPathExplicit = true;
     }
 
-    if (parsed["no-framelimit"].as<bool>()) {
-        g_pc_frame_limit_override = 0;
-        s_frame_limit_explicit = true;
-    }
     if (parsed.count("framelimit")) {
         int limit = -1;
         if (!parse_nonnegative_integer(parsed["framelimit"].as<std::string>().c_str(), &limit)) {
@@ -347,7 +338,6 @@ ParseOutcome parse_command_line(int argc, char* argv[], CommandLine* out) {
     if (parsed.count("profile")) {
         g_pc_debug_ui_visible = 1;
     }
-    s_uber_shader_requested = parsed["uber-shader"].as<bool>();
 
     if (parsed.count("time")) {
         int hour = -1;
@@ -525,9 +515,6 @@ int main(int argc, char* argv[]) {
         g_pc_frame_limit_override = settings.video.maxFrameRate.get();
     }
 
-    if (s_uber_shader_requested) {
-        MainLog.warn("--uber-shader is an OpenGL-backend option and has no Aurora equivalent; ignoring it");
-    }
     if (g_pc_frame_limit_override >= 0) {
         VideoLog.info("Software frame limit: {}{}", g_pc_frame_limit_override,
                       g_pc_frame_limit_override == 0 ? " (uncapped)" : " FPS");
