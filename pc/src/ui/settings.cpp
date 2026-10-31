@@ -599,8 +599,12 @@ SettingsWindow::SettingsWindow()
                 pane.add_button(localization::get("settings.video.texture_pack_reload")).on_pressed([] {
                     texture_replacements::reload();
                 });
+#if defined(__ANDROID__)
+                pane.add_text(localization::get("settings.video.texture_pack_help_android"));
+#else
                 pane.add_text(localization::format("settings.video.texture_pack_help",
                                                    borealis::io::fs_path_to_string(texture_replacements::directory())));
+#endif
                 pane.add_button(localization::get("settings.video.texture_pack_get")).on_pressed([] {
                     show_open_url_modal(kTexturePackUrl);
                 });

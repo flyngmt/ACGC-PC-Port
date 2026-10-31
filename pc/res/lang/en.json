@@ -228,6 +228,7 @@
   "settings.video.texture_pack": "Texture Pack",
   "settings.video.texture_pack_get": "Get Texture Pack",
   "settings.video.texture_pack_help": "Load Dolphin-format DDS and PNG replacements from {} and its subfolders.",
+  "settings.video.texture_pack_help_android": "Download the PNG version of the texture pack. Most phones can't load the DDS version. Copy it into the texture_pack folder.",
   "settings.video.texture_pack_loaded": "{} textures loaded",
   "settings.video.texture_pack_reload": "Reload Texture Pack",
   "settings.video.textures_section": "Textures",
