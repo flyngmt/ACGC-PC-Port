@@ -4,7 +4,6 @@
 #ifdef TARGET_PC
 #include "pc_platform.h"
 #include "pc_diag.h"
-extern int g_pc_model_viewer;
 #endif
 
 #include "m_debug.h"
@@ -168,22 +167,14 @@ extern void game_main(GAME* this) {
 #endif
     this->exec(this);
 #ifdef MOUSE_INPUT
-    if (!g_pc_model_viewer) {
-        mHD_mouse_pointer_draw(this);
-    }
+    mHD_mouse_pointer_draw(this);
 #endif
     TracyCZoneEnd(game_execute_zone);
     GRAPH_SET_DOING_POINT(graph, GAME_EXEC_FINISHED);
     GRAPH_SET_DOING_POINT(graph, GAME_BGM);
-#ifdef TARGET_PC
-    if (!g_pc_model_viewer) {
-#endif
-        TracyCZoneN(bgm_zone, "BGM update", 1);
-        mBGM_main(this);
-        TracyCZoneEnd(bgm_zone);
-#ifdef TARGET_PC
-    }
-#endif
+    TracyCZoneN(bgm_zone, "BGM update", 1);
+    mBGM_main(this);
+    TracyCZoneEnd(bgm_zone);
     GRAPH_SET_DOING_POINT(graph, GAME_BGM_FINISHED);
     game_move_first(this);
     this->frame_counter++;

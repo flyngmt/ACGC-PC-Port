@@ -10,9 +10,6 @@
 #include "save_menu.h"
 #include "famicom_emu.h"
 #include "m_prenmi.h"
-#ifdef TARGET_PC
-#include "pc_model_viewer.h"
-#endif
 
 #define DLFTBL_MAKE(name, class) \
     { NULL, 0, 0, NULL, NULL, NULL, name##_init, name##_cleanup, NULL, NULL, NULL, sizeof(GAME_##class) }
@@ -30,7 +27,4 @@ DLFTBL_GAME game_dlftbls[] = {
   DLFTBL_MAKE(save_menu, SAVE_MENU),
   DLFTBL_MAKE(famicom_emu, FAMICOM_EMU),
   DLFTBL_MAKE(prenmi, PRENMI),
-#ifdef TARGET_PC
-  DLFTBL_MAKE(pc_model_viewer, MODEL_VIEWER),  /* Index 10 */
-#endif
 };

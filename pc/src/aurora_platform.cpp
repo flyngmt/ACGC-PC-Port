@@ -236,9 +236,6 @@ extern int osShutdown;
 OSModuleHeader* BaseModule = nullptr;
 s32 osAppNMIBuffer[16] = {};
 
-int g_pc_model_viewer = 0;
-int g_pc_model_viewer_start = -1;
-int g_pc_model_viewer_no_cull = 0;
 int g_pc_paused = 0;
 int g_pc_pause_input_drain = 0;
 int g_pc_nes_active = 0;

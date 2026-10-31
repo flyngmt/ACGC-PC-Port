@@ -315,8 +315,6 @@ ParseOutcome parse_command_line(int argc, char* argv[], CommandLine* out) {
             cxxopts::value<bool>()->default_value("false")->implicit_value("true"))
         ("profile", "Show performance diagnostics (optional =N interval, ignored)",
             cxxopts::value<std::string>()->implicit_value(""))
-        ("model-viewer", "Launch the model viewer, optionally at =N",
-            cxxopts::value<std::string>()->implicit_value(""))
         ("framelimit", "Set a software frame limit (0 = uncapped)", cxxopts::value<std::string>())
         ("no-framelimit", "Run uncapped",
             cxxopts::value<bool>()->default_value("false")->implicit_value("true"))
@@ -393,19 +391,6 @@ ParseOutcome parse_command_line(int argc, char* argv[], CommandLine* out) {
         g_pc_debug_ui_visible = 1;
     }
     s_uber_shader_requested = parsed["uber-shader"].as<bool>();
-
-    if (parsed.count("model-viewer")) {
-        g_pc_model_viewer = 1;
-        const auto index = parsed["model-viewer"].as<std::string>();
-        int start = -1;
-        if (!index.empty()) {
-            if (!parse_nonnegative_integer(index.c_str(), &start)) {
-                std::fprintf(stderr, "--model-viewer expects a nonnegative structure index\n");
-                return ParseOutcome::Failed;
-            }
-            g_pc_model_viewer_start = start;
-        }
-    }
 
     if (parsed.count("time")) {
         int hour = -1;

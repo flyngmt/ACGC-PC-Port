@@ -29,7 +29,6 @@
 #ifdef TARGET_PC
 #include "pc_diag.h"
 #include "pc_platform.h"
-#include "pc_model_viewer.h"
 extern int g_pc_running;
 #endif
 
@@ -99,11 +98,6 @@ static DLFTBL_GAME* game_get_next_game_dlftbl(GAME* game) {
     } else if (ARE_INIT_PROCS_EQUAL(next_game_init_proc, prenmi_init)) {
         return &game_dlftbls[9];
     }
-#ifdef TARGET_PC
-    else if (ARE_INIT_PROCS_EQUAL(next_game_init_proc, pc_model_viewer_init)) {
-        return &game_dlftbls[10];
-    }
-#endif
 
     return NULL;
 }
@@ -400,11 +394,6 @@ static void graph_main(GRAPH* this, GAME* game) {
 extern void graph_proc(void* arg) {
     GRAPH* __graph = &graph_class;
     DLFTBL_GAME* dlftbl = &game_dlftbls[0];
-#ifdef TARGET_PC
-    if (g_pc_model_viewer) {
-        dlftbl = &game_dlftbls[10]; /* model viewer */
-    }
-#endif
     graph_ct(&graph_class);
 
     while (dlftbl != NULL) {

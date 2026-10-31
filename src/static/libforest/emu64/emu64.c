@@ -2505,11 +2505,6 @@ void emu64::cullmode() {
     if (aflags[AFLAGS_WIREFRAME] != 0) {
         cullmode = GX_CULL_NONE;
     }
-#ifdef TARGET_PC
-    if (g_pc_model_viewer_no_cull) {
-        cullmode = GX_CULL_NONE;
-    }
-#endif
 
     GXSetCullMode(cullmode);
 }
