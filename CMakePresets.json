@@ -79,6 +79,25 @@
       "cacheVariables": {
         "ANDROID_ABI": "arm64-v8a"
       }
+    },
+    {
+      "name": "ios-arm64",
+      "displayName": "Animal Crossing iOS (arm64)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "inherits": "relwithdebinfo",
+      "cacheVariables": {
+        "CMAKE_SYSTEM_NAME": "iOS",
+        "CMAKE_OSX_SYSROOT": "iphoneos",
+        "CMAKE_OSX_ARCHITECTURES": "arm64",
+        "CMAKE_OSX_DEPLOYMENT_TARGET": "14.0",
+        "Rust_CARGO_TARGET": "aarch64-apple-ios",
+        "BOREALIS_APP_VERSION_OVERRIDE": "1.0",
+        "BUILD_SHARED_LIBS": false,
+        "CMAKE_DISABLE_FIND_PACKAGE_PkgConfig": true,
+        "CMAKE_DISABLE_FIND_PACKAGE_zstd": true,
+        "CMAKE_IGNORE_PREFIX_PATH": "/opt/homebrew"
+      }
     }
   ],
   "buildPresets": [
@@ -101,6 +120,13 @@
     {
       "name": "android-arm64",
       "configurePreset": "android-arm64",
+      "targets": [
+        "acgc"
+      ]
+    },
+    {
+      "name": "ios-arm64",
+      "configurePreset": "ios-arm64",
       "targets": [
         "acgc"
       ]
