@@ -33,6 +33,6 @@ scrolling-pattern img.scrolling-texture {
     display: block;
     width: 512dp;
     height: 512dp;
-    filter: opacity(0.10);
+    opacity: 0.10;
     image-color: var(--color-pattern-tint);
 }

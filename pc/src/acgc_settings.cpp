@@ -227,7 +227,7 @@ UserSettings::Video::Video(borealis::config::Registry& registry)
       windowWidth(registry, "video.windowWidth", 1280, { .min = 320, .max = 16384 }),
       windowHeight(registry, "video.windowHeight", 960, { .min = 240, .max = 16384 }),
       windowMode(registry, "video.windowMode", 0, { .min = 0, .max = 2 }),
-      uiScale(registry, "video.uiScale", 0, { .sanitize = sanitize_ui_scale }),
+      uiScale(registry, "video.uiScale", ACGC_HAS_WINDOW_CONTROLS ? 0 : 75, { .sanitize = sanitize_ui_scale }),
       theme(registry, "video.theme", InterfaceTheme::Dynamic), vsync(registry, "video.vsync", true),
       maxFrameRate(registry, "video.maxFrameRate", 60, { .min = 0, .max = 1000 }),
       hudAtEdges(registry, "video.hudAtEdges", false)
