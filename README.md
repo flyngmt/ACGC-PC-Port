@@ -13,11 +13,14 @@ disc image is required. RVZ, ISO, CISO and GCM images are supported.
 - Download the latest release in the [Releases](https://github.com/flyngmt/ACGC-PC-Port/releases) page.
 - Extract Nookery.
 - Optionally download the [texture pack](https://forums.dolphin-emu.org/Thread-animal-crossing-hd-texture-pack-version-25-october-11th-2026)
-(Highly recommended, made by extremely talented artists, it looks really good.) and put the extracted files under `/texture_pack`
+(Highly recommended, made by extremely talented artists, it looks really good.) and put the extracted files under `{your_data_folder}/texture_pack`
 - Run Nookery. You'll need to select your legally obtained Animal Crossing copy to play the game.
 
 Nookery includes various toggleable quality of life changes, we recommend taking a look under gameplay tab in settings. 
 You might also want to take a peek at [features](#features) to have an idea about what to expect.
+
+If you have a save you want to import, you can drop them under `{your_data_folder}/saves/card_a`. 
+You can also use card_b for the towns you want to visit.
 
 On iOS, see [INSTALLING_IOS.md](INSTALLING_IOS.md) to install the `.ipa` with iloader.
 
@@ -38,6 +41,9 @@ and `nes_roms/`. Its default location is:
 | Linux | `~/.local/share/Nookery/` |
 | Android | The app's internal files directory, exposed through its system documents provider |
 | iOS | The app's Documents folder, visible in the Files app under **On My iPhone (or iPad) > Nookery** |
+
+For android, you might need to use a different file browser app such as Material Files
+if you can't see internal files of Nookery.
 
 On desktop, use Settings > Data to move game data to a custom folder.
 
