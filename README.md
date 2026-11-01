@@ -42,7 +42,7 @@ and `nes_roms/`. Its default location is:
 | Android | The app's internal files directory, exposed through its system documents provider |
 | iOS | The app's Documents folder, visible in the Files app under **On My iPhone (or iPad) > Nookery** |
 
-For android, you might need to use a different file browser app such as Material Files
+For android, you might need to use a different file browser app such as [Material Files](https://play.google.com/store/apps/details?id=me.zhanghai.android.files)
 if you can't see internal files of Nookery.
 
 On desktop, use Settings > Data to move game data to a custom folder.
