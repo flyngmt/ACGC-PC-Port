@@ -1,4 +1,7 @@
 #include "ac_museum_fish_priv.h"
+#ifdef TARGET_PC
+#include "pc_platform.h"
+#endif
 
 // extern data
 // clang-format off
@@ -1070,6 +1073,13 @@ void Museum_Fish_Actor_draw(ACTOR* actorx, GAME* game) {
 
 BOOL mfish_cull_check(GAME* game, xyz_t* worldPos, f32 x, f32 y, f32 _y) {
     xyz_t screenPos;
+#ifdef TARGET_PC
+    f32 aspect_factor = pc_widescreen_get_aspect_factor();
+
+    if (aspect_factor < 1.0f) {
+        x += 160.0f * (1.0f / aspect_factor - 1.0f);
+    }
+#endif
     Game_play_Projection_Trans((GAME_PLAY*)game, worldPos, &screenPos);
     if ((-x < screenPos.x) && (screenPos.x < x + 320) && (-y < screenPos.y) && (screenPos.y < _y + 240)) {
         return TRUE;
