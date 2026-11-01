@@ -81,12 +81,12 @@ jobs:
 
       - name: Rename debug symbols
         working-directory: build/install
-        run: mv debug.tar.xz nookery-${{env.APP_VERSION}}-linux-${{matrix.arch}}-debug.tar.xz
+        run: mv debug.tar.xz debug-Nookery-${{env.APP_VERSION}}-linux-${{matrix.arch}}.tar.xz
 
       - name: Upload debug symbols
         uses: actions/upload-artifact@v7
         with:
-          path: build/install/nookery-*-debug.tar.xz
+          path: build/install/debug-Nookery-*.tar.xz
           archive: false
           if-no-files-found: error
 
@@ -141,12 +141,12 @@ jobs:
 
       - name: Rename debug symbols
         working-directory: build/install
-        run: mv debug.tar.xz nookery-${{env.APP_VERSION}}-${{matrix.artifact_name}}-debug.tar.xz
+        run: mv debug.tar.xz debug-Nookery-${{env.APP_VERSION}}-${{matrix.artifact_name}}.tar.xz
 
       - name: Upload debug symbols
         uses: actions/upload-artifact@v7
         with:
-          path: build/install/nookery-*-debug.tar.xz
+          path: build/install/debug-Nookery-*.tar.xz
           archive: false
           if-no-files-found: error
 
@@ -238,7 +238,7 @@ jobs:
 
       - name: Package
         working-directory: build/install
-        run: 7z a -tzip ../Nookery-${{env.APP_VERSION}}-windows-${{matrix.arch}}.zip * -x!debug.7z -xr!*.pdb
+        run: 7z a -tzip ../Nookery-${{env.APP_VERSION}}-windows-${{matrix.arch}}.zip * '-x!debug.7z' '-xr!*.pdb'
 
       - name: Upload package
         uses: actions/upload-artifact@v7
@@ -249,11 +249,11 @@ jobs:
 
       - name: Rename debug symbols
         working-directory: build/install
-        run: mv debug.7z nookery-${{env.APP_VERSION}}-windows-${{matrix.arch}}-debug.7z
+        run: mv debug.7z debug-Nookery-${{env.APP_VERSION}}-windows-${{matrix.arch}}.7z
 
       - name: Upload debug symbols
         uses: actions/upload-artifact@v7
         with:
-          path: build/install/nookery-*-debug.7z
+          path: build/install/debug-Nookery-*.7z
           archive: false
           if-no-files-found: error
