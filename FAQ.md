@@ -33,5 +33,5 @@ legacy branch, for anyone who needs it to possibly port it to older devices.
 
 When I shared this repo with people, I did so in the modding server without mentioning it anywhere else. I frankly didn't expect it to get this much attention. 
 At the time I was already tired, and just wanted to share it with the people on the server, so they could playtest it. I just picked the most simple possible option.
-It's obviously not a great or very creative name, so changing it seemed the best way to move forward. We also support android at the moment, would be weird to call it 
+It's obviously not a great or very creative name, so changing it seemed the best way to move forward. We also support android and iOS at the moment, would be weird to call it 
 a PC port, lol.

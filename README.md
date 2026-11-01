@@ -19,6 +19,7 @@ disc image is required. RVZ, ISO, CISO and GCM images are supported.
 Nookery includes various toggleable quality of life changes, we recommend taking a look under gameplay tab in settings. 
 You might also want to take a peek at [features](#features) to have an idea about what to expect.
 
+On iOS, see [INSTALLING_IOS.md](INSTALLING_IOS.md) to install the `.ipa` with iloader.
 
 ## Building and running for developers
 
@@ -47,7 +48,7 @@ folder. We support .gci files, you can just use your dolphin save if you are mig
 
 ## Features
 
-- Native 64-bit, Windows, Linux, macOS and Android support, with Vulkan, D3D12, D3D11 and Metal renderers via Aurora
+- Native 64-bit Windows, Linux, macOS, Android and iOS support, with Vulkan, D3D12, D3D11 and Metal renderers via Aurora
 - Widescreen support
 - Unlocked framerate
 - Borderless acres
@@ -55,7 +56,7 @@ folder. We support .gci files, you can just use your dolphin save if you are mig
 - Full mouse support for walking, inventory and all of the overlays
 - Keyboard support for typing letters
 - Controller support with hotplug, button remapping and stick deadzones
-- Touch controls on Android, with a layout editor and vibration
+- Touch controls on Android/iOS, with a layout editor and vibration
 - Built-in NES emulator that allows loading your own ROMs from the `nes_roms` folder
 - Multiple towns in Card B so you can select where you want to visit easily
 - Ability to visit the island without a GBA
@@ -73,7 +74,7 @@ He gave me access to deluxe's code even though he had no reason to (the reason t
 and was always helpful whenever I had questions about how the game worked. It was a lot of fun working together,  
 thanks man.
 
-Also special thanks to the [Encounter](https://github.com/encounter) for handling so much of the Aurora migration and their massive help, 
+Also special thanks to [Encounter](https://github.com/encounter) for handling so much of the Aurora migration and their massive help, 
 [Tom Lube](https://github.com/tomlube) for extensive private testing, [Aurora](https://github.com/encounter/aurora) developers,
 [Dusklight](https://github.com/TwilitRealm/dusklight) team for both their help and advice,
 and all [contributors](https://github.com/flyngmt/ACGC-PC-Port/graphs/contributors). This project couldn't get where it is without you.

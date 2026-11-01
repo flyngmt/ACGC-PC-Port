@@ -30,8 +30,8 @@ cmake --build --preset ios-arm64
 
 You'll find it at `build/ios-arm64/bin/Nookery.app`.
 
-The app isn't signed. To install it, package it as an IPA and sideload it with a tool
-like AltStore or Sideloadly, which signs it with your own Apple ID:
+The app isn't signed. To install it, package it as an IPA and sideload it with
+[iloader](https://iloader.app/), as described in [INSTALLING_IOS.md](INSTALLING_IOS.md):
 
 ```sh
 cd build/ios-arm64/bin
