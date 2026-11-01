@@ -124,6 +124,7 @@ struct UserSettings {
         borealis::config::Var<bool> allowBackgroundInput;
         borealis::config::Var<bool> touchControls;
         borealis::config::Var<bool> touchHaptics;
+        borealis::config::Var<bool> keyboardTyping;
         borealis::config::Var<ui::TouchLayout> touchLayout;
 
         explicit Input(borealis::config::Registry& registry);

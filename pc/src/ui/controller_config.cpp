@@ -475,6 +475,11 @@ void ControllerConfigWindow::build_device(Rml::Element* content) {
     options.add_text(tr("controller.options.touch_controls_help"));
     options.add_child<BoolButton>(
         bind(settings().input.touchHaptics, { .key = tr("controller.options.touch_haptics") }));
+#if !ACGC_HAS_WINDOW_CONTROLS
+    options.add_child<BoolButton>(
+        bind(settings().input.keyboardTyping, { .key = tr("controller.options.keyboard_typing") }));
+    options.add_text(tr("controller.options.keyboard_typing_help"));
+#endif
     options.add_button(tr("controller.options.edit_touch_layout")).on_pressed([this] {
         push(std::make_unique<TouchControlsEditor>());
     });

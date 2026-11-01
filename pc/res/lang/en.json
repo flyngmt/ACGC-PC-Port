@@ -86,6 +86,8 @@
   "controller.options.touch_controls": "Touch Controls",
   "controller.options.touch_controls_help": "Shows on-screen buttons over the game. Touch and drag on the left side of the screen to move.",
   "controller.options.touch_haptics": "Touch Vibration",
+  "controller.options.keyboard_typing": "Keyboard Typing",
+  "controller.options.keyboard_typing_help": "Type letters and messages with a physical keyboard.",
   "controller.options.edit_touch_layout": "Edit Touch Layout",
   "controller.options.emulate_triggers": "Emulate Triggers",
   "controller.options.emulate_triggers_help": "Treat analog trigger movement as L and R button presses.",
