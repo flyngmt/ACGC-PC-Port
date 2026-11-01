@@ -437,10 +437,11 @@ set_source_files_properties(${PC_CXX_SOURCES}
 # Windows resource file (sets process name in Task Manager)
 # =============================================================================
 if(WIN32)
-    set(ACGC_WINDOWS_ICON "${PC_ROOT}/res/icon.ico")
-    set(ACGC_WINDOWS_MANIFEST "${PC_ROOT}/res/app.manifest")
-    set(RC_FILE "${CMAKE_CURRENT_BINARY_DIR}/app.rc")
-    configure_file("${PC_ROOT}/res/app.rc.in" "${RC_FILE}" @ONLY)
+    set(ACGC_WINDOWS_ROOT "${DECOMP_ROOT}/platforms/windows")
+    set(ACGC_WINDOWS_ICON "${ACGC_WINDOWS_ROOT}/Nookery.ico")
+    set(ACGC_WINDOWS_MANIFEST "${ACGC_WINDOWS_ROOT}/nookery.manifest")
+    set(RC_FILE "${CMAKE_CURRENT_BINARY_DIR}/nookery.rc")
+    configure_file("${ACGC_WINDOWS_ROOT}/nookery.rc.in" "${RC_FILE}" @ONLY)
     set_source_files_properties("${RC_FILE}" PROPERTIES
         OBJECT_DEPENDS "${ACGC_WINDOWS_ICON};${ACGC_WINDOWS_MANIFEST}")
 endif()
@@ -470,8 +471,6 @@ endif ()
 
 if (WIN32)
     if (MSVC)
-        # app.rc embeds the UTF-8 code-page manifest. Do not also ask link.exe to
-        # synthesize a second manifest resource with the same ID.
         target_link_options(acgc PRIVATE /MANIFEST:NO)
     endif ()
     set_target_properties(acgc PROPERTIES WIN32_EXECUTABLE TRUE)
@@ -586,7 +585,7 @@ if (NOT ANDROID)
     add_custom_target(acgc_resources ALL DEPENDS "${ACGC_RESOURCE_STAMP}")
     add_dependencies(acgc acgc_resources)
 
-    if (NOT APPLE)
+    if (WIN32)
         set(ACGC_USER_FOLDERS save/card_a save/card_b texture_pack nes_roms)
     endif ()
     foreach (folder IN LISTS ACGC_USER_FOLDERS)

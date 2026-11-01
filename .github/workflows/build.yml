@@ -79,11 +79,16 @@ jobs:
           archive: false
           if-no-files-found: error
 
+      - name: Rename debug symbols
+        working-directory: build/install
+        run: mv debug.tar.xz nookery-${{env.APP_VERSION}}-linux-${{matrix.arch}}-debug.tar.xz
+
       - name: Upload debug symbols
         uses: actions/upload-artifact@v7
         with:
-          name: nookery-${{env.APP_VERSION}}-linux-${{matrix.arch}}-debug
-          path: build/install/debug.tar.xz
+          path: build/install/nookery-*-debug.tar.xz
+          archive: false
+          if-no-files-found: error
 
   build-apple:
     name: Build Apple (${{matrix.name}})
@@ -134,11 +139,16 @@ jobs:
           archive: false
           if-no-files-found: error
 
+      - name: Rename debug symbols
+        working-directory: build/install
+        run: mv debug.tar.xz nookery-${{env.APP_VERSION}}-${{matrix.artifact_name}}-debug.tar.xz
+
       - name: Upload debug symbols
         uses: actions/upload-artifact@v7
         with:
-          name: nookery-${{env.APP_VERSION}}-${{matrix.artifact_name}}-debug
-          path: build/install/debug.tar.xz
+          path: build/install/nookery-*-debug.tar.xz
+          archive: false
+          if-no-files-found: error
 
   build-android:
     name: Build Android (arm64-v8a)
@@ -226,18 +236,24 @@ jobs:
       - name: Build
         run: cmake --build --preset x-windows-ci
 
-      - name: Upload artifacts
+      - name: Package
+        working-directory: build/install
+        run: 7z a -tzip ../Nookery-${{env.APP_VERSION}}-windows-${{matrix.arch}}.zip * -x!debug.7z -xr!*.pdb
+
+      - name: Upload package
         uses: actions/upload-artifact@v7
         with:
-          name: Nookery-${{env.APP_VERSION}}-windows-${{matrix.arch}}
-          path: |
-            build/install/*.exe
-            build/install/*.dll
-            build/install/res/
+          path: build/Nookery-*.zip
+          archive: false
           if-no-files-found: error
+
+      - name: Rename debug symbols
+        working-directory: build/install
+        run: mv debug.7z nookery-${{env.APP_VERSION}}-windows-${{matrix.arch}}-debug.7z
 
       - name: Upload debug symbols
         uses: actions/upload-artifact@v7
         with:
-          name: nookery-${{env.APP_VERSION}}-windows-${{matrix.arch}}-debug
-          path: build/install/debug.7z
+          path: build/install/nookery-*-debug.7z
+          archive: false
+          if-no-files-found: error
