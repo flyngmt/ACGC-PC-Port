@@ -229,7 +229,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: nookery-${{env.APP_VERSION}}-windows-${{matrix.arch}}
+          name: Nookery-${{env.APP_VERSION}}-windows-${{matrix.arch}}
           path: |
             build/install/*.exe
             build/install/*.dll
