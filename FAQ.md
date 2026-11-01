@@ -8,7 +8,7 @@ Not yet. A Deluxe port is planned by Cuyler in the future. I would recommend kee
 
 ## Will there be mod support?
 
-Yes, it is planned for v1.1.
+Yes, it is planned for v1.1, though exact version number might change.
 
 ## Will there be online play?
 
