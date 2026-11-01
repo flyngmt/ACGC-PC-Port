@@ -26,7 +26,7 @@ I made a new repository just to upload it to Github. Sharing the original could 
 ## Why did you switch to Aurora?
 
 As much as I'm proud of what I've managed to do with my own implementation, [Aurora](https://github.com/encounter/aurora) is better written, more performant and provides more options for us to 
-improve the port. Frankly, without Aurora I had no intention to even attempt to support macOS and Android. My OpenGL implementation is still available under the
+improve the port. Frankly, without Aurora I had no intention to even attempt to support macOS/iOS and Android. My OpenGL implementation is still available under the
 legacy branch, for anyone who needs it to possibly port it to older devices.
 
 ## Why did you change the name of the port/repository to Nookery?

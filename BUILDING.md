@@ -37,3 +37,7 @@ Use the `debug` preset for unoptimized builds with debug info.
 ## Android
 
 See [BUILDING_ANDROID.md](BUILDING_ANDROID.md).
+
+## iOS
+
+See [BUILDING_IOS.md](BUILDING_IOS.md).
