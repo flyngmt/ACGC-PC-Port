@@ -1,0 +1,243 @@
+name: Build
+
+on:
+  push:
+    paths-ignore:
+      - '*.md'
+      - '*LICENSE'
+      - 'docs/**'
+      - 'config/**'
+      - 'configure.py'
+      - 'orig/**'
+      - 'tools/**'
+  pull_request:
+    paths-ignore:
+      - '*.md'
+      - '*LICENSE'
+      - 'docs/**'
+      - 'config/**'
+      - 'configure.py'
+      - 'orig/**'
+      - 'tools/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  SCCACHE_GHA_ENABLED: "true"
+  RUSTC_WRAPPER: "sccache"
+
+jobs:
+  build-linux:
+    name: Build Linux (GCC ${{matrix.arch}})
+    runs-on: ${{matrix.runner}}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install mold libfuse2t64 zlib1g-dev libpng-dev libfreetype-dev \
+            libasound2-dev libpulse-dev libpipewire-0.3-dev libdbus-1-dev libudev-dev libusb-1.0-0-dev \
+            libx11-dev libx11-xcb-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev \
+            libxss-dev libxtst-dev libxkbcommon-dev libwayland-dev libdecor-0-dev libegl-dev libgles-dev \
+            libgl-dev libdrm-dev libgbm-dev libibus-1.0-dev
+
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.11
+
+      - name: Configure CMake
+        run: cmake --preset x-linux-ci
+
+      - name: Build
+        run: cmake --build --preset x-linux-ci
+
+      - name: Generate AppImage
+        run: ci/build-appimage.sh
+
+      - name: Upload AppImage
+        uses: actions/upload-artifact@v7
+        with:
+          path: build/install/Nookery-*.AppImage
+          archive: false
+          if-no-files-found: error
+
+      - name: Upload debug symbols
+        uses: actions/upload-artifact@v7
+        with:
+          name: nookery-${{env.APP_VERSION}}-linux-${{matrix.arch}}-debug
+          path: build/install/debug.tar.xz
+
+  build-apple:
+    name: Build Apple (${{matrix.name}})
+    runs-on: macos-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS arm64
+            preset: x-macos-ci-arm64
+            artifact_name: macos-arm64
+            package_script: ci/build-zip.sh
+            package_path: build/install/Nookery-*.zip
+          - name: macOS x86_64
+            preset: x-macos-ci-x86_64
+            artifact_name: macos-x86_64
+            package_script: ci/build-zip.sh
+            package_path: build/install/Nookery-*.zip
+          - name: iOS arm64
+            preset: x-ios-ci
+            artifact_name: ios-arm64
+            package_script: ci/build-ipa.sh
+            package_path: build/install/Nookery-*.ipa
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.11
+
+      - name: Configure CMake
+        run: cmake --preset ${{matrix.preset}}
+
+      - name: Build
+        run: cmake --build --preset ${{matrix.preset}}
+
+      - name: Package
+        run: ${{matrix.package_script}}
+
+      - name: Upload package
+        uses: actions/upload-artifact@v7
+        with:
+          path: ${{matrix.package_path}}
+          archive: false
+          if-no-files-found: error
+
+      - name: Upload debug symbols
+        uses: actions/upload-artifact@v7
+        with:
+          name: nookery-${{env.APP_VERSION}}-${{matrix.artifact_name}}-debug
+          path: build/install/debug.tar.xz
+
+  build-android:
+    name: Build Android (arm64-v8a)
+    runs-on: ubuntu-latest
+
+    env:
+      ANDROID_NDK_VERSION: "30.0.16248370"
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Setup Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools
+
+      - name: Install Android SDK packages
+        run: sdkmanager "platforms;android-37.0" "build-tools;37.0.0" "ndk;${ANDROID_NDK_VERSION}"
+
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.11
+
+      - name: Configure CMake
+        run: cmake --preset x-android-ci-arm64
+
+      - name: Build native library
+        run: cmake --build --preset x-android-ci-arm64
+
+      - name: Build APK
+        working-directory: platforms/android
+        run: ./gradlew :app:assembleRelease
+
+      - name: Stage APK
+        run: |
+          cp platforms/android/app/build/outputs/apk/release/app-arm64-v8a-release-unsigned.apk \
+            "build/Nookery-${APP_VERSION}-android-arm64-unsigned.apk"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v7
+        with:
+          path: build/Nookery-*.apk
+          archive: false
+          if-no-files-found: error
+
+  build-windows:
+    name: Build Windows (MSVC ${{matrix.arch}})
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            msvc_arch: x64
+          - arch: arm64
+            msvc_arch: amd64_arm64
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Enable Visual Studio environment
+        uses: TheMrMilchmann/setup-msvc-dev@v4
+        with:
+          arch: ${{matrix.msvc_arch}}
+
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.11
+
+      - name: Configure CMake
+        run: cmake --preset x-windows-ci
+
+      - name: Build
+        run: cmake --build --preset x-windows-ci
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: nookery-${{env.APP_VERSION}}-windows-${{matrix.arch}}
+          path: |
+            build/install/*.exe
+            build/install/*.dll
+            build/install/res/
+          if-no-files-found: error
+
+      - name: Upload debug symbols
+        uses: actions/upload-artifact@v7
+        with:
+          name: nookery-${{env.APP_VERSION}}-windows-${{matrix.arch}}-debug
+          path: build/install/debug.7z

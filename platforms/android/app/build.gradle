@@ -15,7 +15,7 @@ ext.borealisAndroid = [
         [
             from: new File(acpcRepoDir, 'pc/res'),
             into: 'res',
-            excludes: ['**/.DS_Store', 'app.manifest', 'app.rc', 'icon.ico',
+            excludes: ['**/.DS_Store', 'app.manifest', 'app.rc.in', 'icon.ico',
                        'logos/ios.png', 'logos/linux.png', 'logos/macos.png', 'logos/windows.png']
         ]
     ],

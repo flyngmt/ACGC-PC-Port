@@ -1,0 +1,36 @@
+#include <windows.h>
+#include <winver.h>
+
+IDI_MAIN_ICON ICON "@ACGC_WINDOWS_ICON@"
+1 RT_MANIFEST "@ACGC_WINDOWS_MANIFEST@"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION @PROJECT_VERSION_MAJOR@,@PROJECT_VERSION_MINOR@,@PROJECT_VERSION_PATCH@,@PROJECT_VERSION_TWEAK@
+ PRODUCTVERSION @PROJECT_VERSION_MAJOR@,@PROJECT_VERSION_MINOR@,@PROJECT_VERSION_PATCH@,@PROJECT_VERSION_TWEAK@
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS VS_FF_DEBUG
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS VOS_NT_WINDOWS32
+ FILETYPE VFT_APP
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "FileDescription", "Nookery\0"
+            VALUE "FileVersion", "@BOREALIS_APP_VERSION@\0"
+            VALUE "InternalName", "Nookery\0"
+            VALUE "OriginalFilename", "Nookery.exe\0"
+            VALUE "ProductName", "Nookery\0"
+            VALUE "ProductVersion", "@BOREALIS_APP_DESCRIBE@\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 1200
+    END
+END

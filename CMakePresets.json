@@ -98,6 +98,95 @@
         "CMAKE_DISABLE_FIND_PACKAGE_zstd": true,
         "CMAKE_IGNORE_PREFIX_PATH": "/opt/homebrew"
       }
+    },
+    {
+      "name": "ci",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_C_COMPILER_LAUNCHER": "sccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "sccache",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/install",
+        "Rust_RUSTUP_INSTALL_MISSING_TARGET": true
+      }
+    },
+    {
+      "name": "x-linux-ci",
+      "displayName": "(Internal) Linux CI",
+      "inherits": [
+        "ci",
+        "relwithdebinfo"
+      ],
+      "cacheVariables": {
+        "AURORA_SDL3_PROVIDER": "vendor",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_LINKER_TYPE": "MOLD"
+      }
+    },
+    {
+      "name": "x-macos-ci",
+      "hidden": true,
+      "inherits": [
+        "ci",
+        "relwithdebinfo"
+      ],
+      "cacheVariables": {
+        "AURORA_NOD_PROVIDER": "vendor",
+        "CMAKE_DISABLE_FIND_PACKAGE_PkgConfig": true,
+        "CMAKE_IGNORE_PREFIX_PATH": "/opt/homebrew",
+        "CMAKE_OSX_DEPLOYMENT_TARGET": "12.0"
+      }
+    },
+    {
+      "name": "x-macos-ci-arm64",
+      "displayName": "(Internal) macOS CI arm64",
+      "inherits": "x-macos-ci",
+      "cacheVariables": {
+        "CMAKE_OSX_ARCHITECTURES": "arm64"
+      }
+    },
+    {
+      "name": "x-macos-ci-x86_64",
+      "displayName": "(Internal) macOS CI x86_64",
+      "inherits": "x-macos-ci",
+      "cacheVariables": {
+        "CMAKE_OSX_ARCHITECTURES": "x86_64",
+        "Rust_CARGO_TARGET": "x86_64-apple-darwin"
+      }
+    },
+    {
+      "name": "x-ios-ci",
+      "displayName": "(Internal) iOS CI arm64",
+      "inherits": [
+        "ci",
+        "ios-arm64"
+      ],
+      "cacheVariables": {
+        "BOREALIS_APP_VERSION_OVERRIDE": null
+      }
+    },
+    {
+      "name": "x-android-ci-arm64",
+      "displayName": "(Internal) Android CI arm64-v8a",
+      "binaryDir": "${sourceDir}/build/android-arm64",
+      "inherits": [
+        "ci",
+        "android-arm64"
+      ]
+    },
+    {
+      "name": "x-windows-ci",
+      "displayName": "(Internal) Windows CI MSVC",
+      "inherits": [
+        "ci",
+        "relwithdebinfo"
+      ],
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl",
+        "CMAKE_DISABLE_FIND_PACKAGE_PkgConfig": true,
+        "CMAKE_MSVC_DEBUG_INFORMATION_FORMAT": "Embedded"
+      }
     }
   ],
   "buildPresets": [
@@ -129,6 +218,48 @@
       "configurePreset": "ios-arm64",
       "targets": [
         "acgc"
+      ]
+    },
+    {
+      "name": "x-linux-ci",
+      "configurePreset": "x-linux-ci",
+      "targets": [
+        "install"
+      ]
+    },
+    {
+      "name": "x-macos-ci-arm64",
+      "configurePreset": "x-macos-ci-arm64",
+      "targets": [
+        "install"
+      ]
+    },
+    {
+      "name": "x-macos-ci-x86_64",
+      "configurePreset": "x-macos-ci-x86_64",
+      "targets": [
+        "install"
+      ]
+    },
+    {
+      "name": "x-ios-ci",
+      "configurePreset": "x-ios-ci",
+      "targets": [
+        "install"
+      ]
+    },
+    {
+      "name": "x-android-ci-arm64",
+      "configurePreset": "x-android-ci-arm64",
+      "targets": [
+        "acgc"
+      ]
+    },
+    {
+      "name": "x-windows-ci",
+      "configurePreset": "x-windows-ci",
+      "targets": [
+        "install"
       ]
     }
   ]

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Nookery
+Comment=Native port of Animal Crossing
+Exec=Nookery
+Icon=com.flyngmt.nookery
+Terminal=false
+Categories=Game;Simulation;
+StartupWMClass=Nookery

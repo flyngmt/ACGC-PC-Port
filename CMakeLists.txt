@@ -1,26 +1,77 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(acgc VERSION 0.1.0 LANGUAGES C CXX)
 
-if (APPLE)
-    enable_language(OBJC OBJCXX)
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING
+            "Build type options: Debug Release RelWithDebInfo MinSizeRel" FORCE)
 endif ()
+
+include(extern/borealis/cmake/DetectVersion.cmake)
+borealis_detect_version()
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+project(acgc VERSION ${BOREALIS_APP_VERSION} LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(DECOMP_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 set(PC_ROOT "${DECOMP_ROOT}/pc")
+
+# Adjust CMAKE_SYSTEM_PROCESSOR on Windows to match compiler target
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    if (CMAKE_C_COMPILER_ARCHITECTURE_ID MATCHES "^ARM64")
+        set(CMAKE_SYSTEM_PROCESSOR "ARM64")
+    elseif (CMAKE_C_COMPILER_ARCHITECTURE_ID STREQUAL "x64")
+        set(CMAKE_SYSTEM_PROCESSOR "AMD64")
+    elseif (CMAKE_C_COMPILER_ARCHITECTURE_ID STREQUAL "X86")
+        set(CMAKE_SYSTEM_PROCESSOR "X86")
+    endif ()
+endif ()
+
+# Decompiled code assumes char is signed, but some compilers default to unsigned char (ARM, Android, etc.)
+if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU" OR (MSVC AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+    add_compile_options(-fsigned-char)
+endif ()
+
+option(ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
+if (ENABLE_SANITIZERS)
+    if (CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC" AND
+            CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+        add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:/fsanitize=address,undefined>)
+        add_link_options(/fsanitize=address,undefined /INCREMENTAL:NO)
+        set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "ProgramDatabase")
+        foreach (_lang C CXX)
+            foreach (_rtc_flag /RTC1 /RTCc /RTCs /RTCu)
+                string(REPLACE "${_rtc_flag}" "" CMAKE_${_lang}_FLAGS_DEBUG "${CMAKE_${_lang}_FLAGS_DEBUG}")
+            endforeach ()
+        endforeach ()
+    elseif (CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU" AND
+            CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
+        add_compile_options(
+                $<$<COMPILE_LANGUAGE:C,CXX,OBJC,OBJCXX>:-fsanitize=address,undefined>
+                $<$<COMPILE_LANGUAGE:C,CXX,OBJC,OBJCXX>:-fno-omit-frame-pointer>
+        )
+        add_link_options(-fsanitize=address,undefined)
+    else ()
+        message(FATAL_ERROR "ENABLE_SANITIZERS requires GNU-like or MSVC-like C/C++ compiler frontends")
+    endif ()
+    add_compile_definitions(NDEBUG_SANITIZER) # Avoids absl issue with SwissTable debug code
+    message(STATUS "metaforce: Enabled sanitizers")
+endif ()
 
 set(AURORA_ENABLE_DVD ON CACHE BOOL "" FORCE)
 set(AURORA_ENABLE_CARD ON CACHE BOOL "" FORCE)
 set(AURORA_ENABLE_RMLUI ON CACHE BOOL "" FORCE)
 add_subdirectory(extern/aurora EXCLUDE_FROM_ALL)
+if (ANDROID AND TARGET _cargo-build_nod)
+    # NDK r30+ requires a versioned target triple
+    # TODO: move into aurora or nod
+    corrosion_set_env_vars(nod "TARGET_CFLAGS=--target=${CMAKE_C_COMPILER_TARGET}")
+endif ()
 set(BOREALIS_ENABLE_UI ON CACHE BOOL "" FORCE)
-include(extern/borealis/cmake/DetectVersion.cmake)
-borealis_detect_version("${CMAKE_CURRENT_SOURCE_DIR}")
 add_subdirectory(extern/borealis EXCLUDE_FROM_ALL)
 
 include(FetchContent)
@@ -386,7 +437,12 @@ set_source_files_properties(${PC_CXX_SOURCES}
 # Windows resource file (sets process name in Task Manager)
 # =============================================================================
 if(WIN32)
-    set(RC_FILE "${PC_ROOT}/res/app.rc")
+    set(ACGC_WINDOWS_ICON "${PC_ROOT}/res/icon.ico")
+    set(ACGC_WINDOWS_MANIFEST "${PC_ROOT}/res/app.manifest")
+    set(RC_FILE "${CMAKE_CURRENT_BINARY_DIR}/app.rc")
+    configure_file("${PC_ROOT}/res/app.rc.in" "${RC_FILE}" @ONLY)
+    set_source_files_properties("${RC_FILE}" PROPERTIES
+        OBJECT_DEPENDS "${ACGC_WINDOWS_ICON};${ACGC_WINDOWS_MANIFEST}")
 endif()
 
 # =============================================================================
@@ -412,10 +468,13 @@ if (UNIX)
     target_link_libraries(acgc PRIVATE m)
 endif ()
 
-if (MSVC AND WIN32)
-    # app.rc embeds the UTF-8 code-page manifest. Do not also ask link.exe to
-    # synthesize a second manifest resource with the same ID.
-    target_link_options(acgc PRIVATE /MANIFEST:NO)
+if (WIN32)
+    if (MSVC)
+        # app.rc embeds the UTF-8 code-page manifest. Do not also ask link.exe to
+        # synthesize a second manifest resource with the same ID.
+        target_link_options(acgc PRIVATE /MANIFEST:NO)
+    endif ()
+    set_target_properties(acgc PROPERTIES WIN32_EXECUTABLE TRUE)
 endif ()
 
 target_link_libraries(acgc PRIVATE
@@ -547,17 +606,94 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND NOT CMAKE_GENERATOR STREQUAL "Xcode"
 endif ()
 
 # =============================================================================
-# Install rules (cmake --install . --prefix <dest>)
+# Packaging logic
 # =============================================================================
-install(TARGETS acgc
-    BUNDLE DESTINATION .
-    LIBRARY DESTINATION bin
-    RUNTIME DESTINATION bin
-)
-aurora_install_runtime_dlls(acgc "\${CMAKE_INSTALL_PREFIX}/bin")
-if (NOT ANDROID AND NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    install(DIRECTORY "${PC_ROOT}/res/" DESTINATION bin/res)
+function(get_target_output_name target result_var)
+    get_target_property(output_name ${target} OUTPUT_NAME)
+    if (NOT output_name)
+        set(${result_var} "${target}" PARENT_SCOPE)
+    else ()
+        set(${result_var} "${output_name}" PARENT_SCOPE)
+    endif ()
+endfunction()
+function(get_target_prefix target result_var)
+    set(${result_var} "" PARENT_SCOPE)
+    if (APPLE)
+        # Have to recreate some bundle logic here, since CMake can't tell us
+        get_target_property(is_bundle ${target} MACOSX_BUNDLE)
+        if (is_bundle)
+            get_target_output_name(${target} output_name)
+            if (CMAKE_SYSTEM_NAME STREQUAL Darwin)
+                set(${result_var} "${output_name}.app/Contents/MacOS/" PARENT_SCOPE)
+            else ()
+                set(${result_var} "${output_name}.app/" PARENT_SCOPE)
+            endif ()
+        endif ()
+    endif ()
+endfunction()
+get_target_property(_acgc_bundle acgc MACOSX_BUNDLE)
+list(APPEND BINARY_TARGETS acgc)
+set(EXTRA_TARGETS "")
+if (TARGET crashpad_handler)
+    list(APPEND EXTRA_TARGETS crashpad_handler)
+endif ()
+install(TARGETS ${BINARY_TARGETS} ${EXTRA_TARGETS} DESTINATION ${CMAKE_INSTALL_PREFIX})
+aurora_install_runtime_dlls(acgc ${CMAKE_INSTALL_PREFIX})
+if (NOT _acgc_bundle AND NOT ANDROID)
+    install(DIRECTORY ${PC_ROOT}/res DESTINATION ${CMAKE_INSTALL_PREFIX})
     foreach (folder IN LISTS ACGC_USER_FOLDERS)
-        install(DIRECTORY DESTINATION bin/${folder})
+        install(DIRECTORY DESTINATION ${CMAKE_INSTALL_PREFIX}/${folder})
     endforeach ()
+endif ()
+if (CMAKE_BUILD_TYPE STREQUAL Debug OR CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
+    set(DEBUG_FILES_LIST "")
+    foreach (target IN LISTS BINARY_TARGETS EXTRA_TARGETS)
+        get_target_output_name(${target} output_name)
+        if (WIN32)
+            install(FILES $<TARGET_PDB_FILE:${target}> DESTINATION ${CMAKE_INSTALL_PREFIX} OPTIONAL)
+        elseif (APPLE)
+            get_target_prefix(${target} target_prefix)
+            install(CODE "execute_process(WORKING_DIRECTORY \"${CMAKE_INSTALL_PREFIX}\" COMMAND rm -fr \"$<TARGET_FILE_NAME:${target}>.dSYM\")")
+            install(CODE "execute_process(WORKING_DIRECTORY \"${CMAKE_INSTALL_PREFIX}\" COMMAND dsymutil \"${target_prefix}$<TARGET_FILE_NAME:${target}>\")")
+            install(CODE "execute_process(WORKING_DIRECTORY \"${CMAKE_INSTALL_PREFIX}\" COMMAND strip -S \"${target_prefix}$<TARGET_FILE_NAME:${target}>\")")
+            if (NOT target_prefix STREQUAL "")
+                install(CODE "execute_process(WORKING_DIRECTORY \"${CMAKE_INSTALL_PREFIX}\" COMMAND mv \"${target_prefix}$<TARGET_FILE_NAME:${target}>.dSYM\" .)")
+            endif ()
+        elseif (UNIX)
+            get_target_prefix(${target} target_prefix)
+            install(CODE "execute_process(WORKING_DIRECTORY \"${CMAKE_INSTALL_PREFIX}\" COMMAND objcopy --only-keep-debug \"${target_prefix}$<TARGET_FILE_NAME:${target}>\" \"${target_prefix}$<TARGET_FILE_NAME:${target}>.dbg\")")
+            install(CODE "execute_process(WORKING_DIRECTORY \"${CMAKE_INSTALL_PREFIX}\" COMMAND objcopy --strip-debug --add-gnu-debuglink=$<TARGET_FILE_NAME:${target}>.dbg \"${target_prefix}$<TARGET_FILE_NAME:${target}>\")")
+        endif ()
+        list(APPEND DEBUG_FILES_LIST "${output_name}")
+    endforeach ()
+    # This is a terrible hack to only run this on CI
+    # until I turn this into a script or something
+    if (DEFINED ENV{GITHUB_ENV})
+        if (WIN32)
+            list(TRANSFORM DEBUG_FILES_LIST APPEND ".pdb")
+            list(JOIN DEBUG_FILES_LIST " " DEBUG_FILES)
+            install(CODE "execute_process(WORKING_DIRECTORY \"${CMAKE_INSTALL_PREFIX}\" COMMAND 7z a -t7z \"${CMAKE_INSTALL_PREFIX}/debug.7z\" ${DEBUG_FILES})")
+        elseif (APPLE)
+            list(TRANSFORM DEBUG_FILES_LIST APPEND ".dSYM")
+            list(JOIN DEBUG_FILES_LIST " " DEBUG_FILES)
+            install(CODE "execute_process(WORKING_DIRECTORY \"${CMAKE_INSTALL_PREFIX}\" COMMAND tar acfv \"${CMAKE_INSTALL_PREFIX}/debug.tar.xz\" ${DEBUG_FILES})")
+        elseif (UNIX)
+            list(TRANSFORM DEBUG_FILES_LIST APPEND ".dbg")
+            list(JOIN DEBUG_FILES_LIST " " DEBUG_FILES)
+            install(CODE "execute_process(WORKING_DIRECTORY \"${CMAKE_INSTALL_PREFIX}\" COMMAND tar -I \"xz -9 -T0\" -cvf \"${CMAKE_INSTALL_PREFIX}/debug.tar.xz\" ${DEBUG_FILES})")
+        endif ()
+    endif ()
+endif ()
+foreach (target IN LISTS BINARY_TARGETS)
+    get_target_prefix(${target} target_prefix)
+    foreach (extra_target IN LISTS EXTRA_TARGETS)
+        get_target_prefix(${extra_target} extra_prefix)
+        if (NOT "${target_prefix}" STREQUAL "${extra_prefix}")
+            # Copy extra target to target prefix
+            install(CODE "execute_process(WORKING_DIRECTORY \"${CMAKE_INSTALL_PREFIX}\" COMMAND cp \"${extra_prefix}$<TARGET_FILE_NAME:${extra_target}>\" \"${target_prefix}$<TARGET_FILE_NAME:${extra_target}>\")")
+        endif ()
+    endforeach ()
+endforeach ()
+if (_acgc_bundle AND CMAKE_SYSTEM_NAME STREQUAL Darwin)
+    install(CODE "execute_process(WORKING_DIRECTORY \"${CMAKE_INSTALL_PREFIX}\" COMMAND codesign --force --sign - \"$<TARGET_BUNDLE_DIR_NAME:acgc>\" COMMAND_ERROR_IS_FATAL ANY)")
 endif ()

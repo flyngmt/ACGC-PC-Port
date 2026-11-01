@@ -46,6 +46,14 @@
 #include <thread>
 #include <vector>
 
+#if defined(_WIN32)
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <io.h>
+#include <windows.h>
+#endif
+
 namespace {
 void update_render_size();
 void apply_frame_limit();
@@ -269,6 +277,26 @@ bool automatic_window_dimensions(WindowDimensions* dimensions) {
 }
 #endif
 
+#if defined(_WIN32)
+void show_console() {
+    if (GetConsoleWindow() != nullptr) {
+        return;
+    }
+    if (!AttachConsole(ATTACH_PARENT_PROCESS) && !AllocConsole()) {
+        MainLog.warn("Failed to open console (Windows error {})", GetLastError());
+        return;
+    }
+    SetConsoleOutputCP(CP_UTF8);
+    FILE* stream;
+    if (_fileno(stdout) < 0 || _get_osfhandle(_fileno(stdout)) < 0) {
+        freopen_s(&stream, "CONOUT$", "w", stdout);
+    }
+    if (_fileno(stderr) < 0 || _get_osfhandle(_fileno(stderr)) < 0) {
+        freopen_s(&stream, "CONOUT$", "w", stderr);
+    }
+}
+#endif
+
 struct CommandLine {
     std::string discPath;
     bool discPathExplicit = false;
@@ -278,7 +306,7 @@ enum class ParseOutcome { Run, Exit, Failed };
 
 ParseOutcome parse_command_line(int argc, char* argv[], CommandLine* out) {
     cxxopts::Options options{"Nookery", "PC port of Animal Crossing"};
-    borealis::cli::add_standard_options(options, {.console = false});
+    borealis::cli::add_standard_options(options);
     options.add_options()
         ("h,help", "Show this help")
         ("v,verbose", "Enable additional game diagnostics",
@@ -308,6 +336,11 @@ ParseOutcome parse_command_line(int argc, char* argv[], CommandLine* out) {
         return ParseOutcome::Failed;
     }
 
+#if defined(_WIN32)
+    if (standard.console) {
+        show_console();
+    }
+#endif
     if (parsed.count("help")) {
         std::printf("%s", options.help().c_str());
         return ParseOutcome::Exit;
