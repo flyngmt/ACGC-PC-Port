@@ -434,7 +434,8 @@ void TouchControls::clear_input() {
 }
 
 void TouchControls::sync_visibility() {
-    const bool wanted = settings().input.touchControls.get() && !mDeviceInput && !any_document_visible();
+    const bool wanted =
+        !ACGC_HAS_WINDOW_CONTROLS && settings().input.touchControls.get() && !mDeviceInput && !any_document_visible();
     if (wanted && !mShown) {
         show();
     } else if (!wanted && mShown) {

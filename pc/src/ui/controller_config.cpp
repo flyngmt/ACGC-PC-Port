@@ -469,20 +469,19 @@ void ControllerConfigWindow::build_device(Rml::Element* content) {
     options.add_child<BoolButton>(
         bind(settings().input.allowBackgroundInput, { .key = tr("controller.options.background_input") }));
     options.add_text(tr("controller.options.background_input_help"));
-#endif
+#else
     options.add_child<BoolButton>(
         bind(settings().input.touchControls, { .key = tr("controller.options.touch_controls") }));
     options.add_text(tr("controller.options.touch_controls_help"));
     options.add_child<BoolButton>(
         bind(settings().input.touchHaptics, { .key = tr("controller.options.touch_haptics") }));
-#if !ACGC_HAS_WINDOW_CONTROLS
     options.add_child<BoolButton>(
         bind(settings().input.keyboardTyping, { .key = tr("controller.options.keyboard_typing") }));
     options.add_text(tr("controller.options.keyboard_typing_help"));
-#endif
     options.add_button(tr("controller.options.edit_touch_layout")).on_pressed([this] {
         push(std::make_unique<TouchControlsEditor>());
     });
+#endif
     if (!mController) {
         return;
     }
