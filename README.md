@@ -22,6 +22,8 @@ You might also want to take a peek at [features](#features) to have an idea abou
 If you have a save you want to import, you can drop them under `{your_data_folder}/saves/card_a`. 
 You can also use card_b for the towns you want to visit.
 
+If you are having issues with your controller/Steam Deck acting weird with inputs, try closing steam, or adding Nookery as a non-steam game. 
+
 On iOS, see [INSTALLING_IOS.md](INSTALLING_IOS.md) to install the `.ipa` with iloader.
 
 ## Building and running for developers
@@ -75,7 +77,7 @@ folder. We support .gci files, you can just use your dolphin save if you are mig
 
 This project would not be possible without the work of the [ACreTeam](https://github.com/ACreTeam) decompilation team. Thanks to everyone who worked on that project.
 
-Even though Cuyler is already included in ACreTeam, his contributions go well beyond decompilation side. 
+Even though [Cuyler](https://github.com/Cuyler36) is already included in ACreTeam, his contributions go well beyond decompilation side. 
 He gave me access to deluxe's code even though he had no reason to (the reason this port got so much QoL from deluxe mod!), 
 and was always helpful whenever I had questions about how the game worked. It was a lot of fun working together,  
 thanks man.
