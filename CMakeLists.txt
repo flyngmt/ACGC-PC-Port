@@ -71,6 +71,10 @@ if (ANDROID AND TARGET _cargo-build_nod)
     # TODO: move into aurora or nod
     corrosion_set_env_vars(nod "TARGET_CFLAGS=--target=${CMAKE_C_COMPILER_TARGET}")
 endif ()
+if (APPLE AND TARGET nod-static)
+    # TODO: temp workaround until corrosion-rs/corrosion@2522f7abad
+    set_property(TARGET nod-static PROPERTY INTERFACE_LINK_DIRECTORIES "")
+endif ()
 set(BOREALIS_ENABLE_UI ON CACHE BOOL "" FORCE)
 add_subdirectory(extern/borealis EXCLUDE_FROM_ALL)
 
