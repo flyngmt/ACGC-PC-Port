@@ -86,13 +86,16 @@
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/${presetName}",
       "inherits": "relwithdebinfo",
+      "environment": {
+        "IPHONEOS_DEPLOYMENT_TARGET": "14.0"
+      },
       "cacheVariables": {
         "CMAKE_SYSTEM_NAME": "iOS",
         "CMAKE_OSX_SYSROOT": "iphoneos",
         "CMAKE_OSX_ARCHITECTURES": "arm64",
         "CMAKE_OSX_DEPLOYMENT_TARGET": "14.0",
         "Rust_CARGO_TARGET": "aarch64-apple-ios",
-        "BOREALIS_APP_VERSION_OVERRIDE": "1.0",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/install/${presetName}",
         "BUILD_SHARED_LIBS": false,
         "CMAKE_DISABLE_FIND_PACKAGE_PkgConfig": true,
         "CMAKE_DISABLE_FIND_PACKAGE_zstd": true,
@@ -160,10 +163,7 @@
       "inherits": [
         "ci",
         "ios-arm64"
-      ],
-      "cacheVariables": {
-        "BOREALIS_APP_VERSION_OVERRIDE": null
-      }
+      ]
     },
     {
       "name": "x-android-ci-arm64",

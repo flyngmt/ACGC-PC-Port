@@ -92,7 +92,7 @@ jobs:
 
   build-apple:
     name: Build Apple (${{matrix.name}})
-    runs-on: macos-latest
+    runs-on: xcode-27
 
     strategy:
       fail-fast: false
