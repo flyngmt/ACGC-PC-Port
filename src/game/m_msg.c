@@ -30,11 +30,10 @@ typedef void (*mMsg_MAIN_PROC)(mMsg_Window_c*, GAME*);
 static void mMsg_MainSetup_Window(mMsg_Window_c* msg_p, GAME* game);
 static int mMsg_end_to_disappear(mMsg_Window_c* msg_p);
 
-static u16 mMsg_pending_trigger = 0;
 static int mMsg_cursor_waiting = FALSE;
 
 static u16 mMsg_get_trigger(void) {
-    u16 buttons = getTrigger() | mMsg_pending_trigger;
+    u16 buttons = getTrigger();
 #ifdef MOUSE_INPUT
     if (!mEv_IsTitleDemo()) {
         u32 mouse_buttons = acgc_pointer_frame()->pressed;
@@ -69,7 +68,8 @@ static void mMsg_sound_MessageStatus(u8 status);
 #include "../src/game/m_msg_draw_window.c_inc"
 #include "../src/game/m_msg_draw_font.c_inc"
 
-static f32 mMsg_setup_elapsed = -1.0f; // Not waiting
+static int mMsg_setup_pending = FALSE;
+static f32 mMsg_time_debt = 0.0f;
 
 static void mMsg_MainSetup_Window(mMsg_Window_c* msg_p, GAME* game) {
     static mMsg_MAIN_PROC proc[mMsg_INDEX_NUM] = {
@@ -87,7 +87,7 @@ static void mMsg_MainSetup_Window(mMsg_Window_c* msg_p, GAME* game) {
         (*proc[idx])(msg_p, game);
 
         if (msg_p->requested_main_index < 0) {
-            mMsg_setup_elapsed = 0.0f;
+            mMsg_setup_pending = TRUE;
         }
     }
 }
@@ -101,28 +101,33 @@ static void mMsg_Main_Window(mMsg_Window_c* msg_p, GAME* game) {
     int idx = msg_p->main_index;
 
     if (idx >= 0) {
+        GRAPH* graph;
+        double dt;
+        f32 step;
+        f32 repay;
+
         if (idx >= mMsg_INDEX_NUM || proc[idx] == NULL) {
             return;
         }
 
-        if (mMsg_setup_elapsed >= 0.0f) {
-            GRAPH* graph = game->graph;
-            double dt = graph->dt_num_60fps_frames;
+        graph = game->graph;
+        dt = graph->dt_num_60fps_frames;
+        step = (f32)dt;
+        repay = MIN(mMsg_time_debt, step);
+        mMsg_time_debt -= repay; //tfw you can't escape nooks debt even when the game is off
+        step -= repay;
 
-            mMsg_setup_elapsed += (f32)dt;
-            if (!graph_dt_due(game, 1.0f - mMsg_setup_elapsed)) {
-                mMsg_pending_trigger = mMsg_get_trigger();
-                return;
+        if (mMsg_setup_pending) {
+            mMsg_setup_pending = FALSE;
+            if (step < 1.0f) {
+                mMsg_time_debt += 1.0f - step;
+                step = 1.0f;
             }
-
-            graph->dt_num_60fps_frames = mMsg_setup_elapsed;
-            mMsg_setup_elapsed = -1.0f;
-            (*proc[idx])(msg_p, game);
-            graph->dt_num_60fps_frames = dt;
-            mMsg_pending_trigger = 0;
-        } else {
-            (*proc[idx])(msg_p, game);
         }
+
+        graph->dt_num_60fps_frames = step;
+        (*proc[idx])(msg_p, game);
+        graph->dt_num_60fps_frames = dt;
     }
 }
 
@@ -154,8 +159,8 @@ extern void mMsg_aram_init2() {
 }
 
 extern void mMsg_ct(GAME* game) {
-    mMsg_setup_elapsed = -1.0f;
-    mMsg_pending_trigger = 0;
+    mMsg_setup_pending = FALSE;
+    mMsg_time_debt = 0.0f;
     mMsg_cursor_waiting = FALSE;
     mMsg_init(game);
     mChoice_ct(&mMsg_window.choice_window, game);
