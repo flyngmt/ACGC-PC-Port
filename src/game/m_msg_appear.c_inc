@@ -36,6 +36,7 @@ static void mMsg_MainSetup_Appear(mMsg_Window_c* msg_p, GAME* game) {
         ACTOR* actor = appear_data->speaker_actor;
         int show_name = appear_data->name_shown_flag;
 
+        mMsg_Set_LeadingCursolJust(msg_p);
         mMsg_Set_client_actor_p(msg_p, actor, show_name);
         msg_p->window_background_color = appear_data->window_color;
         mMsg_sound_spec_change_voice(msg_p);

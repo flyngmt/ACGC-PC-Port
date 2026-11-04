@@ -379,8 +379,17 @@ static int mMsg_LoadMsgData(mMsg_Data_c* msg_data, int index, int cut) {
     return FALSE;
 }
 
+static void mMsg_Set_LeadingCursolJust(mMsg_Window_c* msg_p) {
+    u8* data = msg_p->msg_data->text_buf.data;
+
+    if (data[0] == CHAR_CONTROL_CODE && data[1] == mFont_CONT_CODE_SET_CURSOR_JUST) {
+        mMsg_set_cursol_just(msg_p);
+    }
+}
+
 extern int mMsg_ChangeMsgData(mMsg_Window_c* msg_p, int index) {
     if (index >= 0 && index < MSG_MAX && mMsg_LoadMsgData(msg_p->msg_data, index, FALSE)) {
+        mMsg_Set_LeadingCursolJust(msg_p);
         msg_p->end_text_cursor_idx = 0;
         mMsg_Clear_CursolIndex(msg_p);
         mMsg_SetTimer(msg_p, 20.0f);
