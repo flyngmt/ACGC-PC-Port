@@ -71,7 +71,11 @@ static BOOL l_lbRTC_IsSampled;
  * @return OSTime representing the current hardware time in ticks.
  */
 static OSTime lbRTC_GetHardTime() {
+#ifdef TARGET_PC
+  return OSGetSystemTime();
+#else
   return OSGetTime();
+#endif
 }
 
 /**

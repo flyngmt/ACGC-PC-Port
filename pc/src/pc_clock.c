@@ -13,7 +13,7 @@ int pc_clock_minutes(void) {
         return rtc.hour * 60 + rtc.min;
     }
 
-    OSTicksToCalendarTime(OSGetTime(), &host);
+    OSTicksToCalendarTime(OSGetSystemTime(), &host);
     hour = g_pc_time_override >= 0 ? g_pc_time_override : host.hour;
     minute = g_pc_min_override >= 0 ? g_pc_min_override : host.min;
     return hour * 60 + minute;
