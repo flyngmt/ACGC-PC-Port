@@ -256,7 +256,7 @@ static void mWR_move_Move(Submenu* submenu, mSM_MenuInfo_c* menu_info) {
   mWR_Ovl_c* ovl = submenu->overlay->warning_ovl;
   f32 new_scale = ovl->scale;
 
-  new_scale += add[ovl->state];
+  new_scale += add[ovl->state] * (f32)gamePT->graph->dt_num_60fps_frames;
   if (new_scale > 1.0f) {
     menu_info->proc_status = menu_info->next_proc_status;
     new_scale = 1.0f;
