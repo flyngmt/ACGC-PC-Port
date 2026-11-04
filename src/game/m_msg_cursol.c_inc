@@ -1151,7 +1151,8 @@ static int mMsg_Main_Cursol_ControlCursol(mMsg_Window_c* msg_p) {
     *cursor_timer = 0.0f;
   }
   else if (mMsg_Cursol_IsFastText(msg_p)) {
-    /* Fast text drains at 2x. Keep negative overshoot so cadence is not quantized by host FPS. */
+    /* Fast text drains at 2x. Also skips pauses. */
+    *cursor_timer = MIN(*cursor_timer, mMsg_Cursol_FrameStep(msg_p));
     (*cursor_timer) -= 2.0f * (f32)gamePT->graph->dt_num_60fps_frames;
   }
   else {
