@@ -159,6 +159,10 @@ int graph_dt_frame_phase(GAME* game, int period_frames) {
     return (int)graph_dt_frame_time(game) % period_frames;
 }
 
+int graph_dt_due(GAME* game, float remaining_frames) {
+    return remaining_frames <= 0.5f * (float)game->graph->dt_num_60fps_frames;
+}
+
 static void graph_task_set00(GRAPH* this) {
     TracyCZone(graph_task_zone, 1);
     ucode_info ucode[2];

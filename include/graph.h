@@ -107,6 +107,7 @@ int graph_dt_60hz_ticks(struct game_s* game, float* accum);
 int graph_dt_period_elapsed(struct game_s* game, float* accum, float period_frames);
 double graph_dt_frame_time(struct game_s* game);
 int graph_dt_frame_phase(struct game_s* game, int period_frames);
+int graph_dt_due(struct game_s* game, float remaining_frames);
 
 #define GRAPH_SET_DOING_POINT(g, point) ((g)->doing_point = GRAPH_DOING_##point)
 

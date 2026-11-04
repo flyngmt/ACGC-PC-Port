@@ -1,9 +1,10 @@
 static int mMsg_Main_Appear_SetScale(mMsg_Window_c* msg_p, GAME* game) {
-    if (msg_p->timer < 18.0f) {
-        f32 scale;
+    f32 timer = msg_p->timer + (f32)game->graph->dt_num_60fps_frames;
 
-        msg_p->timer += (f32)game->graph->dt_num_60fps_frames;
-        scale = get_percent_forAccelBrake(msg_p->timer, 0.0f, 18.0f, 0.0f, 0.0f);
+    if (!graph_dt_due(game, 19.0f - timer)) {
+        f32 scale = get_percent_forAccelBrake(MIN(timer, 18.0f), 0.0f, 18.0f, 0.0f, 0.0f);
+
+        msg_p->timer = timer;
         msg_p->window_scale = scale;
         msg_p->text_scale = scale;
         return FALSE;

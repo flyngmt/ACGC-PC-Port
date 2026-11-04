@@ -6,23 +6,24 @@ static int mMsg_Check_ScrollOrder(mMsg_Window_c* msg_p) {
 #endif
 }
 
-static int mMsg_MsgTimeEnd_dec(mMsg_Window_c* msg_p) {
-  f32 prev_timer = msg_p->end_timer;
+#define mMsg_END_TIMER_EXPIRED (-1.0f)
 
-  if (prev_timer <= 0.0f) {
+static int mMsg_MsgTimeEnd_dec(mMsg_Window_c* msg_p) {
+  if (msg_p->end_timer == 0.0f) {
     return FALSE;
   }
 
-  msg_p->end_timer -= (f32)gamePT->graph->dt_num_60fps_frames;
-  if (msg_p->end_timer < 0.0f) {
-    msg_p->end_timer = 0.0f;
+  if (msg_p->end_timer > 0.0f) {
+    msg_p->end_timer -= (f32)gamePT->graph->dt_num_60fps_frames;
+
+    if (!graph_dt_due(gamePT, msg_p->end_timer)) {
+      return FALSE;
+    }
+
+    msg_p->end_timer = mMsg_END_TIMER_EXPIRED;
   }
 
-  if (prev_timer > 1.0f && msg_p->end_timer <= 1.0f) {
-    return TRUE;
-  }
-
-  return FALSE;
+  return TRUE;
 }
 
 static int mMsg_end_to_disappear(mMsg_Window_c* msg_p) {
@@ -44,8 +45,10 @@ static void mMsg_request_main_index_fromNormal(mMsg_Window_c* msg_p, GAME* game)
 
     if (mMsg_Check_NextIndex_ContinueCode(msg_p) && msg_p->continue_cancel_flag == FALSE) {
       int continue_msg = msg_p->continue_msg_no;
+      f32 overshoot = msg_p->force_next ? MIN(msg_p->cursor_timer, 0.0f) : 0.0f;
 
       if (continue_msg >= 0 && continue_msg < MSG_MAX && mMsg_ChangeMsgData(msg_p, continue_msg)) {
+        msg_p->cursor_timer += overshoot;
         if (mMsg_request_main_cursol(msg_p, FALSE, 5) && msg_p->force_next == FALSE && mMsg_Check_NextIndex_SetSelectWindowCode(msg_p) == FALSE) {
           if ((msg_p->status_flags & mMsg_STATUS_FLAG_NO_SE_PAGE_OKURI) == 0) {
             mMsg_sound_PAGE_OKURI();

@@ -190,7 +190,12 @@ static void aBTD_sendo_dialogue_start_wait(BOAT_DEMO_ACTOR* boat_demo, GAME_PLAY
     int msg_no = mMsg_Get_msg_num(mMsg_Get_base_window_p());
 
     if (msg_no == boat_demo->sing_msg_no) {
-        aBTD_setupAction(boat_demo, play, aBTD_ACTION_SING_SENDO_START_WAIT2);
+        // Wait until 1/60 seconds passes before starting kapp'n's second part of the song
+        boat_demo->song_bgm_timer -= (f32)play->game.graph->dt_num_60fps_frames;
+
+        if (graph_dt_due((GAME*)play, boat_demo->song_bgm_timer)) {
+            aBTD_setupAction(boat_demo, play, aBTD_ACTION_SING_SENDO_START_WAIT2);
+        }
     }
 }
 
@@ -304,6 +309,7 @@ static void aBTD_sendo_dialogue_start_wait_init(BOAT_DEMO_ACTOR* boat_demo, GAME
 
     mMsg_Set_continue_msg_num(mMsg_Get_base_window_p(), msg_no);
     boat_demo->sing_msg_no = msg_no;
+    boat_demo->song_bgm_timer = 1.0f;
     mMsg_sound_set_voice_silent(mMsg_Get_base_window_p(), TRUE);
     aBTD_change_season(boat_demo, play);
 }
