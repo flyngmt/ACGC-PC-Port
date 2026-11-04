@@ -1176,6 +1176,8 @@ static int mMsg_Main_Cursol_ControlCursol(mMsg_Window_c* msg_p) {
   msg_p->force_voice_enable_flag = FALSE;
 
   if ((*cursor_timer <= 0.0f) && choice_hidden) {
+    mMsg_cursor_waiting = FALSE;
+
     while (TRUE) {
       u8 code = msg_p->msg_data->text_buf.data[idx];
 

@@ -36,7 +36,7 @@ static void mMsg_draw_font(mMsg_Window_c* msg_p, GAME* game) {
     if ((msg_p->status_flags & mMsg_STATUS_FLAG_18)) {
       voice = TRUE;
     }
-    else if (!F32_IS_ZERO(msg_p->cursor_timer) || msg_p->force_voice_enable_flag == TRUE) {
+    else if (mMsg_cursor_waiting || msg_p->force_voice_enable_flag == TRUE) {
       voice = TRUE;
     }
   }

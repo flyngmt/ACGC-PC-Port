@@ -31,6 +31,7 @@ static void mMsg_MainSetup_Window(mMsg_Window_c* msg_p, GAME* game);
 static int mMsg_end_to_disappear(mMsg_Window_c* msg_p);
 
 static u16 mMsg_pending_trigger = 0;
+static int mMsg_cursor_waiting = FALSE;
 
 static u16 mMsg_get_trigger(void) {
     u16 buttons = getTrigger() | mMsg_pending_trigger;
@@ -155,6 +156,7 @@ extern void mMsg_aram_init2() {
 extern void mMsg_ct(GAME* game) {
     mMsg_setup_elapsed = -1.0f;
     mMsg_pending_trigger = 0;
+    mMsg_cursor_waiting = FALSE;
     mMsg_init(game);
     mChoice_ct(&mMsg_window.choice_window, game);
 }

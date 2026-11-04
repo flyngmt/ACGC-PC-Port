@@ -279,6 +279,7 @@ static void mMsg_Clear_CursolIndex(mMsg_Window_c* msg_p) {
 static void mMsg_SetTimer(mMsg_Window_c* msg_p, f32 timer) {
     msg_p->cursor_timer = timer;
     msg_p->status_flags &= ~mMsg_STATUS_FLAG_NOT_PAUSE_FRAME;
+    mMsg_cursor_waiting = timer > 0.0f;
 }
 
 extern void mMsg_Get_BodyParam(u32 table_addr, u32 data_addr, int index, u32* addr, u32* size) {
