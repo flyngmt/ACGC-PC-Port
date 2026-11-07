@@ -57,6 +57,9 @@ extern void sAdo_Calc_MicPosition_forTrig(f32* fcalc, u16* scalc, const xyz_t* p
 extern void sAdo_Calc_MicPosition_forLevel(f32* fcalc, u16* scalc, const xyz_t* pos);
 
 extern void sAdo_GameFrame();
+#ifdef TARGET_PC
+extern void sAdo_OngenGameFrameRan(void);
+#endif
 extern void sAdo_BgmStart(u8 id);
 extern void sAdo_BgmStop(u16 id);
 extern void sAdo_SysTrgStart(u16 id);

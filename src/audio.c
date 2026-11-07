@@ -47,6 +47,12 @@ extern void sAdo_GameFrame() {
     /* pc_audio_process_frame() now runs on dedicated audio producer thread */
 }
 
+#ifdef TARGET_PC
+extern void sAdo_OngenGameFrameRan(void) {
+    Na_OngenGameFrameRan();
+}
+#endif
+
 extern void sAdo_BgmStart(u8 id) {
     Na_BgmStart(id);
 }

@@ -1262,6 +1262,32 @@ void Sou_Insect_Lev_Cont() {
     }
 }
 
+#ifdef TARGET_PC
+static u8 sou_ongen_entry_missed[ARRAY_COUNT(sou_ongen_entry)];
+static u8 sou_ongen_game_frame_ran;
+
+void Na_OngenGameFrameRan(void) {
+    sou_ongen_game_frame_ran = TRUE;
+}
+#endif
+
+static u8 Sou_Ongen_Entry_Stale(u8 i) {
+    u8 stale = sou_ongen_entry[i]._09 == sou_ongen_entry[i]._0A;
+
+#ifdef TARGET_PC
+    if (!stale) {
+        sou_ongen_entry_missed[i] = FALSE;
+    } else if (!sou_ongen_game_frame_ran) {
+        stale = FALSE;
+    } else if (!sou_ongen_entry_missed[i]) {
+        sou_ongen_entry_missed[i] = TRUE;
+        stale = FALSE;
+    }
+#endif
+
+    return stale;
+}
+
 void Sou_Ongen_Lev_Cont() {
     u8 i = 0;
     u8 j = 0;
@@ -1304,7 +1330,7 @@ void Sou_Ongen_Lev_Cont() {
 
     for (i = 0; i < ARRAY_COUNT(sou_ongen_entry); i++) {
         if (sou_ongen_entry[i]._00) {
-            if (sou_ongen_entry[i]._09 == sou_ongen_entry[i]._0A) {
+            if (Sou_Ongen_Entry_Stale(i)) {
                 for (j = 0; j < ARRAY_COUNT(sou_lev_ongen_data); j++) {
                     if (sou_lev_ongen_data[j]._04 == sou_ongen_entry[i]._00) {
 
@@ -1840,6 +1866,9 @@ void Na_GameFrame() {
             }
             Sou_ChimeMake();
             Sou_Ongen_Lev_Cont();
+#ifdef TARGET_PC
+            sou_ongen_game_frame_ran = FALSE;
+#endif
             Sou_Insect_Lev_Cont();
             for (i = 0; i < ARRAY_COUNT(sou_lev_ongen_data); i++) {
                 Sou_Ongen_Lev_Prog(i);

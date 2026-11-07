@@ -292,6 +292,10 @@ static void graph_audio_gameframe(GRAPH* this, GAME* game) {
     int ticks = graph_dt_60hz_ticks(game, &graph_audio_accum);
     int i;
 
+#ifdef TARGET_PC
+    sAdo_OngenGameFrameRan();
+#endif
+
     if (ticks <= 0) {
         return;
     }
