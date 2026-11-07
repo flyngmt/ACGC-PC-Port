@@ -117,9 +117,7 @@ static void aBT_actor_ct(ACTOR* actorx, GAME* game) {
         boat_actor->roll_timer = 200;
         boat_actor->roll_timer_accum = 0.0f;
         boat_actor->roll_cycle_accum = 0.0f;
-        boat_actor->rudder_angle_accum = 0.0f;
-        boat_actor->yaw_angle_accum = 0.0f;
-        boat_actor->draw_up_angle_accum = 0.0f;
+        boat_actor->logic_accum = 0.0f;
         boat_actor->direction = direction;
         aBT_setupAction(boat_actor, play, aBT_ACTION_DEMO_CTRL_BIRTH_WAIT);
         mCoBG_MakeBoatCollision(actorx, &actorx->world.position, &actorx->shape_info.rotation.y);
@@ -174,14 +172,14 @@ static int aBT_actor_draw_before(GAME* game, cKF_SkeletonInfo_R_c* keyframe, int
         case 5: {
             joint_rot->x = 0;
             joint_rot->y = 0;
-            joint_rot->z = boat_actor->_2CC; // boat furrow joint?
+            joint_rot->z = boat_actor->wave_angl0;
             break;
         }
 
         case 6: {
             joint_rot->x = 0;
             joint_rot->y = 0;
-            joint_rot->z = boat_actor->_2D0; // boat furrow joint?
+            joint_rot->z = boat_actor->wave_angl1;
             break;
         }
     }
@@ -194,14 +192,14 @@ static void aBT_actor_draw(ACTOR* actorx, GAME* game) {
     cKF_SkeletonInfo_R_c* keyframe = &boat_actor->keyframe;
     GRAPH* graph = game->graph;
     Gfx* scroll_gfx;
-    f32 _2C8 = boat_actor->_2C8 - actorx->speed * 0.5f * (f32)graph->dt_num_60fps_frames;
+    f32 furrow_scroll = boat_actor->furrow_scroll - actorx->speed * 0.5f * (f32)graph->dt_num_60fps_frames;
 
-    while (_2C8 < -32.0f) {
-        _2C8 += 32.0f;
+    while (furrow_scroll < -32.0f) {
+        furrow_scroll += 32.0f;
     }
 
-    boat_actor->_2C8 = _2C8;
-    scroll_gfx = two_tex_scroll_dolphin(graph, 0, 0, 0, 32, 32, 1, 0, _2C8 * 8.0f, 32, 32);
+    boat_actor->furrow_scroll = furrow_scroll;
+    scroll_gfx = two_tex_scroll_dolphin(graph, 0, 0, 0, 32, 32, 1, 0, furrow_scroll * 8.0f, 32, 32);
 
     if (scroll_gfx != NULL) {
         N64Mtx* mtx = GRAPH_ALLOC_TYPE(graph, N64Mtx, keyframe->skeleton->num_shown_joints);

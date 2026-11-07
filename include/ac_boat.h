@@ -23,18 +23,20 @@ struct boat_s {
   aBT_PROC action_proc;
   f32 roll_timer_accum;
   f32 roll_cycle_accum;
-  f32 rudder_angle_accum;
-  f32 yaw_angle_accum;
+  f32 logic_accum;
   int action;
   int roll_cycle;
   int roll_timer;
   int point;
   int direction;
-  f32 _2C8;
-  f32 _2CC;
-  f32 _2D0;
+  f32 furrow_scroll;
+  f32 wave_angl0;
+  f32 wave_angl1;
   f32 rudder;
-  f32 draw_up_angle_accum;
+  xyz_t sim_pos;
+  xyz_t prev_pos;
+  s16 sim_angle;
+  s16 prev_angle;
 };
 
 extern ACTOR_PROFILE Boat_Profile;
