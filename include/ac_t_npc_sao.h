@@ -20,6 +20,7 @@ struct npc_sao_tool_s {
   f32 pos_x; // 0x1d4
   f32 pos_y; // 0x1d8
   f32 pos_z; // 0x1dc
+  f32 rotation_y_accum;
 };
 
 extern void aTNS_actor_ct(ACTOR* actorx, GAME* game);

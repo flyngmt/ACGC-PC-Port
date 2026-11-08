@@ -21,6 +21,7 @@ ACTOR_PROFILE T_NpcSao_Profile = {
 };
 
 extern void aTNS_actor_ct(ACTOR* actorx, GAME* game) {
+    ((NPC_SAO_TOOL_ACTOR*)actorx)->rotation_y_accum = 0.0f;
     aTNS_setupAction(actorx, 1);
 }
 
@@ -57,7 +58,11 @@ extern void aTNS_actor_move(ACTOR* actorx, GAME* game) {
     parent_actor = actorx->parent_actor;
     temp = npc_sao->rotation_y;
     parent_rotation_y = parent_actor->shape_info.rotation.y;
+#ifdef TARGET_PC
+    rotation_y = temp + graph_dt_scaled_step(game, (int)(fqrand() * 6.0f + 2.0f) * 256, &npc_sao->rotation_y_accum);
+#else
     rotation_y = temp + ((int)(fqrand() * 6.0f + 2.0f) * 256);
+#endif
 
     npc_sao->pos_x = parent_actor->world.position.x + sin_s(parent_rotation_y) * 100.0f;
     npc_sao->pos_y = parent_actor->world.position.y + -20.0f + sin_s(rotation_y) * 1.5f;

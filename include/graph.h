@@ -108,6 +108,7 @@ int graph_dt_period_elapsed(struct game_s* game, float* accum, float period_fram
 double graph_dt_frame_time(struct game_s* game);
 int graph_dt_frame_phase(struct game_s* game, int period_frames);
 int graph_dt_due(struct game_s* game, float remaining_frames);
+int graph_dt_scaled_step(struct game_s* game, int step, float* accum);
 
 #define GRAPH_SET_DOING_POINT(g, point) ((g)->doing_point = GRAPH_DOING_##point)
 

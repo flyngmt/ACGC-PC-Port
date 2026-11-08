@@ -163,6 +163,15 @@ int graph_dt_due(GAME* game, float remaining_frames) {
     return remaining_frames <= 0.5f * (float)game->graph->dt_num_60fps_frames;
 }
 
+int graph_dt_scaled_step(GAME* game, int step, float* accum) {
+    int whole_step;
+
+    *accum += (float)step * (float)game->graph->dt_num_60fps_frames;
+    whole_step = (int)*accum;
+    *accum -= (float)whole_step;
+    return whole_step;
+}
+
 static void graph_task_set00(GRAPH* this) {
     TracyCZone(graph_task_zone, 1);
     ucode_info ucode[2];
