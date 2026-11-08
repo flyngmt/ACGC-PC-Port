@@ -332,21 +332,50 @@ static void aBC_spawn_actors_in_nearby_blocks(BIRTH_CONTROL_ACTOR* birth_control
     int bx = play->block_table.block_x + ofs_p[i].x;
     int bz = play->block_table.block_z + ofs_p[i].z;
 
-    if (mFI_BlockCheck(bx, bz) == TRUE) {
-      f32 pos_x;
-      f32 pos_z;
-      u16 bit_data;
+    birth_control->nearby_retry_bitfield[i] = 0;
 
+    if (mFI_BlockCheck(bx, bz) == TRUE) {
       aBC_setupActor(birth_control, play, bx, bz);
 
-      birth_control->move_actor_data[1 + i] = mFI_MoveActorListDma(bx, bz);
-      mNpc_AddActor_inBlock(birth_control->move_actor_data[1 + i], bx, bz);
-
-      mFI_BkNum2WposXZ(&pos_x, &pos_z, bx, bz);
-      bit_data = aBC_setupMvActor(birth_control, play, mFI_GetMoveActorBitData(bx, bz),
-                                  birth_control->move_actor_data[1 + i], bx, bz, pos_x, pos_z);
-      mFI_SetMoveActorBitData(bx, bz, bit_data);
+      birth_control->nearby_block[i][0] = bx;
+      birth_control->nearby_block[i][1] = bz;
+      birth_control->nearby_retry_bitfield[i] = 0xFFFF;
     }
+  }
+}
+
+static void aBC_setup_nearby_move_actors(BIRTH_CONTROL_ACTOR* birth_control, GAME_PLAY* play) {
+  int i;
+
+  for (i = 0; i < 3; i++) {
+    int bx = birth_control->nearby_block[i][0];
+    int bz = birth_control->nearby_block[i][1];
+    int dx = ABS(bx - play->block_table.block_x);
+    int dz = ABS(bz - play->block_table.block_z);
+    u16 bit_data;
+    u16 try_bit_data;
+    u16 failed_bit_data;
+
+    if (birth_control->nearby_retry_bitfield[i] == 0 || dx > 1 || dz > 1 || (dx == 0 && dz == 0)) {
+      continue;
+    }
+
+    bit_data = mFI_GetMoveActorBitData(bx, bz);
+    try_bit_data = bit_data & birth_control->nearby_retry_bitfield[i];
+    failed_bit_data = 0;
+
+    if (try_bit_data != 0) {
+      mFM_move_actor_c* move_actor_list = mFI_MoveActorListDma(bx, bz);
+      f32 pos_x;
+      f32 pos_z;
+
+      mNpc_AddActor_inBlock(move_actor_list, bx, bz);
+      mFI_BkNum2WposXZ(&pos_x, &pos_z, bx, bz);
+      failed_bit_data = aBC_setupMvActor(birth_control, play, try_bit_data, move_actor_list, bx, bz, pos_x, pos_z);
+      mFI_SetMoveActorBitData(bx, bz, (u16)(bit_data & ~try_bit_data) | failed_bit_data);
+    }
+
+    birth_control->nearby_retry_bitfield[i] = failed_bit_data;
   }
 }
 
@@ -380,6 +409,9 @@ static void aBC_actor_ct(ACTOR* actorx, GAME* game) {
   BIRTH_CONTROL_ACTOR* birth_control = (BIRTH_CONTROL_ACTOR*)actorx;
 
   birth_control->last_quadrant = -1;
+  birth_control->nearby_retry_bitfield[0] = 0;
+  birth_control->nearby_retry_bitfield[1] = 0;
+  birth_control->nearby_retry_bitfield[2] = 0;
 }
 
 static void aBC_actor_move(ACTOR* actorx, GAME* game) {
@@ -395,10 +427,15 @@ static void aBC_actor_move(ACTOR* actorx, GAME* game) {
     int bx = play->block_table.block_x;
     int bz = play->block_table.block_z;
 
-    birth_control->move_actor_data[0] = mFI_MoveActorListDma(bx, bz);
-    mNpc_AddActor_inBlock(birth_control->move_actor_data[0], bx, bz);
+    birth_control->move_actor_data = mFI_MoveActorListDma(bx, bz);
+    if (birth_control->move_actor_data != NULL) {
+      bcopy(birth_control->move_actor_data, birth_control->move_actor_list, sizeof(birth_control->move_actor_list));
+      birth_control->move_actor_data = birth_control->move_actor_list;
+    }
 
-    if (birth_control->move_actor_data[0] != NULL) {
+    mNpc_AddActor_inBlock(birth_control->move_actor_data, bx, bz);
+
+    if (birth_control->move_actor_data != NULL) {
       birth_control->move_actor_bitfield = mFI_GetMoveActorBitData(bx, bz);
       birth_control->move_actor_list_exists_flag = TRUE;
     }
@@ -421,7 +458,7 @@ static void aBC_actor_move(ACTOR* actorx, GAME* game) {
 
       aBC_deleteActor_part(play, ACTOR_PART_NPC);
       birth_control->move_actor_bitfield = aBC_setupMvActor(birth_control, play, birth_control->move_actor_bitfield,
-                                                            birth_control->move_actor_data[0],
+                                                            birth_control->move_actor_data,
                                                             play->block_table.block_x, play->block_table.block_z,
                                                             play->block_table.pos_x, play->block_table.pos_z);
       mFI_SetMoveActorBitData(bx, bz, birth_control->move_actor_bitfield);
@@ -432,8 +469,12 @@ static void aBC_actor_move(ACTOR* actorx, GAME* game) {
       birth_control->last_quadrant = -1;
     }
 
-    if (g_mPlib_wade_disabled && aBC_check_update_actors_in_nearby_blocks(birth_control, play)) {
-      aBC_spawn_actors_in_nearby_blocks(birth_control, play);
+    if (g_mPlib_wade_disabled) {
+      if (aBC_check_update_actors_in_nearby_blocks(birth_control, play)) {
+        aBC_spawn_actors_in_nearby_blocks(birth_control, play);
+      }
+
+      aBC_setup_nearby_move_actors(birth_control, play);
     }
   }
 
